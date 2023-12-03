@@ -21,7 +21,7 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
     public void configure(StateMachineConfigurationConfigurer<ProjectState, ProjectEvent> config) throws Exception {
         config.withConfiguration()
                 .autoStartup(false)
-                .listener(new StateMachineListenerAdapter<ProjectState, ProjectEvent>() {
+                .listener(new StateMachineListenerAdapter<>() {
                     @Override
                     public void stateChanged(State<ProjectState, ProjectEvent> from, State<ProjectState, ProjectEvent> to) {
                         super.stateChanged(from, to);
@@ -56,8 +56,6 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
                 .withExternal().source(ProjectState.FINAL).target(ProjectState.FINISHED).event(ProjectEvent.FINISH).and()
                 .withExternal().source(ProjectState.ACCEPTED).target(ProjectState.FINAL).event(ProjectEvent.START_FINAL).and()
                 .withExternal().source(ProjectState.ARCHIVED).target(ProjectState.ACCEPTED).event(ProjectEvent.ACCEPT);
-
-
     }
 
     private void addRejectTransitions(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions) throws Exception {

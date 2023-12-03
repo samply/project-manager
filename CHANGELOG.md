@@ -10,3 +10,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Spring Application
 - State Machine for project
 - Project states and event states
+- Project Service
