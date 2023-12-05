@@ -11,3 +11,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - State Machine for project
 - Project states and event states
 - Project Service
+- OAuth2 Security

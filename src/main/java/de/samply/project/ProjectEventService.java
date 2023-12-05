@@ -1,6 +1,7 @@
 package de.samply.project;
 
 import de.samply.db.model.Project;
+import de.samply.db.model.User;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.utils.LogUtils;
 import org.springframework.messaging.Message;
@@ -17,20 +18,17 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
-public class ProjectService implements ProjectOperations {
+public class ProjectEventService implements ProjectEventActions {
 
     private final ProjectRepository projectRepository;
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
 
 
-    public ProjectService(ProjectRepository projectRepository, StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory, LogUtils logUtils) {
+    public ProjectEventService(ProjectRepository projectRepository, StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory, LogUtils logUtils) {
         this.projectRepository = projectRepository;
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
@@ -69,16 +67,38 @@ public class ProjectService implements ProjectOperations {
     }
 
     @Override
-    public Project draft(String projectName, String contactId) {
-        Project project = new Project();
-        project.setName(projectName);
-        project.setCreatedAt(LocalDate.now());
-        project.setStateMachineKey(UUID.randomUUID());
-        project.setContactId(contactId);
-        StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
-        stateMachine.startReactively();
-        this.projectRepository.save(project);
-        return project;
+    public Project draft(ProjectParameters projectParameters) throws ProjectEventActionsException {
+        Optional<User> userOptional = fetchUser(projectParameters.email());
+        if (userOptional.isEmpty()) {
+            throw new ProjectEventActionsException("User" + projectParameters.email() + " not found");
+        } else {
+            Project project = new Project();
+            project.setName(projectParameters.projectName());
+            project.setCreatedAt(LocalDate.now());
+            project.setStateMachineKey(UUID.randomUUID());
+            StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
+            stateMachine.startReactively();
+            this.projectRepository.save(project);
+            createProjectUser(project, userOptional.get());
+            createProjectBridgeheads(project, projectParameters.bridgeheads());
+            return project;
+        }
+    }
+
+    private Optional<User> fetchUser(String email) {
+        //TODO
+        return Optional.empty();
+    }
+
+    private void createProjectUser(Project project, User user) {
+        //TODO
+    }
+
+    private void createProjectBridgeheads(Project project, String[] bridgeheads) {
+        Arrays.stream(bridgeheads).forEach(bridgehead ->{
+            //TODO
+        });
+
     }
 
     @Override
@@ -121,7 +141,7 @@ public class ProjectService implements ProjectOperations {
         changeEvent(projectName, ProjectEvent.FINISH);
     }
 
-    public Set<ProjectState> fetchNextPossibleProjectStates (String projectName){
+    public Set<ProjectState> fetchNextPossibleProjectStates(String projectName) {
         Set<ProjectState> result = new HashSet<>();
         loadProject(projectName).ifPresent(stateMachine -> {
             stateMachine.getTransitions().forEach(transition -> result.add(transition.getTarget().getId()));

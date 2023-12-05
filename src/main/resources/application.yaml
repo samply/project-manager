@@ -1,0 +1,62 @@
+server:
+  port: ${APPLICATION_PORT:8097}
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+
+app:
+  security:
+    enabled: ${SECURITY_ENABLED:true}
+
+spring:
+
+  flyway:
+    locations: classpath:db/migration
+    enabled: ${PROJECT_MANAGER_DB_FLYWAY_MIGRATION_ENABLED:true}
+    url: ${PROJECT_MANAGER_DB_URL:jdbc:postgresql://localhost:5432/project_manager}
+    user: ${PROJECT_MANAGER_DB_USER:project_manager}
+    password: ${PROJECT_MANAGER_DB_PASSWORD:project_manager}
+    default-schema: samply
+
+  datasource:
+    url: ${PROJECT_MANAGER_DB_URL:jdbc:postgresql://localhost:5432/project_manager}
+    username: ${PROJECT_MANAGER_DB_USER:project_manager}
+    password: ${PROJECT_MANAGER_DB_PASSWORD:project_manager}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    show-sql: ${HIBERNATE_LOG:false}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}
+            authorization-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/auth
+            token-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/token
+            user-info-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+            user-name-attribute: email
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email

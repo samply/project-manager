@@ -24,13 +24,10 @@ public class Project {
     @Column(name = "state_machine_key", nullable = false)
     private UUID stateMachineKey;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "contact_id")
-    private String contactId;
-
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
 
     @Column(name = "expires_at")
@@ -39,7 +36,7 @@ public class Project {
     @Column(name = "archived_at")
     private LocalDate archivedAt;
 
-    @Column(name = "state")
+    @Column(name = "state", nullable = false)
     private ProjectState state;
 
 
