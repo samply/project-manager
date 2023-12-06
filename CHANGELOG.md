@@ -13,3 +13,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Service
 - OAuth2 Security
 - OIDC <> Organisation Roles Mapping
+- Session User Info

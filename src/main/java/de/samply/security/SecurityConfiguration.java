@@ -12,11 +12,8 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.oauth2.core.authorization.OAuth2AuthorizationManagers.hasScope;
-
 @Configuration
 @EnableWebSecurity
-@Order(1)
 public class SecurityConfiguration {
 
     @Autowired
@@ -31,17 +28,18 @@ public class SecurityConfiguration {
         return new OidcProjectUserService(groupToRoleMapper);
     }
 
+    @Order(1)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return (isSecurityEnabled) ?
-                http.authorizeHttpRequests(this::addPathAuthorityMapping)
-                        .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(
-                                userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(customOidcUserService())))
+                http.authorizeHttpRequests(this::addAuthorityMapping)
+                        .oauth2Login(oauth2 -> oauth2
+                                .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(customOidcUserService())))
                         .build() :
                 http.authorizeRequests(authorize -> authorize.requestMatchers("/**").permitAll()).build();
     }
 
-    private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addPathAuthorityMapping(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
+    private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
         authorization.requestMatchers("/researcher-service").hasAuthority(OrganisationRole.RESEARCHER.name());
         return authorization.anyRequest().authenticated();
     }

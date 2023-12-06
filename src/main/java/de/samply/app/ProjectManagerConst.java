@@ -29,5 +29,6 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
 
     // Others
+    public final static String BRIDGEHEAD_CLAIM = "bridgehead";
 
 }
