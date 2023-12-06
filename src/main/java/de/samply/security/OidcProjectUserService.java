@@ -1,6 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +23,10 @@ public class OidcProjectUserService extends OidcUserService {
 
     @Value(ProjectManagerConst.JWT_GROUPS_CLAIM_PROPERTY_SV)
     private String groupClaim;
+
+    @Autowired
+    private SessionUserInfo sessionUserInfo;
+
     private final GroupToRoleMapper groupToRoleMapper;
 
     public OidcProjectUserService(GroupToRoleMapper groupToRoleMapper) {
@@ -34,6 +39,7 @@ public class OidcProjectUserService extends OidcUserService {
 
         OidcIdToken idToken = oidcUser.getIdToken();
         OidcUserInfo userInfo = oidcUser.getUserInfo();
+        sessionUserInfo.setEmail(userInfo.getEmail());
 
         Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo);
 

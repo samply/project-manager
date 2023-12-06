@@ -18,6 +18,7 @@ public class SessionUserInfo {
 
     private Optional<String> bridgehead = Optional.empty();
     private final Set<OrganisationRole> organisationRoles = new HashSet<>();
+    private String email;
 
     public void setBridgehead(String bridgehead) {
         if (bridgehead != null && this.bridgehead.isEmpty()) {
@@ -30,4 +31,11 @@ public class SessionUserInfo {
             organisationRoles.add(organisationRole);
         }
     }
+
+    public void setEmail(String email) {
+        if (email != null) {
+            this.email = email;
+        }
+    }
+
 }
