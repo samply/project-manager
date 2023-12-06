@@ -12,3 +12,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project states and event states
 - Project Service
 - OAuth2 Security
+- OIDC <> Organisation Roles Mapping

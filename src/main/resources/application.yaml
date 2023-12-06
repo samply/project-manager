@@ -38,25 +38,24 @@ spring:
 
   security:
     oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}
       client:
         provider:
-          keycloak:
-            issuer-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}
-            authorization-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/auth
-            token-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/token
-            user-info-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/userinfo
-            jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+          oidc:
+            issuer-uri: ${OIDC_URL}/realms/${OIDC_REALM}
+            authorization-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/auth
+            token-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/token
+            user-info-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/certs
             user-name-attribute: email
         registration:
-          keycloak:
-            client-id: ${KEYCLOAK_CLIENT_ID}
-            client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+          oidc:
+            client-id: ${OIDC_CLIENT_ID}
+            client-secret: ${OIDC_CLIENT_SECRET:}
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
             scope:
               - openid
               - profile
               - email
+
+jwt.groups.claim: ${OIDC_CLAIM_GROUPS}
