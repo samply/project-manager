@@ -28,7 +28,7 @@ public class GroupToRoleMapper {
     private ProjectManagerAdminGroups projectManagerAdminGroups;
 
     @Autowired
-    private UserSession userSession;
+    private SessionUser sessionUser;
 
     private Boolean adminOverUser;
 
@@ -64,8 +64,8 @@ public class GroupToRoleMapper {
                         extractBridgehead(bridgeheadAdminGroupPrefix, bridgeheadAdminGroupSuffix, group);
                 default -> null;
             };
-            userSession.setBridgehead(bridgehead);
-            userSession.addOrganisationRole(organisationRole);
+            sessionUser.setBridgehead(bridgehead);
+            sessionUser.addOrganisationRole(organisationRole);
         }
     }
 
