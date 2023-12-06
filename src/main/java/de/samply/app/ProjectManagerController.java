@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.samply.security.SessionUserInfo;
+import de.samply.security.UserSession;
 import de.samply.utils.ProjectVersion;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class ProjectManagerController {
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     @Autowired
-    private SessionUserInfo sessionUserInfo; // session scope user info
+    private UserSession userSession; // session scope user info
 
     @GetMapping(value = ProjectManagerConst.INFO)
     public ResponseEntity<String> info() {

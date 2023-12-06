@@ -14,7 +14,7 @@ import java.util.Set;
 @Component
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 @Getter
-public class SessionUserInfo {
+public class UserSession {
 
     private Optional<String> bridgehead = Optional.empty();
     private final Set<OrganisationRole> organisationRoles = new HashSet<>();

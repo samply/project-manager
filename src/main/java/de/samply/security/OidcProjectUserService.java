@@ -25,7 +25,7 @@ public class OidcProjectUserService extends OidcUserService {
     private String groupClaim;
 
     @Autowired
-    private SessionUserInfo sessionUserInfo;
+    private UserSession userSession;
 
     private final GroupToRoleMapper groupToRoleMapper;
 
@@ -39,7 +39,7 @@ public class OidcProjectUserService extends OidcUserService {
 
         OidcIdToken idToken = oidcUser.getIdToken();
         OidcUserInfo userInfo = oidcUser.getUserInfo();
-        sessionUserInfo.setEmail(userInfo.getEmail());
+        userSession.setEmail(userInfo.getEmail());
 
         Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo);
 

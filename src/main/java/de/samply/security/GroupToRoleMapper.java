@@ -28,7 +28,7 @@ public class GroupToRoleMapper {
     private ProjectManagerAdminGroups projectManagerAdminGroups;
 
     @Autowired
-    private SessionUserInfo sessionUserInfo;
+    private UserSession userSession;
 
     private Boolean adminOverUser;
 
@@ -64,8 +64,8 @@ public class GroupToRoleMapper {
                         extractBridgehead(bridgeheadAdminGroupPrefix, bridgeheadAdminGroupSuffix, group);
                 default -> null;
             };
-            sessionUserInfo.setBridgehead(bridgehead);
-            sessionUserInfo.addOrganisationRole(organisationRole);
+            userSession.setBridgehead(bridgehead);
+            userSession.addOrganisationRole(organisationRole);
         }
     }
 
@@ -78,8 +78,8 @@ public class GroupToRoleMapper {
         return (group.startsWith("/")) ? group.substring(1) : group;
     }
 
-    private boolean isAdminOverUser() {
-        if (adminOverUser == null){
+    private boolean isAdminOverUser() { // TODO: This logic works with the current configuration of DKTK. Please change it with something more reasonable.
+        if (adminOverUser == null) {
             adminOverUser = (bridgeheadUserGroupPrefix + bridgeheadUserGroupSuffix).length() < (bridgeheadAdminGroupPrefix + bridgeheadAdminGroupSuffix).length();
         }
         return adminOverUser;
