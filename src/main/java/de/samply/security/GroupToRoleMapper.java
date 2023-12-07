@@ -1,6 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.user.OrganisationRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,9 @@ public class GroupToRoleMapper {
     @Autowired
     private SessionUser sessionUser;
 
+    @Autowired
+    private BridgeheadConfiguration bridgeheadConfiguration;
+
     private Boolean adminOverUser;
 
 
@@ -52,11 +56,10 @@ public class GroupToRoleMapper {
                 groupToRoleMapCache.put(group, organisationRole);
             }
         }
-        addBridgheadToUserInfo(group, organisationRole);
-        return organisationRole;
+        return addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole);
     }
 
-    private void addBridgheadToUserInfo(String group, OrganisationRole organisationRole) {
+    private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole) {
         if (organisationRole != null) {
             String bridgehead = switch (organisationRole) {
                 case RESEARCHER -> extractBridgehead(bridgeheadUserGroupPrefix, bridgeheadUserGroupSuffix, group);
@@ -66,10 +69,13 @@ public class GroupToRoleMapper {
             };
             if (bridgehead == null) {
                 sessionUser.addOrganisationRoleNotDependentOnBridgehead(organisationRole);
-            } else {
+            } else if (bridgeheadConfiguration.isRegisteredBridgehead(bridgehead)) {
                 sessionUser.addBridgeheadRole(bridgehead, organisationRole);
+            } else {
+                organisationRole = null;
             }
         }
+        return organisationRole;
     }
 
     private String extractBridgehead(String prefix, String suffix, String group) {

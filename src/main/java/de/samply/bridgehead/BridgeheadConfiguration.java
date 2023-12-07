@@ -17,4 +17,8 @@ public class BridgeheadConfiguration {
         this.bridgeheads = bridgeheads;
     }
 
+    public boolean isRegisteredBridgehead(String bridgehead) {
+        return bridgeheads.contains(bridgehead);
+    }
+
 }

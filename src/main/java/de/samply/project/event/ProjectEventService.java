@@ -1,10 +1,16 @@
 package de.samply.project.event;
 
 import de.samply.db.model.Project;
-import de.samply.db.model.User;
+import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.project.ProjectParameters;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.security.SessionUser;
+import de.samply.user.ProjectRole;
 import de.samply.utils.LogUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -28,12 +34,22 @@ public class ProjectEventService implements ProjectEventActions {
     private final ProjectRepository projectRepository;
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
+    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    private final SessionUser sessionUser;
 
 
-    public ProjectEventService(ProjectRepository projectRepository, StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory, LogUtils logUtils) {
+    public ProjectEventService(ProjectRepository projectRepository,
+                               StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory,
+                               LogUtils logUtils,
+                               ProjectBridgeheadRepository projectBridgeheadRepository,
+                               ProjectBridgeheadUserRepository projectBridgeheadUserRepository, SessionUser sessionUser) {
         this.projectRepository = projectRepository;
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
+        this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.sessionUser = sessionUser;
     }
 
     private Optional<StateMachine<ProjectState, ProjectEvent>> loadProject(String projectName) {
@@ -69,38 +85,49 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public Project draft(ProjectParameters projectParameters) throws ProjectEventActionsException {
-        Optional<User> userOptional = fetchUser(projectParameters.email());
-        if (userOptional.isEmpty()) {
-            throw new ProjectEventActionsException("User" + projectParameters.email() + " not found");
-        } else {
-            Project project = new Project();
-            project.setName(projectParameters.projectName());
-            project.setCreatedAt(LocalDate.now());
-            project.setStateMachineKey(UUID.randomUUID());
-            StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
-            stateMachine.startReactively();
-            this.projectRepository.save(project);
-            createProjectUser(project, userOptional.get());
-            createProjectBridgeheads(project, projectParameters.bridgeheads());
-            return project;
-        }
+    public Project draft(ProjectParameters projectParameters) {
+        Project project = createProjectAsDraft(projectParameters.projectName());
+        List<ProjectBridgehead> projectBridgeheads = Arrays.stream(projectParameters.bridgeheads()).map(bridgehead -> createProjectBridgehead(bridgehead, project)).toList();
+        createProjectBridgeheadUser(projectBridgeheads);
+        return project;
     }
 
-    private Optional<User> fetchUser(String email) {
-        //TODO
-        return Optional.empty();
+    private Project createProjectAsDraft(String projectName) {
+        Project project = new Project();
+        project.setName(projectName);
+        project.setCreatedAt(LocalDate.now());
+        project.setStateMachineKey(UUID.randomUUID());
+        StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
+        stateMachine.startReactively();
+        return this.projectRepository.save(project);
     }
 
-    private void createProjectUser(Project project, User user) {
-        //TODO
+    private ProjectBridgehead createProjectBridgehead(String bridgehead, Project project) {
+        ProjectBridgehead projectBridgehead = new ProjectBridgehead();
+        projectBridgehead.setBridgehead(bridgehead.toLowerCase());
+        projectBridgehead.setProject(project);
+        projectBridgehead.setState(ProjectBridgeheadState.CREATED); // TODO: Replace with state machine
+        return this.projectBridgeheadRepository.save(projectBridgehead);
     }
 
-    private void createProjectBridgeheads(Project project, String[] bridgeheads) {
-        Arrays.stream(bridgeheads).forEach(bridgehead ->{
-            //TODO
+    private List<ProjectBridgeheadUser> createProjectBridgeheadUser(List<ProjectBridgehead> projectBridgeheads) {
+        List<ProjectBridgeheadUser> result = new ArrayList<>();
+        List<ProjectBridgehead> userProjectBridgeheads = new ArrayList<>();
+        projectBridgeheads.forEach(projectBridgehead -> {
+            if (sessionUser.getBridgeheads().contains(projectBridgehead.getBridgehead())) {
+                userProjectBridgeheads.add(projectBridgehead);
+            }
         });
+        userProjectBridgeheads.forEach(projectBridgehead -> result.add(createProjectBridgeheadUser(projectBridgehead)));
+        return result;
+    }
 
+    private ProjectBridgeheadUser createProjectBridgeheadUser(ProjectBridgehead projectBridgehead) {
+        ProjectBridgeheadUser projectBridgeheadUser = new ProjectBridgeheadUser();
+        projectBridgeheadUser.setProjectRole(ProjectRole.CREATOR);
+        projectBridgeheadUser.setEmail(sessionUser.getEmail());
+        projectBridgeheadUser.setProjectBridgehead(projectBridgehead);
+        return projectBridgeheadUserRepository.save(projectBridgeheadUser);
     }
 
     @Override

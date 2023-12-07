@@ -17,7 +17,7 @@ import java.util.UUID;
 public class Project {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -38,6 +38,5 @@ public class Project {
 
     @Column(name = "state", nullable = false)
     private ProjectState state;
-
 
 }

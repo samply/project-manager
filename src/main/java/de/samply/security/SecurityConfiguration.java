@@ -2,7 +2,6 @@ package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.user.OrganisationRole;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
-    @Autowired
-    private GroupToRoleMapper groupToRoleMapper;
 
     @Value(ProjectManagerConst.APP_SECURITY_ENABLED_PROPERTY_SV)
     private boolean isSecurityEnabled;
@@ -26,7 +23,7 @@ public class SecurityConfiguration {
 
     @Bean
     public OidcUserService customOidcUserService() {
-        return new OidcProjectUserService(groupToRoleMapper);
+        return new OidcProjectUserService();
     }
 
     @Order(1)

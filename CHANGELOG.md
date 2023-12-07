@@ -18,3 +18,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Multi bridgehead user
 - Test user if security disabled
 - Bridgehead configuration
+- User Service

@@ -1,32 +1,25 @@
 package de.samply.db.model;
 
-
-import de.samply.project.state.ProjectBridgeheadState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "project_bridgehead", schema = "samply")
+@Table(name = "bridgehead_admin_user", schema = "samply")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProjectBridgehead {
-
+public class BridgeheadAdminUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @Column(name = "email", nullable = false)
+    private String email;
 
     @Column(name = "bridgehead", nullable = false)
     private String bridgehead;
-
-    @Column(name = "state", nullable = false)
-    private ProjectBridgeheadState state;
 
 }

@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record ProjectParameters(
         @NotNull String projectName,
-        @NotNull String email,
         @NotEmpty String[] bridgeheads
 ) {
 

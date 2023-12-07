@@ -1,6 +1,8 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.user.OrganisationRole;
+import de.samply.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,11 +29,12 @@ public class OidcProjectUserService extends OidcUserService {
     @Autowired
     private SessionUser sessionUser;
 
-    private final GroupToRoleMapper groupToRoleMapper;
+    @Autowired
+    private GroupToRoleMapper groupToRoleMapper;
 
-    public OidcProjectUserService(GroupToRoleMapper groupToRoleMapper) {
-        this.groupToRoleMapper = groupToRoleMapper;
-    }
+    @Autowired
+    private UserService userService;
+
 
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
@@ -42,6 +45,7 @@ public class OidcProjectUserService extends OidcUserService {
         sessionUser.setEmail(userInfo.getEmail());
 
         Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo);
+        importNewUsers();
 
         return new DefaultOidcUser(mappedAuthorities, idToken, userInfo);
     }
@@ -57,4 +61,16 @@ public class OidcProjectUserService extends OidcUserService {
         }
         throw new OAuth2AuthenticationException("No groups found");
     }
+
+    private void importNewUsers() {
+        if (sessionUser.getOrganisationRolesNotDependentOnBridgeheads().contains(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
+            userService.createProjectManagerAdminUserIfNotExists(sessionUser.getEmail());
+        }
+        sessionUser.getBridgeheads().forEach(bridgehead -> sessionUser.getBridgeheadRoles(bridgehead).ifPresent(organisationRoles -> {
+            if (organisationRoles.contains(OrganisationRole.BRIDGEHEAD_ADMIN)) {
+                userService.createBridgeheadAdminUserIfNotExists(sessionUser.getEmail(), bridgehead);
+            }
+        }));
+    }
+
 }

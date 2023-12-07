@@ -8,24 +8,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "project_user", schema = "samply")
+@Table(name = "project_bridgehead_user", schema = "samply")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProjectUser {
+public class ProjectBridgeheadUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @JoinColumn(name = "project_bridgehead_id", nullable = false)
+    private ProjectBridgehead projectBridgehead;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "email", nullable = false)
+    private String email;
 
     @Column(name = "project_role", nullable = false)
     private ProjectRole projectRole;

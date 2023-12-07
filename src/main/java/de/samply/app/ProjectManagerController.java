@@ -33,7 +33,6 @@ public class ProjectManagerController {
 
     @GetMapping(value = ProjectManagerConst.INFO)
     public ResponseEntity<String> info() {
-        //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return new ResponseEntity<>(projectVersion, HttpStatus.OK);
     }
 
