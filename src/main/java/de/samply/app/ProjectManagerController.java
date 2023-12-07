@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.security.SessionUser;
 import de.samply.utils.ProjectVersion;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -26,6 +27,9 @@ public class ProjectManagerController {
 
     @Autowired
     private SessionUser sessionUser; // session scope user info
+
+    @Autowired
+    private BridgeheadConfiguration bridgeheadConfiguration;
 
     @GetMapping(value = ProjectManagerConst.INFO)
     public ResponseEntity<String> info() {

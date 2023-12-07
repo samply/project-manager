@@ -1,4 +1,4 @@
-package de.samply.project;
+package de.samply.project.state;
 
 public enum ProjectState {
     DRAFT,

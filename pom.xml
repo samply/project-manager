@@ -19,6 +19,7 @@
         <spring-statemachine-core.version>3.2.1</spring-statemachine-core.version>
         <lombok.version>1.18.30</lombok.version>
         <maven-model.version>3.9.6</maven-model.version>
+        <spring-aop.version>6.1.1</spring-aop.version>
     </properties>
     <dependencies>
         <dependency>
@@ -36,6 +37,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>

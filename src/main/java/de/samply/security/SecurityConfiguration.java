@@ -41,6 +41,7 @@ public class SecurityConfiguration {
     }
 
     private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
+        //TODO: Add mapping for rest services based on annotations
         authorization.requestMatchers("/researcher-service").hasAuthority(OrganisationRole.RESEARCHER.name());
         return authorization.anyRequest().authenticated();
     }

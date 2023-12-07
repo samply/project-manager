@@ -1,8 +1,10 @@
-package de.samply.project;
+package de.samply.project.event;
 
 import de.samply.db.model.Project;
 import de.samply.db.model.User;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.project.ProjectParameters;
+import de.samply.project.state.ProjectState;
 import de.samply.utils.LogUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;

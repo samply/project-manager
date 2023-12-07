@@ -1,5 +1,6 @@
-package de.samply.project;
+package de.samply.project.state;
 
+import de.samply.project.event.ProjectEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachineFactory;

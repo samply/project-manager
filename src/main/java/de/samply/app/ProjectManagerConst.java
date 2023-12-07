@@ -19,10 +19,12 @@ public class ProjectManagerConst {
     public final static String BK_USER_GROUP_SUFFIX = "BK_USER_GROUP_SUFFIX";
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
+    public final static String BRIDGEHEADS = "BRIDGEHEADS";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
+    public final static String BRIDGEHEADS_SV = HEAD_SV + BRIDGEHEADS + ":"+ BOTTOM_SV;
     public final static String JWT_GROUPS_CLAIM_PROPERTY_SV = HEAD_SV + JWT_GROUPS_CLAIM_PROPERTY + BOTTOM_SV;
     public final static String APP_SECURITY_ENABLED_PROPERTY_SV = HEAD_SV + APP_SECURITY_ENABLED_PROPERTY + ":true" + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;

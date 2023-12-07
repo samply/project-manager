@@ -1,6 +1,7 @@
-package de.samply.project;
+package de.samply.project.event;
 
 import de.samply.db.model.Project;
+import de.samply.project.ProjectParameters;
 
 public interface ProjectEventActions {
 

@@ -81,7 +81,7 @@ public class GroupToRoleMapper {
         return (group.startsWith("/")) ? group.substring(1) : group;
     }
 
-    private boolean isAdminOverUser() { // TODO: This logic works with the current configuration of DKTK. Please change it with something more reasonable.
+    private boolean isAdminOverUser() { // TODO: This logic works with the current configuration of DKTK. Please change it with something more reasonable. (@The stressed developer)
         if (adminOverUser == null) {
             adminOverUser = (bridgeheadUserGroupPrefix + bridgeheadUserGroupSuffix).length() < (bridgeheadAdminGroupPrefix + bridgeheadAdminGroupSuffix).length();
         }

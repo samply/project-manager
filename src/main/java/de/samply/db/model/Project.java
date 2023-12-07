@@ -1,6 +1,6 @@
 package de.samply.db.model;
 
-import de.samply.project.ProjectState;
+import de.samply.project.state.ProjectState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

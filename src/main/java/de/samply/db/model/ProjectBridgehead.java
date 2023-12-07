@@ -1,7 +1,7 @@
 package de.samply.db.model;
 
 
-import de.samply.project.ProjectBridgeheadState;
+import de.samply.project.state.ProjectBridgeheadState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

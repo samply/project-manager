@@ -1,4 +1,4 @@
-package de.samply.project;
+package de.samply.project.event;
 
 public class ProjectEventActionsException extends Exception {
 
