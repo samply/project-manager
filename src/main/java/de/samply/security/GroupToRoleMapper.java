@@ -64,13 +64,16 @@ public class GroupToRoleMapper {
                         extractBridgehead(bridgeheadAdminGroupPrefix, bridgeheadAdminGroupSuffix, group);
                 default -> null;
             };
-            sessionUser.setBridgehead(bridgehead);
-            sessionUser.addOrganisationRole(organisationRole);
+            if (bridgehead == null) {
+                sessionUser.addOrganisationRoleNotDependentOnBridgehead(organisationRole);
+            } else {
+                sessionUser.addBridgeheadRole(bridgehead, organisationRole);
+            }
         }
     }
 
     private String extractBridgehead(String prefix, String suffix, String group) {
-        return ((suffix.length() > 0) ? group.substring(prefix.length(), group.indexOf(suffix) - 1) : group.substring(prefix.length())).toLowerCase();
+        return ((suffix.length() > 0) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
     }
 
     // Important for Keycloak configuration of the groups
