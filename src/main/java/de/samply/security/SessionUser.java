@@ -1,6 +1,8 @@
 package de.samply.security;
 
+import de.samply.app.ProjectManagerConst;
 import de.samply.user.OrganisationRole;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,15 @@ public class SessionUser {
     private final Set<OrganisationRole> organisationRolesNotDependentOnBridgeheads = new HashSet<>();
     private String email;
 
+    public SessionUser(@Value(ProjectManagerConst.APP_SECURITY_ENABLED_PROPERTY_SV) boolean isSecurityEnabled) {
+        if (!isSecurityEnabled) {
+            setEmail(ProjectManagerConst.TEST_EMAIL);
+            addOrganisationRoleNotDependentOnBridgehead(OrganisationRole.PROJECT_MANAGER_ADMIN);
+            addBridgeheadRole(ProjectManagerConst.TEST_BRIDGEHEAD, OrganisationRole.RESEARCHER);
+            addBridgeheadRole(ProjectManagerConst.TEST_BRIDGEHEAD, OrganisationRole.BRIDGEHEAD_ADMIN);
+        }
+    }
+
     public void addBridgeheadRole(String bridgehead, OrganisationRole role) {
         if (bridgehead != null && role != null) {
             Set<OrganisationRole> bridgeheadRoles = bridgheadRolesMap.get(bridgehead);
@@ -27,7 +38,7 @@ public class SessionUser {
         }
     }
 
-    public void addOrganisationRoleNotDependentOnBridgehead(OrganisationRole     organisationRole) {
+    public void addOrganisationRoleNotDependentOnBridgehead(OrganisationRole organisationRole) {
         if (organisationRole != null) {
             organisationRolesNotDependentOnBridgeheads.add(organisationRole);
         }

@@ -16,3 +16,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Session User Info
 - Session User Info email
 - Multi bridgehead user
+- Test user if security disabled

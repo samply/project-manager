@@ -1,5 +1,6 @@
 package de.samply.security;
 
+import de.samply.app.ProjectManagerConst;
 import de.samply.user.OrganisationRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,7 @@ public class SecurityConfiguration {
     @Autowired
     private GroupToRoleMapper groupToRoleMapper;
 
-    @Value("${app.security.enabled}")
+    @Value(ProjectManagerConst.APP_SECURITY_ENABLED_PROPERTY_SV)
     private boolean isSecurityEnabled;
 
 
