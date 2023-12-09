@@ -7,10 +7,10 @@ import java.util.List;
 
 @Getter
 public class ModuleActionsPackage {
-    private Module module;
+    private String module;
     private List<Action> actions = new ArrayList<>();
 
-    public void setModule(Module module) {
+    public void setModule(String module) {
         this.module = module;
     }
 

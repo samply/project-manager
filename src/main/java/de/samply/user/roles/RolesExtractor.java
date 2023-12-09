@@ -27,7 +27,7 @@ public class RolesExtractor {
         return result;
     }
 
-    private static Optional<String> fetchPath(Method method) {
+    public static Optional<String> fetchPath(Method method) {
         RequestMapping annotation = method.getAnnotation(RequestMapping.class);
         if (annotation == null) {
             for (Annotation methodAnnotation : method.getDeclaredAnnotations()) {
@@ -58,7 +58,7 @@ public class RolesExtractor {
         return Optional.ofNullable((value != null && value.length > 0) ? value[0] : (path != null && path.length > 0) ? path[0] : null);
     }
 
-    private static String getRootPath() {
+    public static String getRootPath() {
         Optional<String> path = fetchPath(ProjectManagerController.class.getAnnotation(RequestMapping.class));
         return (path.isPresent()) ? path.get() : "";
     }

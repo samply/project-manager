@@ -1,6 +1,5 @@
 package de.samply.annotations;
 
-import de.samply.frontend.Action;
 import jakarta.validation.constraints.NotNull;
 
 import java.lang.annotation.ElementType;
@@ -12,6 +11,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface FrontendAction {
     @NotNull
-    Action action();
+    String action();
 
 }

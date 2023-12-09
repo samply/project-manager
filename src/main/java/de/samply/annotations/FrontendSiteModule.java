@@ -1,7 +1,5 @@
 package de.samply.annotations;
 
-import de.samply.frontend.Module;
-import de.samply.frontend.Site;
 import jakarta.validation.constraints.NotNull;
 
 import java.lang.annotation.ElementType;
@@ -13,9 +11,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface FrontendSiteModule {
     @NotNull
-    Site site();
+    String site();
 
     @NotNull
-    Module module();
+    String module();
 
 }

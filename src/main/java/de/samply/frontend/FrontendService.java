@@ -6,6 +6,7 @@ import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
 import de.samply.aop.ConstraintsService;
 import de.samply.app.ProjectManagerController;
+import de.samply.user.roles.RolesExtractor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +21,15 @@ public class FrontendService {
         this.constraintsService = constraintsService;
     }
 
-    public Collection<ModuleActionsPackage> fetchModuleActionPackage(Site site, Optional<String> projectName, Optional<String> bridgehead) {
-        Map<Module, ModuleActionsPackage> moduleModuleActionsPackageMap = new HashMap<>();
+    public Collection<ModuleActionsPackage> fetchModuleActionPackage(String site, Optional<String> projectName, Optional<String> bridgehead) {
+        Map<String, ModuleActionsPackage> moduleModuleActionsPackageMap = new HashMap<>();
+        String rootPath = RolesExtractor.getRootPath();
         Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
             FrontendSiteModule frontendSiteModule = method.getAnnotation(FrontendSiteModule.class);
             FrontendAction frontendAction = method.getAnnotation((FrontendAction.class));
-            if (frontendSiteModule != null && frontendSiteModule.site() == site && frontendAction != null) {
+            Optional<String> path = RolesExtractor.fetchPath(method);
+
+            if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
                 Optional<RoleConstraints> roleConstraints = Optional.of(method.getAnnotation(RoleConstraints.class));
                 Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, projectName, bridgehead);
                 if (responseEntity.isEmpty()) {
@@ -39,7 +43,7 @@ public class FrontendService {
                         moduleActionsPackage.setModule(frontendSiteModule.module());
                         moduleModuleActionsPackageMap.put(frontendSiteModule.module(), moduleActionsPackage);
                     }
-                    moduleActionsPackage.addAction(frontendAction.action());
+                    moduleActionsPackage.addAction(new Action(frontendAction.action(), rootPath + path));
                 }
             }
         });

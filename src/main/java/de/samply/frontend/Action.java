@@ -1,5 +1,7 @@
 package de.samply.frontend;
 
-public enum Action {
-
+public record Action(
+        String action,
+        String path
+) {
 }

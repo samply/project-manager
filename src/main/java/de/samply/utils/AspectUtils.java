@@ -14,14 +14,14 @@ import java.util.Optional;
 public class AspectUtils {
 
     public static Optional<String> fetchBridghead(JoinPoint joinPoint) {
-        return fetchStringParamterAnnotation(joinPoint, Bridgehead.class);
+        return fetchStringParameterAnnotation(joinPoint, Bridgehead.class);
     }
 
     public static Optional<String> fetchProjectName(JoinPoint joinPoint) {
-        return fetchStringParamterAnnotation(joinPoint, ProjectName.class);
+        return fetchStringParameterAnnotation(joinPoint, ProjectName.class);
     }
 
-    private static Optional<String> fetchStringParamterAnnotation(JoinPoint joinPoint, Class annotationClass) {
+    private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class annotationClass) {
         Annotation[][] parameterAnnotations = fetchMethod(joinPoint).getParameterAnnotations();
         Object[] args = joinPoint.getArgs();
         for (int i = 0; i < parameterAnnotations.length; i++) {
@@ -35,7 +35,7 @@ public class AspectUtils {
         }
         return Optional.empty();
     }
-
+    
     public static Method fetchMethod(JoinPoint joinPoint) {
         return ((MethodSignature) joinPoint.getSignature()).getMethod();
     }
