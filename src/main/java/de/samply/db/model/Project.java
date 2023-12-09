@@ -22,7 +22,7 @@ public class Project {
     private Long id;
 
     @Column(name = "state_machine_key", nullable = false)
-    private UUID stateMachineKey;
+    private String stateMachineKey;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -37,6 +37,7 @@ public class Project {
     private LocalDate archivedAt;
 
     @Column(name = "state", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ProjectState state;
 
 }

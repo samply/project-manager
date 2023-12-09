@@ -52,7 +52,7 @@ public class ProjectRoleConstraintsAspect {
             if (project.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
-            boolean userHasProjectRoleInProject = true;
+            boolean userHasProjectRoleInProject = false;
             for (ProjectRole projectRole : roleConstraints.projectRoles()) {
                 if (userHasProjectRoleInProject(project.get(), projectRole, fetchBridghead(joinPoint))) {
                     userHasProjectRoleInProject = true;

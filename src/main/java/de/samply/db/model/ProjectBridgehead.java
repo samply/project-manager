@@ -27,6 +27,7 @@ public class ProjectBridgehead {
     private String bridgehead;
 
     @Column(name = "state", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ProjectBridgeheadState state;
 
 }

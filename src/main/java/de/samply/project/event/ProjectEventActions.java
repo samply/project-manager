@@ -1,11 +1,10 @@
 package de.samply.project.event;
 
-import de.samply.db.model.Project;
 import de.samply.project.ProjectParameters;
 
 public interface ProjectEventActions {
 
-    Project draft(ProjectParameters projectParameters) throws ProjectEventActionsException;
+    void draft(ProjectParameters projectParameters) throws ProjectEventActionsException;
 
     void create(String projectName) throws ProjectEventActionsException;
 

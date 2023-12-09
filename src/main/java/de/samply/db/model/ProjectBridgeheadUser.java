@@ -27,6 +27,7 @@ public class ProjectBridgeheadUser {
     private String email;
 
     @Column(name = "project_role", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ProjectRole projectRole;
 
 }

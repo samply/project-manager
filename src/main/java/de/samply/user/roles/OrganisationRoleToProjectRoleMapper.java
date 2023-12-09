@@ -54,7 +54,7 @@ public class OrganisationRoleToProjectRoleMapper {
         sessionUser.getUserOrganisationRoles().getBridgeheads().forEach(bridgehead ->
                 sessionUser.getUserOrganisationRoles().getBridgeheadRoles(bridgehead).get().forEach(organisationRole -> {
                     ProjectRole projectRole = organisationToProjectRoleMap.get(organisationRole);
-                    if (project != null) {
+                    if (projectRole != null) {
                         result.addBridgeheadRole(bridgehead, projectRole);
                     } else {
                         projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project).ifPresent(projectBridgehead ->

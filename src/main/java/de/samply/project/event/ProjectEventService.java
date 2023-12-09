@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Consumer;
 
 @Service
 public class ProjectEventService implements ProjectEventActions {
@@ -85,21 +86,23 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public Project draft(ProjectParameters projectParameters) {
-        Project project = createProjectAsDraft(projectParameters.projectName());
-        List<ProjectBridgehead> projectBridgeheads = Arrays.stream(projectParameters.bridgeheads()).map(bridgehead -> createProjectBridgehead(bridgehead, project)).toList();
-        createProjectBridgeheadUser(projectBridgeheads);
-        return project;
+    public void draft(ProjectParameters projectParameters) {
+        createProjectAsDraft(projectParameters.projectName(), project -> {
+            List<ProjectBridgehead> projectBridgeheads = Arrays.stream(projectParameters.bridgeheads()).map(bridgehead -> createProjectBridgehead(bridgehead, project)).toList();
+            createProjectBridgeheadUser(projectBridgeheads);
+        });
     }
 
-    private Project createProjectAsDraft(String projectName) {
+    private void createProjectAsDraft(String projectName, Consumer<Project> projectConsumer) {
         Project project = new Project();
         project.setName(projectName);
         project.setCreatedAt(LocalDate.now());
-        project.setStateMachineKey(UUID.randomUUID());
+        project.setStateMachineKey(UUID.randomUUID().toString());
         StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
-        stateMachine.startReactively();
-        return this.projectRepository.save(project);
+        stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
+            project.setState(stateMachine.getState().getId());
+            projectConsumer.accept(this.projectRepository.save(project));
+        });
     }
 
     private ProjectBridgehead createProjectBridgehead(String bridgehead, Project project) {
