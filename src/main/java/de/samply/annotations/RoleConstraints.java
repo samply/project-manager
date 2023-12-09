@@ -1,7 +1,7 @@
 package de.samply.annotations;
 
-import de.samply.user.OrganisationRole;
-import de.samply.user.ProjectRole;
+import de.samply.user.roles.OrganisationRole;
+import de.samply.user.roles.ProjectRole;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,7 +12,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface RoleConstraints {
 
-    OrganisationRole[] organisationRoles = null;
-    ProjectRole[] projectRoles = null;
+    OrganisationRole[] organisationRoles() default {};
+    ProjectRole[] projectRoles() default {};
+
 
 }

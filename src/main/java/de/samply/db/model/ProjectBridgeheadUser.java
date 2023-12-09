@@ -1,7 +1,7 @@
 package de.samply.db.model;
 
 
-import de.samply.user.ProjectRole;
+import de.samply.user.roles.ProjectRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

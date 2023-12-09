@@ -2,7 +2,7 @@ package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
-import de.samply.user.OrganisationRole;
+import de.samply.user.roles.OrganisationRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -68,9 +68,9 @@ public class GroupToRoleMapper {
                 default -> null;
             };
             if (bridgehead == null) {
-                sessionUser.addOrganisationRoleNotDependentOnBridgehead(organisationRole);
+                sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(organisationRole);
             } else if (bridgeheadConfiguration.isRegisteredBridgehead(bridgehead)) {
-                sessionUser.addBridgeheadRole(bridgehead, organisationRole);
+                sessionUser.getUserOrganisationRoles().addBridgeheadRole(bridgehead, organisationRole);
             } else {
                 organisationRole = null;
             }

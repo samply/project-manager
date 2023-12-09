@@ -7,6 +7,7 @@ import de.samply.db.model.ProjectManagerAdminUser;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectManagerAdminUserRepository;
+import de.samply.user.roles.ProjectRole;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

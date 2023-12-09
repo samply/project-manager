@@ -19,3 +19,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Test user if security disabled
 - Bridgehead configuration
 - User Service
+- Project Role Constraints Aspect

@@ -10,7 +10,7 @@ import de.samply.project.ProjectParameters;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
-import de.samply.user.ProjectRole;
+import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -52,7 +52,7 @@ public class ProjectEventService implements ProjectEventActions {
         this.sessionUser = sessionUser;
     }
 
-    private Optional<StateMachine<ProjectState, ProjectEvent>> loadProject(String projectName) {
+    public Optional<StateMachine<ProjectState, ProjectEvent>> loadProject(String projectName) {
         Optional<StateMachine<ProjectState, ProjectEvent>> result = Optional.empty();
         Optional<Project> project = this.projectRepository.findByName(projectName);
         if (project.isPresent()) {

@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 
 public @interface StateConstraints {
-    ProjectState[] projectStates = null;
-    ProjectBridgeheadState[] projectBridgeheadStates = null;
+    ProjectState[] projectStates() default {};
+    ProjectBridgeheadState[] projectBridgeheadStates() default {};
 
 }

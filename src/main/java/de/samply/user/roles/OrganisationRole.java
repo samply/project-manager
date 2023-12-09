@@ -1,4 +1,4 @@
-package de.samply.user;
+package de.samply.user.roles;
 
 public enum OrganisationRole {
     RESEARCHER,

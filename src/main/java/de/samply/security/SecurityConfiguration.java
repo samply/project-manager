@@ -1,7 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.user.OrganisationRole;
+import de.samply.user.roles.OrganisationRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
