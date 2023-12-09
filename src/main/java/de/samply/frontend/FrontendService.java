@@ -30,10 +30,10 @@ public class FrontendService {
             Optional<String> path = RolesExtractor.fetchPath(method);
 
             if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
-                Optional<RoleConstraints> roleConstraints = Optional.of(method.getAnnotation(RoleConstraints.class));
+                Optional<RoleConstraints> roleConstraints = Optional.ofNullable(method.getAnnotation(RoleConstraints.class));
                 Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, projectName, bridgehead);
                 if (responseEntity.isEmpty()) {
-                    Optional<StateConstraints> stateConstraints = Optional.of(method.getAnnotation(StateConstraints.class));
+                    Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
                     responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectName, bridgehead);
                 }
                 if (responseEntity.isEmpty()) { // If there are no restrictions
@@ -43,7 +43,7 @@ public class FrontendService {
                         moduleActionsPackage.setModule(frontendSiteModule.module());
                         moduleModuleActionsPackageMap.put(frontendSiteModule.module(), moduleActionsPackage);
                     }
-                    moduleActionsPackage.addAction(new Action(frontendAction.action(), rootPath + path));
+                    moduleActionsPackage.addAction(new Action(frontendAction.action(), rootPath + path.get()));
                 }
             }
         });
