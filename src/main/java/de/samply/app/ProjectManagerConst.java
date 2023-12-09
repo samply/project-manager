@@ -8,6 +8,11 @@ public class ProjectManagerConst {
     public final static String INFO = "/info";
     public final static String ACTIONS = "/actions";
 
+    // REST Parameters
+    public final static String PROJECT_NAME = "project-name";
+    public final static String BRIDGEHEAD = "bridgehead";
+    public final static String SITE = "site";
+
 
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";

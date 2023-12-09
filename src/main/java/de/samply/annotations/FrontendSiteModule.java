@@ -1,6 +1,7 @@
 package de.samply.annotations;
 
-import de.samply.frontend.Action;
+import de.samply.frontend.Module;
+import de.samply.frontend.Site;
 import jakarta.validation.constraints.NotNull;
 
 import java.lang.annotation.ElementType;
@@ -10,8 +11,11 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface FrontendAction {
+public @interface FrontendSiteModule {
     @NotNull
-    Action action();
+    Site site();
+
+    @NotNull
+    Module module();
 
 }

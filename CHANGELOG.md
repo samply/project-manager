@@ -22,3 +22,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Role Constraints Aspect
 - Extract path roles map for Security Configuration
 - Project State Constraints Aspect
+- Frontend service
