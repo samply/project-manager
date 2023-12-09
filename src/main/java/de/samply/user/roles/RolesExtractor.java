@@ -1,6 +1,7 @@
-package de.samply.app;
+package de.samply.user.roles;
 
 import de.samply.annotations.RoleConstraints;
+import de.samply.app.ProjectManagerController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.lang.annotation.Annotation;
@@ -11,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class ProjectManagerControllerRolesExtractor {
+public class RolesExtractor {
 
     public static Map<String, String[]> extractPathRolesMap() {
         Map<String, String[]> result = new HashMap<>();

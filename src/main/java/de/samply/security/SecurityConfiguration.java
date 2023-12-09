@@ -1,7 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.app.ProjectManagerControllerRolesExtractor;
+import de.samply.user.roles.RolesExtractor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +40,7 @@ public class SecurityConfiguration {
     }
 
     private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
-        Map<String, String[]> pathRolesMap = ProjectManagerControllerRolesExtractor.extractPathRolesMap();
+        Map<String, String[]> pathRolesMap = RolesExtractor.extractPathRolesMap();
         pathRolesMap.keySet().forEach(path -> authorization.requestMatchers(path).hasAnyAuthority(pathRolesMap.get(path)));
         return authorization.anyRequest().authenticated();
     }
