@@ -1,7 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.user.roles.OrganisationRole;
+import de.samply.app.ProjectManagerControllerRolesExtractor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -38,8 +40,8 @@ public class SecurityConfiguration {
     }
 
     private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
-        //TODO: Add mapping for rest services based on annotations
-        authorization.requestMatchers("/researcher-service").hasAuthority(OrganisationRole.RESEARCHER.name());
+        Map<String, String[]> pathRolesMap = ProjectManagerControllerRolesExtractor.extractPathRolesMap();
+        pathRolesMap.keySet().forEach(path -> authorization.requestMatchers(path).hasAnyAuthority(pathRolesMap.get(path)));
         return authorization.anyRequest().authenticated();
     }
 

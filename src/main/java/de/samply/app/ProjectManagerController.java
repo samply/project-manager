@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.samply.annotations.RoleConstraints;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
 import de.samply.utils.ProjectVersion;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,25 @@ public class ProjectManagerController {
     public ResponseEntity<String> info() {
         return new ResponseEntity<>(projectVersion, HttpStatus.OK);
     }
+
+    @GetMapping(value = "/test1")
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    public ResponseEntity<String> test1() {
+        return new ResponseEntity<>("Test 1", HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/test2")
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    public ResponseEntity<String> test2() {
+        return new ResponseEntity<>("Test 2", HttpStatus.OK);
+    }
+/*
+    @GetMapping(value = "/test3")
+    public ResponseEntity<String> test3() {
+        return new ResponseEntity<>("Test 3", HttpStatus.OK);
+    }
+*/
+
 
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchActions(

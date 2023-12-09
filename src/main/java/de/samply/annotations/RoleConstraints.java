@@ -12,7 +12,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface RoleConstraints {
 
+    /*
+     Organisation Roles are checked in SecurityConfiguration. At this level, project name is not available yet,
+     because the http request between the client and the application is not the same as the http request between the
+     application and the OIDC Server.
+     */
     OrganisationRole[] organisationRoles() default {};
+
+    // Project Role are checked in ProjectRoleConstrainstAspects
     ProjectRole[] projectRoles() default {};
 
 
