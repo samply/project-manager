@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Set user as developer, pilot or final
 - REST Services: Design and Create project
 - REST Service: Accept, reject, archive, start develop, start pilot, start final, finish
+- Project Query and Query Format
 
 ### Changed
 - Move project creator email to project
