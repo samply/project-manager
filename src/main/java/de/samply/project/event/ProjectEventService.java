@@ -6,12 +6,12 @@ import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
-import de.samply.project.ProjectParameters;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -75,10 +75,19 @@ public class ProjectEventService implements ProjectEventActions {
         return result;
     }
 
-    private Flux<StateMachineEventResult<ProjectState, ProjectEvent>> changeEvent(String projectName, ProjectEvent projectEvent) {
+    private Flux<StateMachineEventResult<ProjectState, ProjectEvent>> changeEvent(String projectName, ProjectEvent projectEvent) throws ProjectEventActionsException {
+        try {
+            return changeEventWithoutExceptionHandling(projectName, projectEvent);
+        } catch (Exception e) {
+            throw new ProjectEventActionsException(e);
+        }
+    }
+
+    private Flux<StateMachineEventResult<ProjectState, ProjectEvent>> changeEventWithoutExceptionHandling(String projectName, ProjectEvent projectEvent) {
         Optional<StateMachine<ProjectState, ProjectEvent>> stateMachineOptional = loadProject(projectName);
         return (stateMachineOptional.isPresent()) ? changeEvent(stateMachineOptional.get(), projectEvent) : Flux.empty();
     }
+
 
     private Flux<StateMachineEventResult<ProjectState, ProjectEvent>> changeEvent(StateMachine<ProjectState, ProjectEvent> stateMachine, ProjectEvent projectEvent) {
         Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
@@ -86,12 +95,21 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public void draft(ProjectParameters projectParameters) {
-        createProjectAsDraft(projectParameters.projectName(), project -> {
-            List<ProjectBridgehead> projectBridgeheads = Arrays.stream(projectParameters.bridgeheads()).map(bridgehead -> createProjectBridgehead(bridgehead, project)).toList();
+    public void draft(String projectName, String[] bridgeheads) throws ProjectEventActionsException {
+        try {
+            draftWithoutExceptionHandling(projectName, bridgeheads);
+        } catch (Exception e) {
+            throw new ProjectEventActionsException(e);
+        }
+    }
+
+    private void draftWithoutExceptionHandling(@NotNull String projectName, @NotNull String[] bridgeheads) {
+        createProjectAsDraft(projectName, project -> {
+            List<ProjectBridgehead> projectBridgeheads = Arrays.stream(bridgeheads).map(bridgehead -> createProjectBridgehead(bridgehead, project)).toList();
             createProjectBridgeheadUser(projectBridgeheads);
         });
     }
+
 
     private void createProjectAsDraft(String projectName, Consumer<Project> projectConsumer) {
         Project project = new Project();
@@ -134,42 +152,42 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public void create(String projectName) {
+    public void create(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.CREATE);
     }
 
     @Override
-    public void accept(String projectName) {
+    public void accept(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.ACCEPT);
     }
 
     @Override
-    public void reject(String projectName) {
+    public void reject(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.REJECT);
     }
 
     @Override
-    public void archive(String projectName) {
+    public void archive(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.ARCHIVE);
     }
 
     @Override
-    public void startDevelopStage(String projectName) {
+    public void startDevelopStage(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.START_DEVELOP);
     }
 
     @Override
-    public void startPilotStage(String projectName) {
+    public void startPilotStage(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.START_PILOT);
     }
 
     @Override
-    public void startFinalStage(String projectName) {
+    public void startFinalStage(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.START_FINAL);
     }
 
     @Override
-    public void finish(String projectName) {
+    public void finish(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.FINISH);
     }
 

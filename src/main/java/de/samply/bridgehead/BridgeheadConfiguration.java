@@ -13,7 +13,7 @@ public class BridgeheadConfiguration {
 
     private List<String> bridgeheads;
 
-    public BridgeheadConfiguration(@Value(ProjectManagerConst.BRIDGEHEADS_SV) List<String> bridgeheads) {
+    public BridgeheadConfiguration(@Value(ProjectManagerConst.REGISTERED_BRIDGEHEADS_SV) List<String> bridgeheads) {
         this.bridgeheads = bridgeheads;
     }
 

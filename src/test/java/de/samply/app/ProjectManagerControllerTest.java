@@ -4,7 +4,7 @@ import de.samply.annotations.FrontendAction;
 import de.samply.annotations.FrontendSiteModule;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
-import de.samply.project.ProjectParameters;
+import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
@@ -26,10 +26,9 @@ class ProjectManagerControllerTest {
 
     @GetMapping(value = "/testCreateProject")
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    public ResponseEntity<String> testCreateProject() {
+    public ResponseEntity<String> testCreateProject() throws ProjectEventActionsException {
         String[] bridgeheads = {"david-j-develop", "frankfurt", "berlin"};
-        ProjectParameters projectParameters = new ProjectParameters("test", bridgeheads);
-        this.projectEventService.draft(projectParameters);
+        this.projectEventService.draft("my-test", bridgeheads);
         return new ResponseEntity<>("Test 6", HttpStatus.OK);
     }
 

@@ -24,3 +24,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project State Constraints Aspect
 - Frontend service
 - Set user as developer, pilot or final
+- REST Services: Design and Create project

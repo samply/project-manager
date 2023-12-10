@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
 import de.samply.frontend.FrontendService;
+import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
 import de.samply.user.UserService;
 import de.samply.user.UserServiceException;
+import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.ProjectVersion;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -108,6 +110,37 @@ public class ProjectManagerController {
             this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.FINAL);
             return ResponseEntity.ok().build();
         } catch (UserServiceException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DESIGN_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
+    public ResponseEntity<String> designProject(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads
+    ) {
+        try {
+            projectEventService.draft(projectName, bridgeheads);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DESIGN_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
+    public ResponseEntity<String> createProject(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.create(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
     }

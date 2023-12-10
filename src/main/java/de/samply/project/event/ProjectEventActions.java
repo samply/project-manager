@@ -1,10 +1,8 @@
 package de.samply.project.event;
 
-import de.samply.project.ProjectParameters;
-
 public interface ProjectEventActions {
 
-    void draft(ProjectParameters projectParameters) throws ProjectEventActionsException;
+    void draft(String projectName, String[] bridgeheads) throws ProjectEventActionsException;
 
     void create(String projectName) throws ProjectEventActionsException;
 
