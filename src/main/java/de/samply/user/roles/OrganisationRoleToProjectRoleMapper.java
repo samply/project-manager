@@ -51,6 +51,9 @@ public class OrganisationRoleToProjectRoleMapper {
                 result.addRoleNotDependentOnBridgehead(projectRole);
             }
         });
+        if (project.getCreatorEmail().equals(sessionUser.getEmail())) {
+            result.addRoleNotDependentOnBridgehead(ProjectRole.CREATOR);
+        }
         sessionUser.getUserOrganisationRoles().getBridgeheads().forEach(bridgehead ->
                 sessionUser.getUserOrganisationRoles().getBridgeheadRoles(bridgehead).get().forEach(organisationRole -> {
                     ProjectRole projectRole = organisationToProjectRoleMap.get(organisationRole);

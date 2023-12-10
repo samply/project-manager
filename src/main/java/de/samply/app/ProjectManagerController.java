@@ -132,8 +132,8 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
-    @FrontendAction(action = ProjectManagerConst.DESIGN_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
+    @FrontendAction(action = ProjectManagerConst.SET_PROJECT_AS_CREATED_ACTION)
+    @PostMapping(value = ProjectManagerConst.SET_PROJECT_AS_CREATED)
     public ResponseEntity<String> createProject(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {

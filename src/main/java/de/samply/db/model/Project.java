@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Table(name = "project", schema = "samply")
@@ -26,6 +25,9 @@ public class Project {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "creator_email", nullable = false)
+    private String creatorEmail;
 
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;

@@ -2,14 +2,11 @@ package de.samply.project.event;
 
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
-import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.messaging.Message;
@@ -36,7 +33,6 @@ public class ProjectEventService implements ProjectEventActions {
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final SessionUser sessionUser;
 
 
@@ -44,12 +40,11 @@ public class ProjectEventService implements ProjectEventActions {
                                StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory,
                                LogUtils logUtils,
                                ProjectBridgeheadRepository projectBridgeheadRepository,
-                               ProjectBridgeheadUserRepository projectBridgeheadUserRepository, SessionUser sessionUser) {
+                               SessionUser sessionUser) {
         this.projectRepository = projectRepository;
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.sessionUser = sessionUser;
     }
 
@@ -104,16 +99,14 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     private void draftWithoutExceptionHandling(@NotNull String projectName, @NotNull String[] bridgeheads) {
-        createProjectAsDraft(projectName, project -> {
-            List<ProjectBridgehead> projectBridgeheads = Arrays.stream(bridgeheads).map(bridgehead -> createProjectBridgehead(bridgehead, project)).toList();
-            createProjectBridgeheadUser(projectBridgeheads);
-        });
+        createProjectAsDraft(projectName, project -> Arrays.stream(bridgeheads).map(bridgehead -> createProjectBridgehead(bridgehead, project)));
     }
 
 
     private void createProjectAsDraft(String projectName, Consumer<Project> projectConsumer) {
         Project project = new Project();
         project.setName(projectName);
+        project.setCreatorEmail(sessionUser.getEmail());
         project.setCreatedAt(LocalDate.now());
         project.setStateMachineKey(UUID.randomUUID().toString());
         StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
@@ -129,26 +122,6 @@ public class ProjectEventService implements ProjectEventActions {
         projectBridgehead.setProject(project);
         projectBridgehead.setState(ProjectBridgeheadState.CREATED); // TODO: Replace with state machine
         return this.projectBridgeheadRepository.save(projectBridgehead);
-    }
-
-    private List<ProjectBridgeheadUser> createProjectBridgeheadUser(List<ProjectBridgehead> projectBridgeheads) {
-        List<ProjectBridgeheadUser> result = new ArrayList<>();
-        List<ProjectBridgehead> userProjectBridgeheads = new ArrayList<>();
-        projectBridgeheads.forEach(projectBridgehead -> {
-            if (sessionUser.getBridgeheads().contains(projectBridgehead.getBridgehead())) {
-                userProjectBridgeheads.add(projectBridgehead);
-            }
-        });
-        userProjectBridgeheads.forEach(projectBridgehead -> result.add(createProjectBridgeheadUser(projectBridgehead)));
-        return result;
-    }
-
-    private ProjectBridgeheadUser createProjectBridgeheadUser(ProjectBridgehead projectBridgehead) {
-        ProjectBridgeheadUser projectBridgeheadUser = new ProjectBridgeheadUser();
-        projectBridgeheadUser.setProjectRole(ProjectRole.CREATOR);
-        projectBridgeheadUser.setEmail(sessionUser.getEmail());
-        projectBridgeheadUser.setProjectBridgehead(projectBridgehead);
-        return projectBridgeheadUserRepository.save(projectBridgeheadUser);
     }
 
     @Override

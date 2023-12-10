@@ -9,6 +9,7 @@ CREATE TABLE samply.project
     state_machine_key TEXT,
     name              TEXT,
     state             TEXT,
+    creator_email     TEXT,
     expiration_date   DATE,
     created_at        TIMESTAMP,
     expires_at        TIMESTAMP,

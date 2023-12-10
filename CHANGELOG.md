@@ -25,3 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Frontend service
 - Set user as developer, pilot or final
 - REST Services: Design and Create project
+
+### Changed
+- Move project creator email to project
