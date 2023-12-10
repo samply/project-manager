@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2023-12-09]
+## [0.0.1 - 2023-12-10]
 ### Added
 - First version of the project
 - Spring Application
@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Frontend service
 - Set user as developer, pilot or final
 - REST Services: Design and Create project
+- REST Service: Accept, reject, archive, start develop, start pilot, start final, finish
 
 ### Changed
 - Move project creator email to project

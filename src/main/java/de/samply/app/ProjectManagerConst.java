@@ -19,15 +19,14 @@ public class ProjectManagerConst {
     public final static String SET_PILOT_USER_ACTION = "Set user as pilot";
     public final static String SET_FINAL_USER_ACTION = "Set user as final execution user";
     public final static String DESIGN_PROJECT_ACTION = "Design project";
-    public final static String SET_PROJECT_AS_CREATED_ACTION = "Create project";
-    public final static String ACCEPT_PROJECT_ACTION = "Accept Project";
+    public final static String CREATE_PROJECT_ACTION = "Create project";
+    public final static String ACCEPT_PROJECT_ACTION = "Accept project";
     public final static String REJECT_PROJECT_ACTION = "Reject project";
     public final static String ARCHIVE_PROJECT_ACTION = "Archive project";
-    public final static String SET_TO_DEVELOP_PROJECT_ACTION = "Set project to develop stage";
-    public final static String SET_TO_PILOT_PROJECT_ACTION = "Set project to pilot stage";
-    public final static String SET_TO_FINAL_PROJECT_ACTION = "Set project to final stage";
+    public final static String START_DEVELOP_STAGE_ACTION = "Start develop stage";
+    public final static String START_PILOT_STAGE_ACTION = "Start pilot stage";
+    public final static String START_FINAL_STAGE_ACTION = "Start final stage";
     public final static String FINISH_PROJECT_ACTION = "Finish project";
-
 
 
     // REST Services
@@ -36,14 +35,14 @@ public class ProjectManagerConst {
     public final static String SET_DEVELOPER_USER = "/developer-user";
     public final static String SET_PILOT_USER = "/pilot-user";
     public final static String SET_FINAL_USER = "/final-user";
-    public final static String DESIGN_PROJECT = "/draft-project";
-    public final static String SET_PROJECT_AS_CREATED = "/create-project";
+    public final static String DESIGN_PROJECT = "/design-project";
+    public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
     public final static String REJECT_PROJECT = "/reject-project";
     public final static String ARCHIVE_PROJECT = "/archive-project";
-    public final static String SET_TO_DEVELOP_PROJECT = "/develop-project";
-    public final static String SET_TO_PILOT_PROJECT = "/pilot-project";
-    public final static String SET_TO_FINAL_PROJECT = "/final-project";
+    public final static String START_DEVELOP_STAGE = "/start-develop-project";
+    public final static String START_PILOT_STAGE = "/start-pilot-project";
+    public final static String START_FINAL_STAGE = "/start-final-project";
     public final static String FINISH_PROJECT = "/finish-project";
 
     // REST Parameters

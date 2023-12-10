@@ -78,7 +78,7 @@ public class ProjectManagerController {
         }
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
@@ -96,8 +96,8 @@ public class ProjectManagerController {
         }
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.DEVELOP})
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
@@ -131,14 +131,125 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
-    @FrontendAction(action = ProjectManagerConst.SET_PROJECT_AS_CREATED_ACTION)
-    @PostMapping(value = ProjectManagerConst.SET_PROJECT_AS_CREATED)
+    @FrontendAction(action = ProjectManagerConst.CREATE_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.CREATE_PROJECT)
     public ResponseEntity<String> createProject(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
         try {
             projectEventService.create(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.ACCEPTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
+    @PostMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
+    public ResponseEntity<String> startDevelopStage(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.startDevelopStage(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.START_PILOT_STAGE_ACTION)
+    @PostMapping(value = ProjectManagerConst.START_PILOT_STAGE)
+    public ResponseEntity<String> startPilotStage(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.startPilotStage(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.PILOT, ProjectState.ACCEPTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.START_FINAL_STAGE_ACTION)
+    @PostMapping(value = ProjectManagerConst.START_FINAL_STAGE)
+    public ResponseEntity<String> startFinalStage(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.startFinalStage(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ARCHIVED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT)
+    public ResponseEntity<String> acceptProject(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.accept(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT)
+    public ResponseEntity<String> rejectProject(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.reject(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ARCHIVE_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.ARCHIVE_PROJECT)
+    public ResponseEntity<String> archiveProject(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.archive(projectName);
+            return ResponseEntity.ok().build();
+        } catch (ProjectEventActionsException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FINISH_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.FINISH_PROJECT)
+    public ResponseEntity<String> finishProject(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        try {
+            projectEventService.finish(projectName);
             return ResponseEntity.ok().build();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);

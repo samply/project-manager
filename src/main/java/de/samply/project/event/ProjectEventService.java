@@ -12,18 +12,19 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
-import org.springframework.statemachine.StateMachineEventResult;
 import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.state.State;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @Service
@@ -48,12 +49,10 @@ public class ProjectEventService implements ProjectEventActions {
         this.sessionUser = sessionUser;
     }
 
-    public Optional<StateMachine<ProjectState, ProjectEvent>> loadProject(String projectName) {
-        Optional<StateMachine<ProjectState, ProjectEvent>> result = Optional.empty();
+    public void loadProject(String projectName, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
         Optional<Project> project = this.projectRepository.findByName(projectName);
         if (project.isPresent()) {
             StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.get().getStateMachineKey());
-            result = Optional.of(stateMachine);
             stateMachine.stopReactively().subscribe(null, logUtils::logError,
                     () -> stateMachine.getStateMachineAccessor().doWithAllRegions(stateMachineAccess -> {
                         stateMachineAccess.addStateMachineInterceptor(new StateMachineInterceptorAdapter<>() {
@@ -64,29 +63,32 @@ public class ProjectEventService implements ProjectEventActions {
                             }
                         });
                         stateMachineAccess.resetStateMachineReactively(new DefaultStateMachineContext<>(project.get().getState(), null, null, null))
-                                .subscribe(null, logUtils::logError, () -> stateMachine.startReactively());
+                                .subscribe(null, logUtils::logError,
+                                        () -> stateMachine.startReactively().subscribe(null, logUtils::logError,
+                                                () -> stateMachineConsumer.accept(stateMachine)));
                     }));
         }
-        return result;
     }
 
-    private Flux<StateMachineEventResult<ProjectState, ProjectEvent>> changeEvent(String projectName, ProjectEvent projectEvent) throws ProjectEventActionsException {
+    private void changeEvent(String projectName, ProjectEvent projectEvent) throws ProjectEventActionsException {
         try {
-            return changeEventWithoutExceptionHandling(projectName, projectEvent);
+            changeEventWithoutExceptionHandling(projectName, projectEvent);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private Flux<StateMachineEventResult<ProjectState, ProjectEvent>> changeEventWithoutExceptionHandling(String projectName, ProjectEvent projectEvent) {
-        Optional<StateMachine<ProjectState, ProjectEvent>> stateMachineOptional = loadProject(projectName);
-        return (stateMachineOptional.isPresent()) ? changeEvent(stateMachineOptional.get(), projectEvent) : Flux.empty();
-    }
-
-
-    private Flux<StateMachineEventResult<ProjectState, ProjectEvent>> changeEvent(StateMachine<ProjectState, ProjectEvent> stateMachine, ProjectEvent projectEvent) {
-        Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
-        return stateMachine.sendEvent(Mono.just(createEventMessage));
+    private void changeEventWithoutExceptionHandling(String projectName, ProjectEvent projectEvent) {
+        loadProject(projectName, stateMachine -> {
+            Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
+            stateMachine.sendEvent(Mono.just(createEventMessage)).subscribe(null, logUtils::logError, () -> {
+                Optional<Project> project = this.projectRepository.findByName(projectName);
+                if (project.isPresent()) {
+                    project.get().setState(stateMachine.getState().getId());
+                    this.projectRepository.save(project.get());
+                }
+            });
+        });
     }
 
     @Override
@@ -99,7 +101,7 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     private void draftWithoutExceptionHandling(@NotNull String projectName, @NotNull String[] bridgeheads) {
-        createProjectAsDraft(projectName, project -> Arrays.stream(bridgeheads).map(bridgehead -> createProjectBridgehead(bridgehead, project)));
+        createProjectAsDraft(projectName, project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)));
     }
 
 
@@ -162,14 +164,6 @@ public class ProjectEventService implements ProjectEventActions {
     @Override
     public void finish(String projectName) throws ProjectEventActionsException {
         changeEvent(projectName, ProjectEvent.FINISH);
-    }
-
-    public Set<ProjectState> fetchNextPossibleProjectStates(String projectName) {
-        Set<ProjectState> result = new HashSet<>();
-        loadProject(projectName).ifPresent(stateMachine -> {
-            stateMachine.getTransitions().forEach(transition -> result.add(transition.getTarget().getId()));
-        });
-        return result;
     }
 
 }
