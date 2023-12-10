@@ -4,14 +4,32 @@ public class ProjectManagerConst {
 
     public final static String APP_NAME = "Project Manager";
 
+    // Sites
+    public final static String PROJECT_DASHBOARD_SITE = "Project Dashboard";
+    public final static String PROJECT_VIEW_SITE = "Project View";
+    public final static String PROJECT_FORM_SITE = "Project Form";
+    public final static String PROJECT_PUBLICATIONS_SITE = "Project Publications";
+
+    //Modules
+    public final static String USER_MODULE = "User Module";
+
+    // Actions
+    public final static String SET_DEVELOPER_USER_ACTION = "Set user as developer";
+    public final static String SET_PILOT_USER_ACTION = "Set user as pilot";
+    public final static String SET_FINAL_USER_ACTION = "Set user as final execution user";
+
     // REST Services
     public final static String INFO = "/info";
     public final static String ACTIONS = "/actions";
+    public final static String SET_DEVELOPER_USER = "/developer-user";
+    public final static String SET_PILOT_USER = "/pilot-user";
+    public final static String SET_FINAL_USER = "/final-user";
 
     // REST Parameters
     public final static String PROJECT_NAME = "project-name";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String SITE = "site";
+    public final static String EMAIL = "email";
 
 
     // Application Properties

@@ -1,13 +1,9 @@
 package de.samply.user;
 
-import de.samply.db.model.BridgeheadAdminUser;
-import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.db.model.ProjectManagerAdminUser;
-import de.samply.db.repository.BridgeheadAdminUserRepository;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
-import de.samply.db.repository.ProjectManagerAdminUserRepository;
+import de.samply.db.model.*;
+import de.samply.db.repository.*;
 import de.samply.user.roles.ProjectRole;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,16 +14,22 @@ public class UserService {
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
     private final ProjectManagerAdminUserRepository projectManagerAdminUserRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectBridgeheadRepository projectBridgeheadRepository;
 
     public UserService(BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
                        ProjectManagerAdminUserRepository projectManagerAdminUserRepository,
-                       ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
+                       ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
+                       ProjectRepository projectRepository,
+                       ProjectBridgeheadRepository projectBridgeheadRepository) {
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.projectRepository = projectRepository;
+        this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
 
-    public BridgeheadAdminUser createBridgeheadAdminUserIfNotExists(String email, String bridgehead) {
+    public BridgeheadAdminUser createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
         Optional<BridgeheadAdminUser> bridgeheadAdminUserOptional = this.bridgeheadAdminUserRepository.findFirstByEmailAndBridgehead(email, bridgehead);
         BridgeheadAdminUser result;
         if (bridgeheadAdminUserOptional.isEmpty()) {
@@ -41,7 +43,7 @@ public class UserService {
         return result;
     }
 
-    public ProjectManagerAdminUser createProjectManagerAdminUserIfNotExists(String email) {
+    public ProjectManagerAdminUser createProjectManagerAdminUserIfNotExists(@NotNull String email) {
         Optional<ProjectManagerAdminUser> projectManagerAdminUserOptional = this.projectManagerAdminUserRepository.findFirstByEmail(email);
         ProjectManagerAdminUser result;
         if (projectManagerAdminUserOptional.isEmpty()) {
@@ -54,7 +56,7 @@ public class UserService {
         return result;
     }
 
-    public ProjectBridgeheadUser createProjectBridgeheadUserIfNotExists(String email, ProjectBridgehead projectBridgehead, ProjectRole projectRole) {
+    public ProjectBridgeheadUser createProjectBridgeheadUserIfNotExists(@NotNull String email, @NotNull ProjectBridgehead projectBridgehead, @NotNull ProjectRole projectRole) {
         Optional<ProjectBridgeheadUser> projectBridgeheadUserOptional = this.projectBridgeheadUserRepository.findFirstByEmailAndProjectBridgeheadAndProjectRole(email, projectBridgehead, projectRole);
         ProjectBridgeheadUser result;
         if (projectBridgeheadUserOptional.isEmpty()) {
@@ -67,6 +69,26 @@ public class UserService {
             result = projectBridgeheadUserOptional.get();
         }
         return result;
+    }
+
+    public ProjectBridgeheadUser setProjectBridgheadUserWithRole(@NotNull String email, @NotNull String projectName, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
+        Optional<Project> project = this.projectRepository.findByName(projectName);
+        if (project.isEmpty()) {
+            throw new UserServiceException("Project " + projectName + " not found");
+        }
+        Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+        if (projectBridgehead.isEmpty()) {
+            throw new UserServiceException("Bridgehead " + bridgehead + " not involved in project " + projectName);
+        }
+        Optional<ProjectBridgeheadUser> projectBridgeheadUserOptional = this.projectBridgeheadUserRepository.findFirstByEmailAndProjectBridgeheadAndProjectRole(email, projectBridgehead.get(), projectRole);
+        if (projectBridgeheadUserOptional.isEmpty()) {
+            ProjectBridgeheadUser projectBridgeheadUser = new ProjectBridgeheadUser();
+            projectBridgeheadUser.setEmail(email);
+            projectBridgeheadUser.setProjectRole(projectRole);
+            projectBridgeheadUser.setProjectBridgehead(projectBridgehead.get());
+            projectBridgeheadUserOptional = Optional.of(this.projectBridgeheadUserRepository.save(projectBridgeheadUser));
+        }
+        return projectBridgeheadUserOptional.get();
     }
 
 }

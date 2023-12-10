@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.samply.annotations.Bridgehead;
-import de.samply.annotations.ProjectName;
+import de.samply.annotations.*;
 import de.samply.frontend.FrontendService;
 import de.samply.project.event.ProjectEventService;
+import de.samply.project.state.ProjectState;
+import de.samply.user.UserService;
+import de.samply.user.UserServiceException;
+import de.samply.user.roles.ProjectRole;
 import de.samply.utils.ProjectVersion;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
@@ -29,10 +33,12 @@ public class ProjectManagerController {
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     private final ProjectEventService projectEventService;
     private final FrontendService frontendService;
+    private final UserService userService;
 
-    public ProjectManagerController(ProjectEventService projectEventService, FrontendService frontendService) {
+    public ProjectManagerController(ProjectEventService projectEventService, FrontendService frontendService, UserService userService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
+        this.userService = userService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -49,6 +55,61 @@ public class ProjectManagerController {
     ) {
         return convertToResponseEntity(
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectName), Optional.ofNullable(bridgehead)));
+    }
+
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
+    @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
+    public ResponseEntity<String> setUserAsDeveloper(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        try {
+            this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.DEVELOPER);
+            return ResponseEntity.ok().build();
+        } catch (UserServiceException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
+    @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
+    public ResponseEntity<String> setUserAsPilot(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        try {
+            this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.PILOT);
+            return ResponseEntity.ok().build();
+        } catch (UserServiceException e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.DEVELOP})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
+    @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
+    public ResponseEntity<String> setUserAsFinal(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        try {
+            this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.FINAL);
+            return ResponseEntity.ok().build();
+        } catch (UserServiceException e) {
+            return createInternalServerError(e);
+        }
     }
 
     private <T, R> ResponseEntity convertToResponseEntity(T input, Function<T, R> function) {
