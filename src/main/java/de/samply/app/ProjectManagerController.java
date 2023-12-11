@@ -9,6 +9,7 @@ import de.samply.frontend.FrontendService;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
+import de.samply.query.QueryFormat;
 import de.samply.user.UserService;
 import de.samply.user.UserServiceException;
 import de.samply.user.roles.OrganisationRole;
@@ -72,7 +73,7 @@ public class ProjectManagerController {
     ) {
         try {
             this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.DEVELOPER);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (UserServiceException e) {
             return createInternalServerError(e);
         }
@@ -90,7 +91,7 @@ public class ProjectManagerController {
     ) {
         try {
             this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.PILOT);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (UserServiceException e) {
             return createInternalServerError(e);
         }
@@ -108,7 +109,7 @@ public class ProjectManagerController {
     ) {
         try {
             this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.FINAL);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (UserServiceException e) {
             return createInternalServerError(e);
         }
@@ -124,7 +125,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.draft(projectName, bridgeheads);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -140,7 +141,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.create(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -156,7 +157,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.startDevelopStage(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -172,7 +173,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.startPilotStage(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -188,7 +189,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.startFinalStage(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -204,7 +205,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.accept(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -219,7 +220,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.reject(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -234,7 +235,7 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.archive(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
@@ -250,11 +251,28 @@ public class ProjectManagerController {
     ) {
         try {
             projectEventService.finish(projectName);
-            return ResponseEntity.ok().build();
+            return createOkResponseEntity();
         } catch (ProjectEventActionsException e) {
             return createInternalServerError(e);
         }
     }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @PostMapping(value = ProjectManagerConst.CREATE_PROJECT_QUERY)
+    public ResponseEntity<String> createProjectQuery(
+            @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat
+    ) {
+        //TODO
+        return createOkResponseEntity();
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @PostMapping(value = ProjectManagerConst.CREATE_PROJECT_CQL_DATA_QUERY)
+    public ResponseEntity<String> createProjectCqlDataQuery(
+    ) {
+        return createProjectQuery(QueryFormat.CQL_DATA);
+    }
+
 
     private <T, R> ResponseEntity convertToResponseEntity(T input, Function<T, R> function) {
         return convertToResponseEntity(() -> function.apply(input));
@@ -276,6 +294,10 @@ public class ProjectManagerController {
 
     private ResponseEntity createInternalServerError(Exception e) {
         return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(e));
+    }
+
+    private ResponseEntity createOkResponseEntity(){
+        return ResponseEntity.ok().build();
     }
 
 

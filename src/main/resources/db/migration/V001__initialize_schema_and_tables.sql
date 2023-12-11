@@ -3,6 +3,18 @@ CREATE SCHEMA IF NOT EXISTS samply;
 SET
 search_path TO samply;
 
+CREATE TABLE samply.query
+(
+    id            SERIAL PRIMARY KEY,
+    query         TEXT NOT NULL,
+    query_format  TEXT NOT NULL,
+    output_format TEXT,
+    template_id   TEXT,
+    label         TEXT,
+    description   TEXT,
+    query_process TEXT
+);
+
 CREATE TABLE samply.project
 (
     id                SERIAL NOT NULL PRIMARY KEY,
@@ -13,7 +25,8 @@ CREATE TABLE samply.project
     expiration_date   DATE,
     created_at        TIMESTAMP,
     expires_at        TIMESTAMP,
-    archived_at       TIMESTAMP
+    archived_at       TIMESTAMP,
+    query_id          BIGINT
 );
 
 CREATE TABLE samply.project_bridgehead
@@ -50,21 +63,14 @@ CREATE TABLE samply.project_document
     id         SERIAL NOT NULL PRIMARY KEY,
     file_path  TEXT,
     url        TEXT,
-    project_id BIGINT NOT NULL
+    project_id BIGINT NOT NULL,
+    created_at TIMESTAMP
 );
 
-CREATE TABLE samply.project_query
-(
-    id            SERIAL PRIMARY KEY,
-    project_id    BIGINT NOT NULL,
-    query         TEXT   NOT NULL,
-    query_format  TEXT   NOT NULL,
-    output_format TEXT   NOT NULL,
-    template_id   TEXT   NOT NULL,
-    label         TEXT,
-    description   TEXT,
-    query_process TEXT   NOT NULL
-);
+ALTER TABLE samply.project
+    ADD CONSTRAINT fk_project_query
+        FOREIGN KEY (query_id)
+            REFERENCES samply.query (id);
 
 ALTER TABLE samply.project_bridgehead
     ADD CONSTRAINT fk_project_id
@@ -81,12 +87,7 @@ ALTER TABLE samply.project_document
         FOREIGN KEY (project_id)
             REFERENCES samply.project (id);
 
-ALTER TABLE samply.project_query
-    ADD CONSTRAINT fk_project_query_project
-        FOREIGN KEY (project_id)
-            REFERENCES samply.project (id);
-
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);
 CREATE INDEX idx_project_document_project_id ON samply.project_document (project_id);
-CREATE INDEX idx_project_query_project_id ON samply.project_query (project_id);
+CREATE INDEX idx_project_query_id ON samply.project (query_id);

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "project_document", schema = "samply")
 @Data
@@ -17,14 +19,18 @@ public class ProjectDocument {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
+
     @Column(name = "file-path")
     private String filePath;
 
     @Column(name = "url")
     private String url;
 
-    @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @Column(name = "created_at", nullable = false)
+    private LocalDate createdAt;
+
 
 }

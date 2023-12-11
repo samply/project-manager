@@ -44,6 +44,8 @@ public class ProjectManagerConst {
     public final static String START_PILOT_STAGE = "/start-pilot-project";
     public final static String START_FINAL_STAGE = "/start-final-project";
     public final static String FINISH_PROJECT = "/finish-project";
+    public final static String CREATE_PROJECT_QUERY = "/create-project-query";
+    public final static String CREATE_PROJECT_CQL_DATA_QUERY = "/create-project-cql-data-query";
 
     // REST Parameters
     public final static String PROJECT_NAME = "project-name";
@@ -51,6 +53,7 @@ public class ProjectManagerConst {
     public final static String BRIDGEHEADS = "bridgeheads";
     public final static String SITE = "site";
     public final static String EMAIL = "email";
+    public final static String QUERY_FORMAT = "query-format";
 
 
     // Application Properties

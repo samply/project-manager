@@ -9,20 +9,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "project_query", schema = "samply")
+@Table(name = "query", schema = "samply")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProjectQuery {
+public class Query {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
 
     @Column(name = "query", nullable = false)
     private String query;
@@ -31,11 +27,11 @@ public class ProjectQuery {
     @Enumerated(EnumType.STRING)
     private QueryFormat queryFormat;
 
-    @Column(name = "output_format", nullable = false)
+    @Column(name = "output_format")
     @Enumerated(EnumType.STRING)
     private OutputFormat outputFormat;
 
-    @Column(name = "template_id", nullable = false)
+    @Column(name = "template_id")
     private String templateId;
 
     @Column(name = "label")
@@ -44,7 +40,7 @@ public class ProjectQuery {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "query_proecess", nullable = false)
+    @Column(name = "query_proecess")
     @Enumerated(EnumType.STRING)
     private QueryProcess queryProcess;
 

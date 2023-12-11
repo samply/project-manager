@@ -42,4 +42,8 @@ public class Project {
     @Enumerated(EnumType.STRING)
     private ProjectState state;
 
+    @ManyToOne
+    @JoinColumn(name = "query_id")
+    private Query query;
+
 }
