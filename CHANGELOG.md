@@ -28,3 +28,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - REST Service: Accept, reject, archive, start develop, start pilot, start final, finish
 - Project Query and Query Format
 - REST Services: Create Query and Create CQL DATA Query
+- Document Service

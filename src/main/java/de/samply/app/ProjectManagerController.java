@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
+import de.samply.document.DocumentService;
 import de.samply.frontend.FrontendService;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryFormat;
+import de.samply.query.QueryService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
@@ -19,7 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -32,11 +36,19 @@ public class ProjectManagerController {
     private final ProjectEventService projectEventService;
     private final FrontendService frontendService;
     private final UserService userService;
+    private final QueryService queryService;
+    private final DocumentService documentService;
 
-    public ProjectManagerController(ProjectEventService projectEventService, FrontendService frontendService, UserService userService) {
+    public ProjectManagerController(ProjectEventService projectEventService,
+                                    FrontendService frontendService,
+                                    UserService userService,
+                                    QueryService queryService,
+                                    DocumentService documentService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
+        this.queryService = queryService;
+        this.documentService = documentService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -198,17 +210,24 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.CREATE_PROJECT_QUERY)
     public ResponseEntity<String> createProjectQuery(
-            @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat
+            @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
+            @RequestBody() String query
     ) {
-        //TODO
-        return ResponseEntity.ok().build();
+        if (query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return convertToResponseEntity(() -> this.queryService.createQuery(query, queryFormat));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.CREATE_PROJECT_CQL_DATA_QUERY)
     public ResponseEntity<String> createProjectCqlDataQuery(
+            @RequestBody() String query
     ) {
-        return createProjectQuery(QueryFormat.CQL_DATA);
+        if (query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return convertToResponseEntity(() -> this.queryService.createQuery(query, QueryFormat.CQL_DATA));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -216,12 +235,22 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT)
     public ResponseEntity<String> uploadProjectDocument(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
-        //TODO
-        return ResponseEntity.ok().build();
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(projectName, document));
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL)
+    public ResponseEntity<String> addProjectDocumentUrl(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl
+    ) {
+        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(projectName, documentUrl));
+    }
 
     private ResponseEntity convertToResponseEntity(RunnableWithException runnable) {
         try {
@@ -241,6 +270,20 @@ public class ProjectManagerController {
         }
     }
 
+    private <T> ResponseEntity convertToResponseEntity(SupplierWithException<T> supplier) {
+        try {
+            T result = supplier.get();
+            if (result == null) {
+                return ResponseEntity.notFound().build();
+            } else if (result instanceof ResponseEntity) {
+                return (ResponseEntity) result;
+            } else {
+                return ResponseEntity.ok(objectMapper.writeValueAsString(result));
+            }
+        } catch (Exception e) {
+            return createInternalServerError(e);
+        }
+    }
 
     private ResponseEntity createInternalServerError(Exception e) {
         return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(e));
@@ -248,6 +291,10 @@ public class ProjectManagerController {
 
     private interface RunnableWithException {
         void run() throws Exception;
+    }
+
+    private interface SupplierWithException<T> {
+        T get() throws Exception;
     }
 
 }

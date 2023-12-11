@@ -19,10 +19,10 @@ CREATE TABLE samply.query
 CREATE TABLE samply.project
 (
     id                SERIAL    NOT NULL PRIMARY KEY,
-    state_machine_key TEXT NOT NULL,
-    name              TEXT NOT NULL,
-    state             TEXT NOT NULL,
-    creator_email     TEXT NOT NULL,
+    state_machine_key TEXT      NOT NULL,
+    name              TEXT      NOT NULL,
+    state             TEXT      NOT NULL,
+    creator_email     TEXT      NOT NULL,
     created_at        TIMESTAMP NOT NULL,
     expires_at        DATE,
     archived_at       TIMESTAMP,
@@ -41,30 +41,31 @@ CREATE TABLE samply.project_bridgehead_user
 (
     id                    SERIAL NOT NULL PRIMARY KEY,
     project_bridgehead_id BIGINT NOT NULL,
-    email                 TEXT NOT NULL,
-    project_role          TEXT NOT NULL
+    email                 TEXT   NOT NULL,
+    project_role          TEXT   NOT NULL
 );
 
 CREATE TABLE samply.bridgehead_admin_user
 (
     id         SERIAL NOT NULL PRIMARY KEY,
-    email      TEXT NOT NULL,
-    bridgehead TEXT NOT NULL
+    email      TEXT   NOT NULL,
+    bridgehead TEXT   NOT NULL
 );
 
 CREATE TABLE samply.project_manager_admin_user
 (
     id    SERIAL NOT NULL PRIMARY KEY,
-    email TEXT NOT NULL
+    email TEXT   NOT NULL
 );
 
 CREATE TABLE samply.project_document
 (
-    id         SERIAL NOT NULL PRIMARY KEY,
-    file_path  TEXT,
-    url        TEXT,
-    project_id BIGINT NOT NULL,
-    created_at TIMESTAMP NOT NULL
+    id                SERIAL    NOT NULL PRIMARY KEY,
+    file_path         TEXT,
+    original_filename TEXT,
+    url               TEXT,
+    project_id        BIGINT    NOT NULL,
+    created_at        TIMESTAMP NOT NULL
 );
 
 ALTER TABLE samply.project

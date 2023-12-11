@@ -4,6 +4,8 @@ import de.samply.db.model.Query;
 import de.samply.db.repository.QueryRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 public class QueryService {
 
@@ -13,10 +15,12 @@ public class QueryService {
         this.queryRepository = queryRepository;
     }
 
-    public void createQuery(String query, QueryFormat queryFormat){
+    public void createQuery(String query, QueryFormat queryFormat) {
         Query tempQuery = new Query();
         tempQuery.setQuery(query);
         tempQuery.setQueryFormat(queryFormat);
+        tempQuery.setCreatedAt(LocalDate.now());
+        this.queryRepository.save(tempQuery);
     }
 
 }

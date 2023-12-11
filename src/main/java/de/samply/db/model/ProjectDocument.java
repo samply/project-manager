@@ -23,8 +23,11 @@ public class ProjectDocument {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(name = "file-path")
+    @Column(name = "file_path")
     private String filePath;
+
+    @Column(name = "original_filename")
+    private String originalFilename;
 
     @Column(name = "url")
     private String url;

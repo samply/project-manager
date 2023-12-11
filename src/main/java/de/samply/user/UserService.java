@@ -71,7 +71,7 @@ public class UserService {
         return result;
     }
 
-    public ProjectBridgeheadUser setProjectBridgheadUserWithRole(@NotNull String email, @NotNull String projectName, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
+    public void setProjectBridgheadUserWithRole(@NotNull String email, @NotNull String projectName, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
         Optional<Project> project = this.projectRepository.findByName(projectName);
         if (project.isEmpty()) {
             throw new UserServiceException("Project " + projectName + " not found");
@@ -86,9 +86,8 @@ public class UserService {
             projectBridgeheadUser.setEmail(email);
             projectBridgeheadUser.setProjectRole(projectRole);
             projectBridgeheadUser.setProjectBridgehead(projectBridgehead.get());
-            projectBridgeheadUserOptional = Optional.of(this.projectBridgeheadUserRepository.save(projectBridgeheadUser));
+            this.projectBridgeheadUserRepository.save(projectBridgeheadUser);
         }
-        return projectBridgeheadUserOptional.get();
     }
 
 }

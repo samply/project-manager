@@ -29,6 +29,7 @@ public class ProjectManagerConst {
     public final static String START_FINAL_STAGE_ACTION = "Start final stage";
     public final static String FINISH_PROJECT_ACTION = "Finish project";
     public final static String UPLOAD_PROJECT_DOCUMENT_ACTION = "Upload project document";
+    public final static String ADD_PROJECT_DOCUMENT_URL_ACTION = "Add project document URL";
 
 
     // REST Services
@@ -49,6 +50,7 @@ public class ProjectManagerConst {
     public final static String CREATE_PROJECT_QUERY = "/create-project-query";
     public final static String CREATE_PROJECT_CQL_DATA_QUERY = "/create-project-cql-data-query";
     public final static String UPLOAD_PROJECT_DOCUMENT = "/upload-project-document";
+    public final static String ADD_PROJECT_DOCUMENT_URL = "/add-project-document-url";
 
     // REST Parameters
     public final static String PROJECT_NAME = "project-name";
@@ -57,6 +59,8 @@ public class ProjectManagerConst {
     public final static String SITE = "site";
     public final static String EMAIL = "email";
     public final static String QUERY_FORMAT = "query-format";
+    public final static String DOCUMENT = "document";
+    public final static String DOCUMENT_URL = "document-url";
 
 
     // Application Properties
@@ -70,6 +74,8 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
     public final static String REGISTERED_BRIDGEHEADS = "REGISTERED_BRIDGEHEADS";
+    public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
+    public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT = "PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -82,10 +88,13 @@ public class ProjectManagerConst {
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
+    public final static String PROJECT_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY + BOTTOM_SV;
+    public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMddHHmmss" + BOTTOM_SV;
 
     // Others
     public final static String BRIDGEHEAD_CLAIM = "bridgehead";
     public final static String TEST_EMAIL = "test@project-manager.com";
     public final static String TEST_BRIDGEHEAD = "bridgehead-test";
+    public final static int RANDOM_FILENAME_SIZE = 20;
 
 }
