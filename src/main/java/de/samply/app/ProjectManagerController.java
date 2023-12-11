@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
+import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
+import de.samply.document.DocumentServiceException;
 import de.samply.frontend.FrontendService;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
@@ -14,7 +16,11 @@ import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.ProjectVersion;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +31,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 @Controller
+@Slf4j
 public class ProjectManagerController {
 
     private final String projectVersion = ProjectVersion.getProjectVersion();
@@ -230,7 +240,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.queryService.createQuery(query, QueryFormat.CQL_DATA));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT)
@@ -241,7 +251,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(projectName, document));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL)
@@ -250,6 +260,37 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl
     ) {
         return convertToResponseEntity(() -> this.documentService.addDocumentUrl(projectName, documentUrl));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT_ACTION)
+    @PostMapping(value = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT)
+    public ResponseEntity<Resource> downloadProjectDocument(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @RequestParam(name = ProjectManagerConst.FILENAME) String filename
+    ) throws DocumentServiceException {
+        Optional<ProjectDocument> projectDocumentOptional = this.documentService.fetchProjectDocument(projectName, filename);
+        if (projectDocumentOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + projectDocumentOptional.get().getOriginalFilename());
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        Path filePath = Path.of(projectDocumentOptional.get().getFilePath());
+        ByteArrayResource resource = fetchResource(filePath);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(filePath.toFile().length())
+                .body(resource);
+    }
+
+    private ByteArrayResource fetchResource(Path filePath) throws DocumentServiceException {
+        try {
+            return new ByteArrayResource(Files.readAllBytes(filePath));
+        } catch (IOException e) {
+            throw new DocumentServiceException(e);
+        }
     }
 
     private ResponseEntity convertToResponseEntity(RunnableWithException runnable) {

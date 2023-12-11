@@ -30,6 +30,7 @@ public class ProjectManagerConst {
     public final static String FINISH_PROJECT_ACTION = "Finish project";
     public final static String UPLOAD_PROJECT_DOCUMENT_ACTION = "Upload project document";
     public final static String ADD_PROJECT_DOCUMENT_URL_ACTION = "Add project document URL";
+    public final static String DOWNLOAD_PROJECT_DOCUMENT_ACTION = "Download project document";
 
 
     // REST Services
@@ -51,6 +52,7 @@ public class ProjectManagerConst {
     public final static String CREATE_PROJECT_CQL_DATA_QUERY = "/create-project-cql-data-query";
     public final static String UPLOAD_PROJECT_DOCUMENT = "/upload-project-document";
     public final static String ADD_PROJECT_DOCUMENT_URL = "/add-project-document-url";
+    public final static String DOWNLOAD_PROJECT_DOCUMENT = "/download-project-document";
 
     // REST Parameters
     public final static String PROJECT_NAME = "project-name";
@@ -61,6 +63,7 @@ public class ProjectManagerConst {
     public final static String QUERY_FORMAT = "query-format";
     public final static String DOCUMENT = "document";
     public final static String DOCUMENT_URL = "document-url";
+    public final static String FILENAME = "filename";
 
 
     // Application Properties
@@ -92,7 +95,6 @@ public class ProjectManagerConst {
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMddHHmmss" + BOTTOM_SV;
 
     // Others
-    public final static String BRIDGEHEAD_CLAIM = "bridgehead";
     public final static String TEST_EMAIL = "test@project-manager.com";
     public final static String TEST_BRIDGEHEAD = "bridgehead-test";
     public final static int RANDOM_FILENAME_SIZE = 20;

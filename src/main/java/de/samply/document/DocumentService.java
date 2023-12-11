@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -41,12 +44,23 @@ public class DocumentService {
         if (project.isEmpty()) {
             throw new DocumentServiceException("Project not found");
         }
+        String originalFilename = document.getOriginalFilename();
+        ProjectDocument projectDocument = null;
+        if (originalFilename != null && !originalFilename.trim().isEmpty()) {
+            Optional<ProjectDocument> projectDocumentOptional = this.projectDocumentRepository.findFirstByProjectAndAndOriginalFilename(project.get(), originalFilename);
+            if (projectDocumentOptional.isPresent()) {
+                projectDocument = projectDocumentOptional.get();
+                deleteFile(projectDocument);
+            }
+        }
+        if (projectDocument == null) {
+            projectDocument = new ProjectDocument();
+            projectDocument.setProject(project.get());
+            projectDocument.setCreatedAt(LocalDate.now());
+            projectDocument.setOriginalFilename(originalFilename);
+        }
         Path documentPath = writeDocumentInDirectory(document);
-        ProjectDocument projectDocument = new ProjectDocument();
-        projectDocument.setProject(project.get());
         projectDocument.setFilePath(documentPath.toAbsolutePath().toString());
-        projectDocument.setCreatedAt(LocalDate.now());
-        projectDocument.setOriginalFilename(document.getOriginalFilename());
         this.projectDocumentRepository.save(projectDocument);
     }
 
@@ -93,4 +107,43 @@ public class DocumentService {
         }
         return directoryPath;
     }
+
+    private void deleteFile(ProjectDocument projectDocument) throws DocumentServiceException {
+        try {
+            deleteFileWithoutExceptionHandling(projectDocument);
+        } catch (IOException e) {
+            throw new DocumentServiceException(e);
+        }
+    }
+
+    private void deleteFileWithoutExceptionHandling(ProjectDocument projectDocument) throws IOException {
+        if (projectDocument.getFilePath() != null && !projectDocument.getFilePath().trim().isEmpty()) {
+            Path documentPath = Path.of(projectDocument.getFilePath());
+            if (Files.exists(documentPath)) {
+                Files.delete(documentPath);
+            }
+        }
+    }
+
+    public Optional<ProjectDocument> fetchProjectDocument(String projectName, String filename) {
+        Optional<Project> project = projectRepository.findByName(projectName);
+        if (project.isEmpty()) {
+            return Optional.empty();
+        }
+        Optional<ProjectDocument> projectDocument = projectDocumentRepository.findFirstByProjectAndAndOriginalFilename(project.get(), filename);
+        if (projectDocument.isEmpty()) {
+            return Optional.empty();
+        }
+        projectDocument.get().setOriginalFilename(encodeFilename(filename));
+        return projectDocument;
+    }
+
+    private String encodeFilename(String filename) {
+        try {
+            return URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            return filename;
+        }
+    }
+
 }
