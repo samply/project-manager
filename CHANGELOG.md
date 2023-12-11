@@ -30,3 +30,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - REST Services: Create Query and Create CQL DATA Query
 - Document Service
 - Upload and Download documents
+- Project Type

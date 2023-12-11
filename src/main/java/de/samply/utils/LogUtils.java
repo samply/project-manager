@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class LogUtils {
 
     public void logError(Throwable throwable){
-        log.info(ExceptionUtils.getStackTrace(throwable));
+        log.error(ExceptionUtils.getStackTrace(throwable));
     }
 
 }

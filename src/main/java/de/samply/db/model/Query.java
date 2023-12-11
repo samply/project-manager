@@ -2,7 +2,6 @@ package de.samply.db.model;
 
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
-import de.samply.query.QueryProcess;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +20,9 @@ public class Query {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(name = "code", nullable = false)
+    private String code;
 
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
@@ -44,9 +46,5 @@ public class Query {
 
     @Column(name = "description")
     private String description;
-
-    @Column(name = "query_proecess")
-    @Enumerated(EnumType.STRING)
-    private QueryProcess queryProcess;
 
 }

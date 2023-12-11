@@ -1,5 +1,6 @@
 package de.samply.db.model;
 
+import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -45,5 +46,9 @@ public class Project {
     @ManyToOne
     @JoinColumn(name = "query_id")
     private Query query;
+
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProjectType type;
 
 }

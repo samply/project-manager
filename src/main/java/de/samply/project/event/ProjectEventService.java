@@ -1,9 +1,13 @@
 package de.samply.project.event;
 
+import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.db.repository.QueryRepository;
+import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
@@ -30,6 +34,7 @@ import java.util.function.Consumer;
 public class ProjectEventService implements ProjectEventActions {
 
     private final ProjectRepository projectRepository;
+    private final QueryRepository queryRepository;
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
@@ -37,11 +42,13 @@ public class ProjectEventService implements ProjectEventActions {
 
 
     public ProjectEventService(ProjectRepository projectRepository,
+                               QueryRepository queryRepository,
                                StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory,
                                LogUtils logUtils,
                                ProjectBridgeheadRepository projectBridgeheadRepository,
                                SessionUser sessionUser) {
         this.projectRepository = projectRepository;
+        this.queryRepository = queryRepository;
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -91,26 +98,43 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public void draft(String projectCode, String[] bridgeheads) throws ProjectEventActionsException {
+    public String draft(String[] bridgeheads, String queryCode, ProjectType projectType) throws ProjectEventActionsException {
         try {
-            draftWithoutExceptionHandling(projectCode, bridgeheads);
+            return draftWithoutExceptionHandling(bridgeheads, queryCode, projectType);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private void draftWithoutExceptionHandling(@NotNull String projectCode, @NotNull String[] bridgeheads) {
-        createProjectAsDraft(projectCode, project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)));
+    private String draftWithoutExceptionHandling(@NotNull String[] bridgeheads, @NotNull String queryCode, ProjectType projectType) throws ProjectEventActionsException {
+        Optional<Query> queryOptional = this.queryRepository.findByCode(queryCode);
+        if (queryOptional.isEmpty()) {
+            throw new ProjectEventActionsException("Query not found");
+        }
+        String projectCode = generateProjectCode();
+        createProjectAsDraft(
+                projectCode,
+                project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)),
+                queryOptional.get(),
+                projectType);
+        return projectCode;
+    }
+
+    private String generateProjectCode() {
+        return UUID.randomUUID().toString().substring(0, ProjectManagerConst.PROJECT_CODE_SIZE);
     }
 
 
-    private void createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer) {
+    private void createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer, Query query, ProjectType projectType) {
         Project project = new Project();
         project.setCode(projectCode);
         project.setCreatorEmail(sessionUser.getEmail());
         project.setCreatedAt(LocalDate.now());
         project.setStateMachineKey(UUID.randomUUID().toString());
-        StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
+        project.setQuery(query);
+        project.setType(projectType);
+        StateMachine<ProjectState, ProjectEvent> stateMachine =
+                this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
         stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
             project.setState(stateMachine.getState().getId());
             projectConsumer.accept(this.projectRepository.save(project));

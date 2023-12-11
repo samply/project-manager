@@ -61,9 +61,11 @@ public class ProjectManagerConst {
     public final static String SITE = "site";
     public final static String EMAIL = "email";
     public final static String QUERY_FORMAT = "query-format";
+    public final static String PROJECT_TYPE = "project-type";
     public final static String DOCUMENT = "document";
     public final static String DOCUMENT_URL = "document-url";
     public final static String FILENAME = "filename";
+    public final static String QUERY_CODE = "query-code";
 
 
     // Application Properties
@@ -98,5 +100,8 @@ public class ProjectManagerConst {
     public final static String TEST_EMAIL = "test@project-manager.com";
     public final static String TEST_BRIDGEHEAD = "bridgehead-test";
     public final static int RANDOM_FILENAME_SIZE = 20;
+    public final static int PROJECT_CODE_SIZE = 20;
+    public final static int QUERY_CODE_SIZE = 20;
+    public final static String NO_BRIDGEHEAD = "NONE";
 
 }

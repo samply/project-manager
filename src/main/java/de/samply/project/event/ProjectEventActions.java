@@ -1,8 +1,10 @@
 package de.samply.project.event;
 
+import de.samply.project.ProjectType;
+
 public interface ProjectEventActions {
 
-    void draft(String projectCode, String[] bridgeheads) throws ProjectEventActionsException;
+    String draft(String[] bridgeheads, String queryCode, ProjectType projectType) throws ProjectEventActionsException;
 
     void create(String projectCode) throws ProjectEventActionsException;
 

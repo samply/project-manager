@@ -5,14 +5,12 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectDocument;
 import de.samply.db.repository.ProjectDocumentRepository;
 import de.samply.db.repository.ProjectRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -22,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class DocumentService {
 
     private final ProjectDocumentRepository projectDocumentRepository;
@@ -39,40 +38,63 @@ public class DocumentService {
         this.timestampFormat = timestampFormat;
     }
 
-    public void uploadDocument(String projectCode, MultipartFile document) throws DocumentServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new DocumentServiceException("Project not found");
-        }
-        String originalFilename = document.getOriginalFilename();
-        ProjectDocument projectDocument = null;
-        if (originalFilename != null && !originalFilename.trim().isEmpty()) {
-            Optional<ProjectDocument> projectDocumentOptional = this.projectDocumentRepository.findFirstByProjectAndAndOriginalFilename(project.get(), originalFilename);
-            if (projectDocumentOptional.isPresent()) {
-                projectDocument = projectDocumentOptional.get();
-                deleteFile(projectDocument);
+    public void uploadDocument(String projectCode, Optional<String> bridgeheadOptional, MultipartFile document) throws DocumentServiceException {
+        String bridgehead = fetchBridgeheadForSearch(bridgeheadOptional);
+        FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer = project -> {
+            String originalFilename = document.getOriginalFilename();
+            if (originalFilename != null && !originalFilename.trim().isEmpty()) {
+                Optional<ProjectDocument> projectDocumentOptional =
+                        this.projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project, bridgehead, originalFilename.trim());
+                if (projectDocumentOptional.isPresent()) {
+                    deleteFile(projectDocumentOptional.get());
+                }
+                return projectDocumentOptional;
             }
-        }
-        if (projectDocument == null) {
-            projectDocument = new ProjectDocument();
-            projectDocument.setProject(project.get());
-            projectDocument.setCreatedAt(LocalDate.now());
-            projectDocument.setOriginalFilename(originalFilename);
-        }
-        Path documentPath = writeDocumentInDirectory(document);
-        projectDocument.setFilePath(documentPath.toAbsolutePath().toString());
-        this.projectDocumentRepository.save(projectDocument);
+            return Optional.empty();
+        };
+        ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> {
+            projectDocument.setOriginalFilename(document.getOriginalFilename().trim());
+            Path documentPath = writeDocumentInDirectory(document);
+            projectDocument.setFilePath(documentPath.toAbsolutePath().toString());
+        };
+        addDocument(projectCode, bridgehead, documentInitializer, documentSetter);
     }
 
-    public void addDocumentUrl(String projectCode, String url) throws DocumentServiceException {
+    public void addDocumentUrl(String projectCode, Optional<String> bridgeheadOptional, String url) throws DocumentServiceException {
+        String bridgehead = fetchBridgeheadForSearch(bridgeheadOptional);
+        FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer = project -> {
+            return this.projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project, bridgehead, url);
+        };
+        ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> {
+            projectDocument.setUrl(url);
+        };
+        addDocument(projectCode, bridgehead, documentInitializer, documentSetter);
+    }
+
+
+    private String fetchBridgeheadForSearch(Optional<String> bridgehead) {
+        return (bridgehead.isPresent()) ? bridgehead.get() : ProjectManagerConst.NO_BRIDGEHEAD;
+    }
+
+    private void addDocument(String projectCode,
+                             String bridgehead,
+                             FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer,
+                             ConsumerWithException<ProjectDocument> documentSetter) throws DocumentServiceException {
         Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new DocumentServiceException("Project not found");
         }
-        ProjectDocument projectDocument = new ProjectDocument();
-        projectDocument.setProject(project.get());
-        projectDocument.setUrl(url);
+        ProjectDocument projectDocument;
+        Optional<ProjectDocument> projectDocumentOptional = documentInitializer.apply(project.get());
+        if (projectDocumentOptional.isPresent()) {
+            projectDocument = projectDocumentOptional.get();
+        } else {
+            projectDocument = new ProjectDocument();
+            projectDocument.setProject(project.get());
+            projectDocument.setBridgehead(bridgehead);
+        }
         projectDocument.setCreatedAt(LocalDate.now());
+        documentSetter.accept(projectDocument);
         this.projectDocumentRepository.save(projectDocument);
     }
 
@@ -125,25 +147,25 @@ public class DocumentService {
         }
     }
 
-    public Optional<ProjectDocument> fetchProjectDocument(String projectCode, String filename) {
+    public Optional<ProjectDocument> fetchProjectDocument(String projectCode, Optional<String> bridgeheadOptional, String filename) {
         Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             return Optional.empty();
         }
-        Optional<ProjectDocument> projectDocument = projectDocumentRepository.findFirstByProjectAndAndOriginalFilename(project.get(), filename);
+        String bridgehead = fetchBridgeheadForSearch(bridgeheadOptional);
+        Optional<ProjectDocument> projectDocument = projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project.get(), bridgehead, filename);
         if (projectDocument.isEmpty()) {
             return Optional.empty();
         }
-        projectDocument.get().setOriginalFilename(encodeFilename(filename));
         return projectDocument;
     }
 
-    private String encodeFilename(String filename) {
-        try {
-            return URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException e) {
-            return filename;
-        }
+    private interface ConsumerWithException<T> {
+        void accept(T t) throws DocumentServiceException;
+    }
+
+    private interface FunctionWithException<T, R> {
+        R apply(T t) throws DocumentServiceException;
     }
 
 }

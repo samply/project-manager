@@ -8,6 +8,7 @@ import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
 import de.samply.frontend.FrontendService;
+import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryFormat;
@@ -32,6 +33,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -125,10 +129,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DESIGN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity<String> designProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads
+            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.QUERY_CODE) String queryCode,
+            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
     ) {
-        return convertToResponseEntity(() -> this.projectEventService.draft(projectCode, bridgeheads));
+        return convertToResponseEntity(() -> this.projectEventService.draft(bridgeheads, queryCode, projectType));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -226,7 +231,7 @@ public class ProjectManagerController {
         if (query.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        return convertToResponseEntity(() -> this.queryService.createQuery(query, queryFormat));
+        return convertToResponseEntity(this.queryService.createQuery(query, queryFormat));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -237,18 +242,19 @@ public class ProjectManagerController {
         if (query.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        return convertToResponseEntity(() -> this.queryService.createQuery(query, QueryFormat.CQL_DATA));
+        return convertToResponseEntity(this.queryService.createQuery(query, QueryFormat.CQL_DATA));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT)
     public ResponseEntity<String> uploadProjectDocument(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
-        return convertToResponseEntity(() -> this.documentService.uploadDocument(projectCode, document));
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(projectCode, Optional.ofNullable(bridgehead), document));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -257,9 +263,10 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL)
     public ResponseEntity<String> addProjectDocumentUrl(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl
     ) {
-        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(projectCode, documentUrl));
+        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(projectCode, Optional.ofNullable(bridgehead), documentUrl));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -268,12 +275,14 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT)
     public ResponseEntity<Resource> downloadProjectDocument(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
-        Optional<ProjectDocument> projectDocumentOptional = this.documentService.fetchProjectDocument(projectCode, filename);
+        Optional<ProjectDocument> projectDocumentOptional = this.documentService.fetchProjectDocument(projectCode, Optional.ofNullable(bridgehead), filename);
         if (projectDocumentOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        projectDocumentOptional.get().setOriginalFilename(encodeFilename(projectDocumentOptional.get().getOriginalFilename()));
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + projectDocumentOptional.get().getOriginalFilename());
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -284,6 +293,15 @@ public class ProjectManagerController {
                 .contentLength(filePath.toFile().length())
                 .body(resource);
     }
+
+    private String encodeFilename(String filename) {
+        try {
+            return URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            return filename;
+        }
+    }
+
 
     private ByteArrayResource fetchResource(Path filePath) throws DocumentServiceException {
         try {

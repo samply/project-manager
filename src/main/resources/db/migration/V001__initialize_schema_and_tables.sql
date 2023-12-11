@@ -6,14 +6,14 @@ search_path TO samply;
 CREATE TABLE samply.query
 (
     id            SERIAL PRIMARY KEY,
+    code          TEXT      NOT NULL,
     query         TEXT      NOT NULL,
     query_format  TEXT      NOT NULL,
     created_at    TIMESTAMP NOT NULL,
     output_format TEXT,
     template_id   TEXT,
     label         TEXT,
-    description   TEXT,
-    query_process TEXT
+    description   TEXT
 );
 
 CREATE TABLE samply.project
@@ -26,7 +26,8 @@ CREATE TABLE samply.project
     created_at        TIMESTAMP NOT NULL,
     expires_at        DATE,
     archived_at       TIMESTAMP,
-    query_id          BIGINT
+    query_id          BIGINT,
+    type              TEXT
 );
 
 CREATE TABLE samply.project_bridgehead
@@ -65,7 +66,9 @@ CREATE TABLE samply.project_document
     original_filename TEXT,
     url               TEXT,
     project_id        BIGINT    NOT NULL,
-    created_at        TIMESTAMP NOT NULL
+    created_at        TIMESTAMP NOT NULL,
+    bridgehead        TEXT,
+    type              TEXT      NOT NULL
 );
 
 ALTER TABLE samply.project

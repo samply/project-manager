@@ -1,5 +1,6 @@
 package de.samply.db.model;
 
+import de.samply.document.DocumentType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,5 +36,11 @@ public class ProjectDocument {
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
 
+    @Column(name = "bridgehead")
+    private String bridgehead;
+
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DocumentType documentType;
 
 }
