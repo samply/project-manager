@@ -55,7 +55,7 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_PROJECT_DOCUMENT = "/download-project-document";
 
     // REST Parameters
-    public final static String PROJECT_NAME = "project-name";
+    public final static String PROJECT_CODE = "project-code";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String BRIDGEHEADS = "bridgeheads";
     public final static String SITE = "site";

@@ -29,9 +29,9 @@ public class ProjectRoleConstraintsAspect {
     @Around("roleConstraintsPointcut()")
     public Object aroundRoleConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<RoleConstraints> roleConstraints = fetchRoleConstrains(joinPoint);
-        Optional<String> projectName = AspectUtils.fetchProjectName(joinPoint);
+        Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
         Optional<String> bridgehead = AspectUtils.fetchBridghead(joinPoint);
-        Optional<ResponseEntity> result = this.constraintsService.checkProjectRoleConstraints(roleConstraints, projectName, bridgehead);
+        Optional<ResponseEntity> result = this.constraintsService.checkProjectRoleConstraints(roleConstraints, projectCode, bridgehead);
         return (result.isEmpty()) ? joinPoint.proceed() : result;
     }
 

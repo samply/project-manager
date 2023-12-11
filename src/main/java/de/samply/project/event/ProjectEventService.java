@@ -18,7 +18,6 @@ import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Service;
-import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -49,8 +48,8 @@ public class ProjectEventService implements ProjectEventActions {
         this.sessionUser = sessionUser;
     }
 
-    public void loadProject(String projectName, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
-        Optional<Project> project = this.projectRepository.findByName(projectName);
+    public void loadProject(String projectCode, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
+        Optional<Project> project = this.projectRepository.findByCode(projectCode);
         if (project.isPresent()) {
             StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.get().getStateMachineKey());
             stateMachine.stopReactively().subscribe(null, logUtils::logError,
@@ -70,19 +69,19 @@ public class ProjectEventService implements ProjectEventActions {
         }
     }
 
-    private void changeEvent(String projectName, ProjectEvent projectEvent) throws ProjectEventActionsException {
+    private void changeEvent(String projectCode, ProjectEvent projectEvent) throws ProjectEventActionsException {
         try {
-            changeEventWithoutExceptionHandling(projectName, projectEvent);
+            changeEventWithoutExceptionHandling(projectCode, projectEvent);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private void changeEventWithoutExceptionHandling(String projectName, ProjectEvent projectEvent) {
-        loadProject(projectName, stateMachine -> {
+    private void changeEventWithoutExceptionHandling(String projectCode, ProjectEvent projectEvent) {
+        loadProject(projectCode, stateMachine -> {
             Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
             stateMachine.sendEvent(Mono.just(createEventMessage)).subscribe(null, logUtils::logError, () -> {
-                Optional<Project> project = this.projectRepository.findByName(projectName);
+                Optional<Project> project = this.projectRepository.findByCode(projectCode);
                 if (project.isPresent()) {
                     project.get().setState(stateMachine.getState().getId());
                     this.projectRepository.save(project.get());
@@ -92,22 +91,22 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public void draft(String projectName, String[] bridgeheads) throws ProjectEventActionsException {
+    public void draft(String projectCode, String[] bridgeheads) throws ProjectEventActionsException {
         try {
-            draftWithoutExceptionHandling(projectName, bridgeheads);
+            draftWithoutExceptionHandling(projectCode, bridgeheads);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private void draftWithoutExceptionHandling(@NotNull String projectName, @NotNull String[] bridgeheads) {
-        createProjectAsDraft(projectName, project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)));
+    private void draftWithoutExceptionHandling(@NotNull String projectCode, @NotNull String[] bridgeheads) {
+        createProjectAsDraft(projectCode, project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)));
     }
 
 
-    private void createProjectAsDraft(String projectName, Consumer<Project> projectConsumer) {
+    private void createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer) {
         Project project = new Project();
-        project.setName(projectName);
+        project.setCode(projectCode);
         project.setCreatorEmail(sessionUser.getEmail());
         project.setCreatedAt(LocalDate.now());
         project.setStateMachineKey(UUID.randomUUID().toString());
@@ -127,43 +126,43 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public void create(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.CREATE);
+    public void create(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.CREATE);
     }
 
     @Override
-    public void accept(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.ACCEPT);
+    public void accept(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.ACCEPT);
     }
 
     @Override
-    public void reject(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.REJECT);
+    public void reject(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.REJECT);
     }
 
     @Override
-    public void archive(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.ARCHIVE);
+    public void archive(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.ARCHIVE);
     }
 
     @Override
-    public void startDevelopStage(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.START_DEVELOP);
+    public void startDevelopStage(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.START_DEVELOP);
     }
 
     @Override
-    public void startPilotStage(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.START_PILOT);
+    public void startPilotStage(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.START_PILOT);
     }
 
     @Override
-    public void startFinalStage(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.START_FINAL);
+    public void startFinalStage(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.START_FINAL);
     }
 
     @Override
-    public void finish(String projectName) throws ProjectEventActionsException {
-        changeEvent(projectName, ProjectEvent.FINISH);
+    public void finish(String projectCode) throws ProjectEventActionsException {
+        changeEvent(projectCode, ProjectEvent.FINISH);
     }
 
 }

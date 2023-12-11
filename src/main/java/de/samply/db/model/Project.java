@@ -23,8 +23,8 @@ public class Project {
     @Column(name = "state_machine_key", nullable = false)
     private String stateMachineKey;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "code", nullable = false)
+    private String code;
 
     @Column(name = "creator_email", nullable = false)
     private String creatorEmail;

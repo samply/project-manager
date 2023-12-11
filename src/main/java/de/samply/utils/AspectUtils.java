@@ -1,7 +1,7 @@
 package de.samply.utils;
 
 import de.samply.annotations.Bridgehead;
-import de.samply.annotations.ProjectName;
+import de.samply.annotations.ProjectCode;
 import de.samply.db.model.Project;
 import de.samply.db.repository.ProjectRepository;
 import org.aspectj.lang.JoinPoint;
@@ -17,8 +17,8 @@ public class AspectUtils {
         return fetchStringParameterAnnotation(joinPoint, Bridgehead.class);
     }
 
-    public static Optional<String> fetchProjectName(JoinPoint joinPoint) {
-        return fetchStringParameterAnnotation(joinPoint, ProjectName.class);
+    public static Optional<String> fetchProjectCode(JoinPoint joinPoint) {
+        return fetchStringParameterAnnotation(joinPoint, ProjectCode.class);
     }
 
     private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class annotationClass) {
@@ -40,8 +40,8 @@ public class AspectUtils {
         return ((MethodSignature) joinPoint.getSignature()).getMethod();
     }
 
-    public static Optional<Project> fetchProject(ProjectRepository projectRepository, Optional<String> projectName) {
-        return (projectName.isPresent()) ? projectRepository.findByName(projectName.get()) : Optional.empty();
+    public static Optional<Project> fetchProject(ProjectRepository projectRepository, Optional<String> projectCode) {
+        return (projectCode.isPresent()) ? projectRepository.findByCode(projectCode.get()) : Optional.empty();
     }
 
 

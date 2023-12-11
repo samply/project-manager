@@ -39,8 +39,8 @@ public class DocumentService {
         this.timestampFormat = timestampFormat;
     }
 
-    public void uploadDocument(String projectName, MultipartFile document) throws DocumentServiceException {
-        Optional<Project> project = projectRepository.findByName(projectName);
+    public void uploadDocument(String projectCode, MultipartFile document) throws DocumentServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new DocumentServiceException("Project not found");
         }
@@ -64,8 +64,8 @@ public class DocumentService {
         this.projectDocumentRepository.save(projectDocument);
     }
 
-    public void addDocumentUrl(String projectName, String url) throws DocumentServiceException {
-        Optional<Project> project = projectRepository.findByName(projectName);
+    public void addDocumentUrl(String projectCode, String url) throws DocumentServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new DocumentServiceException("Project not found");
         }
@@ -125,8 +125,8 @@ public class DocumentService {
         }
     }
 
-    public Optional<ProjectDocument> fetchProjectDocument(String projectName, String filename) {
-        Optional<Project> project = projectRepository.findByName(projectName);
+    public Optional<ProjectDocument> fetchProjectDocument(String projectCode, String filename) {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             return Optional.empty();
         }

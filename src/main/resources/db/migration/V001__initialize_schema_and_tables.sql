@@ -20,7 +20,7 @@ CREATE TABLE samply.project
 (
     id                SERIAL    NOT NULL PRIMARY KEY,
     state_machine_key TEXT      NOT NULL,
-    name              TEXT      NOT NULL,
+    code              TEXT      NOT NULL,
     state             TEXT      NOT NULL,
     creator_email     TEXT      NOT NULL,
     created_at        TIMESTAMP NOT NULL,

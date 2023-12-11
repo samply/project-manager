@@ -69,12 +69,12 @@ public class ProjectManagerController {
 
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchActions(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME, required = false) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(
-                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectName), Optional.ofNullable(bridgehead)));
+                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead)));
     }
 
 
@@ -84,12 +84,12 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
     public ResponseEntity<String> setUserAsDeveloper(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.DEVELOPER));
+                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -98,12 +98,12 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
     public ResponseEntity<String> setUserAsPilot(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.PILOT));
+                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.PILOT));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -112,12 +112,12 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
     public ResponseEntity<String> setUserAsFinal(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.FINAL));
+                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.FINAL));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -125,10 +125,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DESIGN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity<String> designProject(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads
     ) {
-        return convertToResponseEntity(() -> this.projectEventService.draft(projectName, bridgeheads));
+        return convertToResponseEntity(() -> this.projectEventService.draft(projectCode, bridgeheads));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -137,9 +137,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.CREATE_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.CREATE_PROJECT)
     public ResponseEntity<String> createProject(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.create(projectName));
+        return convertToResponseEntity(() -> projectEventService.create(projectCode));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -148,9 +148,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
     public ResponseEntity<String> startDevelopStage(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.startDevelopStage(projectName));
+        return convertToResponseEntity(() -> projectEventService.startDevelopStage(projectCode));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -159,9 +159,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.START_PILOT_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_PILOT_STAGE)
     public ResponseEntity<String> startPilotStage(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.startPilotStage(projectName));
+        return convertToResponseEntity(() -> projectEventService.startPilotStage(projectCode));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -170,9 +170,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.START_FINAL_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_FINAL_STAGE)
     public ResponseEntity<String> startFinalStage(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.startFinalStage(projectName));
+        return convertToResponseEntity(() -> projectEventService.startFinalStage(projectCode));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -181,9 +181,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT)
     public ResponseEntity<String> acceptProject(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.accept(projectName));
+        return convertToResponseEntity(() -> projectEventService.accept(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -191,9 +191,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_PROJECT)
     public ResponseEntity<String> rejectProject(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.reject(projectName));
+        return convertToResponseEntity(() -> projectEventService.reject(projectCode));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -201,9 +201,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ARCHIVE_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.ARCHIVE_PROJECT)
     public ResponseEntity<String> archiveProject(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.archive(projectName));
+        return convertToResponseEntity(() -> projectEventService.archive(projectCode));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -212,9 +212,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FINISH_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.FINISH_PROJECT)
     public ResponseEntity<String> finishProject(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectEventService.finish(projectName));
+        return convertToResponseEntity(() -> projectEventService.finish(projectCode));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -245,10 +245,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT)
     public ResponseEntity<String> uploadProjectDocument(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
-        return convertToResponseEntity(() -> this.documentService.uploadDocument(projectName, document));
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(projectCode, document));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -256,10 +256,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL)
     public ResponseEntity<String> addProjectDocumentUrl(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl
     ) {
-        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(projectName, documentUrl));
+        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(projectCode, documentUrl));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -267,10 +267,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT)
     public ResponseEntity<Resource> downloadProjectDocument(
-            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestParam(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
-        Optional<ProjectDocument> projectDocumentOptional = this.documentService.fetchProjectDocument(projectName, filename);
+        Optional<ProjectDocument> projectDocumentOptional = this.documentService.fetchProjectDocument(projectCode, filename);
         if (projectDocumentOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

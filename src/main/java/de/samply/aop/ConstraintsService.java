@@ -38,9 +38,9 @@ public class ConstraintsService {
         this.sessionUser = sessionUser;
     }
 
-    public Optional<ResponseEntity> checkRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> projectName, Optional<String> bridgehead) {
+    public Optional<ResponseEntity> checkRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
         Optional<ResponseEntity> result = checkOrganisationRoleConstraints(roleConstraints, bridgehead);
-        return (result.isPresent()) ? result : checkProjectRoleConstraints(roleConstraints, projectName, bridgehead);
+        return (result.isPresent()) ? result : checkProjectRoleConstraints(roleConstraints, projectCode, bridgehead);
     }
 
     public Optional<ResponseEntity> checkOrganisationRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> bridgehead) {
@@ -59,12 +59,12 @@ public class ConstraintsService {
         return Optional.empty();
     }
 
-    public Optional<ResponseEntity> checkProjectRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> projectName, Optional<String> bridgehead) {
+    public Optional<ResponseEntity> checkProjectRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
         if (roleConstraints.isPresent() && roleConstraints.get().projectRoles().length > 0) {
-            if (projectName.isEmpty() || projectName.get().length() == 0) {
-                return Optional.of(ResponseEntity.badRequest().body("Project name not provided"));
+            if (projectCode.isEmpty() || projectCode.get().length() == 0) {
+                return Optional.of(ResponseEntity.badRequest().body("Project code not provided"));
             }
-            Optional<Project> project = AspectUtils.fetchProject(projectRepository, projectName);
+            Optional<Project> project = AspectUtils.fetchProject(projectRepository, projectCode);
             if (project.isEmpty()) {
                 return Optional.of(ResponseEntity.notFound().build());
             }
@@ -87,12 +87,12 @@ public class ConstraintsService {
         return (projectRoles.isPresent()) ? projectRoles.get().containsRole(projectRole, bridgehead) : false;
     }
 
-    public Optional<ResponseEntity> checkStateConstraints(Optional<StateConstraints> stateConstraints, Optional<String> projectName, Optional<String> bridgehead) {
+    public Optional<ResponseEntity> checkStateConstraints(Optional<StateConstraints> stateConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
         if (stateConstraints.isPresent()) {
-            if (projectName.isEmpty() || projectName.get().length() == 0) {
-                return Optional.of(ResponseEntity.badRequest().body("Project name not provided"));
+            if (projectCode.isEmpty() || projectCode.get().length() == 0) {
+                return Optional.of(ResponseEntity.badRequest().body("Project code not provided"));
             }
-            Optional<Project> project = AspectUtils.fetchProject(projectRepository, projectName);
+            Optional<Project> project = AspectUtils.fetchProject(projectRepository, projectCode);
             if (project.isEmpty()) {
                 return Optional.of(ResponseEntity.notFound().build());
             }

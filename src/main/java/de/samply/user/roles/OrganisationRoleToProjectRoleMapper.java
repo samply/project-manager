@@ -32,11 +32,11 @@ public class OrganisationRoleToProjectRoleMapper {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
     }
 
-    public Optional<UserProjectRoles> map(String projectName) {
-        if (projectName == null) {
+    public Optional<UserProjectRoles> map(String projectCode) {
+        if (projectCode == null) {
             return Optional.empty();
         }
-        Optional<Project> project = projectRepository.findByName(projectName);
+        Optional<Project> project = projectRepository.findByCode(projectCode);
         return (project.isPresent()) ? map(project.get()) : Optional.empty();
     }
 

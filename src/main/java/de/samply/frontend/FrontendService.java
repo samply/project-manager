@@ -21,7 +21,7 @@ public class FrontendService {
         this.constraintsService = constraintsService;
     }
 
-    public Collection<ModuleActionsPackage> fetchModuleActionPackage(String site, Optional<String> projectName, Optional<String> bridgehead) {
+    public Collection<ModuleActionsPackage> fetchModuleActionPackage(String site, Optional<String> projectCode, Optional<String> bridgehead) {
         Map<String, ModuleActionsPackage> moduleModuleActionsPackageMap = new HashMap<>();
         String rootPath = RolesExtractor.getRootPath();
         Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
@@ -31,10 +31,10 @@ public class FrontendService {
 
             if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
                 Optional<RoleConstraints> roleConstraints = Optional.ofNullable(method.getAnnotation(RoleConstraints.class));
-                Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, projectName, bridgehead);
+                Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, projectCode, bridgehead);
                 if (responseEntity.isEmpty()) {
                     Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
-                    responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectName, bridgehead);
+                    responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridgehead);
                 }
                 if (responseEntity.isEmpty()) { // If there are no restrictions
                     ModuleActionsPackage moduleActionsPackage = moduleModuleActionsPackageMap.get(frontendSiteModule.module());
