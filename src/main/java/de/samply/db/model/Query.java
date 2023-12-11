@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "query", schema = "samply")
 @Data
@@ -19,6 +21,9 @@ public class Query {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDate createdAt;
 
     @Column(name = "query", nullable = false)
     private String query;

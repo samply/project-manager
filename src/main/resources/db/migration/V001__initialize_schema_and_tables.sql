@@ -6,8 +6,9 @@ search_path TO samply;
 CREATE TABLE samply.query
 (
     id            SERIAL PRIMARY KEY,
-    query         TEXT NOT NULL,
-    query_format  TEXT NOT NULL,
+    query         TEXT      NOT NULL,
+    query_format  TEXT      NOT NULL,
+    created_at    TIMESTAMP NOT NULL,
     output_format TEXT,
     template_id   TEXT,
     label         TEXT,
@@ -17,14 +18,13 @@ CREATE TABLE samply.query
 
 CREATE TABLE samply.project
 (
-    id                SERIAL NOT NULL PRIMARY KEY,
-    state_machine_key TEXT,
-    name              TEXT,
-    state             TEXT,
-    creator_email     TEXT,
-    expiration_date   DATE,
-    created_at        TIMESTAMP,
-    expires_at        TIMESTAMP,
+    id                SERIAL    NOT NULL PRIMARY KEY,
+    state_machine_key TEXT NOT NULL,
+    name              TEXT NOT NULL,
+    state             TEXT NOT NULL,
+    creator_email     TEXT NOT NULL,
+    created_at        TIMESTAMP NOT NULL,
+    expires_at        DATE,
     archived_at       TIMESTAMP,
     query_id          BIGINT
 );
@@ -40,22 +40,22 @@ CREATE TABLE samply.project_bridgehead
 CREATE TABLE samply.project_bridgehead_user
 (
     id                    SERIAL NOT NULL PRIMARY KEY,
-    project_bridgehead_id BIGINT,
-    email                 TEXT,
-    project_role          TEXT
+    project_bridgehead_id BIGINT NOT NULL,
+    email                 TEXT NOT NULL,
+    project_role          TEXT NOT NULL
 );
 
 CREATE TABLE samply.bridgehead_admin_user
 (
     id         SERIAL NOT NULL PRIMARY KEY,
-    email      TEXT,
-    bridgehead TEXT
+    email      TEXT NOT NULL,
+    bridgehead TEXT NOT NULL
 );
 
 CREATE TABLE samply.project_manager_admin_user
 (
     id    SERIAL NOT NULL PRIMARY KEY,
-    email TEXT
+    email TEXT NOT NULL
 );
 
 CREATE TABLE samply.project_document
@@ -64,7 +64,7 @@ CREATE TABLE samply.project_document
     file_path  TEXT,
     url        TEXT,
     project_id BIGINT NOT NULL,
-    created_at TIMESTAMP
+    created_at TIMESTAMP NOT NULL
 );
 
 ALTER TABLE samply.project

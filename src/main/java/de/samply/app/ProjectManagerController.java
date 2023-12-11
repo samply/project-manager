@@ -211,6 +211,18 @@ public class ProjectManagerController {
         return createProjectQuery(QueryFormat.CQL_DATA);
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT)
+    public ResponseEntity<String> uploadProjectDocument(
+            @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
+    ) {
+        //TODO
+        return ResponseEntity.ok().build();
+    }
+
+
     private ResponseEntity convertToResponseEntity(RunnableWithException runnable) {
         try {
             runnable.run();

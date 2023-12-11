@@ -13,6 +13,7 @@ public class ProjectManagerConst {
     //Modules
     public final static String USER_MODULE = "User Module";
     public final static String PROJECT_STATE_MODULE = "Project State Module";
+    public final static String PROJECT_DOCUMENTS_MODULE = "Project Documents Module";
 
     // Actions
     public final static String SET_DEVELOPER_USER_ACTION = "Set user as developer";
@@ -27,14 +28,15 @@ public class ProjectManagerConst {
     public final static String START_PILOT_STAGE_ACTION = "Start pilot stage";
     public final static String START_FINAL_STAGE_ACTION = "Start final stage";
     public final static String FINISH_PROJECT_ACTION = "Finish project";
+    public final static String UPLOAD_PROJECT_DOCUMENT_ACTION = "Upload project document";
 
 
     // REST Services
     public final static String INFO = "/info";
     public final static String ACTIONS = "/actions";
-    public final static String SET_DEVELOPER_USER = "/developer-user";
-    public final static String SET_PILOT_USER = "/pilot-user";
-    public final static String SET_FINAL_USER = "/final-user";
+    public final static String SET_DEVELOPER_USER = "/set-developer-user";
+    public final static String SET_PILOT_USER = "/set-pilot-user";
+    public final static String SET_FINAL_USER = "/set-final-user";
     public final static String DESIGN_PROJECT = "/design-project";
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
@@ -46,6 +48,7 @@ public class ProjectManagerConst {
     public final static String FINISH_PROJECT = "/finish-project";
     public final static String CREATE_PROJECT_QUERY = "/create-project-query";
     public final static String CREATE_PROJECT_CQL_DATA_QUERY = "/create-project-cql-data-query";
+    public final static String UPLOAD_PROJECT_DOCUMENT = "/upload-project-document";
 
     // REST Parameters
     public final static String PROJECT_NAME = "project-name";
