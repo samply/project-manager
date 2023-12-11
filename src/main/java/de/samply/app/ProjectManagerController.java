@@ -1,17 +1,14 @@
 package de.samply.app;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
 import de.samply.frontend.FrontendService;
-import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryFormat;
 import de.samply.user.UserService;
-import de.samply.user.UserServiceException;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.ProjectVersion;
@@ -25,8 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Controller
 public class ProjectManagerController {
@@ -71,12 +66,8 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
-        try {
-            this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.DEVELOPER);
-            return createOkResponseEntity();
-        } catch (UserServiceException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() ->
+                this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.DEVELOPER));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -89,12 +80,8 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
-        try {
-            this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.PILOT);
-            return createOkResponseEntity();
-        } catch (UserServiceException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() ->
+                this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.PILOT));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -107,12 +94,8 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
-        try {
-            this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.FINAL);
-            return createOkResponseEntity();
-        } catch (UserServiceException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() ->
+                this.userService.setProjectBridgheadUserWithRole(email, projectName, bridgehead, ProjectRole.FINAL));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -123,12 +106,7 @@ public class ProjectManagerController {
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName,
             @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads
     ) {
-        try {
-            projectEventService.draft(projectName, bridgeheads);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> this.projectEventService.draft(projectName, bridgeheads));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -139,12 +117,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> createProject(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.create(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.create(projectName));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -155,12 +128,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> startDevelopStage(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.startDevelopStage(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.startDevelopStage(projectName));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -171,12 +139,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> startPilotStage(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.startPilotStage(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.startPilotStage(projectName));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -187,12 +150,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> startFinalStage(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.startFinalStage(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.startFinalStage(projectName));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -203,12 +161,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> acceptProject(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.accept(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.accept(projectName));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -218,12 +171,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> rejectProject(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.reject(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.reject(projectName));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -233,12 +181,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> archiveProject(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.archive(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.archive(projectName));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -249,12 +192,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> finishProject(
             @ProjectName @RequestParam(name = ProjectManagerConst.PROJECT_NAME) String projectName
     ) {
-        try {
-            projectEventService.finish(projectName);
-            return createOkResponseEntity();
-        } catch (ProjectEventActionsException e) {
-            return createInternalServerError(e);
-        }
+        return convertToResponseEntity(() -> projectEventService.finish(projectName));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -263,7 +201,7 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat
     ) {
         //TODO
-        return createOkResponseEntity();
+        return ResponseEntity.ok().build();
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -273,20 +211,20 @@ public class ProjectManagerController {
         return createProjectQuery(QueryFormat.CQL_DATA);
     }
 
-
-    private <T, R> ResponseEntity convertToResponseEntity(T input, Function<T, R> function) {
-        return convertToResponseEntity(() -> function.apply(input));
-    }
-
-    private <T> ResponseEntity convertToResponseEntity(Supplier<T> supplier) {
-        return convertToResponseEntity(() -> supplier.get());
+    private ResponseEntity convertToResponseEntity(RunnableWithException runnable) {
+        try {
+            runnable.run();
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return createInternalServerError(e);
+        }
     }
 
     private <T> ResponseEntity convertToResponseEntity(T result) {
         try {
             return (result != null) ? ResponseEntity.ok(objectMapper.writeValueAsString(result))
                     : ResponseEntity.notFound().build();
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             return createInternalServerError(e);
         }
     }
@@ -296,9 +234,8 @@ public class ProjectManagerController {
         return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(e));
     }
 
-    private ResponseEntity createOkResponseEntity(){
-        return ResponseEntity.ok().build();
+    private interface RunnableWithException {
+        void run() throws Exception;
     }
-
 
 }
