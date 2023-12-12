@@ -21,9 +21,11 @@ import java.util.Map;
 public class SecurityConfiguration {
 
 
-    @Value(ProjectManagerConst.APP_SECURITY_ENABLED_PROPERTY_SV)
+    @Value(ProjectManagerConst.SECURITY_ENABLED_SV)
     private boolean isSecurityEnabled;
 
+    @Value(ProjectManagerConst.IS_TEST_ENVIRONMENT_SV)
+    private boolean isTestEnvironment;
 
     @Bean
     public OidcUserService customOidcUserService() {
@@ -35,6 +37,11 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return (isSecurityEnabled) ?
                 http.authorizeHttpRequests(this::addAuthorityMapping)
+                        .csrf(csrf -> {
+                            if (isTestEnvironment) {
+                                csrf.disable();
+                            }
+                        })
                         .oauth2Login(oauth2 -> oauth2
                                 .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(customOidcUserService())))
                         .build() :

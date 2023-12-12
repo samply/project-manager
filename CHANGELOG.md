@@ -32,3 +32,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Upload and Download documents
 - Project Type
 - HTTP Method for every endpoint in Security Configuration
+- IS_TEST_ENVIRONMENT variable disables CSRF

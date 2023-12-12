@@ -5,10 +5,6 @@ logging:
   level:
     root: ${LOG_LEVEL:INFO}
 
-app:
-  security:
-    enabled: ${SECURITY_ENABLED:true}
-
 spring:
 
   flyway:

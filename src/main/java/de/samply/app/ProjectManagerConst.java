@@ -70,7 +70,8 @@ public class ProjectManagerConst {
 
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";
-    public final static String APP_SECURITY_ENABLED_PROPERTY = "app.security.enabled";
+    public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
+    public final static String IS_TEST_ENVIRONMENT = "IS_TEST_ENVIRONMENT";
 
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
@@ -88,13 +89,14 @@ public class ProjectManagerConst {
     public final static String PM_ADMIN_GROUPS_SV = HEAD_SV + PM_ADMIN_GROUPS + BOTTOM_SV;
     public final static String REGISTERED_BRIDGEHEADS_SV = HEAD_SV + REGISTERED_BRIDGEHEADS + BOTTOM_SV;
     public final static String JWT_GROUPS_CLAIM_PROPERTY_SV = HEAD_SV + JWT_GROUPS_CLAIM_PROPERTY + BOTTOM_SV;
-    public final static String APP_SECURITY_ENABLED_PROPERTY_SV = HEAD_SV + APP_SECURITY_ENABLED_PROPERTY + ":true" + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMddHHmmss" + BOTTOM_SV;
+    public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
+    public final static String IS_TEST_ENVIRONMENT_SV = HEAD_SV + IS_TEST_ENVIRONMENT + ":false" + BOTTOM_SV;
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

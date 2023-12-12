@@ -18,7 +18,7 @@ public class SessionUser {
     private String email;
     private UserOrganisationRoles userOrganisationRoles = new UserOrganisationRoles();
 
-    public SessionUser(@Value(ProjectManagerConst.APP_SECURITY_ENABLED_PROPERTY_SV) boolean isSecurityEnabled) {
+    public SessionUser(@Value(ProjectManagerConst.SECURITY_ENABLED_SV) boolean isSecurityEnabled) {
         if (!isSecurityEnabled) {
             setEmail(ProjectManagerConst.TEST_EMAIL);
             userOrganisationRoles.addRoleNotDependentOnBridgehead(OrganisationRole.PROJECT_MANAGER_ADMIN);
