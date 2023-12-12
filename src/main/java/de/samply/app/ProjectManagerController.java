@@ -70,7 +70,6 @@ public class ProjectManagerController {
         return new ResponseEntity<>(projectVersion, HttpStatus.OK);
     }
 
-
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchActions(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
@@ -223,25 +222,19 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_PROJECT_QUERY)
+    @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
     public ResponseEntity<String> createProjectQuery(
             @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @RequestBody() String query
+            @NotEmpty @RequestBody() String query
     ) {
-        if (query.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
         return convertToResponseEntity(this.queryService.createQuery(query, queryFormat));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_PROJECT_CQL_DATA_QUERY)
+    @PostMapping(value = ProjectManagerConst.CREATE_CQL_DATA_QUERY)
     public ResponseEntity<String> createProjectCqlDataQuery(
-            @RequestBody() String query
+            @NotEmpty @RequestBody() String query
     ) {
-        if (query.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
         return convertToResponseEntity(this.queryService.createQuery(query, QueryFormat.CQL_DATA));
     }
 

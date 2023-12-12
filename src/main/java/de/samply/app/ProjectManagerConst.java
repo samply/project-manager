@@ -48,8 +48,8 @@ public class ProjectManagerConst {
     public final static String START_PILOT_STAGE = "/start-pilot-project";
     public final static String START_FINAL_STAGE = "/start-final-project";
     public final static String FINISH_PROJECT = "/finish-project";
-    public final static String CREATE_PROJECT_QUERY = "/create-project-query";
-    public final static String CREATE_PROJECT_CQL_DATA_QUERY = "/create-project-cql-data-query";
+    public final static String CREATE_QUERY = "/create-query";
+    public final static String CREATE_CQL_DATA_QUERY = "/create-cql-data-query";
     public final static String UPLOAD_PROJECT_DOCUMENT = "/upload-project-document";
     public final static String ADD_PROJECT_DOCUMENT_URL = "/add-project-document-url";
     public final static String DOWNLOAD_PROJECT_DOCUMENT = "/download-project-document";

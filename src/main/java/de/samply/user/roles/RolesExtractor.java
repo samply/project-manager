@@ -14,17 +14,35 @@ import java.util.Optional;
 
 public class RolesExtractor {
 
-    public static Map<String, String[]> extractPathRolesMap() {
-        Map<String, String[]> result = new HashMap<>();
+    public static Map<String, MethodRoles> extractPathRolesMap() {
+        Map<String, MethodRoles> result = new HashMap<>();
         String rootPath = getRootPath();
         Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
             RoleConstraints roleConstraints = method.getAnnotation(RoleConstraints.class);
             if (roleConstraints != null && roleConstraints.organisationRoles().length > 0) {
-                fetchPath(method).ifPresent(path -> result.put(rootPath + path,
-                        Arrays.stream(roleConstraints.organisationRoles()).map(role -> role.name()).toArray(String[]::new)));
+                fetchPath(method).ifPresent(path -> fetchHttpMethod(method).ifPresent(httpMethod -> result.put(rootPath + path,
+                        new MethodRoles(httpMethod, Arrays.stream(roleConstraints.organisationRoles()).map(role -> role.name()).toArray(String[]::new)))));
             }
         });
         return result;
+    }
+
+    private static Optional<String> fetchHttpMethod(Method method) {
+        RequestMapping annotation = method.getAnnotation(RequestMapping.class);
+        if (annotation == null) {
+            for (Annotation methodAnnotation : method.getDeclaredAnnotations()) {
+                for (Annotation methodAnnotationAnnotation : methodAnnotation.annotationType().getDeclaredAnnotations()) {
+                    if (methodAnnotationAnnotation.annotationType() == RequestMapping.class) {
+                        return fetchHttpMetod((RequestMapping) methodAnnotationAnnotation);
+                    }
+                }
+            }
+        }
+        return fetchHttpMetod(annotation);
+    }
+
+    private static Optional<String> fetchHttpMetod(RequestMapping requestMapping) {
+        return Optional.of(requestMapping.method()[0].name());
     }
 
     public static Optional<String> fetchPath(Method method) {
