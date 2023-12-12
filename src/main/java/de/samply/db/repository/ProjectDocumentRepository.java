@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface ProjectDocumentRepository extends JpaRepository<ProjectDocument, Long> {
 
     Optional<ProjectDocument> findFirstByProjectAndBridgeheadAndOriginalFilename(Project project, String bridgehead, String filename);
-    Optional<ProjectDocument> findFirstByProjectAndBridgeheadAndUrl(Project project, String bridgehead, String url);
+    Optional<ProjectDocument> findFirstByProjectAndOriginalFilename(Project project, String filename);
 
 }

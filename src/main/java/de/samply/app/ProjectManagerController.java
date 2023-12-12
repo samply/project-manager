@@ -7,6 +7,7 @@ import de.samply.annotations.*;
 import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
+import de.samply.document.DocumentType;
 import de.samply.frontend.FrontendService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventService;
@@ -245,9 +246,12 @@ public class ProjectManagerController {
     public ResponseEntity<String> uploadProjectDocument(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT_TYPE) DocumentType documentType,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
-        return convertToResponseEntity(() -> this.documentService.uploadDocument(projectCode, Optional.ofNullable(bridgehead), document));
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                projectCode, Optional.ofNullable(bridgehead), document, documentType, Optional.ofNullable(label)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -257,15 +261,18 @@ public class ProjectManagerController {
     public ResponseEntity<String> addProjectDocumentUrl(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl
+            @RequestParam(name = ProjectManagerConst.DOCUMENT_TYPE) DocumentType documentType,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label
     ) {
-        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(projectCode, Optional.ofNullable(bridgehead), documentUrl));
+        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
+                projectCode, Optional.ofNullable(bridgehead), documentUrl, documentType, Optional.ofNullable(label)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT_ACTION)
-    @PostMapping(value = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT)
     public ResponseEntity<Resource> downloadProjectDocument(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,

@@ -68,7 +68,10 @@ CREATE TABLE samply.project_document
     project_id        BIGINT    NOT NULL,
     created_at        TIMESTAMP NOT NULL,
     bridgehead        TEXT,
-    type              TEXT      NOT NULL
+    type              TEXT      NOT NULL,
+    creator_email     TEXT      NOT NULL,
+    label             TEXT
+
 );
 
 ALTER TABLE samply.project

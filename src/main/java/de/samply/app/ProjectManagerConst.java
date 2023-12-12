@@ -63,9 +63,11 @@ public class ProjectManagerConst {
     public final static String QUERY_FORMAT = "query-format";
     public final static String PROJECT_TYPE = "project-type";
     public final static String DOCUMENT = "document";
+    public final static String DOCUMENT_TYPE = "document-type";
     public final static String DOCUMENT_URL = "document-url";
     public final static String FILENAME = "filename";
     public final static String QUERY_CODE = "query-code";
+    public final static String LABEL = "label";
 
 
     // Application Properties
@@ -94,7 +96,7 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY + BOTTOM_SV;
-    public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMddHHmmss" + BOTTOM_SV;
+    public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMdd-HHmmss" + BOTTOM_SV;
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
     public final static String IS_TEST_ENVIRONMENT_SV = HEAD_SV + IS_TEST_ENVIRONMENT + ":false" + BOTTOM_SV;
 

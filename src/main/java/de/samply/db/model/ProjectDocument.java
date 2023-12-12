@@ -43,4 +43,11 @@ public class ProjectDocument {
     @Enumerated(EnumType.STRING)
     private DocumentType documentType;
 
+    @Column(name = "creator_email", nullable = false)
+    private String creatorEmail;
+
+    @Column(name = "label")
+    private String label;
+
+
 }
