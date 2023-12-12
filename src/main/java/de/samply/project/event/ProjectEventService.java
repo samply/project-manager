@@ -11,6 +11,8 @@ import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
+import de.samply.user.UserService;
+import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.messaging.Message;
@@ -38,6 +40,7 @@ public class ProjectEventService implements ProjectEventActions {
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
+    private final UserService userService;
     private final SessionUser sessionUser;
 
 
@@ -46,12 +49,14 @@ public class ProjectEventService implements ProjectEventActions {
                                StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory,
                                LogUtils logUtils,
                                ProjectBridgeheadRepository projectBridgeheadRepository,
-                               SessionUser sessionUser) {
+                               SessionUser sessionUser,
+                               UserService userService) {
         this.projectRepository = projectRepository;
         this.queryRepository = queryRepository;
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.userService = userService;
         this.sessionUser = sessionUser;
     }
 
@@ -149,9 +154,23 @@ public class ProjectEventService implements ProjectEventActions {
         return this.projectBridgeheadRepository.save(projectBridgehead);
     }
 
+    private void createProjectBridgeheadUser(String projectCode) throws ProjectEventActionsException {
+        Optional<Project> project = this.projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectEventActionsException("Project not found");
+        }
+        sessionUser.getBridgeheads().stream().forEach(bridgehead -> {
+            Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+            if (projectBridgehead.isPresent()) {
+                this.userService.createProjectBridgeheadUserIfNotExists(sessionUser.getEmail(), projectBridgehead.get(), ProjectRole.CREATOR);
+            }
+        });
+    }
+
     @Override
     public void create(String projectCode) throws ProjectEventActionsException {
         changeEvent(projectCode, ProjectEvent.CREATE);
+        createProjectBridgeheadUser(projectCode);
     }
 
     @Override

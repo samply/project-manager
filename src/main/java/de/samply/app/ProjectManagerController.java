@@ -135,7 +135,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.projectEventService.draft(bridgeheads, queryCode, projectType));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @StateConstraints(projectStates = {ProjectState.DRAFT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.CREATE_PROJECT_ACTION)

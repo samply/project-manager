@@ -33,3 +33,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Type
 - HTTP Method for every endpoint in Security Configuration
 - IS_TEST_ENVIRONMENT variable disables CSRF
+- Create CREATOR user after creating project
