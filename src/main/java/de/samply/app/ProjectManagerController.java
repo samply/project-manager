@@ -16,6 +16,7 @@ import de.samply.project.state.ProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
+import de.samply.token.TokenManagerService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
@@ -56,19 +57,22 @@ public class ProjectManagerController {
     private final QueryService queryService;
     private final DocumentService documentService;
     private final ExporterService exporterService;
+    private final TokenManagerService tokenManagerService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
                                     UserService userService,
                                     QueryService queryService,
                                     DocumentService documentService,
-                                    ExporterService exporterService) {
+                                    ExporterService exporterService,
+                                    TokenManagerService tokenManagerService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
         this.queryService = queryService;
         this.documentService = documentService;
         this.exporterService = exporterService;
+        this.tokenManagerService = tokenManagerService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -340,14 +344,26 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
-    @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
-    @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
+    @FrontendAction(action = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION)
+    @PostMapping(value = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity<String> saveAndExecuteQueryInBridgehead(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.QUERY_CODE) String queryCode
     ) {
         return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgeheadAndExecute(projectCode, bridgehead, queryCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT_ACTION)
+    @PostMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
+    public ResponseEntity<String> fetchTokenScript(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
     }
 
 

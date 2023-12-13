@@ -36,3 +36,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Create CREATOR user after creating project
 - Send and execute query REST Services
 - Label, description, template-id and output-format in Query
+- Token Manager Service

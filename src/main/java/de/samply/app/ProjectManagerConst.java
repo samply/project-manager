@@ -15,6 +15,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_STATE_MODULE = "Project State Module";
     public final static String PROJECT_DOCUMENTS_MODULE = "Project Documents Module";
     public final static String EXPORT_MODULE = "Export Module";
+    public final static String TOKEN_MANAGER_MODULE = "Token Manager Module";
 
     // Actions
     public final static String SET_DEVELOPER_USER_ACTION = "Set user as developer";
@@ -34,6 +35,7 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_PROJECT_DOCUMENT_ACTION = "Download project document";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "Save query in bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "Save and execute query in bridgehead";
+    public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "Fetch authentication script";
 
     // REST Services
     public final static String INFO = "/info";
@@ -57,6 +59,7 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_PROJECT_DOCUMENT = "/download-project-document";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
+    public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
