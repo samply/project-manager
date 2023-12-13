@@ -37,3 +37,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send and execute query REST Services
 - Label, description, template-id and output-format in Query
 - Token Manager Service
+- Dockerfile
