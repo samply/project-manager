@@ -8,6 +8,7 @@ import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
 import de.samply.document.DocumentType;
+import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventService;
@@ -53,17 +54,20 @@ public class ProjectManagerController {
     private final UserService userService;
     private final QueryService queryService;
     private final DocumentService documentService;
+    private final ExporterService exporterService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
                                     UserService userService,
                                     QueryService queryService,
-                                    DocumentService documentService) {
+                                    DocumentService documentService,
+                                    ExporterService exporterService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
         this.queryService = queryService;
         this.documentService = documentService;
+        this.exporterService = exporterService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -302,7 +306,6 @@ public class ProjectManagerController {
         }
     }
 
-
     private ByteArrayResource fetchResource(Path filePath) throws DocumentServiceException {
         try {
             return new ByteArrayResource(Files.readAllBytes(filePath));
@@ -310,6 +313,33 @@ public class ProjectManagerController {
             throw new DocumentServiceException(e);
         }
     }
+
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
+    @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
+    public ResponseEntity<String> saveQueryInBridgehead(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.QUERY_CODE) String queryCode
+    ) {
+        return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgehead(projectCode, bridgehead, queryCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
+    @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
+    public ResponseEntity<String> saveAndExecuteQueryInBridgehead(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.QUERY_CODE) String queryCode
+    ) {
+        return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgeheadAndExecute(projectCode, bridgehead, queryCode));
+    }
+
 
     private ResponseEntity convertToResponseEntity(RunnableWithException runnable) {
         try {
