@@ -38,3 +38,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Label, description, template-id and output-format in Query
 - Token Manager Service
 - Dockerfile
+- Github CI
