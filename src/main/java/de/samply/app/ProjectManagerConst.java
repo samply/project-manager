@@ -72,6 +72,10 @@ public class ProjectManagerConst {
     public final static String FILENAME = "filename";
     public final static String QUERY_CODE = "query-code";
     public final static String LABEL = "label";
+    public final static String DESCRIPTION = "description";
+    public final static String OUTPUT_FORMAT = "output-format";
+    public final static String TEMPLATE_ID = "template-id";
+
 
 
     // Application Properties

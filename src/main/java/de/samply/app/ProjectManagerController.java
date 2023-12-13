@@ -13,6 +13,7 @@ import de.samply.frontend.FrontendService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
+import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
 import de.samply.user.UserService;
@@ -229,18 +230,27 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
     public ResponseEntity<String> createProjectQuery(
-            @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @NotEmpty @RequestBody() String query
+            @NotEmpty @RequestBody() String query,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.LABEL) String label,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.DESCRIPTION) String description,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT) OutputFormat outputFormat,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.TEMPLATE_ID) String templateId
     ) {
-        return convertToResponseEntity(this.queryService.createQuery(query, queryFormat));
+        return convertToResponseEntity(this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.CREATE_CQL_DATA_QUERY)
     public ResponseEntity<String> createProjectCqlDataQuery(
-            @NotEmpty @RequestBody() String query
+            @NotEmpty @RequestBody() String query,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.LABEL) String label,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.DESCRIPTION) String description,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT) OutputFormat outputFormat,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.TEMPLATE_ID) String templateId
+
     ) {
-        return convertToResponseEntity(this.queryService.createQuery(query, QueryFormat.CQL_DATA));
+        return convertToResponseEntity(this.queryService.createQuery(query, QueryFormat.CQL_DATA, label, description, outputFormat, templateId));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})

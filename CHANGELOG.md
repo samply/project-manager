@@ -35,3 +35,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - IS_TEST_ENVIRONMENT variable disables CSRF
 - Create CREATOR user after creating project
 - Send and execute query REST Services
+- Label, description, template-id and output-format in Query
