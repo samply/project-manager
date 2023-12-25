@@ -32,7 +32,7 @@ public class QueryService {
     }
 
     private String generateQueryCode(){
-        return UUID.randomUUID().toString().substring(0, ProjectManagerConst.QUERY_CODE_SIZE);
+        return UUID.randomUUID().toString().replace("-", "").substring(0, ProjectManagerConst.QUERY_CODE_SIZE);
     }
 
 }

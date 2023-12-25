@@ -15,6 +15,7 @@ import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -42,6 +43,7 @@ public class ProjectEventService implements ProjectEventActions {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final UserService userService;
     private final SessionUser sessionUser;
+    private final int projectExpirationTimeInDays;
 
 
     public ProjectEventService(ProjectRepository projectRepository,
@@ -50,7 +52,8 @@ public class ProjectEventService implements ProjectEventActions {
                                LogUtils logUtils,
                                ProjectBridgeheadRepository projectBridgeheadRepository,
                                SessionUser sessionUser,
-                               UserService userService) {
+                               UserService userService,
+                               @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays) {
         this.projectRepository = projectRepository;
         this.queryRepository = queryRepository;
         this.projectStateMachineFactory = projectStateMachineFactory;
@@ -58,6 +61,7 @@ public class ProjectEventService implements ProjectEventActions {
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.userService = userService;
         this.sessionUser = sessionUser;
+        this.projectExpirationTimeInDays = projectExpirationTimeInDays;
     }
 
     public void loadProject(String projectCode, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
@@ -126,7 +130,7 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     private String generateProjectCode() {
-        return UUID.randomUUID().toString().substring(0, ProjectManagerConst.PROJECT_CODE_SIZE);
+        return UUID.randomUUID().toString().replace("-", "").substring(0, ProjectManagerConst.PROJECT_CODE_SIZE);
     }
 
 
@@ -135,7 +139,8 @@ public class ProjectEventService implements ProjectEventActions {
         project.setCode(projectCode);
         project.setCreatorEmail(sessionUser.getEmail());
         project.setCreatedAt(LocalDate.now());
-        project.setStateMachineKey(UUID.randomUUID().toString());
+        project.setExpiresAt(createExpirationDate());
+        project.setStateMachineKey(UUID.randomUUID().toString().replace("-", ""));
         project.setQuery(query);
         project.setType(projectType);
         StateMachine<ProjectState, ProjectEvent> stateMachine =
@@ -144,6 +149,10 @@ public class ProjectEventService implements ProjectEventActions {
             project.setState(stateMachine.getState().getId());
             projectConsumer.accept(this.projectRepository.save(project));
         });
+    }
+
+    private LocalDate createExpirationDate() {
+        return LocalDate.now().plusDays(projectExpirationTimeInDays);
     }
 
     private ProjectBridgehead createProjectBridgehead(String bridgehead, Project project) {

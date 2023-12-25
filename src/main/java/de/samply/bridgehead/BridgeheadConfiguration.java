@@ -1,24 +1,49 @@
 package de.samply.bridgehead;
 
 import de.samply.app.ProjectManagerConst;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Configuration
-@Getter
+@ConfigurationProperties(prefix = ProjectManagerConst.REGISTERED_BRIDGEHEADS)
+@Data
 public class BridgeheadConfiguration {
 
-    private List<String> bridgeheads;
+    private Map<String, BridgeheadConfig> config = new HashMap<>();
 
-    public BridgeheadConfiguration(@Value(ProjectManagerConst.REGISTERED_BRIDGEHEADS_SV) List<String> bridgeheads) {
-        this.bridgeheads = bridgeheads;
+    @Data
+    public static class BridgeheadConfig {
+        private String explorerCode;
+        private String exporterUrl;
+        private String exporterApiKey;
     }
 
     public boolean isRegisteredBridgehead(String bridgehead) {
-        return bridgeheads.contains(bridgehead);
+        return config.keySet().contains(bridgehead);
     }
+
+    public String getExporterUrl(String bridgehead) {
+        return config.get(bridgehead).exporterUrl;
+    }
+
+    public String getExporterApiKey(String bridgehead) {
+        return config.get(bridgehead).exporterApiKey;
+    }
+
+    public Optional<String> getBridgehead(String explorerCode) {
+        for (String bridgehead : config.keySet()) {
+            BridgeheadConfig bridgeheadConfig = config.get(bridgehead);
+            if (bridgeheadConfig.explorerCode.equals(explorerCode)) {
+                return Optional.of(bridgehead);
+            }
+        }
+        return Optional.empty();
+    }
+
 
 }

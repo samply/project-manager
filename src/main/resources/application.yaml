@@ -59,3 +59,14 @@ spring:
       max-request-size: ${MAX_REQEST_SIZE:10MB}
 
 jwt.groups.claim: ${OIDC_CLAIM_GROUPS}
+
+#bridgeheads:
+#  config:
+#    frankfurt:
+#      explorer-code: frankfurt123
+#      exporter-url: http://frankfurt-bridgehead.com/ccp-exporter
+#      exporter-api-key: asdfkjalsdkjasfldkj
+#    berlin:
+#      explorer-code: berlin456
+#      exporter-url: http://berlin-bridgehead.com/ccp-exporter
+#      exporter-api-key: erewrtwwenbmtvwnbvetnbvter

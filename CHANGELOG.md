@@ -39,3 +39,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Token Manager Service
 - Dockerfile
 - Github CI
+- Exporter Service implementation
+- Bridgehead configuration with explorer and exporter mapping

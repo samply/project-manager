@@ -80,11 +80,33 @@ public class ProjectManagerConst {
     public final static String TEMPLATE_ID = "template-id";
 
 
-
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
     public final static String IS_TEST_ENVIRONMENT = "IS_TEST_ENVIRONMENT";
+
+    // Exporter Variables
+    public final static String EXPORTER_REQUEST = "/request";
+    public final static String EXPORTER_CREATE_QUERY = "/create-query";
+    public final static String EXPORTER_LOGS = "/logs";
+    public static final String EXPORTER_LOGS_SIZE = "logs-size";
+    public static final String EXPORTER_LOGS_LAST_LINE = "logs-last-line";
+    public final static String EXPORTER_PARAM_QUERY = "query";
+    public final static String EXPORTER_PARAM_QUERY_FORMAT = "query-format";
+    public final static String EXPORTER_PARAM_TEMPLATE_ID = "template-id";
+    public final static String EXPORTER_PARAM_OUTPUT_FORMAT = "output-format";
+    public static final String EXPORTER_PARAM_QUERY_EXPIRATION_DATE = "query-expiration-date";
+    public final static String EXPORTER_PARAM_QUERY_CONTACT_ID = "query-contact-id";
+    public static final String EXPORTER_PARAM_QUERY_LABEL = "query-label";
+    public static final String EXPORTER_PARAM_QUERY_DESCRIPTION = "query-description";
+    public static final String EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID = "query-execution-contact-id";
+    public static final String EXPORTER_PARAM_QUERY_CONTEXT = "query-context";
+    public static final String EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
+    public static final String EXPORTER_PARAM_DEFAULT_TEMPLATE_ID = "query-default-template-id";
+    public static final String EXPORTER_QUERY_CONTEXT_PROJECT_ID = "PROJECT-ID";
+    public final static String HTTP_HEADER_API_KEY = "x-api-key";
+    public final static String IS_INTERNAL_REQUEST = "internal-request";
+
 
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
@@ -92,15 +114,27 @@ public class ProjectManagerConst {
     public final static String BK_USER_GROUP_SUFFIX = "BK_USER_GROUP_SUFFIX";
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
-    public final static String REGISTERED_BRIDGEHEADS = "REGISTERED_BRIDGEHEADS";
+    public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT = "PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP";
+    public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES = "WEBCLIENT_BUFFER_SIZE_IN_BYTES";
+    public final static String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS = "WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS";
+    public final static String WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS = "WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS";
+    public final static String WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS = "WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS";
+    public final static String WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS = "WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS";
+    public final static String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES = "WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES";
+    public final static String WEBCLIENT_MAX_NUMBER_OF_RETRIES = "WEBCLIENT_MAX_NUMBER_OF_RETRIES";
+    public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE = "WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE";
+    public final static String EXPORTER_URL = "EXPORTER_URL";
+    public final static String EXPORTER_API_KEY = "EXPORTER_API_KEY";
+    public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS = "PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS";
+
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
     public final static String PM_ADMIN_GROUPS_SV = HEAD_SV + PM_ADMIN_GROUPS + BOTTOM_SV;
-    public final static String REGISTERED_BRIDGEHEADS_SV = HEAD_SV + REGISTERED_BRIDGEHEADS + BOTTOM_SV;
+    //public final static String REGISTERED_BRIDGEHEADS_SV = HEAD_SV + REGISTERED_BRIDGEHEADS + BOTTOM_SV;
     public final static String JWT_GROUPS_CLAIM_PROPERTY_SV = HEAD_SV + JWT_GROUPS_CLAIM_PROPERTY + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
@@ -110,6 +144,27 @@ public class ProjectManagerConst {
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMdd-HHmmss" + BOTTOM_SV;
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
     public final static String IS_TEST_ENVIRONMENT_SV = HEAD_SV + IS_TEST_ENVIRONMENT + ":false" + BOTTOM_SV;
+    public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =
+            HEAD_SV + WEBCLIENT_BUFFER_SIZE_IN_BYTES + ":#{36 * 1024 * 1024}" + BOTTOM_SV;
+    public final static String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS + ":180" + BOTTOM_SV;
+    public final static String WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS + ":180" + BOTTOM_SV;
+    public final static String WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS + ":300" + BOTTOM_SV;
+    public final static String WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS_SV =
+            HEAD_SV + WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS + ":60" + BOTTOM_SV;
+    public final static String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV =
+            HEAD_SV + WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES + ":10" + BOTTOM_SV;
+    public final static String WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV =
+            HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":3" + BOTTOM_SV;
+    public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV =
+            HEAD_SV + WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE + ":5" + BOTTOM_SV;
+    public final static String EXPORTER_URL_SV = HEAD_SV + EXPORTER_URL + BOTTOM_SV;
+    public final static String EXPORTER_API_KEY_SV = HEAD_SV + EXPORTER_API_KEY + BOTTOM_SV;
+    public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV =
+            HEAD_SV + PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS + ":90" + BOTTOM_SV;
+
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";
