@@ -86,7 +86,7 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.SITE) String site
     ) {
-        return convertToResponseEntity(
+        return convertToResponseEntity(() ->
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead)));
     }
 
@@ -241,7 +241,7 @@ public class ProjectManagerController {
             @NotEmpty @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT) OutputFormat outputFormat,
             @NotEmpty @RequestParam(name = ProjectManagerConst.TEMPLATE_ID) String templateId
     ) {
-        return convertToResponseEntity(this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId));
+        return convertToResponseEntity(() -> this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -254,7 +254,7 @@ public class ProjectManagerController {
             @NotEmpty @RequestParam(name = ProjectManagerConst.TEMPLATE_ID) String templateId
 
     ) {
-        return convertToResponseEntity(this.queryService.createQuery(query, QueryFormat.CQL_DATA, label, description, outputFormat, templateId));
+        return convertToResponseEntity(() -> this.queryService.createQuery(query, QueryFormat.CQL_DATA, label, description, outputFormat, templateId));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -335,7 +335,7 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity<String> saveQueryInBridgehead(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgehead(projectCode, bridgehead));
     }
@@ -347,7 +347,7 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity<String> saveAndExecuteQueryInBridgehead(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgeheadAndExecute(projectCode, bridgehead));
     }
@@ -361,7 +361,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
     }
 
 
@@ -369,15 +369,6 @@ public class ProjectManagerController {
         try {
             runnable.run();
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return createInternalServerError(e);
-        }
-    }
-
-    private <T> ResponseEntity convertToResponseEntity(T result) {
-        try {
-            return (result != null) ? ResponseEntity.ok(objectMapper.writeValueAsString(result))
-                    : ResponseEntity.notFound().build();
         } catch (Exception e) {
             return createInternalServerError(e);
         }

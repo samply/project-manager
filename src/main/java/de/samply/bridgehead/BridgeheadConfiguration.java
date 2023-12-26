@@ -15,6 +15,7 @@ import java.util.Optional;
 public class BridgeheadConfiguration {
 
     private Map<String, BridgeheadConfig> config = new HashMap<>();
+    private Map<String, String> explorerCodeBridgeheadMap = new HashMap<>();
 
     @Data
     public static class BridgeheadConfig {
@@ -36,13 +37,22 @@ public class BridgeheadConfiguration {
     }
 
     public Optional<String> getBridgehead(String explorerCode) {
+        String bridgehead = explorerCodeBridgeheadMap.get(explorerCode);
+        if (bridgehead == null) {
+            bridgehead = fetchBridgehead(explorerCode);
+            explorerCodeBridgeheadMap.put(explorerCode, bridgehead);
+        }
+        return Optional.ofNullable(bridgehead);
+    }
+
+    private String fetchBridgehead(String explorerCode) {
         for (String bridgehead : config.keySet()) {
             BridgeheadConfig bridgeheadConfig = config.get(bridgehead);
             if (bridgeheadConfig.explorerCode.equals(explorerCode)) {
-                return Optional.of(bridgehead);
+                return bridgehead;
             }
         }
-        return Optional.empty();
+        return null;
     }
 
 

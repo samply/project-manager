@@ -71,7 +71,18 @@ CREATE TABLE samply.project_document
     type              TEXT      NOT NULL,
     creator_email     TEXT      NOT NULL,
     label             TEXT
+);
 
+CREATE TABLE samply.bridgehead_operation
+(
+    id          SERIAL PRIMARY KEY,
+    bridgehead  TEXT      NOT NULL,
+    user_email  TEXT      NOT NULL,
+    timestamp   TIMESTAMP NOT NULL,
+    http_status TEXT      NOT NULL,
+    error       TEXT,
+    type        TEXT      NOT NULL,
+    project_id  BIGINT    NOT NULL
 );
 
 ALTER TABLE samply.project
@@ -94,7 +105,13 @@ ALTER TABLE samply.project_document
         FOREIGN KEY (project_id)
             REFERENCES samply.project (id);
 
+ALTER TABLE samply.bridgehead_operation
+    ADD CONSTRAINT fk_project_id
+        FOREIGN KEY (project_id)
+            REFERENCES samply.project (id);
+
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);
 CREATE INDEX idx_project_document_project_id ON samply.project_document (project_id);
 CREATE INDEX idx_project_query_id ON samply.project (query_id);
+CREATE INDEX idx_project_id ON samply.bridgehead_operation (project_id);

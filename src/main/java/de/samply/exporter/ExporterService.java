@@ -6,8 +6,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadOperationType;
+import de.samply.db.model.BridgeheadOperation;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
+import de.samply.db.repository.BridgeheadOperationRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
@@ -51,6 +54,7 @@ public class ExporterService {
     private final int webClientTcpKeepConnetionNumberOfTries;
     private final SessionUser sessionUser;
     private final ProjectRepository projectRepository;
+    private final BridgeheadOperationRepository bridgeheadOperationRepository;
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
@@ -64,8 +68,8 @@ public class ExporterService {
             @Value(ProjectManagerConst.WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV) Integer webClientTimeInSecondsAfterRetryWithFailure,
             BridgeheadConfiguration bridgeheadConfiguration,
             ProjectRepository projectRepository,
-            SessionUser sessionUser
-    ) {
+            SessionUser sessionUser,
+            BridgeheadOperationRepository bridgeheadOperationRepository) {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.webClientMaxNumberOfRetries = webClientMaxNumberOfRetries;
         this.webClientTimeInSecondsAfterRetryWithFailure = webClientTimeInSecondsAfterRetryWithFailure;
@@ -76,6 +80,7 @@ public class ExporterService {
         this.webClientTcpKeepConnetionNumberOfTries = webClientTcpKeepConnetionNumberOfTries;
         this.sessionUser = sessionUser;
         this.projectRepository = projectRepository;
+        this.bridgeheadOperationRepository = bridgeheadOperationRepository;
     }
 
     private WebClient createWebClient(String exporterUrl) {
@@ -93,17 +98,18 @@ public class ExporterService {
     }
 
     public void sendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
-        log.info("Sending query of project" + projectCode + " to bridgehead" + bridgehead + "...");
-        postRequest(bridgehead, ProjectManagerConst.EXPORTER_REQUEST, generateBodyConfigurationForExportRequest(projectCode));
+        log.info("Sending query of project " + projectCode + " to bridgehead " + bridgehead + " ...");
+        postRequest(bridgehead, projectCode, ProjectManagerConst.EXPORTER_CREATE_QUERY, generateBodyConfigurationForExportRequest(projectCode));
     }
 
     public void sendQueryToBridgeheadAndExecute(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
         log.info("Sending query of project " + projectCode + " to bridgehead " + bridgehead + " to be executed...");
-        postRequest(bridgehead, ProjectManagerConst.EXPORTER_CREATE_QUERY, generateBodyConfigurationForExportCreateQuery(projectCode));
+        postRequest(bridgehead, projectCode, ProjectManagerConst.EXPORTER_REQUEST, generateBodyConfigurationForExportCreateQuery(projectCode));
     }
 
-    private void postRequest(String bridgehead, String restService, Map<String, String> bodyParameters) {
+    private void postRequest(String bridgehead, String projectCode, String restService, Map<String, String> bodyParameters) {
         AtomicInteger retryCount = new AtomicInteger(0);
+        String email = sessionUser.getEmail();
         fetchWebClient(bridgehead).post().uri(uriBuilder -> uriBuilder.path(restService).build())
                 .header(ProjectManagerConst.HTTP_HEADER_API_KEY, bridgeheadConfiguration.getExporterApiKey(bridgehead))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -117,7 +123,8 @@ public class ExporterService {
                 )
                 .doOnError(WebClientResponseException.class, ex -> {
                     HttpStatusCode statusCode = ex.getStatusCode();
-                    log.error(ExceptionUtils.getStackTrace(ex));
+                    String error = ExceptionUtils.getStackTrace(ex);
+                    log.error(error);
                     if (statusCode.equals(HttpStatus.BAD_REQUEST)) {
                         log.error("Received 400 Bad Request");
                     } else if (statusCode.is5xxServerError()) {
@@ -126,12 +133,31 @@ public class ExporterService {
                         log.error("Received HTTP Status Code: " + statusCode);
                     }
                     if (retryCount.get() >= webClientMaxNumberOfRetries) {
-                        //TODO
+                        createBridgeheadOperation(restService, (HttpStatus) ex.getStatusCode(), error, bridgehead, projectCode, email);
                     }
                 })
-                .subscribe(result -> {
-                    //TODO
-                });
+                .subscribe(result -> createBridgeheadOperation(restService, HttpStatus.OK, null, bridgehead, projectCode, email));
+    }
+
+    private void createBridgeheadOperation(
+            String restService, HttpStatus status, String error, String bridgehead, String projectCode, String email) {
+        BridgeheadOperation bridgeheadOperation = new BridgeheadOperation();
+        bridgeheadOperation.setBridgehead(bridgehead);
+        bridgeheadOperation.setProject(projectRepository.findByCode(projectCode).get());
+        bridgeheadOperation.setTimestamp(LocalDate.now());
+        bridgeheadOperation.setType(fetchBridgeheadOperationType(restService));
+        bridgeheadOperation.setHttpStatus(status);
+        bridgeheadOperation.setError(error);
+        bridgeheadOperation.setUserEmail(email);
+        bridgeheadOperationRepository.save(bridgeheadOperation);
+    }
+
+    private BridgeheadOperationType fetchBridgeheadOperationType(String restService) {
+        return switch (restService) {
+            case ProjectManagerConst.EXPORTER_REQUEST -> BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE;
+            case ProjectManagerConst.EXPORTER_CREATE_QUERY -> BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD;
+            default -> throw new IllegalStateException("Unexpected value: " + restService);
+        };
     }
 
     private WebClient fetchWebClient(String bridgehead) {
