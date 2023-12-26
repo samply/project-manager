@@ -30,11 +30,15 @@ public class BridgeheadConfiguration {
     }
 
     public String getExporterUrl(String bridgehead) {
-        return config.get(bridgehead).exporterUrl;
+        return config.get(bridgehead).getExporterUrl();
     }
 
     public String getExporterApiKey(String bridgehead) {
-        return config.get(bridgehead).exporterApiKey;
+        return config.get(bridgehead).getExporterApiKey();
+    }
+
+    public String getHumanReadable(String bridgehead) {
+        return config.get(bridgehead).getHumanReadable();
     }
 
     public Optional<String> getBridgehead(String explorerCode) {
