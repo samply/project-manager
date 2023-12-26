@@ -43,3 +43,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Bridgehead configuration with explorer and exporter mapping
 - Bridgehead Operation
 - Create query and draft project (Lens)
+- humanReadable in Bridgehead Config

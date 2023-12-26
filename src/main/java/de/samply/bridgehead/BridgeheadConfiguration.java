@@ -22,6 +22,7 @@ public class BridgeheadConfiguration {
         private String explorerCode;
         private String exporterUrl;
         private String exporterApiKey;
+        private String humanReadable;
     }
 
     public boolean isRegisteredBridgehead(String bridgehead) {
