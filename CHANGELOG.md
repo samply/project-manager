@@ -42,3 +42,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Exporter Service implementation
 - Bridgehead configuration with explorer and exporter mapping
 - Bridgehead Operation
+- Create query and draft project (Lens)

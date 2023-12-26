@@ -5,10 +5,8 @@ public class ProjectManagerConst {
     public final static String APP_NAME = "Project Manager";
 
     // Sites
-    public final static String PROJECT_DASHBOARD_SITE = "Project Dashboard";
-    public final static String PROJECT_VIEW_SITE = "Project View";
-    public final static String PROJECT_FORM_SITE = "Project Form";
-    public final static String PROJECT_PUBLICATIONS_SITE = "Project Publications";
+    public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
+    public final static String PROJECT_VIEW_SITE = "project-view";
 
     //Modules
     public final static String USER_MODULE = "User Module";
@@ -36,6 +34,7 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "Save query in bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "Save and execute query in bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "Fetch authentication script";
+    public final static String CREATE_QUERY_AND_DESIGN_PROJECT_ACTION = "Create Query and Design Project";
 
     // REST Services
     public final static String INFO = "/info";
@@ -43,6 +42,7 @@ public class ProjectManagerConst {
     public final static String SET_DEVELOPER_USER = "/set-developer-user";
     public final static String SET_PILOT_USER = "/set-pilot-user";
     public final static String SET_FINAL_USER = "/set-final-user";
+    public final static String CREATE_QUERY_AND_DESIGN_PROJECT = "/create-query-and-design-project";
     public final static String DESIGN_PROJECT = "/design-project";
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
@@ -53,7 +53,6 @@ public class ProjectManagerConst {
     public final static String START_FINAL_STAGE = "/start-final-project";
     public final static String FINISH_PROJECT = "/finish-project";
     public final static String CREATE_QUERY = "/create-query";
-    public final static String CREATE_CQL_DATA_QUERY = "/create-cql-data-query";
     public final static String UPLOAD_PROJECT_DOCUMENT = "/upload-project-document";
     public final static String ADD_PROJECT_DOCUMENT_URL = "/add-project-document-url";
     public final static String DOWNLOAD_PROJECT_DOCUMENT = "/download-project-document";
@@ -78,6 +77,8 @@ public class ProjectManagerConst {
     public final static String DESCRIPTION = "description";
     public final static String OUTPUT_FORMAT = "output-format";
     public final static String TEMPLATE_ID = "template-id";
+    public final static String HUMAN_READABLE = "human-readable";
+    public final static String EXPLORER_URL = "explorer-url";
 
 
     // Application Properties
@@ -115,6 +116,7 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
+    public final static String FRONTEND_CONFIG = "frontend";
     public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT = "PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP";
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES = "WEBCLIENT_BUFFER_SIZE_IN_BYTES";

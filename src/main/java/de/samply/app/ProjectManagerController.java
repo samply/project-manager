@@ -11,6 +11,7 @@ import de.samply.document.DocumentType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
 import de.samply.project.ProjectType;
+import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
 import de.samply.query.OutputFormat;
@@ -42,6 +43,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -131,6 +133,47 @@ public class ProjectManagerController {
     ) {
         return convertToResponseEntity(() ->
                 this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.FINAL));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
+    public ResponseEntity<String> createProjectQuery(
+            @NotEmpty @RequestBody() String query,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
+            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
+            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl
+    ) {
+        return convertToResponseEntity(() ->
+                this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT)
+    public ResponseEntity<String> createQueryAndDesignProject(
+            @NotEmpty @RequestBody() String query,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
+            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
+            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType
+    ) throws ProjectEventActionsException {
+        String queryCode = this.queryService.createQuery(
+                query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl);
+        String projectCode = this.projectEventService.draft(bridgeheads, queryCode, projectType);
+        return convertToResponseEntity(() -> this.frontendService.fetchUrl(
+                ProjectManagerConst.PROJECT_VIEW_SITE,
+                Map.of(ProjectManagerConst.QUERY_CODE, projectCode)
+        ));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -231,32 +274,6 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectEventService.finish(projectCode));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
-    public ResponseEntity<String> createProjectQuery(
-            @NotEmpty @RequestBody() String query,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.LABEL) String label,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.DESCRIPTION) String description,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT) OutputFormat outputFormat,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.TEMPLATE_ID) String templateId
-    ) {
-        return convertToResponseEntity(() -> this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId));
-    }
-
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_CQL_DATA_QUERY)
-    public ResponseEntity<String> createProjectCqlDataQuery(
-            @NotEmpty @RequestBody() String query,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.LABEL) String label,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.DESCRIPTION) String description,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT) OutputFormat outputFormat,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.TEMPLATE_ID) String templateId
-
-    ) {
-        return convertToResponseEntity(() -> this.queryService.createQuery(query, QueryFormat.CQL_DATA, label, description, outputFormat, templateId));
-    }
-
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT_ACTION)
@@ -334,8 +351,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
     @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity<String> saveQueryInBridgehead(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @NotEmpty @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @NotEmpty @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgehead(projectCode, bridgehead));
     }

@@ -30,7 +30,7 @@ public class NotEmptyAspect {
         AtomicReference<String> emptyParameter = new AtomicReference<>("");
         IntStream.range(0, args.length)
                 .filter(i -> hasNotEmptyAnnotation(parameterAnnotations[i]))
-                .filter(i -> args[i] == null || StringUtils.isEmpty(args[i].toString().trim()))
+                .filter(i -> args[i] == null || !StringUtils.hasText(args[i].toString().trim()))
                 .findFirst()
                 .ifPresent(i -> emptyParameter.set(signature.getParameterNames()[i]));
         return (!emptyParameter.get().isEmpty()) ?

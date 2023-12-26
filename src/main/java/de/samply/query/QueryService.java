@@ -17,7 +17,9 @@ public class QueryService {
         this.queryRepository = queryRepository;
     }
 
-    public String createQuery(String query, QueryFormat queryFormat, String label, String description, OutputFormat outputFormat, String templateId) {
+    public String createQuery(
+            String query, QueryFormat queryFormat, String label, String description,
+            OutputFormat outputFormat, String templateId, String humanReadable, String explorerUrl) {
         Query tempQuery = new Query();
         tempQuery.setCode(generateQueryCode());
         tempQuery.setQuery(query);
@@ -27,6 +29,8 @@ public class QueryService {
         tempQuery.setDescription(description);
         tempQuery.setOutputFormat(outputFormat);
         tempQuery.setTemplateId(templateId);
+        tempQuery.setHumanReadable(humanReadable);
+        tempQuery.setExplorerUrl(explorerUrl);
         tempQuery = this.queryRepository.save(tempQuery);
         return tempQuery.getCode();
     }

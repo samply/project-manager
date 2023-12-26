@@ -5,15 +5,17 @@ search_path TO samply;
 
 CREATE TABLE samply.query
 (
-    id            SERIAL PRIMARY KEY,
-    code          TEXT      NOT NULL,
-    query         TEXT      NOT NULL,
-    query_format  TEXT      NOT NULL,
-    created_at    TIMESTAMP NOT NULL,
-    output_format TEXT,
-    template_id   TEXT,
-    label         TEXT,
-    description   TEXT
+    id             SERIAL PRIMARY KEY,
+    code           TEXT      NOT NULL,
+    query          TEXT      NOT NULL,
+    query_format   TEXT      NOT NULL,
+    created_at     TIMESTAMP NOT NULL,
+    human_readable TEXT,
+    explorer_url TEXT,
+    output_format  TEXT,
+    template_id    TEXT,
+    label          TEXT,
+    description    TEXT
 );
 
 CREATE TABLE samply.project

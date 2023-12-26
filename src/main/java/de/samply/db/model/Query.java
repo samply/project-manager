@@ -30,6 +30,9 @@ public class Query {
     @Column(name = "query", nullable = false)
     private String query;
 
+    @Column(name = "human_readable")
+    private String humanReadable;
+
     @Column(name = "query_format", nullable = false)
     @Enumerated(EnumType.STRING)
     private QueryFormat queryFormat;
@@ -46,5 +49,8 @@ public class Query {
 
     @Column(name = "description")
     private String description;
+
+    @Column(name = "explorer_url")
+    private String explorerUrl;
 
 }

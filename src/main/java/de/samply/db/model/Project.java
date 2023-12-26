@@ -47,7 +47,7 @@ public class Project {
     @JoinColumn(name = "query_id")
     private Query query;
 
-    @Column(name = "type", nullable = false)
+    @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private ProjectType type;
 
