@@ -10,6 +10,7 @@ import de.samply.document.DocumentServiceException;
 import de.samply.document.DocumentType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
+import de.samply.notification.smtp.EmailService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
@@ -60,6 +61,7 @@ public class ProjectManagerController {
     private final DocumentService documentService;
     private final ExporterService exporterService;
     private final TokenManagerService tokenManagerService;
+    private final EmailService emailService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -67,7 +69,8 @@ public class ProjectManagerController {
                                     QueryService queryService,
                                     DocumentService documentService,
                                     ExporterService exporterService,
-                                    TokenManagerService tokenManagerService) {
+                                    TokenManagerService tokenManagerService,
+                                    EmailService emailService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -75,6 +78,7 @@ public class ProjectManagerController {
         this.documentService = documentService;
         this.exporterService = exporterService;
         this.tokenManagerService = tokenManagerService;
+        this.emailService = emailService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)

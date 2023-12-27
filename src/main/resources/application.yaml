@@ -53,10 +53,44 @@ spring:
               - openid
               - profile
               - email
+
   servlet:
     multipart:
       max-file-size: ${MAX_FILE_SIZE:10MB}
       max-request-size: ${MAX_REQEST_SIZE:10MB}
+
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASSWORD}
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#          smtp:
+#            proxy:
+#              host: ${PROXY_HOST}
+#              port: ${PROXY_PORT}
+
+  thymeleaf:
+    prefix: file:${EMAIL_TEMPLATES_DIRECTORY}
+    suffix: .html
+    cache: false
+    mode: HTML
+#    templates:
+#      invitation:
+#        developer: "developer-invitation.html"
+#        pilot: "pilot-invitation.html"
+#        final: "final-execution-user-invitation.html"
+#        default: "default-invitation.html"
+#      new-project:
+#        bridgehead.admin: "bridgehead-admin-new-project.html"
+#        project.manager.admin: "project-manager-admin-new-project.html"
+#        default: "default-new-project.html"
+
 
 jwt.groups.claim: ${OIDC_CLAIM_GROUPS}
 
@@ -75,4 +109,4 @@ jwt.groups.claim: ${OIDC_CLAIM_GROUPS}
 #  base-url: "http://localhost:8099"
 #  sites:
 #    project-dashboard: "/project-dashboard"
-#    project: "/project"
+#    project-view: "/project-view"

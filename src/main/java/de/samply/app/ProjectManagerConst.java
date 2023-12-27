@@ -83,15 +83,14 @@ public class ProjectManagerConst {
 
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";
-    public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
-    public final static String IS_TEST_ENVIRONMENT = "IS_TEST_ENVIRONMENT";
+    public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
+    public final static String THYMELEAF_TEMPLATES = "spring.thymeleaf.templates";
 
     // Exporter Variables
+    public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
+    public final static String IS_TEST_ENVIRONMENT = "IS_TEST_ENVIRONMENT";
     public final static String EXPORTER_REQUEST = "/request";
     public final static String EXPORTER_CREATE_QUERY = "/create-query";
-    public final static String EXPORTER_LOGS = "/logs";
-    public static final String EXPORTER_LOGS_SIZE = "logs-size";
-    public static final String EXPORTER_LOGS_LAST_LINE = "logs-last-line";
     public final static String EXPORTER_PARAM_QUERY = "query";
     public final static String EXPORTER_PARAM_QUERY_FORMAT = "query-format";
     public final static String EXPORTER_PARAM_TEMPLATE_ID = "template-id";
@@ -106,7 +105,6 @@ public class ProjectManagerConst {
     public static final String EXPORTER_PARAM_DEFAULT_TEMPLATE_ID = "query-default-template-id";
     public static final String EXPORTER_QUERY_CONTEXT_PROJECT_ID = "PROJECT-ID";
     public final static String HTTP_HEADER_API_KEY = "x-api-key";
-    public final static String IS_INTERNAL_REQUEST = "internal-request";
 
 
     // Environment Variables
@@ -115,7 +113,6 @@ public class ProjectManagerConst {
     public final static String BK_USER_GROUP_SUFFIX = "BK_USER_GROUP_SUFFIX";
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
-    public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
     public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT = "PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP";
@@ -127,16 +124,14 @@ public class ProjectManagerConst {
     public final static String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES = "WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES";
     public final static String WEBCLIENT_MAX_NUMBER_OF_RETRIES = "WEBCLIENT_MAX_NUMBER_OF_RETRIES";
     public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE = "WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE";
-    public final static String EXPORTER_URL = "EXPORTER_URL";
-    public final static String EXPORTER_API_KEY = "EXPORTER_API_KEY";
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS = "PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS";
+    public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
 
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
     public final static String PM_ADMIN_GROUPS_SV = HEAD_SV + PM_ADMIN_GROUPS + BOTTOM_SV;
-    //public final static String REGISTERED_BRIDGEHEADS_SV = HEAD_SV + REGISTERED_BRIDGEHEADS + BOTTOM_SV;
     public final static String JWT_GROUPS_CLAIM_PROPERTY_SV = HEAD_SV + JWT_GROUPS_CLAIM_PROPERTY + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
@@ -162,10 +157,10 @@ public class ProjectManagerConst {
             HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":3" + BOTTOM_SV;
     public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV =
             HEAD_SV + WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE + ":5" + BOTTOM_SV;
-    public final static String EXPORTER_URL_SV = HEAD_SV + EXPORTER_URL + BOTTOM_SV;
-    public final static String EXPORTER_API_KEY_SV = HEAD_SV + EXPORTER_API_KEY + BOTTOM_SV;
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV =
             HEAD_SV + PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS + ":90" + BOTTOM_SV;
+    public final static String PROJECT_MANAGER_EMAIL_FROM_SV =
+            HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
 
 
     // Others
