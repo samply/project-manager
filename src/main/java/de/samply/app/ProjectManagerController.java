@@ -10,7 +10,8 @@ import de.samply.document.DocumentServiceException;
 import de.samply.document.DocumentType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
-import de.samply.notification.smtp.EmailService;
+import de.samply.notification.smtp.EmailRecipientType;
+import de.samply.notification.smtp.EmailTemplateType;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
@@ -61,7 +62,6 @@ public class ProjectManagerController {
     private final DocumentService documentService;
     private final ExporterService exporterService;
     private final TokenManagerService tokenManagerService;
-    private final EmailService emailService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -69,8 +69,7 @@ public class ProjectManagerController {
                                     QueryService queryService,
                                     DocumentService documentService,
                                     ExporterService exporterService,
-                                    TokenManagerService tokenManagerService,
-                                    EmailService emailService) {
+                                    TokenManagerService tokenManagerService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -78,7 +77,6 @@ public class ProjectManagerController {
         this.documentService = documentService;
         this.exporterService = exporterService;
         this.tokenManagerService = tokenManagerService;
-        this.emailService = emailService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -99,13 +97,14 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP})
+    @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
     public ResponseEntity<String> setUserAsDeveloper(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
                 this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
@@ -113,13 +112,14 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT})
+    @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
     public ResponseEntity<String> setUserAsPilot(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
                 this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.PILOT));
@@ -127,13 +127,14 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.PILOT, ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
     public ResponseEntity<String> setUserAsFinal(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
                 this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.FINAL));
@@ -194,6 +195,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @StateConstraints(projectStates = {ProjectState.DRAFT})
+    @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.CREATE_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.CREATE_PROJECT)

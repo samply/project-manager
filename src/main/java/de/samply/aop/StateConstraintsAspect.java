@@ -36,7 +36,7 @@ public class StateConstraintsAspect {
     }
 
     private Optional<StateConstraints> fetchStateConstrains(JoinPoint joinPoint) {
-        return Optional.of(AspectUtils.fetchMethod(joinPoint).getAnnotation(StateConstraints.class));
+        return AspectUtils.fetchT(joinPoint, StateConstraints.class);
     }
 
 

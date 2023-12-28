@@ -1,8 +1,8 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.user.roles.OrganisationRole;
 import de.samply.user.UserService;
+import de.samply.user.roles.OrganisationRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -66,11 +66,11 @@ public class OidcProjectUserService extends OidcUserService {
         if (sessionUser.getUserOrganisationRoles().getRolesNotDependentOnBridgeheads().contains(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
             userService.createProjectManagerAdminUserIfNotExists(sessionUser.getEmail());
         }
-        sessionUser.getBridgeheads().forEach(bridgehead -> sessionUser.getUserOrganisationRoles().getBridgeheadRoles(bridgehead).ifPresent(organisationRoles -> {
-            if (organisationRoles.contains(OrganisationRole.BRIDGEHEAD_ADMIN)) {
+        sessionUser.getBridgeheads().forEach(bridgehead -> {
+            if (sessionUser.getUserOrganisationRoles().getBridgeheadRoles(bridgehead).contains(OrganisationRole.BRIDGEHEAD_ADMIN)) {
                 userService.createBridgeheadAdminUserIfNotExists(sessionUser.getEmail(), bridgehead);
             }
-        }));
+        });
     }
 
 }

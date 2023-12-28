@@ -23,26 +23,32 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final EmailTemplates emailTemplates;
+    private final EmailContext emailContext;
 
 
     public EmailService(
             @Value(ProjectManagerConst.PROJECT_MANAGER_EMAIL_FROM_SV) String emailFrom,
             JavaMailSender mailSender,
             TemplateEngine templateEngine,
-            EmailTemplates emailTemplates) {
+            EmailTemplates emailTemplates, EmailContext emailContext) {
         this.emailFrom = emailFrom;
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.emailTemplates = emailTemplates;
+        this.emailContext = emailContext;
     }
 
-    public void sendEmail(@NotNull String email, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
-        sendEmail(email, role, type, new HashMap<>());
+    public void sendEmail(@NotNull String email, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
+        sendEmail(email, bridgehead, role, type, new HashMap<>());
     }
 
-    public void sendEmail(@NotNull String email, @NotNull ProjectRole role, @NotNull EmailTemplateType type, Map<String, String> keyValues) throws EmailServiceException {
+    public void sendEmail(@NotNull String email, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, Map<String, String> keyValues) throws EmailServiceException {
         SimpleMailMessage message = new SimpleMailMessage();
-        Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues);
+        Map<String, String> context = new HashMap<>();
+        bridgehead.ifPresent(b -> context.put(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, b));
+        context.putAll(keyValues);
+        context.putAll(emailContext.getKeyValues());
+        Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
         if (messageSubject.isPresent()) {
             message.setTo(email);
             message.setFrom(emailFrom);

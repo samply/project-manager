@@ -46,3 +46,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - humanReadable in Bridgehead Config
 - Email Service
 - Email Templates
+- Email Sender Aspect

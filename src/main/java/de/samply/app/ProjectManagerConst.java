@@ -80,6 +80,9 @@ public class ProjectManagerConst {
     public final static String HUMAN_READABLE = "human-readable";
     public final static String EXPLORER_URL = "explorer-url";
 
+    // Email context properties
+    public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
+
 
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";

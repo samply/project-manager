@@ -1,6 +1,7 @@
 package de.samply.utils;
 
 import de.samply.annotations.Bridgehead;
+import de.samply.annotations.Email;
 import de.samply.annotations.ProjectCode;
 import de.samply.db.model.Project;
 import de.samply.db.repository.ProjectRepository;
@@ -21,6 +22,10 @@ public class AspectUtils {
         return fetchStringParameterAnnotation(joinPoint, ProjectCode.class);
     }
 
+    public static Optional<String> fetchEmail(JoinPoint joinPoint) {
+        return fetchStringParameterAnnotation(joinPoint, Email.class);
+    }
+
     private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class annotationClass) {
         Annotation[][] parameterAnnotations = fetchMethod(joinPoint).getParameterAnnotations();
         Object[] args = joinPoint.getArgs();
@@ -35,9 +40,13 @@ public class AspectUtils {
         }
         return Optional.empty();
     }
-    
+
     public static Method fetchMethod(JoinPoint joinPoint) {
         return ((MethodSignature) joinPoint.getSignature()).getMethod();
+    }
+
+    public static <T extends Annotation> Optional<T> fetchT(JoinPoint joinPoint, Class<T> clazz) {
+        return Optional.of(fetchMethod(joinPoint).getAnnotation(clazz));
     }
 
     public static Optional<Project> fetchProject(ProjectRepository projectRepository, Optional<String> projectCode) {
