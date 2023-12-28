@@ -84,7 +84,6 @@ public class ProjectManagerConst {
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
-    public final static String THYMELEAF_TEMPLATES = "spring.thymeleaf.templates";
 
     // Exporter Variables
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
@@ -126,6 +125,7 @@ public class ProjectManagerConst {
     public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE = "WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE";
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS = "PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS";
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
+    public final static String EMAIL_TEMPLATES_CONFIG = "EMAIL_TEMPLATES_CONFIG";
 
 
     // Spring Values (SV)
@@ -161,6 +161,7 @@ public class ProjectManagerConst {
             HEAD_SV + PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS + ":90" + BOTTOM_SV;
     public final static String PROJECT_MANAGER_EMAIL_FROM_SV =
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
+    public final static String EMAIL_TEMPLATES_CONFIG_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG + BOTTOM_SV;
 
 
     // Others

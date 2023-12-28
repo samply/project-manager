@@ -45,3 +45,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Create query and draft project (Lens)
 - humanReadable in Bridgehead Config
 - Email Service
+- Email Templates

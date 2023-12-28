@@ -82,14 +82,18 @@ spring:
     mode: HTML
 #    templates:
 #      invitation:
-#        developer: "developer-invitation.html"
-#        pilot: "pilot-invitation.html"
-#        final: "final-execution-user-invitation.html"
-#        default: "default-invitation.html"
+#        subject: "Access to DataSHIELD"
+#        files:
+#          developer: "developer-invitation.html"
+#          pilot: "pilot-invitation.html"
+#          final: "final-execution-user-invitation.html"
+#          default: "default-invitation.html"
 #      new-project:
-#        bridgehead.admin: "bridgehead-admin-new-project.html"
-#        project.manager.admin: "project-manager-admin-new-project.html"
-#        default: "default-new-project.html"
+#        subject: "New project"
+#        files:
+#          bridgehead.admin: "bridgehead-admin-new-project.html"
+#          project.manager.admin: "project-manager-admin-new-project.html"
+#          default: "default-new-project.html"
 
 
 jwt.groups.claim: ${OIDC_CLAIM_GROUPS}
