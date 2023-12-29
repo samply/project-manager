@@ -96,8 +96,9 @@ public class ProjectManagerController {
 
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
+    @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
@@ -111,8 +112,9 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT})
+    @StateConstraints(projectStates = {ProjectState.PILOT})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
+    @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
@@ -126,7 +128,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.PILOT, ProjectState.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)

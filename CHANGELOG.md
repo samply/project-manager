@@ -48,3 +48,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email Templates
 - Email Sender Aspect
 - Thymeleaf Template Engine Configuration
+- EmailSender repeatable
