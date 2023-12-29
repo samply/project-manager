@@ -32,7 +32,7 @@ public class ProjectRoleConstraintsAspect {
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
         Optional<String> bridgehead = AspectUtils.fetchBridghead(joinPoint);
         Optional<ResponseEntity> result = this.constraintsService.checkProjectRoleConstraints(roleConstraints, projectCode, bridgehead);
-        return (result.isEmpty()) ? joinPoint.proceed() : result;
+        return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 
     private Optional<RoleConstraints> fetchRoleConstrains(JoinPoint joinPoint) {

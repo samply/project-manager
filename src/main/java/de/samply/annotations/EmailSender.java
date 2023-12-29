@@ -1,7 +1,7 @@
 package de.samply.annotations;
 
-import de.samply.notification.smtp.EmailRecipientType;
-import de.samply.notification.smtp.EmailTemplateType;
+import de.samply.email.EmailRecipientType;
+import de.samply.email.EmailTemplateType;
 
 import java.lang.annotation.*;
 

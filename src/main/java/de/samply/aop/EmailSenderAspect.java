@@ -6,9 +6,9 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.*;
-import de.samply.notification.smtp.EmailRecipient;
-import de.samply.notification.smtp.EmailService;
-import de.samply.notification.smtp.EmailServiceException;
+import de.samply.email.EmailRecipient;
+import de.samply.email.EmailService;
+import de.samply.email.EmailServiceException;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
@@ -24,6 +24,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 @Component
@@ -57,41 +58,52 @@ public class EmailSenderAspect {
         this.projectRepository = projectRepository;
     }
 
-    @Pointcut("@annotation(de.samply.annotations.EmailSenders)")
+    @Pointcut("@annotation(de.samply.annotations.EmailSender)")
     public void emailSenderPointcut() {
+    }
+
+    @Pointcut("@annotation(de.samply.annotations.EmailSenders)")
+    public void emailSendersPointcut() {
     }
 
     @Around("emailSenderPointcut()")
     public Object aroundEmailSender(ProceedingJoinPoint joinPoint) throws Throwable {
+        return aroundEmailSender(joinPoint, true);
+    }
+
+    @Around("emailSendersPointcut()")
+    public Object aroundEmailSenders(ProceedingJoinPoint joinPoint) throws Throwable {
+        return aroundEmailSender(joinPoint, false);
+    }
+
+    private <T extends Annotation> Object aroundEmailSender(ProceedingJoinPoint joinPoint, boolean isSingleEmailSender) throws Throwable {
         try {
-            Optional<ResponseEntity> responseEntity = fetchResult(joinPoint);
-            if (responseEntity.isPresent() && responseEntity.get().getStatusCode().is2xxSuccessful()) {
-                sendEmail(joinPoint);
+            ResponseEntity responseEntity = (ResponseEntity) joinPoint.proceed();
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                sendEmail(joinPoint, isSingleEmailSender);
             }
-            return responseEntity.get();
+            return responseEntity;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Optional<ResponseEntity> fetchResult(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object result = joinPoint.proceed();
-        if (result instanceof Optional) {
-            Object result2 = ((Optional) result).get();
-            if (result2 instanceof ResponseEntity) {
-                return (Optional<ResponseEntity>) result;
-            }
-        } else if (result instanceof ResponseEntity) {
-            return Optional.ofNullable((ResponseEntity) result);
+    private void sendEmail(ProceedingJoinPoint joinPoint, boolean isSingleEmailSender) {
+        if (isSingleEmailSender) {
+            sendEmailFromEmailSender(joinPoint, fetchEmailSender(joinPoint));
+        } else {
+            sendEmailFromEmailSenders(joinPoint, fetchEmailSenders(joinPoint));
         }
-        return Optional.empty();
     }
 
-    private void sendEmail(ProceedingJoinPoint joinPoint) {
-        fetchEmailSenders(joinPoint).ifPresent(emailSenders ->
-                Arrays.stream(emailSenders.value()).forEach(emailSender ->
-                        fetchEmailRecipients(emailSender, joinPoint).forEach(emailRecipient ->
-                                sendEmail(emailRecipient, emailSender))));
+    private void sendEmailFromEmailSenders(ProceedingJoinPoint joinPoint, Optional<EmailSenders> emailSendersOptional) {
+        emailSendersOptional.ifPresent(emailSenders -> Arrays.stream(emailSenders.value()).forEach(emailSender ->
+                sendEmailFromEmailSender(joinPoint, Optional.of(emailSender))));
+    }
+
+    private void sendEmailFromEmailSender(ProceedingJoinPoint joinPoint, Optional<EmailSender> emailSenderOptional) {
+        emailSenderOptional.ifPresent(emailSender -> fetchEmailRecipients(emailSender, joinPoint)
+                .forEach(emailRecipient -> sendEmail(emailRecipient, emailSender)));
     }
 
     private void sendEmail(EmailRecipient emailRecipient, EmailSender emailSender) {
@@ -100,6 +112,10 @@ public class EmailSenderAspect {
         } catch (EmailServiceException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Optional<EmailSender> fetchEmailSender(JoinPoint joinPoint) {
+        return AspectUtils.fetchT(joinPoint, EmailSender.class);
     }
 
     private Optional<EmailSenders> fetchEmailSenders(JoinPoint joinPoint) {

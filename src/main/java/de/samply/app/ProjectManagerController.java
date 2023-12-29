@@ -8,10 +8,10 @@ import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
 import de.samply.document.DocumentType;
+import de.samply.email.EmailRecipientType;
+import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
-import de.samply.notification.smtp.EmailRecipientType;
-import de.samply.notification.smtp.EmailTemplateType;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
@@ -274,6 +274,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.FINISHED_PROJECT, recipients = {EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.FINISH_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.FINISH_PROJECT)

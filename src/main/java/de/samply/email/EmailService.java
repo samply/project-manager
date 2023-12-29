@@ -1,4 +1,4 @@
-package de.samply.notification.smtp;
+package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.user.roles.ProjectRole;

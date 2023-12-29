@@ -1,4 +1,4 @@
-package de.samply.notification.smtp;
+package de.samply.email;
 
 public enum EmailRecipientType {
     SESSION_USER,

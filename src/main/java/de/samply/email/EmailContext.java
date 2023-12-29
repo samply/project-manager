@@ -1,4 +1,4 @@
-package de.samply.notification.smtp;
+package de.samply.email;
 
 import lombok.Getter;
 import org.springframework.stereotype.Component;

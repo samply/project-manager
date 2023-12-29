@@ -1,4 +1,4 @@
-package de.samply.notification.smtp;
+package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,5 +48,5 @@ public class ThymeleafConfiguration {
         engine.addTemplateResolver(externalTemplateResolver());
         return engine;
     }
-    
+
 }

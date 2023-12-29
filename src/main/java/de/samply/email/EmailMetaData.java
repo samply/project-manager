@@ -1,4 +1,4 @@
-package de.samply.notification.smtp;
+package de.samply.email;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.samply.user.roles.ProjectRole;

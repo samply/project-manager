@@ -16,6 +16,12 @@
         "PROJECT_MANAGER_ADMIN": "project-manager-admin-new-project.html",
         "DEFAULT": "default-new-project.html"
       }
+    },
+    "FINISHED_PROJECT": {
+      "subject": "Project finished",
+      "files": {
+        "DEFAULT": "default-project-finished.html"
+      }
     }
   }
 }

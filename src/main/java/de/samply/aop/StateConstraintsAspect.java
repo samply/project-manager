@@ -32,7 +32,7 @@ public class StateConstraintsAspect {
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
         Optional<String> bridghead = AspectUtils.fetchBridghead(joinPoint);
         Optional<ResponseEntity> result = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridghead);
-        return (result.isEmpty()) ? joinPoint.proceed() : result;
+        return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 
     private Optional<StateConstraints> fetchStateConstrains(JoinPoint joinPoint) {
