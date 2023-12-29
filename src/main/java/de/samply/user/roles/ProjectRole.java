@@ -6,5 +6,6 @@ public enum ProjectRole {
     PILOT,
     FINAL,
     BRIDGEHEAD_ADMIN,
-    PROJECT_MANAGER_ADMIN
+    PROJECT_MANAGER_ADMIN,
+    DEFAULT // This role is intended for email thymeleaf templates, not for constraints
 }

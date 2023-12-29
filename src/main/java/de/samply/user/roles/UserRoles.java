@@ -28,8 +28,9 @@ public class UserRoles<T> {
         return rolesNotDependentOnBridgeheads;
     }
 
-    public Optional<Set<T>> getBridgeheadRoles(String bridgehead) {
-        return Optional.of(bridgheadRolesMap.get(bridgehead));
+    public Set<T> getBridgeheadRoles(String bridgehead) {
+        Set<T> result = bridgheadRolesMap.get(bridgehead);
+        return (result != null) ? result : new HashSet<>();
     }
 
     public Set<String> getBridgeheads() {

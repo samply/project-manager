@@ -52,6 +52,7 @@ public class ExporterService {
     private final int webClientTcpKeepIdleInSeconds;
     private final int webClientTcpKeepIntervalInSeconds;
     private final int webClientTcpKeepConnetionNumberOfTries;
+    private final int webClientBufferSizeInBytes;
     private final SessionUser sessionUser;
     private final ProjectRepository projectRepository;
     private final BridgeheadOperationRepository bridgeheadOperationRepository;
@@ -66,6 +67,7 @@ public class ExporterService {
             @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV) Integer webClientTcpKeepConnetionNumberOfTries,
             @Value(ProjectManagerConst.WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV) Integer webClientMaxNumberOfRetries,
             @Value(ProjectManagerConst.WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV) Integer webClientTimeInSecondsAfterRetryWithFailure,
+            @Value(ProjectManagerConst.WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV) Integer webClientBufferSizeInBytes,
             BridgeheadConfiguration bridgeheadConfiguration,
             ProjectRepository projectRepository,
             SessionUser sessionUser,
@@ -78,6 +80,7 @@ public class ExporterService {
         this.webClientTcpKeepIdleInSeconds = webClientTcpKeepIdleInSeconds;
         this.webClientTcpKeepIntervalInSeconds = webClientTcpKeepIntervalInSeconds;
         this.webClientTcpKeepConnetionNumberOfTries = webClientTcpKeepConnetionNumberOfTries;
+        this.webClientBufferSizeInBytes = webClientBufferSizeInBytes;
         this.sessionUser = sessionUser;
         this.projectRepository = projectRepository;
         this.bridgeheadOperationRepository = bridgeheadOperationRepository;
@@ -85,6 +88,7 @@ public class ExporterService {
 
     private WebClient createWebClient(String exporterUrl) {
         return WebClient.builder()
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(webClientBufferSizeInBytes))
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create()
                                 .responseTimeout(Duration.ofSeconds(webClientRequestTimeoutInSeconds))

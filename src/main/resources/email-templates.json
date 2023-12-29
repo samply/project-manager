@@ -1,0 +1,21 @@
+{
+  "templates": {
+    "INVITATION": {
+      "subject": "Access to DataSHIELD",
+      "files": {
+        "DEVELOPER": "developer-invitation.html",
+        "PILOT": "pilot-invitation.html",
+        "FINAL": "final-execution-user-invitation.html",
+        "DEFAULT": "default-invitation.html"
+      }
+    },
+    "NEW_PROJECT": {
+      "subject": "New project",
+      "files": {
+        "BRIDGEHEAD_ADMIN": "bridgehead-admin-new-project.html",
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-new-project.html",
+        "DEFAULT": "default-new-project.html"
+      }
+    }
+  }
+}

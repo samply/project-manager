@@ -16,5 +16,7 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
 
     List<ProjectBridgeheadUser> getByEmailAndProjectBridgehead(String email, ProjectBridgehead projectBridgehead);
 
+    List<ProjectBridgeheadUser> getByProjectBridgehead(ProjectBridgehead projectBridgehead);
+
 
 }

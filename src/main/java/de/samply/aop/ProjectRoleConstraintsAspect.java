@@ -36,7 +36,7 @@ public class ProjectRoleConstraintsAspect {
     }
 
     private Optional<RoleConstraints> fetchRoleConstrains(JoinPoint joinPoint) {
-        return Optional.of(AspectUtils.fetchMethod(joinPoint).getAnnotation(RoleConstraints.class));
+        return AspectUtils.fetchT(joinPoint, RoleConstraints.class);
     }
 
 

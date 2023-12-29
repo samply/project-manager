@@ -44,3 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Bridgehead Operation
 - Create query and draft project (Lens)
 - humanReadable in Bridgehead Config
+- Email Service
+- Email Templates
+- Email Sender Aspect
+- Thymeleaf Template Engine Configuration
