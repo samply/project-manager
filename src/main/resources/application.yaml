@@ -64,36 +64,16 @@ spring:
     port: ${SMTP_PORT}
     username: ${SMTP_USER}
     password: ${SMTP_PASSWORD}
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls:
-#            enable: true
-#          smtp:
-#            proxy:
-#              host: ${PROXY_HOST}
-#              port: ${PROXY_PORT}
-
-  thymeleaf:
-    prefix: file:${EMAIL_TEMPLATES_DIRECTORY}
-    suffix: .html
-    cache: false
-    mode: HTML
-#    templates:
-#      invitation:
-#        subject: "Access to DataSHIELD"
-#        files:
-#          developer: "developer-invitation.html"
-#          pilot: "pilot-invitation.html"
-#          final: "final-execution-user-invitation.html"
-#          default: "default-invitation.html"
-#      new-project:
-#        subject: "New project"
-#        files:
-#          bridgehead.admin: "bridgehead-admin-new-project.html"
-#          project.manager.admin: "project-manager-admin-new-project.html"
-#          default: "default-new-project.html"
+  #    properties:
+  #      mail:
+  #        smtp:
+  #          auth: true
+  #          starttls:
+  #            enable: true
+  #          smtp:
+  #            proxy:
+  #              host: ${PROXY_HOST}
+  #              port: ${PROXY_PORT}
 
 
 jwt.groups.claim: ${OIDC_CLAIM_GROUPS}

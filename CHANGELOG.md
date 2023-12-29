@@ -47,3 +47,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email Service
 - Email Templates
 - Email Sender Aspect
+- Thymeleaf Template Engine Configuration

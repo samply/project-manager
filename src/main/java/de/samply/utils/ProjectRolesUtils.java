@@ -2,10 +2,7 @@ package de.samply.utils;
 
 import de.samply.user.roles.ProjectRole;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 public class ProjectRolesUtils {
@@ -17,7 +14,7 @@ public class ProjectRolesUtils {
     }
 
     public static <T> List<T> orderCollectionInDescendentTime(Collection<T> tCollection, Function<T, ProjectRole> projectRoleFunction) {
-        List<T> result = tCollection.stream().toList();
+        List<T> result = new ArrayList<>(tCollection);
         Collections.sort(result, Comparator.comparingInt(t -> bridgeheadProjectRolesOrderedInTimeDescendent.indexOf(projectRoleFunction.apply(t))));
         return result;
     }
