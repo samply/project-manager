@@ -27,6 +27,7 @@ import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
@@ -100,6 +101,7 @@ public class ProjectEventService implements ProjectEventActions {
                 Optional<Project> project = this.projectRepository.findByCode(projectCode);
                 if (project.isPresent()) {
                     project.get().setState(stateMachine.getState().getId());
+                    project.get().setModifiedAt(Instant.now());
                     this.projectRepository.save(project.get());
                 }
             });
@@ -138,8 +140,9 @@ public class ProjectEventService implements ProjectEventActions {
         Project project = new Project();
         project.setCode(projectCode);
         project.setCreatorEmail(sessionUser.getEmail());
-        project.setCreatedAt(LocalDate.now());
+        project.setCreatedAt(Instant.now());
         project.setExpiresAt(createExpirationDate());
+        project.setModifiedAt(Instant.now());
         project.setStateMachineKey(UUID.randomUUID().toString().replace("-", ""));
         project.setQuery(query);
         project.setType(projectType);
@@ -160,6 +163,7 @@ public class ProjectEventService implements ProjectEventActions {
         projectBridgehead.setBridgehead(bridgehead.toLowerCase());
         projectBridgehead.setProject(project);
         projectBridgehead.setState(ProjectBridgeheadState.CREATED); // TODO: Replace with state machine
+        projectBridgehead.setModifiedAt(Instant.now());
         return this.projectBridgeheadRepository.save(projectBridgehead);
     }
 

@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Entity
 @Table(name = "project_document", schema = "samply")
@@ -34,7 +34,7 @@ public class ProjectDocument {
     private String url;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDate createdAt;
+    private Instant createdAt;
 
     @Column(name = "bridgehead")
     private String bridgehead;

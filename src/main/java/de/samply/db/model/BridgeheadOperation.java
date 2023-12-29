@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Entity
 @Table(name = "bridgehead_operation", schema = "samply")
@@ -28,7 +28,7 @@ public class BridgeheadOperation {
     private String userEmail;
 
     @Column(name = "timestamp", nullable = false)
-    private LocalDate timestamp;
+    private Instant timestamp;
 
     @Column(name = "http_status", nullable = false)
     @Enumerated(EnumType.STRING)

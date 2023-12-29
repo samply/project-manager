@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
@@ -31,13 +32,16 @@ public class Project {
     private String creatorEmail;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDate createdAt;
+    private Instant createdAt;
 
     @Column(name = "expires_at")
     private LocalDate expiresAt;
 
     @Column(name = "archived_at")
-    private LocalDate archivedAt;
+    private Instant archivedAt;
+
+    @Column(name = "modified_at")
+    private Instant modifiedAt;
 
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)

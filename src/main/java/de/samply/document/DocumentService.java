@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -101,7 +102,7 @@ public class DocumentService {
         }
         labelOptional.ifPresent(label -> projectDocument.setLabel(label));
         projectDocument.setDocumentType(documentType);
-        projectDocument.setCreatedAt(LocalDate.now());
+        projectDocument.setCreatedAt(Instant.now());
         projectDocument.setCreatorEmail(sessionUser.getEmail());
         documentSetter.accept(projectDocument);
         this.projectDocumentRepository.save(projectDocument);

@@ -32,6 +32,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -148,7 +149,7 @@ public class ExporterService {
         BridgeheadOperation bridgeheadOperation = new BridgeheadOperation();
         bridgeheadOperation.setBridgehead(bridgehead);
         bridgeheadOperation.setProject(projectRepository.findByCode(projectCode).get());
-        bridgeheadOperation.setTimestamp(LocalDate.now());
+        bridgeheadOperation.setTimestamp(Instant.now());
         bridgeheadOperation.setType(fetchBridgeheadOperationType(restService));
         bridgeheadOperation.setHttpStatus(status);
         bridgeheadOperation.setError(error);

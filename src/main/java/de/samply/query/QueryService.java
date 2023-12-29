@@ -5,6 +5,7 @@ import de.samply.db.model.Query;
 import de.samply.db.repository.QueryRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public class QueryService {
         tempQuery.setCode(generateQueryCode());
         tempQuery.setQuery(query);
         tempQuery.setQueryFormat(queryFormat);
-        tempQuery.setCreatedAt(LocalDate.now());
+        tempQuery.setCreatedAt(Instant.now());
         tempQuery.setLabel(label);
         tempQuery.setDescription(description);
         tempQuery.setOutputFormat(outputFormat);

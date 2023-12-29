@@ -11,7 +11,7 @@ CREATE TABLE samply.query
     query_format   TEXT      NOT NULL,
     created_at     TIMESTAMP NOT NULL,
     human_readable TEXT,
-    explorer_url TEXT,
+    explorer_url   TEXT,
     output_format  TEXT,
     template_id    TEXT,
     label          TEXT,
@@ -28,16 +28,18 @@ CREATE TABLE samply.project
     created_at        TIMESTAMP NOT NULL,
     expires_at        DATE,
     archived_at       TIMESTAMP,
+    modified_at       TIMESTAMP NOT NULL,
     query_id          BIGINT,
     type              TEXT
 );
 
 CREATE TABLE samply.project_bridgehead
 (
-    id         SERIAL NOT NULL PRIMARY KEY,
-    project_id BIGINT NOT NULL,
-    bridgehead TEXT   NOT NULL,
-    state      TEXT   NOT NULL
+    id          SERIAL    NOT NULL PRIMARY KEY,
+    project_id  BIGINT    NOT NULL,
+    bridgehead  TEXT      NOT NULL,
+    modified_at TIMESTAMP NOT NULL,
+    state       TEXT      NOT NULL
 );
 
 CREATE TABLE samply.project_bridgehead_user

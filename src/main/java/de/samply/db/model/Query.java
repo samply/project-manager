@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Entity
 @Table(name = "query", schema = "samply")
@@ -25,7 +25,7 @@ public class Query {
     private String code;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDate createdAt;
+    private Instant createdAt;
 
     @Column(name = "query", nullable = false)
     private String query;
