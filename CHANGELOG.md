@@ -49,3 +49,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email Sender Aspect
 - Thymeleaf Template Engine Configuration
 - EmailSender repeatable
+- Emails to BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT

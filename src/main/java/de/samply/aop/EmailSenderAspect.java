@@ -9,6 +9,7 @@ import de.samply.db.repository.*;
 import de.samply.notification.smtp.EmailRecipient;
 import de.samply.notification.smtp.EmailService;
 import de.samply.notification.smtp.EmailServiceException;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
@@ -115,6 +116,8 @@ public class EmailSenderAspect {
                     case SESSION_USER -> fetchEmailRecipientsForSessionUser(projectCode, bridgehead);
                     case EMAIL_ANNOTATION -> fetchEmailRecipientsForEmailAnnotation(projectCode, bridgehead, email);
                     case BRIDGEHEAD_ADMIN -> fetchEmailRecipientsForBridgeheadAdmin(projectCode, bridgehead);
+                    case BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT ->
+                            fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(projectCode);
                     case PROJECT_MANAGER_ADMIN -> fetchEmailRecipientsForProjectManagerAdmin();
                     case PROJECT_ALL -> fetchEmailRecipientsForAllProjectUsers(projectCode, bridgehead);
                 }));
@@ -189,6 +192,25 @@ public class EmailSenderAspect {
                         result.add(new EmailRecipient(bridgeheadAdminUser.getEmail(), Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN))));
         return result;
     }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(Optional<String> projectCode) {
+        Set<EmailRecipient> result = new HashSet<>();
+        fetchProjectBridgeheadsNotAcceptedNorRejected(projectCode).forEach(projectBridgehead ->
+                bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdminUser ->
+                        result.add(new EmailRecipient(bridgeheadAdminUser.getEmail(), Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN))));
+        return result;
+    }
+
+    private Set<ProjectBridgehead> fetchProjectBridgeheadsNotAcceptedNorRejected(Optional<String> projectCode) {
+        if (projectCode.isPresent()) {
+            Optional<Project> project = projectRepository.findByCode(projectCode.get());
+            if (project.isPresent()) {
+                return projectBridgeheadRepository.findByProjectAndState(project.get(), ProjectBridgeheadState.CREATED);
+            }
+        }
+        return new HashSet<>();
+    }
+
 
     private Set<ProjectBridgehead> fetchProjectBridgeheads(Optional<String> projectCode, Optional<String> bridgehead) {
         if (projectCode.isPresent()) {
