@@ -9,11 +9,11 @@ public class ProjectManagerConst {
     public final static String PROJECT_VIEW_SITE = "project-view";
 
     //Modules
-    public final static String USER_MODULE = "User Module";
-    public final static String PROJECT_STATE_MODULE = "Project State Module";
-    public final static String PROJECT_DOCUMENTS_MODULE = "Project Documents Module";
-    public final static String EXPORT_MODULE = "Export Module";
-    public final static String TOKEN_MANAGER_MODULE = "Token Manager Module";
+    public final static String USER_MODULE = "USER";
+    public final static String PROJECT_STATE_MODULE = "PROJECT_STATE";
+    public final static String PROJECT_DOCUMENTS_MODULE = "PROJECT_DOCUMENTS";
+    public final static String EXPORT_MODULE = "EXPORT";
+    public final static String TOKEN_MANAGER_MODULE = "TOKEN_MANAGER";
 
     // Actions
     public final static String SET_DEVELOPER_USER_ACTION = "SET_DEVELOPER_USER";
