@@ -25,8 +25,8 @@ public class FrontendService {
         this.frontendConfiguration = frontendConfiguration;
     }
 
-    public Collection<ModuleActionsPackage> fetchModuleActionPackage(String site, Optional<String> projectCode, Optional<String> bridgehead) {
-        Map<String, ModuleActionsPackage> moduleModuleActionsPackageMap = new HashMap<>();
+    public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<String> projectCode, Optional<String> bridgehead) {
+        Map<String, Map<String, Action>> moduleActionMap = new HashMap<>();
         String rootPath = RolesExtractor.getRootPath();
         Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
             FrontendSiteModules frontendSiteModules = method.getAnnotation(FrontendSiteModules.class);
@@ -41,16 +41,16 @@ public class FrontendService {
                 frontendSiteModuleList.addAll(List.of(frontendSiteModules.value()));
             }
             frontendSiteModuleList.forEach(tempFrontendSiteModule ->
-                    fetchModuleActionsPackages(moduleModuleActionsPackageMap, rootPath, path, tempFrontendSiteModule, frontendAction, site, projectCode, bridgehead, method));
+                    fetchModuleActionsPackages(moduleActionMap, rootPath, path, tempFrontendSiteModule, frontendAction, site, projectCode, bridgehead, method));
         });
-        return moduleModuleActionsPackageMap.values();
+        return moduleActionMap;
     }
 
-    private Map<String, ModuleActionsPackage> fetchModuleActionsPackages(Map<String, ModuleActionsPackage> moduleModuleActionsPackageMap,
-                                                                         String rootPath, Optional<String> path,
-                                                                         FrontendSiteModule frontendSiteModule, FrontendAction frontendAction,
-                                                                         String site, Optional<String> projectCode,
-                                                                         Optional<String> bridgehead, Method method) {
+    private void fetchModuleActionsPackages(Map<String, Map<String, Action>> moduleActionsMap,
+                                            String rootPath, Optional<String> path,
+                                            FrontendSiteModule frontendSiteModule, FrontendAction frontendAction,
+                                            String site, Optional<String> projectCode,
+                                            Optional<String> bridgehead, Method method) {
         if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
             Optional<RoleConstraints> roleConstraints = Optional.ofNullable(method.getAnnotation(RoleConstraints.class));
             Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, projectCode, bridgehead);
@@ -59,20 +59,18 @@ public class FrontendService {
                 responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridgehead);
             }
             if (responseEntity.isEmpty()) { // If there are no restrictions
-                addAction(moduleModuleActionsPackageMap, frontendSiteModule, frontendAction, rootPath, path, method);
+                addAction(moduleActionsMap, frontendSiteModule, frontendAction, rootPath, path, method);
             }
         }
-        return moduleModuleActionsPackageMap;
     }
 
-    private void addAction(Map<String, ModuleActionsPackage> moduleModuleActionsPackageMap, FrontendSiteModule frontendSiteModule, FrontendAction frontendAction, String rootPath, Optional<String> path, Method method) {
-        ModuleActionsPackage moduleActionsPackage = moduleModuleActionsPackageMap.get(frontendSiteModule.module());
-        if (moduleActionsPackage == null) {
-            moduleActionsPackage = new ModuleActionsPackage();
-            moduleActionsPackage.setModule(frontendSiteModule.module());
-            moduleModuleActionsPackageMap.put(frontendSiteModule.module(), moduleActionsPackage);
+    private void addAction(Map<String, Map<String, Action>> moduleActionsMap, FrontendSiteModule frontendSiteModule, FrontendAction frontendAction, String rootPath, Optional<String> path, Method method) {
+        Map<String, Action> actionNameActionsMap = moduleActionsMap.get(frontendSiteModule.module());
+        if (actionNameActionsMap == null) {
+            actionNameActionsMap = new HashMap<>();
+            moduleActionsMap.put(frontendSiteModule.module(), actionNameActionsMap);
         }
-        moduleActionsPackage.addAction(frontendAction.action(),
+        actionNameActionsMap.put(frontendAction.action(),
                 new Action(rootPath + path.get(), fetchHttpMethod(method), fetchHttpParams(method)));
     }
 
