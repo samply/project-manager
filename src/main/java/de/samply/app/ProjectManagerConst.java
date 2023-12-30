@@ -16,25 +16,23 @@ public class ProjectManagerConst {
     public final static String TOKEN_MANAGER_MODULE = "Token Manager Module";
 
     // Actions
-    public final static String SET_DEVELOPER_USER_ACTION = "Set user as developer";
-    public final static String SET_PILOT_USER_ACTION = "Set user as pilot";
-    public final static String SET_FINAL_USER_ACTION = "Set user as final execution user";
-    public final static String DESIGN_PROJECT_ACTION = "Design project";
-    public final static String CREATE_PROJECT_ACTION = "Create project";
-    public final static String ACCEPT_PROJECT_ACTION = "Accept project";
-    public final static String REJECT_PROJECT_ACTION = "Reject project";
-    public final static String ARCHIVE_PROJECT_ACTION = "Archive project";
-    public final static String START_DEVELOP_STAGE_ACTION = "Start develop stage";
-    public final static String START_PILOT_STAGE_ACTION = "Start pilot stage";
-    public final static String START_FINAL_STAGE_ACTION = "Start final stage";
-    public final static String FINISH_PROJECT_ACTION = "Finish project";
-    public final static String UPLOAD_PROJECT_DOCUMENT_ACTION = "Upload project document";
-    public final static String ADD_PROJECT_DOCUMENT_URL_ACTION = "Add project document URL";
-    public final static String DOWNLOAD_PROJECT_DOCUMENT_ACTION = "Download project document";
-    public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "Save query in bridgehead";
-    public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "Save and execute query in bridgehead";
-    public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "Fetch authentication script";
-    public final static String CREATE_QUERY_AND_DESIGN_PROJECT_ACTION = "Create Query and Design Project";
+    public final static String SET_DEVELOPER_USER_ACTION = "SET_DEVELOPER_USER";
+    public final static String SET_PILOT_USER_ACTION = "SET_PILOT_USER";
+    public final static String SET_FINAL_USER_ACTION = "SET_FINAL_USER";
+    public final static String CREATE_PROJECT_ACTION = "CREATE_PROJECT";
+    public final static String ACCEPT_PROJECT_ACTION = "ACCEPT_PROJECT";
+    public final static String REJECT_PROJECT_ACTION = "REJECT_PROJECT";
+    public final static String ARCHIVE_PROJECT_ACTION = "ARCHIVE_PROJECT";
+    public final static String START_DEVELOP_STAGE_ACTION = "START_DEVELOP_STAGE";
+    public final static String START_PILOT_STAGE_ACTION = "START_PILOT_STAGE";
+    public final static String START_FINAL_STAGE_ACTION = "START_FINAL_STAGE";
+    public final static String FINISH_PROJECT_ACTION = "FINISH_PROJECT";
+    public final static String UPLOAD_PROJECT_DOCUMENT_ACTION = "UPLOAD_PROJECT_DOCUMENT";
+    public final static String ADD_PROJECT_DOCUMENT_URL_ACTION = "ADD_PROJECT_DOCUMENT_URL";
+    public final static String DOWNLOAD_PROJECT_DOCUMENT_ACTION = "DOWNLOAD_PROJECT_DOCUMENT";
+    public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_QUERY_IN_BRIDGEHEAD";
+    public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
+    public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "FETCH_AUTHENTICATION_SCRIPT";
 
     // REST Services
     public final static String INFO = "/info";
