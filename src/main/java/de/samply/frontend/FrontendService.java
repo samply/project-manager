@@ -4,6 +4,7 @@ import de.samply.annotations.*;
 import de.samply.aop.ConstraintsService;
 import de.samply.app.ProjectManagerController;
 import de.samply.user.roles.RolesExtractor;
+import de.samply.utils.AspectUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -58,20 +59,30 @@ public class FrontendService {
                 responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridgehead);
             }
             if (responseEntity.isEmpty()) { // If there are no restrictions
-                addAction(moduleModuleActionsPackageMap, frontendSiteModule, frontendAction, rootPath, path);
+                addAction(moduleModuleActionsPackageMap, frontendSiteModule, frontendAction, rootPath, path, method);
             }
         }
         return moduleModuleActionsPackageMap;
     }
 
-    private void addAction(Map<String, ModuleActionsPackage> moduleModuleActionsPackageMap, FrontendSiteModule frontendSiteModule, FrontendAction frontendAction, String rootPath, Optional<String> path) {
+    private void addAction(Map<String, ModuleActionsPackage> moduleModuleActionsPackageMap, FrontendSiteModule frontendSiteModule, FrontendAction frontendAction, String rootPath, Optional<String> path, Method method) {
         ModuleActionsPackage moduleActionsPackage = moduleModuleActionsPackageMap.get(frontendSiteModule.module());
         if (moduleActionsPackage == null) {
             moduleActionsPackage = new ModuleActionsPackage();
             moduleActionsPackage.setModule(frontendSiteModule.module());
             moduleModuleActionsPackageMap.put(frontendSiteModule.module(), moduleActionsPackage);
         }
-        moduleActionsPackage.addAction(new Action(frontendAction.action(), rootPath + path.get()));
+        moduleActionsPackage.addAction(frontendAction.action(),
+                new Action(rootPath + path.get(), fetchHttpMethod(method), fetchHttpParams(method)));
+    }
+
+    private String fetchHttpMethod(Method method) {
+        Optional<String> result = AspectUtils.fetchHttpMethod(method);
+        return result.isPresent() ? result.get() : null;
+    }
+
+    private String[] fetchHttpParams(Method method) {
+        return AspectUtils.fetchRequestParamNames(method);
     }
 
     public String fetchUrl(String site, Map<String, String> parameters) {

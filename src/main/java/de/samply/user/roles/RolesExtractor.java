@@ -2,6 +2,7 @@ package de.samply.user.roles;
 
 import de.samply.annotations.RoleConstraints;
 import de.samply.app.ProjectManagerController;
+import de.samply.utils.AspectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.lang.annotation.Annotation;
@@ -20,29 +21,11 @@ public class RolesExtractor {
         Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
             RoleConstraints roleConstraints = method.getAnnotation(RoleConstraints.class);
             if (roleConstraints != null && roleConstraints.organisationRoles().length > 0) {
-                fetchPath(method).ifPresent(path -> fetchHttpMethod(method).ifPresent(httpMethod -> result.put(rootPath + path,
+                fetchPath(method).ifPresent(path -> AspectUtils.fetchHttpMethod(method).ifPresent(httpMethod -> result.put(rootPath + path,
                         new MethodRoles(httpMethod, Arrays.stream(roleConstraints.organisationRoles()).map(role -> role.name()).toArray(String[]::new)))));
             }
         });
         return result;
-    }
-
-    private static Optional<String> fetchHttpMethod(Method method) {
-        RequestMapping annotation = method.getAnnotation(RequestMapping.class);
-        if (annotation == null) {
-            for (Annotation methodAnnotation : method.getDeclaredAnnotations()) {
-                for (Annotation methodAnnotationAnnotation : methodAnnotation.annotationType().getDeclaredAnnotations()) {
-                    if (methodAnnotationAnnotation.annotationType() == RequestMapping.class) {
-                        return fetchHttpMetod((RequestMapping) methodAnnotationAnnotation);
-                    }
-                }
-            }
-        }
-        return fetchHttpMetod(annotation);
-    }
-
-    private static Optional<String> fetchHttpMetod(RequestMapping requestMapping) {
-        return Optional.of(requestMapping.method()[0].name());
     }
 
     public static Optional<String> fetchPath(Method method) {

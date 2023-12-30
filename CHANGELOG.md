@@ -53,3 +53,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - FrontendSiteModule repeatable
 - Action names
 - Module names
+- Http Method and Params for Actions
