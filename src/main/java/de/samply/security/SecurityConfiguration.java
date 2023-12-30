@@ -49,6 +49,9 @@ public class SecurityConfiguration {
     }
 
     private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
+        // Services without authentication required
+        authorization.requestMatchers(new AntPathRequestMatcher(ProjectManagerConst.INFO, "GET")).permitAll();
+        // Services with authentication required
         Map<String, MethodRoles> pathRolesMap = RolesExtractor.extractPathRolesMap();
         pathRolesMap.keySet().forEach(path -> authorization
                 .requestMatchers(new AntPathRequestMatcher(path, pathRolesMap.get(path).httpMethod()))

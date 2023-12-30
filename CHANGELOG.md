@@ -54,3 +54,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Action names
 - Module names
 - Http Method and Params for Actions
+- Test endpoint

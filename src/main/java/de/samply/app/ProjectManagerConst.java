@@ -36,6 +36,7 @@ public class ProjectManagerConst {
 
     // REST Services
     public final static String INFO = "/info";
+    public final static String TEST = "/test";
     public final static String ACTIONS = "/actions";
     public final static String SET_DEVELOPER_USER = "/set-developer-user";
     public final static String SET_PILOT_USER = "/set-pilot-user";
@@ -174,5 +175,6 @@ public class ProjectManagerConst {
     public final static int PROJECT_CODE_SIZE = 20;
     public final static int QUERY_CODE_SIZE = 20;
     public final static String NO_BRIDGEHEAD = "NONE";
+    public final static String THIS_IS_A_TEST = "This is a test";
 
 }

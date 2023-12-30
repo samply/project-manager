@@ -84,6 +84,11 @@ public class ProjectManagerController {
         return new ResponseEntity<>(projectVersion, HttpStatus.OK);
     }
 
+    @GetMapping(value = ProjectManagerConst.TEST)
+    public ResponseEntity<String> test() {
+        return new ResponseEntity<>(ProjectManagerConst.THIS_IS_A_TEST, HttpStatus.OK);
+    }
+
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchActions(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
