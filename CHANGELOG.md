@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2023-12-26]
+## [0.0.1 - 2023-12-30]
 ### Added
 - First version of the project
 - Spring Application
@@ -50,3 +50,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Thymeleaf Template Engine Configuration
 - EmailSender repeatable
 - Emails to BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT
+- FrontendSiteModule repeatable

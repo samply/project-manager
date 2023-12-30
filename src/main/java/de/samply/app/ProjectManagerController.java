@@ -160,8 +160,6 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
-    @FrontendAction(action = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT)
     public ResponseEntity<String> createQueryAndDesignProject(
             @NotEmpty @RequestBody() String query,
@@ -185,8 +183,6 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
-    @FrontendAction(action = ProjectManagerConst.DESIGN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity<String> designProject(
             @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
