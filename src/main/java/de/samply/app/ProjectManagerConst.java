@@ -129,6 +129,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG = "EMAIL_TEMPLATES_CONFIG";
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
+    public final static String PROJECT_MANAGER_UI_URL = "PROJECT_MANAGER_UI_URL";
 
 
     // Spring Values (SV)
@@ -166,6 +167,7 @@ public class ProjectManagerConst {
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
+    public final static String PROJECT_MANAGER_UI_URL_SV = HEAD_SV + PROJECT_MANAGER_UI_URL + BOTTOM_SV;
 
 
     // Others

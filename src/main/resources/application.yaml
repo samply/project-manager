@@ -1,5 +1,10 @@
 server:
   port: ${APPLICATION_PORT:8097}
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: none
 
 logging:
   level:
