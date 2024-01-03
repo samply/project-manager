@@ -37,6 +37,10 @@ public class UserRoles<T> {
         return bridgheadRolesMap.keySet();
     }
 
+    public boolean containsRole(T role) {
+        return containsRole(role, Optional.empty());
+    }
+
     public boolean containsRole(T role, Optional<String> bridgehead) {
         if (rolesNotDependentOnBridgeheads.contains(role)) {
             return true;

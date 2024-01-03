@@ -99,6 +99,19 @@ public class ProjectManagerController {
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead)));
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECTS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchProjects(
+            @RequestParam(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
+            @RequestParam(name = ProjectManagerConst.ARCHIVED, required = false) Boolean archived,
+            @RequestParam(name = ProjectManagerConst.PAGE) int page,
+            @RequestParam(name = ProjectManagerConst.PAGE_SIZE) int pageSize
+    ) {
+        return convertToResponseEntity(() -> projectService.fetchUserVisibleProjects(
+                Optional.ofNullable(projectState), Optional.ofNullable(archived), page, pageSize));
+    }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP})

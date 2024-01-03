@@ -9,6 +9,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_VIEW_SITE = "project-view";
 
     //Modules
+    public final static String PROJECTS_MODULE = "PROJECTS_MODULE";
     public final static String USER_MODULE = "USER";
     public final static String PROJECT_STATE_MODULE = "PROJECT_STATE";
     public final static String PROJECT_EDITION_MODULE = "PROJECT_EDITION";
@@ -45,6 +46,7 @@ public class ProjectManagerConst {
     public final static String INFO = "/info";
     public final static String TEST = "/test";
     public final static String ACTIONS = "/actions";
+    public final static String FETCH_PROJECTS = "/projects";
     public final static String SET_DEVELOPER_USER = "/set-developer-user";
     public final static String SET_PILOT_USER = "/set-pilot-user";
     public final static String SET_FINAL_USER = "/set-final-user";
@@ -79,6 +81,10 @@ public class ProjectManagerConst {
     public final static String EMAIL = "email";
     public final static String QUERY_FORMAT = "query-format";
     public final static String PROJECT_TYPE = "project-type";
+    public final static String PROJECT_STATE = "project-state";
+    public final static String ARCHIVED = "archived";
+    public final static String PAGE = "page";
+    public final static String PAGE_SIZE = "page-size";
     public final static String DOCUMENT = "document";
     public final static String DOCUMENT_TYPE = "document-type";
     public final static String DOCUMENT_URL = "document-url";

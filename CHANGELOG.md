@@ -60,3 +60,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch output format, query format and templates
 - Query Context
 - Download document rights to developer, pilot and final users
+- Fetch Projects
