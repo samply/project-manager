@@ -59,3 +59,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Edit project and query
 - Fetch output format, query format and templates
 - Query Context
+- Download document rights to developer, pilot and final users
