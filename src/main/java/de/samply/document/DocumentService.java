@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -28,17 +27,23 @@ public class DocumentService {
     private final ProjectDocumentRepository projectDocumentRepository;
     private final ProjectRepository projectRepository;
     private final Path documentsDirectory;
+    private final Path publicDocumentsDirectory;
+    private final String applicationFormFile;
     private final String timestampFormat;
     private final SessionUser sessionUser;
 
     public DocumentService(ProjectDocumentRepository projectDocumentRepository,
                            ProjectRepository projectRepository,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_SV) String documentsDirectory,
+                           @Value(ProjectManagerConst.PUBLIC_DOCUMENTS_DIRECTORY_SV) String publicDocumentsDirectory,
+                           @Value(ProjectManagerConst.APPLICATION_FORM_FILENAME_SV) String applicationFormFile,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV) String timestampFormat,
                            SessionUser sessionUser) throws IOException {
         this.projectDocumentRepository = projectDocumentRepository;
         this.projectRepository = projectRepository;
         this.documentsDirectory = fetchPathDirectory(documentsDirectory);
+        this.publicDocumentsDirectory = Path.of(publicDocumentsDirectory);
+        this.applicationFormFile = applicationFormFile;
         this.timestampFormat = timestampFormat;
         this.sessionUser = sessionUser;
     }
@@ -172,6 +177,19 @@ public class DocumentService {
         }
         return projectDocument;
     }
+
+    public Optional<Path> fetchPublicDocument(String documentFilename) {
+        if (documentFilename == null){
+            return Optional.empty();
+        }
+        Path path = publicDocumentsDirectory.resolve(documentFilename);
+        return (Files.exists(path)) ? Optional.of(path) : Optional.empty();
+    }
+
+    public Optional<Path> fetchApplicationForm() {
+        return fetchPublicDocument(applicationFormFile);
+    }
+
 
     private interface ConsumerWithException<T> {
         void accept(T t) throws DocumentServiceException;

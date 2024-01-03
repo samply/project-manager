@@ -30,6 +30,7 @@ public class ProjectManagerConst {
     public final static String UPLOAD_PROJECT_DOCUMENT_ACTION = "UPLOAD_PROJECT_DOCUMENT";
     public final static String ADD_PROJECT_DOCUMENT_URL_ACTION = "ADD_PROJECT_DOCUMENT_URL";
     public final static String DOWNLOAD_PROJECT_DOCUMENT_ACTION = "DOWNLOAD_PROJECT_DOCUMENT";
+    public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_QUERY_IN_BRIDGEHEAD";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
     public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "FETCH_AUTHENTICATION_SCRIPT";
@@ -55,6 +56,7 @@ public class ProjectManagerConst {
     public final static String UPLOAD_PROJECT_DOCUMENT = "/upload-project-document";
     public final static String ADD_PROJECT_DOCUMENT_URL = "/add-project-document-url";
     public final static String DOWNLOAD_PROJECT_DOCUMENT = "/download-project-document";
+    public final static String DOWNLOAD_APPLICATION_FORM = "/download-application-form";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
@@ -116,6 +118,8 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
     public final static String FRONTEND_CONFIG = "frontend";
     public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
+    public final static String PUBLIC_DOCUMENTS_DIRECTORY = "PUBLIC_DOCUMENTS_DIRECTORY";
+    public final static String APPLICATION_FORM_FILENAME = "APPLICATION_FORM_FILENAME";
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT = "PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP";
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES = "WEBCLIENT_BUFFER_SIZE_IN_BYTES";
     public final static String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS = "WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS";
@@ -129,7 +133,6 @@ public class ProjectManagerConst {
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG = "EMAIL_TEMPLATES_CONFIG";
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
-    public final static String PROJECT_MANAGER_UI_URL = "PROJECT_MANAGER_UI_URL";
 
 
     // Spring Values (SV)
@@ -142,6 +145,8 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY + BOTTOM_SV;
+    public final static String PUBLIC_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PUBLIC_DOCUMENTS_DIRECTORY + BOTTOM_SV;
+    public final static String APPLICATION_FORM_FILENAME_SV = HEAD_SV + APPLICATION_FORM_FILENAME + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMdd-HHmmss" + BOTTOM_SV;
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
     public final static String IS_TEST_ENVIRONMENT_SV = HEAD_SV + IS_TEST_ENVIRONMENT + ":false" + BOTTOM_SV;
@@ -167,7 +172,6 @@ public class ProjectManagerConst {
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
-    public final static String PROJECT_MANAGER_UI_URL_SV = HEAD_SV + PROJECT_MANAGER_UI_URL + BOTTOM_SV;
 
 
     // Others

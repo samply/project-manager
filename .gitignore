@@ -36,5 +36,7 @@ build/
 mvnw
 mvnw.cmd
 
-documents/
-templates/
+documents
+templates
+public-documents
+certs

@@ -352,6 +352,29 @@ public class ProjectManagerController {
         }
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @StateConstraints(projectStates = {ProjectState.DRAFT})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM)
+    public ResponseEntity<Resource> downloadApplicationForm(
+            // Project code is needed for the project constraint.
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) throws DocumentServiceException {
+        Optional<Path> filePath = documentService.fetchApplicationForm();
+        if (filePath.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filePath.get().getFileName().toString());
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        ByteArrayResource resource = fetchResource(filePath.get());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(filePath.get().toFile().length())
+                .body(resource);
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)

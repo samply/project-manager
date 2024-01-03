@@ -1,6 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.frontend.FrontendConfiguration;
 import de.samply.user.roles.MethodRoles;
 import de.samply.user.roles.RolesExtractor;
 import jakarta.servlet.ServletException;
@@ -48,8 +49,8 @@ public class SecurityConfiguration {
     @Value(ProjectManagerConst.IS_TEST_ENVIRONMENT_SV)
     private boolean isTestEnvironment;
 
-    @Value(ProjectManagerConst.PROJECT_MANAGER_UI_URL_SV)
-    private String projectManagerFrontendUrl;
+    @Autowired
+    private FrontendConfiguration frontendConfiguration;
 
     @Bean
     public OidcUserService customOidcUserService() {
@@ -108,7 +109,7 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(projectManagerFrontendUrl));
+        configuration.setAllowedOrigins(Arrays.asList(frontendConfiguration.getBaseUrl()));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
         //configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization")); // Allow required headers
         configuration.setAllowCredentials(true); // Allow credentials
