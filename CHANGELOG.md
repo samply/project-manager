@@ -56,3 +56,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Http Method and Params for Actions
 - Test endpoint
 - Download application form
+- Edit project and query

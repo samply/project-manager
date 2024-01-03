@@ -12,6 +12,7 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
+import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
@@ -58,6 +59,7 @@ public class ProjectManagerController {
     private final DocumentService documentService;
     private final ExporterService exporterService;
     private final TokenManagerService tokenManagerService;
+    private final ProjectService projectService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -65,7 +67,8 @@ public class ProjectManagerController {
                                     QueryService queryService,
                                     DocumentService documentService,
                                     ExporterService exporterService,
-                                    TokenManagerService tokenManagerService) {
+                                    TokenManagerService tokenManagerService,
+                                    ProjectService projectService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -73,6 +76,7 @@ public class ProjectManagerController {
         this.documentService = documentService;
         this.exporterService = exporterService;
         this.tokenManagerService = tokenManagerService;
+        this.projectService = projectService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -177,6 +181,32 @@ public class ProjectManagerController {
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl);
         String projectCode = this.projectEventService.draft(bridgeheads, queryCode, projectType);
+        return convertToResponseEntity(() -> this.frontendService.fetchUrl(
+                ProjectManagerConst.PROJECT_VIEW_SITE,
+                Map.of(ProjectManagerConst.QUERY_CODE, projectCode)
+        ));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.EDIT_PROJECT)
+    public ResponseEntity<String> editProject(
+            @RequestBody() String query,
+            @RequestParam(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
+            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
+            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
+            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        projectService.editProject(projectCode, projectType, bridgeheads);
+        queryService.editQuery(projectCode, query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.QUERY_CODE, projectCode)

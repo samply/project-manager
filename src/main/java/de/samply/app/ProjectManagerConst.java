@@ -11,6 +11,7 @@ public class ProjectManagerConst {
     //Modules
     public final static String USER_MODULE = "USER";
     public final static String PROJECT_STATE_MODULE = "PROJECT_STATE";
+    public final static String PROJECT_EDITION_MODULE = "PROJECT_EDITION";
     public final static String PROJECT_DOCUMENTS_MODULE = "PROJECT_DOCUMENTS";
     public final static String EXPORT_MODULE = "EXPORT";
     public final static String TOKEN_MANAGER_MODULE = "TOKEN_MANAGER";
@@ -34,6 +35,8 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_QUERY_IN_BRIDGEHEAD";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
     public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "FETCH_AUTHENTICATION_SCRIPT";
+    public final static String EDIT_PROJECT_ACTION = "EDIT_PROJECT";
+
 
     // REST Services
     public final static String INFO = "/info";
@@ -43,6 +46,7 @@ public class ProjectManagerConst {
     public final static String SET_PILOT_USER = "/set-pilot-user";
     public final static String SET_FINAL_USER = "/set-final-user";
     public final static String CREATE_QUERY_AND_DESIGN_PROJECT = "/create-query-and-design-project";
+    public final static String EDIT_PROJECT = "/edit-project";
     public final static String DESIGN_PROJECT = "/design-project";
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";

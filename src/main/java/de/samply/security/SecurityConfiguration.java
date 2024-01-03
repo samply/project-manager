@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationF
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -45,9 +44,6 @@ public class SecurityConfiguration {
 
     @Value(ProjectManagerConst.SECURITY_ENABLED_SV)
     private boolean isSecurityEnabled;
-
-    @Value(ProjectManagerConst.IS_TEST_ENVIRONMENT_SV)
-    private boolean isTestEnvironment;
 
     @Autowired
     private FrontendConfiguration frontendConfiguration;
