@@ -213,6 +213,44 @@ public class ProjectManagerController {
         ));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES)
+    public ResponseEntity<String> fetchExporterTemplates(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+    ) {
+        return convertToResponseEntity(() -> exporterService.getExporterTemplates(projectType));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_QUERY_FORMATS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_QUERY_FORMATS)
+    public ResponseEntity<String> fetchQueryFormats(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> QueryFormat.values());
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_OUTPUT_FORMATS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_OUTPUT_FORMATS)
+    public ResponseEntity<String> fetchOutputFormats(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> OutputFormat.values());
+    }
+
+
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity<String> designProject(

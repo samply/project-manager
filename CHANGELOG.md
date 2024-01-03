@@ -57,3 +57,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Test endpoint
 - Download application form
 - Edit project and query
+- Fetch output format, query format and templates

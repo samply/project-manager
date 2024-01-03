@@ -12,6 +12,7 @@ import de.samply.db.model.Project;
 import de.samply.db.model.Query;
 import de.samply.db.repository.BridgeheadOperationRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
 import io.netty.channel.ChannelOption;
@@ -35,9 +36,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -57,10 +56,14 @@ public class ExporterService {
     private final SessionUser sessionUser;
     private final ProjectRepository projectRepository;
     private final BridgeheadOperationRepository bridgeheadOperationRepository;
+    private final Set<String> exportTemplates;
+    private final Set<String> datashieldTemplates;
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public ExporterService(
+            @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
+            @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
             @Value(ProjectManagerConst.WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS_SV) Integer webClientRequestTimeoutInSeconds,
             @Value(ProjectManagerConst.WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS_SV) Integer webClientConnectionTimeoutInSeconds,
             @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS_SV) Integer webClientTcpKeepIdleInSeconds,
@@ -85,6 +88,8 @@ public class ExporterService {
         this.sessionUser = sessionUser;
         this.projectRepository = projectRepository;
         this.bridgeheadOperationRepository = bridgeheadOperationRepository;
+        this.exportTemplates = exportTemplates;
+        this.datashieldTemplates = datashieldTemplates;
     }
 
     private WebClient createWebClient(String exporterUrl) {
@@ -234,5 +239,12 @@ public class ExporterService {
         return Base64Utils.encode(context);
     }
 
+    public Set<String> getExporterTemplates(@NotNull ProjectType projectType) {
+        return switch (projectType){
+            case EXPORT -> exportTemplates;
+            case DATASHIELD -> datashieldTemplates;
+            default -> new HashSet<>();
+        };
+    }
 
 }

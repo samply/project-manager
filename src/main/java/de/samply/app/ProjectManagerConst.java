@@ -36,6 +36,9 @@ public class ProjectManagerConst {
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
     public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "FETCH_AUTHENTICATION_SCRIPT";
     public final static String EDIT_PROJECT_ACTION = "EDIT_PROJECT";
+    public final static String FETCH_EXPORTER_TEMPLATES_ACTION = "EXPORTER_TEMPLATES";
+    public final static String FETCH_QUERY_FORMATS_ACTION = "FETCH_QUERY_FORMATS";
+    public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
 
 
     // REST Services
@@ -47,6 +50,9 @@ public class ProjectManagerConst {
     public final static String SET_FINAL_USER = "/set-final-user";
     public final static String CREATE_QUERY_AND_DESIGN_PROJECT = "/create-query-and-design-project";
     public final static String EDIT_PROJECT = "/edit-project";
+    public final static String FETCH_EXPORTER_TEMPLATES = "/exporter-templates";
+    public final static String FETCH_QUERY_FORMATS = "/query-formats";
+    public final static String FETCH_OUTPUT_FORMATS = "/output-formats";
     public final static String DESIGN_PROJECT = "/design-project";
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
@@ -92,6 +98,7 @@ public class ProjectManagerConst {
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
+    public final static String FRONTEND_CONFIG = "frontend";
 
     // Exporter Variables
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
@@ -120,7 +127,6 @@ public class ProjectManagerConst {
     public final static String BK_USER_GROUP_SUFFIX = "BK_USER_GROUP_SUFFIX";
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
-    public final static String FRONTEND_CONFIG = "frontend";
     public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
     public final static String PUBLIC_DOCUMENTS_DIRECTORY = "PUBLIC_DOCUMENTS_DIRECTORY";
     public final static String APPLICATION_FORM_FILENAME = "APPLICATION_FORM_FILENAME";
@@ -137,6 +143,8 @@ public class ProjectManagerConst {
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG = "EMAIL_TEMPLATES_CONFIG";
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
+    public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
+    public final static String DATASHIELD_TEMPLATES = "DATASHIELD_TEMPLATES";
 
 
     // Spring Values (SV)
@@ -176,6 +184,8 @@ public class ProjectManagerConst {
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
+    public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
+    public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
 
 
     // Others
