@@ -74,17 +74,17 @@ public class ProjectService {
     }
 
     public Page<Project> fetchUserVisibleProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize) {
+            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize, boolean modifiedDescendant) {
         PageRequest pageRequest = PageRequest.of(page, pageSize);
         if (isProjectManagerAdmin()) {
-            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest);
+            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant);
         }
         Set<String> bridgeheads = sessionUser.getBridgeheads();
         // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
         if (isBridgeheadAdmin()) {
-            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest);
+            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest, modifiedDescendant);
         }
-        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest);
+        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant);
     }
 
     private boolean isProjectManagerAdmin() {
@@ -102,58 +102,149 @@ public class ProjectService {
     }
 
     private Page<Project> fetchProjectManagerAdminProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest) {
+            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
-                return projectRepository.findAll(pageRequest);
+                if (modifiedDescendant) {
+                    return projectRepository.findAllByOrderByModifiedAtDesc(pageRequest);
+                } else {
+                    return projectRepository.findAllByOrderByModifiedAtAsc(pageRequest);
+                }
             } else {
-                return (archived.get()) ? projectRepository.findAllArchivedProjects(pageRequest) :
-                        projectRepository.findAllNotArchivedProjects(pageRequest);
+                if (archived.get()) {
+                    if (modifiedDescendant) {
+                        return projectRepository.findAllArchivedProjectsModifiedAtDesc(pageRequest);
+                    } else {
+                        return projectRepository.findAllArchivedProjectsModifiedAtAsc(pageRequest);
+                    }
+                } else {
+                    if (modifiedDescendant) {
+                        return projectRepository.findAllNotArchivedProjectsModifiedAtDesc(pageRequest);
+                    } else {
+                        return projectRepository.findAllNotArchivedProjectsModifiedAtAsc(pageRequest);
+                    }
+                }
             }
         } else {
             if (archived.isEmpty()) {
-                return projectRepository.findByState(projectState.get(), pageRequest);
+                if (modifiedDescendant) {
+                    return projectRepository.findByStateOrderByModifiedAtDesc(projectState.get(), pageRequest);
+                } else {
+                    return projectRepository.findByStateOrderByModifiedAtAsc(projectState.get(), pageRequest);
+                }
             } else {
-                return (archived.get()) ? projectRepository.findArchivedProjectsByState(projectState.get(), pageRequest) :
-                        projectRepository.findNotArchivedProjectsByState(projectState.get(), pageRequest);
+                if (archived.get()) {
+                    if (modifiedDescendant) {
+                        return projectRepository.findArchivedProjectsByStateModifiedAtDesc(projectState.get(), pageRequest);
+                    } else {
+                        return projectRepository.findArchivedProjectsByStateModifiedAtAsc(projectState.get(), pageRequest);
+                    }
+                } else {
+                    if (modifiedDescendant) {
+                        return projectRepository.findNotArchivedProjectsByStateModifiedAtDesc(projectState.get(), pageRequest);
+                    } else {
+                        return projectRepository.findNotArchivedProjectsByStateModifiedAtAsc(projectState.get(), pageRequest);
+                    }
+                }
             }
         }
     }
 
     private Page<Project> fetchBridgeheadAdminProjects(
-            Set<String> bridgeheads, Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest) {
+            Set<String> bridgeheads, Optional<ProjectState> projectState, Optional<Boolean> archived,
+            PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
-                return projectRepository.findByBridgeheads(bridgeheads, pageRequest);
+                if (modifiedDescendant) {
+                    return projectRepository.findByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                } else {
+                    return projectRepository.findByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                }
             } else {
-                return (archived.get()) ? projectRepository.findArchivedProjectsByBridgeheads(bridgeheads, pageRequest) :
-                        projectRepository.findNotArchivedProjectsByBridgeheads(bridgeheads, pageRequest);
+                if (archived.get()) {
+                    if (modifiedDescendant) {
+                        return projectRepository.findArchivedProjectsByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findArchivedProjectsByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                    }
+                } else {
+                    if (modifiedDescendant) {
+                        return projectRepository.findNotArchivedProjectsByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findNotArchivedProjectsByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                    }
+                }
             }
         } else {
             if (archived.isEmpty()) {
-                return projectRepository.findByStateAndBridgeheads(projectState.get(), bridgeheads, pageRequest);
+                if (modifiedDescendant) {
+                    return projectRepository.findByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                } else {
+                    return projectRepository.findByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                }
             } else {
-                return (archived.get()) ? projectRepository.findArchivedProjectsByStateAndBridgeheads(projectState.get(), bridgeheads, pageRequest) :
-                        projectRepository.findNotArchivedProjectsByStateAndBridgeheads(projectState.get(), bridgeheads, pageRequest);
+                if (archived.get()) {
+                    if (modifiedDescendant) {
+                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                    }
+                } else {
+                    if (modifiedDescendant) {
+                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                    }
+                }
             }
         }
     }
 
     private Page<Project> fetchResearcherProjects(String email, Set<String> bridgeheads, Optional<ProjectState> projectState,
-                                                  Optional<Boolean> archived, PageRequest pageRequest) {
+                                                  Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
-                return projectRepository.findByEmailAndBridgeheads(email, bridgeheads, pageRequest);
+                if (modifiedDescendant) {
+                    return projectRepository.findByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                } else {
+                    return projectRepository.findByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                }
             } else {
-                return (archived.get()) ? projectRepository.findArchivedProjectsByEmailAndBridgeheads(email, bridgeheads, pageRequest) :
-                        projectRepository.findNotArchivedProjectsByEmailAndBridgeheads(email, bridgeheads, pageRequest);
+                if (archived.get()) {
+                    if (modifiedDescendant) {
+                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                    }
+                } else {
+                    if (modifiedDescendant) {
+                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                    }
+                }
             }
         } else {
             if (archived.isEmpty()) {
-                return projectRepository.findByEmailAndStateAndBridgeheads(email, projectState.get(), bridgeheads, pageRequest);
+                if (modifiedDescendant) {
+                    return projectRepository.findByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                } else {
+                    return projectRepository.findByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                }
             } else {
-                return (archived.get()) ? projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheads(email, projectState.get(), bridgeheads, pageRequest) :
-                        projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheads(email, projectState.get(), bridgeheads, pageRequest);
+                if (archived.get()) {
+                    if (modifiedDescendant) {
+                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                    }
+                } else {
+                    if (modifiedDescendant) {
+                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                    } else {
+                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                    }
+                }
             }
         }
     }

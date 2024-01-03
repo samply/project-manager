@@ -85,6 +85,7 @@ public class ProjectManagerConst {
     public final static String ARCHIVED = "archived";
     public final static String PAGE = "page";
     public final static String PAGE_SIZE = "page-size";
+    public final static String LAST_MODIFIED_DESC = "modified-desc";
     public final static String DOCUMENT = "document";
     public final static String DOCUMENT_TYPE = "document-type";
     public final static String DOCUMENT_URL = "document-url";

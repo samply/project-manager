@@ -61,3 +61,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Query Context
 - Download document rights to developer, pilot and final users
 - Fetch Projects
+- Modified Desc as parameter of fetch projects

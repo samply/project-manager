@@ -106,11 +106,12 @@ public class ProjectManagerController {
     public ResponseEntity<String> fetchProjects(
             @RequestParam(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
             @RequestParam(name = ProjectManagerConst.ARCHIVED, required = false) Boolean archived,
+            @RequestParam(name = ProjectManagerConst.LAST_MODIFIED_DESC, required = false, defaultValue = "true") boolean modifiedDescendant,
             @RequestParam(name = ProjectManagerConst.PAGE) int page,
             @RequestParam(name = ProjectManagerConst.PAGE_SIZE) int pageSize
     ) {
         return convertToResponseEntity(() -> projectService.fetchUserVisibleProjects(
-                Optional.ofNullable(projectState), Optional.ofNullable(archived), page, pageSize));
+                Optional.ofNullable(projectState), Optional.ofNullable(archived), page, pageSize, modifiedDescendant));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
