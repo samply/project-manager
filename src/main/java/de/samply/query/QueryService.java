@@ -26,7 +26,7 @@ public class QueryService {
 
     public String createQuery(
             String query, QueryFormat queryFormat, String label, String description,
-            OutputFormat outputFormat, String templateId, String humanReadable, String explorerUrl) {
+            OutputFormat outputFormat, String templateId, String humanReadable, String explorerUrl, String queryContext) {
         Query tempQuery = new Query();
         tempQuery.setCode(generateQueryCode());
         tempQuery.setQuery(query);
@@ -38,6 +38,7 @@ public class QueryService {
         tempQuery.setTemplateId(templateId);
         tempQuery.setHumanReadable(humanReadable);
         tempQuery.setExplorerUrl(explorerUrl);
+        tempQuery.setContext(queryContext);
         tempQuery = this.queryRepository.save(tempQuery);
         return tempQuery.getCode();
     }
@@ -48,7 +49,7 @@ public class QueryService {
 
     public void editQuery(@NotNull String projectCode,
                           String query, QueryFormat queryFormat, String label, String description,
-                          OutputFormat outputFormat, String templateId, String humanReadable, String explorerUrl) {
+                          OutputFormat outputFormat, String templateId, String humanReadable, String explorerUrl, String queryContext) {
         Optional<Project> projectOptional = projectRepository.findByCode(projectCode);
         if (projectOptional.isPresent()) {
             Query projectQuery = projectOptional.get().getQuery();
@@ -84,6 +85,10 @@ public class QueryService {
                 }
                 if (explorerUrl != null) {
                     projectQuery.setExplorerUrl(explorerUrl);
+                    hasChanged = true;
+                }
+                if (queryContext != null) {
+                    projectQuery.setContext(queryContext);
                     hasChanged = true;
                 }
                 if (hasChanged) {

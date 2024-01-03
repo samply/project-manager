@@ -90,6 +90,7 @@ public class ProjectManagerConst {
     public final static String TEMPLATE_ID = "template-id";
     public final static String HUMAN_READABLE = "human-readable";
     public final static String EXPLORER_URL = "explorer-url";
+    public final static String QUERY_CONTEXT = "query-context";
 
     // Email context properties
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";

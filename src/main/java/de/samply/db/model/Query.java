@@ -53,4 +53,7 @@ public class Query {
     @Column(name = "explorer_url")
     private String explorerUrl;
 
+    @Column(name = "context")
+    private String context;
+
 }

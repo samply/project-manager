@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS samply;
 
 SET
-search_path TO samply;
+    search_path TO samply;
 
 CREATE TABLE samply.query
 (
@@ -15,7 +15,8 @@ CREATE TABLE samply.query
     output_format  TEXT,
     template_id    TEXT,
     label          TEXT,
-    description    TEXT
+    description    TEXT,
+    context        TEXT
 );
 
 CREATE TABLE samply.project

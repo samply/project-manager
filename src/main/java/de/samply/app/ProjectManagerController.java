@@ -158,10 +158,11 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
             @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl
+            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
     ) {
         return convertToResponseEntity(() ->
-                this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl));
+                this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -176,10 +177,11 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
             @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType
+            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
+            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
     ) throws ProjectEventActionsException {
         String queryCode = this.queryService.createQuery(
-                query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl);
+                query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
         String projectCode = this.projectEventService.draft(bridgeheads, queryCode, projectType);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
@@ -203,10 +205,11 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
             @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
             @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
+            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         projectService.editProject(projectCode, projectType, bridgeheads);
-        queryService.editQuery(projectCode, query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl);
+        queryService.editQuery(projectCode, query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.QUERY_CODE, projectCode)

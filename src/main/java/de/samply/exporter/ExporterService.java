@@ -199,7 +199,7 @@ public class ExporterService {
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(projectCode),
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectCode),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.get().getCreatorEmail(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID, sessionUser.getEmail(),
                 ProjectManagerConst.EXPORTER_PARAM_OUTPUT_FORMAT, query.getOutputFormat().name(),
@@ -221,7 +221,7 @@ public class ExporterService {
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(projectCode),
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectCode),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.get().getCreatorEmail(),
                 ProjectManagerConst.EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT, query.getOutputFormat().name(),
                 ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query.getTemplateId(),
@@ -234,13 +234,16 @@ public class ExporterService {
         return date.format(DateTimeFormatter.ISO_DATE);
     }
 
-    private String generateQueryContextForExporter(String projectCode) {
+    private String generateQueryContextForExporter(String queryContext, String projectCode) {
         String context = ProjectManagerConst.EXPORTER_QUERY_CONTEXT_PROJECT_ID + '=' + projectCode;
+        if (queryContext != null) {
+            context += ',' + queryContext;
+        }
         return Base64Utils.encode(context);
     }
 
     public Set<String> getExporterTemplates(@NotNull ProjectType projectType) {
-        return switch (projectType){
+        return switch (projectType) {
             case EXPORT -> exportTemplates;
             case DATASHIELD -> datashieldTemplates;
             default -> new HashSet<>();
