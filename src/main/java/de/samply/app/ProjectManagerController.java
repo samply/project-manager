@@ -101,7 +101,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
-    @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECTS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchProjects(
             @RequestParam(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
@@ -366,59 +366,222 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectEventService.finish(projectCode));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
-    @FrontendAction(action = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT_ACTION)
-    @PostMapping(value = ProjectManagerConst.UPLOAD_PROJECT_DOCUMENT)
-    public ResponseEntity<String> uploadProjectDocument(
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT)
+    public ResponseEntity<String> uploadOtherDocument(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT_TYPE) DocumentType documentType,
             @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
-                projectCode, Optional.ofNullable(bridgehead), document, documentType, Optional.ofNullable(label)));
+                projectCode, Optional.empty(), document, DocumentType.OTHERS, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_PUBLICATION_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_PUBLICATION)
+    public ResponseEntity<String> uploadPublication(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                projectCode, Optional.empty(), document, DocumentType.PUBLICATION, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_SCRIPT_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_SCRIPT)
+    public ResponseEntity<String> uploadScript(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying developer user or bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                projectCode, Optional.empty(), document, DocumentType.SCRIPT, Optional.ofNullable(label)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
-    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.ADD_PROJECT_DOCUMENT_URL)
-    public ResponseEntity<String> addProjectDocumentUrl(
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_APPLICATION_FORM_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_APPLICATION_FORM)
+    public ResponseEntity<String> uploadApplicationForm(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT_TYPE) DocumentType documentType,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                projectCode, Optional.empty(), document, DocumentType.APPLICATION_FORM, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_VOTUM_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM)
+    public ResponseEntity<String> uploadVotum(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                projectCode, Optional.ofNullable(bridgehead), document, DocumentType.VOTUM, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_PUBLICATION_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_PUBLICATION_URL)
+    public ResponseEntity<String> addPublicationUrl(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
             @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label
     ) {
         return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
-                projectCode, Optional.ofNullable(bridgehead), documentUrl, documentType, Optional.ofNullable(label)));
+                projectCode, Optional.empty(), documentUrl, DocumentType.PUBLICATION, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_OTHER_DOCUMENT_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_OTHER_DOCUMENT_URL)
+    public ResponseEntity<String> addOtherDocumentUrl(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label
+    ) {
+        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
+                projectCode, Optional.ofNullable(bridgehead), documentUrl, DocumentType.OTHERS, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_SCRIPT_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_SCRIPT)
+    public ResponseEntity<Resource> downloadScript(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying developer user or bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            ) throws DocumentServiceException {
+        return downloadProjectDocument(projectCode, null, DocumentType.SCRIPT);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM)
+    public ResponseEntity<Resource> downloadVotum(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(projectCode, bridgehead, DocumentType.VOTUM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM)
+    public ResponseEntity<Resource> downloadApplicationForm(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            ) throws DocumentServiceException {
+        return downloadProjectDocument(projectCode, null, DocumentType.APPLICATION_FORM);
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @StateConstraints(projectStates = {ProjectState.DRAFT})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM_TEMPLATE_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM_TEMPLATE)
+    public ResponseEntity<Resource> downloadApplicationFormTemplate(
+            // Project code is needed for the project constraint.
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) throws DocumentServiceException {
+        Optional<Path> filePath = documentService.fetchApplicationForm();
+        return (filePath.isEmpty()) ? ResponseEntity.notFound().build() :
+                downloadDocument(filePath.get().getFileName().toString(), filePath.get());
+    }
+
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PUBLICATION_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_PUBLICATION)
+    public ResponseEntity<Resource> downloadPublication(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.FILENAME) String filename
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(projectCode, null, filename, DocumentType.PUBLICATION);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
-    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT_ACTION)
-    @GetMapping(value = ProjectManagerConst.DOWNLOAD_PROJECT_DOCUMENT)
-    public ResponseEntity<Resource> downloadProjectDocument(
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT)
+    public ResponseEntity<Resource> downloadOtherProjectDocument(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
-        Optional<ProjectDocument> projectDocumentOptional = this.documentService.fetchProjectDocument(projectCode, Optional.ofNullable(bridgehead), filename);
-        if (projectDocumentOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        projectDocumentOptional.get().setOriginalFilename(encodeFilename(projectDocumentOptional.get().getOriginalFilename()));
+        return downloadProjectDocument(projectCode, bridgehead, filename, DocumentType.OTHERS);
+    }
+
+    private ResponseEntity<Resource> downloadProjectDocument(String projectCode, String bridgehead, DocumentType documentType) throws DocumentServiceException {
+        return downloadProjectDocument(this.documentService.fetchLastDocumentOfThisType(projectCode, Optional.ofNullable(bridgehead), documentType));
+    }
+
+    private ResponseEntity<Resource> downloadProjectDocument(String projectCode, String bridgehead, String filename, DocumentType allowedType) throws DocumentServiceException {
+        Optional<ProjectDocument> projectDocument = this.documentService.fetchProjectDocument(projectCode, Optional.ofNullable(bridgehead), filename);
+        return (projectDocument.isPresent() && projectDocument.get().getDocumentType() != allowedType) ?
+                createMethodNotAllowedResponse("Requested document is not of allowed type: " + allowedType) :
+                downloadProjectDocument(projectDocument);
+    }
+
+    private ResponseEntity<Resource> createMethodNotAllowedResponse(String errorMessage) {
+        ByteArrayResource errorResource = new ByteArrayResource(errorMessage.getBytes());
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + projectDocumentOptional.get().getOriginalFilename());
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .headers(headers)
+                .body(errorResource);
+    }
+
+    private ResponseEntity<Resource> downloadProjectDocument(Optional<ProjectDocument> projectDocument) throws DocumentServiceException {
+        return (projectDocument.isEmpty()) ? ResponseEntity.notFound().build() :
+                downloadDocument(encodeFilename(projectDocument.get().getOriginalFilename()), Path.of(projectDocument.get().getFilePath()));
+    }
+
+    private ResponseEntity<Resource> downloadDocument(String filename, Path filePath) throws DocumentServiceException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        Path filePath = Path.of(projectDocumentOptional.get().getFilePath());
-        ByteArrayResource resource = fetchResource(filePath);
         return ResponseEntity.ok()
                 .headers(headers)
                 .contentLength(filePath.toFile().length())
-                .body(resource);
+                .body(fetchResource(filePath));
     }
 
     private String encodeFilename(String filename) {
@@ -435,29 +598,6 @@ public class ProjectManagerController {
         } catch (IOException e) {
             throw new DocumentServiceException(e);
         }
-    }
-
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @StateConstraints(projectStates = {ProjectState.DRAFT})
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
-    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM_ACTION)
-    @GetMapping(value = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM)
-    public ResponseEntity<Resource> downloadApplicationForm(
-            // Project code is needed for the project constraint.
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
-    ) throws DocumentServiceException {
-        Optional<Path> filePath = documentService.fetchApplicationForm();
-        if (filePath.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filePath.get().getFileName().toString());
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        ByteArrayResource resource = fetchResource(filePath.get());
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(filePath.get().toFile().length())
-                .body(resource);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})

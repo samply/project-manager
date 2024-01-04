@@ -7,6 +7,7 @@ public class ProjectManagerConst {
     // Sites
     public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
     public final static String PROJECT_VIEW_SITE = "project-view";
+    public final static String VOTUM_VIEW_SITE = "votum-view";
 
     //Modules
     public final static String PROJECTS_MODULE = "PROJECTS_MODULE";
@@ -14,6 +15,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_STATE_MODULE = "PROJECT_STATE";
     public final static String PROJECT_EDITION_MODULE = "PROJECT_EDITION";
     public final static String PROJECT_DOCUMENTS_MODULE = "PROJECT_DOCUMENTS";
+    public final static String VOTUM_ACTIONS_MODULE = "VOTUM_ACTIONS";
     public final static String EXPORT_MODULE = "EXPORT";
     public final static String TOKEN_MANAGER_MODULE = "TOKEN_MANAGER";
 
@@ -29,10 +31,7 @@ public class ProjectManagerConst {
     public final static String START_PILOT_STAGE_ACTION = "START_PILOT_STAGE";
     public final static String START_FINAL_STAGE_ACTION = "START_FINAL_STAGE";
     public final static String FINISH_PROJECT_ACTION = "FINISH_PROJECT";
-    public final static String UPLOAD_PROJECT_DOCUMENT_ACTION = "UPLOAD_PROJECT_DOCUMENT";
-    public final static String ADD_PROJECT_DOCUMENT_URL_ACTION = "ADD_PROJECT_DOCUMENT_URL";
-    public final static String DOWNLOAD_PROJECT_DOCUMENT_ACTION = "DOWNLOAD_PROJECT_DOCUMENT";
-    public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
+    public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE_ACTION = "DOWNLOAD_APPLICATION_FORM_TEMPLATE";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_QUERY_IN_BRIDGEHEAD";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
     public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "FETCH_AUTHENTICATION_SCRIPT";
@@ -40,6 +39,24 @@ public class ProjectManagerConst {
     public final static String FETCH_EXPORTER_TEMPLATES_ACTION = "EXPORTER_TEMPLATES";
     public final static String FETCH_QUERY_FORMATS_ACTION = "FETCH_QUERY_FORMATS";
     public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
+    public final static String UPLOAD_VOTUM_ACTION = "UPLOAD_VOTUM";
+    public final static String UPLOAD_APPLICATION_FORM_ACTION = "UPLOAD_APPLICATION_FORM";
+    public final static String UPLOAD_PUBLICATION_ACTION = "UPLOAD_PUBLICATION";
+    public final static String UPLOAD_SCRIPT_ACTION = "UPLOAD_SCRIPT";
+    public final static String UPLOAD_OTHER_DOCUMENT_ACTION = "UPLOAD_OTHER_DOCUMENT";
+    public final static String ADD_PUBLICATION_URL_ACTION = "ADD_PUBLICATION_URL";
+    public final static String ADD_OTHER_DOCUMENT_URL_ACTION = "ADD_OTHER_DOCUMENT_URL";
+    public final static String DOWNLOAD_VOTUM_ACTION = "DOWNLOAD_VOTUM";
+    public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
+    public final static String DOWNLOAD_PUBLICATION_ACTION = "DOWNLOAD_PUBLICATION";
+    public final static String DOWNLOAD_SCRIPT_ACTION = "DOWNLOAD_SCRIPT";
+    public final static String DOWNLOAD_OTHER_DOCUMENT_ACTION = "DOWNLOAD_OTHER_DOCUMENT";
+    public final static String ACCEPT_BRIDGEHEAD_PROJECT_ACTION = "ACCEPT_BRIDGEHEAD_PROJECT";
+    public final static String REJECT_BRIDGEHEAD_PROJECT_ACTION = "REJECT_BRIDGEHEAD_PROJECT";
+    public final static String REQUEST_SCRIPT_CHANGES_ACTION = "REQUEST_SCRIPT_CHANGES";
+    public final static String FETCH_PROJECT_TYPES_ACTION = "FETCH_PROJECT_TYPES";
+    public final static String FETCH_PROJECTS_ACTION = "/projects";
+
 
 
     // REST Services
@@ -59,16 +76,29 @@ public class ProjectManagerConst {
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
     public final static String REJECT_PROJECT = "/reject-project";
+    public final static String ACCEPT_BRIDGEHEAD_PROJECT = "/accept-bridgehead-project";
+    public final static String REJECT_BRIDGEHEAD_PROJECT = "/reject-bridgehead-project";
+    public final static String REQUEST_SCRIPT_CHANGES = "/request-script-changes";
     public final static String ARCHIVE_PROJECT = "/archive-project";
     public final static String START_DEVELOP_STAGE = "/start-develop-project";
     public final static String START_PILOT_STAGE = "/start-pilot-project";
     public final static String START_FINAL_STAGE = "/start-final-project";
     public final static String FINISH_PROJECT = "/finish-project";
     public final static String CREATE_QUERY = "/create-query";
-    public final static String UPLOAD_PROJECT_DOCUMENT = "/upload-project-document";
-    public final static String ADD_PROJECT_DOCUMENT_URL = "/add-project-document-url";
-    public final static String DOWNLOAD_PROJECT_DOCUMENT = "/download-project-document";
+    public final static String FETCH_PROJECT_TYPES = "/project-types";
+    public final static String UPLOAD_VOTUM = "/upload-votum";
+    public final static String UPLOAD_APPLICATION_FORM = "/upload-application-form";
+    public final static String UPLOAD_PUBLICATION = "/upload-publication";
+    public final static String UPLOAD_SCRIPT = "/upload-script";
+    public final static String UPLOAD_OTHER_DOCUMENT = "/upload-other-document";
+    public final static String ADD_PUBLICATION_URL = "/add-publication-url";
+    public final static String ADD_OTHER_DOCUMENT_URL = "/add-other-document-url";
+    public final static String DOWNLOAD_VOTUM = "/download-votum";
     public final static String DOWNLOAD_APPLICATION_FORM = "/download-application-form";
+    public final static String DOWNLOAD_PUBLICATION = "/download-publication";
+    public final static String DOWNLOAD_SCRIPT = "/download-script";
+    public final static String DOWNLOAD_OTHER_DOCUMENT = "/download-other-document";
+    public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE = "/download-application-form-template";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
@@ -87,7 +117,6 @@ public class ProjectManagerConst {
     public final static String PAGE_SIZE = "page-size";
     public final static String LAST_MODIFIED_DESC = "modified-desc";
     public final static String DOCUMENT = "document";
-    public final static String DOCUMENT_TYPE = "document-type";
     public final static String DOCUMENT_URL = "document-url";
     public final static String FILENAME = "filename";
     public final static String QUERY_CODE = "query-code";

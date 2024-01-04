@@ -179,7 +179,7 @@ public class DocumentService {
     }
 
     public Optional<Path> fetchPublicDocument(String documentFilename) {
-        if (documentFilename == null){
+        if (documentFilename == null) {
             return Optional.empty();
         }
         Path path = publicDocumentsDirectory.resolve(documentFilename);
@@ -197,6 +197,15 @@ public class DocumentService {
 
     private interface FunctionWithException<T, R> {
         R apply(T t) throws DocumentServiceException;
+    }
+
+    public Optional<ProjectDocument> fetchLastDocumentOfThisType(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
+        Optional<Project> projectOptional = projectRepository.findByCode(projectCode);
+        if (projectOptional.isPresent()) {
+            return projectDocumentRepository.findFirstByProjectAndDocumentTypeAndBridgeheadOrderByCreatedAtDesc(
+                    projectOptional.get(), type, fetchBridgeheadForSearch(bridgeheadOptional));
+        }
+        return Optional.empty();
     }
 
 }

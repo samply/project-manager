@@ -62,3 +62,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Download document rights to developer, pilot and final users
 - Fetch Projects
 - Modified Desc as parameter of fetch projects
+- Upload and download documents by document type
