@@ -54,6 +54,8 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_OTHER_DOCUMENT_ACTION = "DOWNLOAD_OTHER_DOCUMENT";
     public final static String ACCEPT_BRIDGEHEAD_PROJECT_ACTION = "ACCEPT_BRIDGEHEAD_PROJECT";
     public final static String REJECT_BRIDGEHEAD_PROJECT_ACTION = "REJECT_BRIDGEHEAD_PROJECT";
+    public final static String ACCEPT_SCRIPT_ACTION = "ACCEPT_SCRIPT";
+    public final static String REJECT_SCRIPT_ACTION = "REJECT_SCRIPT";
     public final static String REQUEST_SCRIPT_CHANGES_ACTION = "REQUEST_SCRIPT_CHANGES";
     public final static String FETCH_PROJECT_BRIDGEHEADS_ACTION = "FETCH_PROJECT_BRIDGEHEADS";
     public final static String FETCH_PROJECT_TYPES_ACTION = "FETCH_PROJECT_TYPES";
@@ -83,6 +85,8 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT = "/reject-project";
     public final static String ACCEPT_BRIDGEHEAD_PROJECT = "/accept-bridgehead-project";
     public final static String REJECT_BRIDGEHEAD_PROJECT = "/reject-bridgehead-project";
+    public final static String ACCEPT_SCRIPT = "/accept-script";
+    public final static String REJECT_SCRIPT = "/reject-script";
     public final static String REQUEST_SCRIPT_CHANGES = "/request-script-changes";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
     public final static String ARCHIVE_PROJECT = "/archive-project";

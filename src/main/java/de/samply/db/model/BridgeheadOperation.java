@@ -28,7 +28,7 @@ public class BridgeheadOperation {
     private String userEmail;
 
     @Column(name = "timestamp", nullable = false)
-    private Instant timestamp;
+    private Instant timestamp = Instant.now();
 
     @Column(name = "http_status", nullable = false)
     @Enumerated(EnumType.STRING)

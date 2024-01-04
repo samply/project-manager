@@ -34,6 +34,24 @@
       "files": {
         "DEFAULT": "default-project-bridgehead-rejected.html"
       }
+    },
+    "SCRIPT_ACCEPTED": {
+      "subject": "Script accepted",
+      "files": {
+        "DEFAULT": "default-script-accepted.html"
+      }
+    },
+    "SCRIPT_REJECTED": {
+      "subject": "Script rejected",
+      "files": {
+        "DEFAULT": "default-script-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_SCRIPT": {
+      "subject": "Changes in script requested",
+      "files": {
+        "DEFAULT": "default-script-changes-requested.html"
+      }
     }
   }
 }

@@ -30,9 +30,9 @@ public class ProjectBridgehead {
 
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)
-    private ProjectBridgeheadState state;
+    private ProjectBridgeheadState state = ProjectBridgeheadState.CREATED;
 
-    @Column(name = "modified_at")
+    @Column(name = "modified_at", nullable = false)
     private Instant modifiedAt;
 
 }

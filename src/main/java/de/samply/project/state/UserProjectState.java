@@ -1,7 +1,8 @@
 package de.samply.project.state;
 
-public enum ProjectBridgeheadState {
+public enum UserProjectState {
     CREATED,
+    REQUEST_CHANGES,
     ACCEPTED,
     REJECTED
 }

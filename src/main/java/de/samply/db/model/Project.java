@@ -32,7 +32,7 @@ public class Project {
     private String creatorEmail;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
     @Column(name = "expires_at")
     private LocalDate expiresAt;
@@ -41,7 +41,7 @@ public class Project {
     private Instant archivedAt;
 
     @Column(name = "modified_at")
-    private Instant modifiedAt;
+    private Instant modifiedAt = Instant.now();
 
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)

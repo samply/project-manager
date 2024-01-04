@@ -25,7 +25,7 @@ public class Query {
     private String code;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
     @Column(name = "query", nullable = false)
     private String query;

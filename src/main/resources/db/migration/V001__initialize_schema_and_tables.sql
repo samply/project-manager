@@ -45,10 +45,12 @@ CREATE TABLE samply.project_bridgehead
 
 CREATE TABLE samply.project_bridgehead_user
 (
-    id                    SERIAL NOT NULL PRIMARY KEY,
-    project_bridgehead_id BIGINT NOT NULL,
-    email                 TEXT   NOT NULL,
-    project_role          TEXT   NOT NULL
+    id                    SERIAL    NOT NULL PRIMARY KEY,
+    project_bridgehead_id BIGINT    NOT NULL,
+    email                 TEXT      NOT NULL,
+    project_role          TEXT      NOT NULL,
+    project_state         TEXT      NOT NULL,
+    modified_at           TIMESTAMP NOT NULL
 );
 
 CREATE TABLE samply.bridgehead_admin_user
