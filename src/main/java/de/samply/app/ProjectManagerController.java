@@ -267,6 +267,17 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> OutputFormat.values());
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_TYPES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_TYPES)
+    public ResponseEntity<String> fetchProjectTypes(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> ProjectType.values());
+    }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
