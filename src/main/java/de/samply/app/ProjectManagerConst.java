@@ -13,6 +13,7 @@ public class ProjectManagerConst {
     public final static String PROJECTS_MODULE = "PROJECTS";
     public final static String USER_MODULE = "USER";
     public final static String PROJECT_STATE_MODULE = "PROJECT_STATE";
+    public final static String PROJECT_BRIDGEHEAD_MODULE = "PROJECT_BRIDGEHEAD";
     public final static String PROJECT_EDITION_MODULE = "PROJECT_EDITION";
     public final static String PROJECT_DOCUMENTS_MODULE = "PROJECT_DOCUMENTS";
     public final static String VOTUM_ACTIONS_MODULE = "VOTUM_ACTIONS";
@@ -54,6 +55,7 @@ public class ProjectManagerConst {
     public final static String ACCEPT_BRIDGEHEAD_PROJECT_ACTION = "ACCEPT_BRIDGEHEAD_PROJECT";
     public final static String REJECT_BRIDGEHEAD_PROJECT_ACTION = "REJECT_BRIDGEHEAD_PROJECT";
     public final static String REQUEST_SCRIPT_CHANGES_ACTION = "REQUEST_SCRIPT_CHANGES";
+    public final static String FETCH_PROJECT_BRIDGEHEADS_ACTION = "FETCH_PROJECT_BRIDGEHEADS";
     public final static String FETCH_PROJECT_TYPES_ACTION = "FETCH_PROJECT_TYPES";
     public final static String FETCH_PROJECTS_ACTION = "FETCH_PROJECTS";
     public final static String FETCH_PUBLICATIONS_ACTION = "FETCH_PUBLICATIONS";
@@ -82,6 +84,7 @@ public class ProjectManagerConst {
     public final static String ACCEPT_BRIDGEHEAD_PROJECT = "/accept-bridgehead-project";
     public final static String REJECT_BRIDGEHEAD_PROJECT = "/reject-bridgehead-project";
     public final static String REQUEST_SCRIPT_CHANGES = "/request-script-changes";
+    public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
     public final static String ARCHIVE_PROJECT = "/archive-project";
     public final static String START_DEVELOP_STAGE = "/start-develop-project";
     public final static String START_PILOT_STAGE = "/start-pilot-project";

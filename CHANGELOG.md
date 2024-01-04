@@ -66,3 +66,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch publications and other documents
 - Fetch project types
 - Accept and reject project bridgehead
+- Fetch project bridgeheads
