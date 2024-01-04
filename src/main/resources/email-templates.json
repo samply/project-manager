@@ -22,6 +22,18 @@
       "files": {
         "DEFAULT": "default-project-finished.html"
       }
+    },
+    "PROJECT_BRIDGEHEAD_ACCEPTED": {
+      "subject": "Project accepted in bridgehead",
+      "files": {
+        "DEFAULT": "default-project-bridgehead-accepted.html"
+      }
+    },
+    "PROJECT_BRIDGEHEAD_REJECTED": {
+      "subject": "Project rejected in bridgehead",
+      "files": {
+        "DEFAULT": "default-project-bridgehead-rejected.html"
+      }
     }
   }
 }

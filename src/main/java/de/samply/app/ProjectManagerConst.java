@@ -10,7 +10,7 @@ public class ProjectManagerConst {
     public final static String VOTUM_VIEW_SITE = "votum-view";
 
     //Modules
-    public final static String PROJECTS_MODULE = "PROJECTS_MODULE";
+    public final static String PROJECTS_MODULE = "PROJECTS";
     public final static String USER_MODULE = "USER";
     public final static String PROJECT_STATE_MODULE = "PROJECT_STATE";
     public final static String PROJECT_EDITION_MODULE = "PROJECT_EDITION";

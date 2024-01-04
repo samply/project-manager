@@ -12,6 +12,7 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
+import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
@@ -60,6 +61,7 @@ public class ProjectManagerController {
     private final ExporterService exporterService;
     private final TokenManagerService tokenManagerService;
     private final ProjectService projectService;
+    private final ProjectBridgeheadService projectBridgeheadService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -68,7 +70,8 @@ public class ProjectManagerController {
                                     DocumentService documentService,
                                     ExporterService exporterService,
                                     TokenManagerService tokenManagerService,
-                                    ProjectService projectService) {
+                                    ProjectService projectService,
+                                    ProjectBridgeheadService projectBridgeheadService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -77,6 +80,7 @@ public class ProjectManagerController {
         this.exporterService = exporterService;
         this.tokenManagerService = tokenManagerService;
         this.projectService = projectService;
+        this.projectBridgeheadService = projectBridgeheadService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -353,6 +357,32 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.reject(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT)
+    public ResponseEntity<String> acceptBridgeheadProject(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.acceptProject(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT)
+    public ResponseEntity<String> rejectBridgeheadProject(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.rejectProject(projectCode, bridgehead));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
