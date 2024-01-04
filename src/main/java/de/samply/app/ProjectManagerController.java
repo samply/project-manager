@@ -482,7 +482,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
-            ) throws DocumentServiceException {
+    ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, DocumentType.SCRIPT);
     }
 
@@ -508,7 +508,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
-            ) throws DocumentServiceException {
+    ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, DocumentType.APPLICATION_FORM);
     }
 
@@ -526,8 +526,8 @@ public class ProjectManagerController {
                 downloadDocument(filePath.get().getFileName().toString(), filePath.get());
     }
 
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PUBLICATION_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_PUBLICATION)
     public ResponseEntity<Resource> downloadPublication(
@@ -535,6 +535,16 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, filename, DocumentType.PUBLICATION);
+    }
+
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PUBLICATIONS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PUBLICATIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchPublications(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> documentService.fetchPublications(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -547,6 +557,17 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, bridgehead, filename, DocumentType.OTHERS);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_OTHER_DOCUMENTS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_OTHER_DOCUMENTS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchOtherDocuments(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> documentService.fetchOtherDocuments(projectCode, Optional.ofNullable(bridgehead)));
     }
 
     private ResponseEntity<Resource> downloadProjectDocument(String projectCode, String bridgehead, DocumentType documentType) throws DocumentServiceException {

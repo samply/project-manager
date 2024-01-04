@@ -55,7 +55,10 @@ public class ProjectManagerConst {
     public final static String REJECT_BRIDGEHEAD_PROJECT_ACTION = "REJECT_BRIDGEHEAD_PROJECT";
     public final static String REQUEST_SCRIPT_CHANGES_ACTION = "REQUEST_SCRIPT_CHANGES";
     public final static String FETCH_PROJECT_TYPES_ACTION = "FETCH_PROJECT_TYPES";
-    public final static String FETCH_PROJECTS_ACTION = "/projects";
+    public final static String FETCH_PROJECTS_ACTION = "FETCH_PROJECTS";
+    public final static String FETCH_PUBLICATIONS_ACTION = "FETCH_PUBLICATIONS";
+    public final static String FETCH_OTHER_DOCUMENTS_ACTION = "FETCH_OTHER_DOCUMENTS";
+
 
 
 
@@ -102,6 +105,8 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
+    public final static String FETCH_PUBLICATIONS = "/publications";
+    public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";

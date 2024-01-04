@@ -63,3 +63,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch Projects
 - Modified Desc as parameter of fetch projects
 - Upload and download documents by document type
+- Fetch publications and other documents

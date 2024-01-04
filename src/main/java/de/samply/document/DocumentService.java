@@ -17,6 +17,8 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -188,6 +190,25 @@ public class DocumentService {
 
     public Optional<Path> fetchApplicationForm() {
         return fetchPublicDocument(applicationFormFile);
+    }
+
+    public List<ProjectDocument> fetchPublications(String projectCode) {
+        return fetchDocuments(projectCode, Optional.empty(), DocumentType.PUBLICATION);
+    }
+
+    public List<ProjectDocument> fetchOtherDocuments(String projectCode, Optional<String> bridgehead) {
+        return fetchDocuments(projectCode, bridgehead, DocumentType.OTHERS);
+    }
+
+
+    private List<ProjectDocument> fetchDocuments(String projectCode, Optional<String> bridgehead, DocumentType documentType) {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return (bridgehead.isPresent()) ?
+                projectDocumentRepository.findAllByBridgeheadAndProjectAndDocumentTypeOrderByLabelAsc(bridgehead.get(), project.get(), documentType) :
+                projectDocumentRepository.findAllByProjectAndDocumentTypeOrderByLabelAsc(project.get(), documentType);
     }
 
 
