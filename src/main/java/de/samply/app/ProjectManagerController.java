@@ -100,7 +100,17 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(() ->
-                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead)));
+                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), true));
+    }
+
+    @GetMapping(value = ProjectManagerConst.ALL_ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchAllActions(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.SITE) String site
+    ) {
+        return convertToResponseEntity(() ->
+                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), false));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})

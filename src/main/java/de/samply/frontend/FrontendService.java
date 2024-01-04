@@ -25,7 +25,7 @@ public class FrontendService {
         this.frontendConfiguration = frontendConfiguration;
     }
 
-    public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<String> projectCode, Optional<String> bridgehead) {
+    public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<String> projectCode, Optional<String> bridgehead, boolean withConstraints) {
         Map<String, Map<String, Action>> moduleActionMap = new HashMap<>();
         String rootPath = RolesExtractor.getRootPath();
         Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
@@ -41,7 +41,7 @@ public class FrontendService {
                 frontendSiteModuleList.addAll(List.of(frontendSiteModules.value()));
             }
             frontendSiteModuleList.forEach(tempFrontendSiteModule ->
-                    fetchModuleActionsPackages(moduleActionMap, rootPath, path, tempFrontendSiteModule, frontendAction, site, projectCode, bridgehead, method));
+                    fetchModuleActionsPackages(moduleActionMap, rootPath, path, tempFrontendSiteModule, frontendAction, site, projectCode, bridgehead, method, withConstraints));
         });
         return moduleActionMap;
     }
@@ -50,7 +50,8 @@ public class FrontendService {
                                             String rootPath, Optional<String> path,
                                             FrontendSiteModule frontendSiteModule, FrontendAction frontendAction,
                                             String site, Optional<String> projectCode,
-                                            Optional<String> bridgehead, Method method) {
+                                            Optional<String> bridgehead, Method method,
+                                            boolean withConstraints) {
         if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
             Optional<RoleConstraints> roleConstraints = Optional.ofNullable(method.getAnnotation(RoleConstraints.class));
             Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, projectCode, bridgehead);
@@ -58,7 +59,7 @@ public class FrontendService {
                 Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
                 responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridgehead);
             }
-            if (responseEntity.isEmpty()) { // If there are no restrictions
+            if (responseEntity.isEmpty() || !withConstraints) { // If there are no restrictions
                 addAction(moduleActionsMap, frontendSiteModule, frontendAction, rootPath, path, method);
             }
         }

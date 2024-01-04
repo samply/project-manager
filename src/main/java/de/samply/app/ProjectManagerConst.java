@@ -70,6 +70,7 @@ public class ProjectManagerConst {
     public final static String INFO = "/info";
     public final static String TEST = "/test";
     public final static String ACTIONS = "/actions";
+    public final static String ALL_ACTIONS = "/all-actions";
     public final static String FETCH_PROJECTS = "/projects";
     public final static String SET_DEVELOPER_USER = "/set-developer-user";
     public final static String SET_PILOT_USER = "/set-pilot-user";
