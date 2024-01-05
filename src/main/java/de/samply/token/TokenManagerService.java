@@ -144,4 +144,16 @@ public class TokenManagerService {
         return new ByteArrayResource(authenticationScript.getBytes());
     }
 
+    public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead) {
+        //TODO
+    }
+
+    public void recreateProject(@NotNull String projectCode, @NotNull String bridgehead) {
+        //TODO
+    }
+
+    public void removeProjectAndTokens(@NotNull String projectCode) {
+        //TODO
+    }
+
 }
