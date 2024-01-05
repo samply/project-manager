@@ -6,4 +6,8 @@ public class EmailServiceException extends Exception {
         super(message);
     }
 
+    public EmailServiceException(Throwable cause) {
+        super(cause);
+    }
+
 }

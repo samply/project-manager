@@ -2,11 +2,13 @@ package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.user.roles.ProjectRole;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -43,22 +45,34 @@ public class EmailService {
     }
 
     public void sendEmail(@NotNull String email, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, Map<String, String> keyValues) throws EmailServiceException {
-        SimpleMailMessage message = new SimpleMailMessage();
         Map<String, String> context = new HashMap<>();
         bridgehead.ifPresent(b -> context.put(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, b));
         context.putAll(keyValues);
         context.putAll(emailContext.getKeyValues());
         Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
         if (messageSubject.isPresent()) {
-            message.setTo(email);
-            message.setFrom(emailFrom);
-            message.setSubject(messageSubject.get().subject());
-            message.setText(messageSubject.get().message());
-            mailSender.send(message);
+            mailSender.send(createMimeMessage(email, emailFrom, messageSubject.get()));
         } else {
             throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
         }
+    }
 
+    private MimeMessage createMimeMessage(String emailTo, String emailFrom, MessageSubject messageSubject) throws EmailServiceException {
+        try {
+            return createMimeMessageWithoutHandlingException(emailTo, emailFrom, messageSubject);
+        } catch (MessagingException e) {
+            throw new EmailServiceException(e);
+        }
+    }
+
+    private MimeMessage createMimeMessageWithoutHandlingException(String emailTo, String emailFrom, MessageSubject messageSubject) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
+        messageHelper.setTo(emailTo);
+        message.setFrom(emailFrom);
+        message.setSubject(messageSubject.subject());
+        message.setText(messageSubject.message());
+        return message;
     }
 
     private Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type, Map<String, String> keyValues) {
