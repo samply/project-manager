@@ -67,6 +67,7 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
+    public final static String FETCH_OPAL_STATUS_ACTION = "FETCH_OPAL_STATUS";
 
 
     // REST Services
@@ -119,6 +120,7 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
+    public final static String FETCH_OPAL_STATUS = "/opal-status";
     public final static String FETCH_PUBLICATIONS = "/publications";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
     public final static String FETCH_NOTIFICATIONS = "/notifications";
@@ -177,6 +179,14 @@ public class ProjectManagerConst {
     public static final String EXPORTER_QUERY_CONTEXT_PROJECT_ID = "PROJECT-ID";
     public final static String HTTP_HEADER_API_KEY = "x-api-key";
 
+    // Token Manager Variables
+    public final static String TOKEN_MANAGER_TOKENS = "/tokens";
+    public final static String TOKEN_MANAGER_PROJECT_STATUS = "/projects";
+    public final static String TOKEN_MANAGER_PROJECT_STATUS_SUFFIX = "/status";
+    public final static String TOKEN_MANAGER_SCRIPTS = "/scripts";
+    public final static String AUTHENTICATION_SCRIPT_FILENAME_PREFIX = "authentication-script-";
+    public final static String AUTHENTICATION_SCRIPT_FILENAME_SUFFIX = ".r";
+
 
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
@@ -202,6 +212,7 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
     public final static String DATASHIELD_TEMPLATES = "DATASHIELD_TEMPLATES";
+    public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
 
 
     // Spring Values (SV)
@@ -243,6 +254,7 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
+    public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
 
 
     // Others
@@ -254,9 +266,4 @@ public class ProjectManagerConst {
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
 
-    // Token Manager
-    public final static String BASE_URL = "http://localhost:3030/api"; // Base URL of Rust application
-    public final static String TOKENS_ENDPOINT = BASE_URL + "/tokens";
-    public final static String PROJECT_STATUS_ENDPOINT = BASE_URL + "/projects/";
-    public final static String SCRIPTS_ENDPOINT = BASE_URL + "/scripts";
 }

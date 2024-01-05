@@ -2,8 +2,11 @@ package de.samply.user;
 
 import de.samply.db.model.*;
 import de.samply.db.repository.*;
+import de.samply.project.ProjectType;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
+import de.samply.token.TokenManagerService;
+import de.samply.token.TokenManagerServiceException;
 import de.samply.user.roles.ProjectRole;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ public class UserService {
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
+    private final TokenManagerService tokenManagerService;
     private final SessionUser sessionUser;
 
     public UserService(BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
@@ -26,12 +30,14 @@ public class UserService {
                        ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                        ProjectRepository projectRepository,
                        ProjectBridgeheadRepository projectBridgeheadRepository,
+                       TokenManagerService tokenManagerService,
                        SessionUser sessionUser) {
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.tokenManagerService = tokenManagerService;
         this.sessionUser = sessionUser;
     }
 
@@ -77,7 +83,7 @@ public class UserService {
         return result;
     }
 
-    public void setProjectBridgheadUserWithRole(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
+    public void setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
         Optional<Project> project = this.projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new UserServiceException("Project " + projectCode + " not found");
@@ -95,6 +101,18 @@ public class UserService {
             projectBridgeheadUser.setProjectState(UserProjectState.CREATED);
             projectBridgeheadUser.setModifiedAt(Instant.now());
             this.projectBridgeheadUserRepository.save(projectBridgeheadUser);
+        }
+        if (project.get().getType() == ProjectType.DATASHIELD) {
+            generateTokensAndProjectsInOpal(projectCode, bridgehead, projectBridgeheadUserOptional.get());
+        }
+    }
+
+    private void generateTokensAndProjectsInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectBridgeheadUser projectBridgeheadUser) throws UserServiceException {
+        try {
+            tokenManagerService.generateTokensAndProjectsInOpal(projectCode, bridgehead,
+                    () -> projectBridgeheadUserRepository.delete(projectBridgeheadUser));
+        } catch (TokenManagerServiceException e) {
+            throw new UserServiceException(e);
         }
     }
 

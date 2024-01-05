@@ -1,5 +1,6 @@
 package de.samply.db.repository;
 
+import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.user.roles.ProjectRole;
@@ -17,6 +18,8 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
     List<ProjectBridgeheadUser> getByEmailAndProjectBridgehead(String email, ProjectBridgehead projectBridgehead);
 
     Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(String email, ProjectBridgehead projectBridgehead);
+
+    Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(String email, Project project, String bridgehead);
 
     List<ProjectBridgeheadUser> getByProjectBridgehead(ProjectBridgehead projectBridgehead);
 

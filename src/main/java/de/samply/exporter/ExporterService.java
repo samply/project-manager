@@ -15,8 +15,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.epoll.EpollChannelOption;
+import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -24,19 +23,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -45,17 +45,10 @@ public class ExporterService {
 
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final Map<String, WebClient> bridgeheadWebClientMap = new HashMap<>();
-    private final int webClientMaxNumberOfRetries;
-    private final int webClientTimeInSecondsAfterRetryWithFailure;
-    private final int webClientRequestTimeoutInSeconds;
-    private final int webClientConnectionTimeoutInSeconds;
-    private final int webClientTcpKeepIdleInSeconds;
-    private final int webClientTcpKeepIntervalInSeconds;
-    private final int webClientTcpKeepConnetionNumberOfTries;
-    private final int webClientBufferSizeInBytes;
     private final SessionUser sessionUser;
     private final ProjectRepository projectRepository;
     private final BridgeheadOperationRepository bridgeheadOperationRepository;
+    private final WebClientFactory webClientFactory;
     private final Set<String> exportTemplates;
     private final Set<String> datashieldTemplates;
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
@@ -64,47 +57,18 @@ public class ExporterService {
     public ExporterService(
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
-            @Value(ProjectManagerConst.WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS_SV) Integer webClientRequestTimeoutInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS_SV) Integer webClientConnectionTimeoutInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS_SV) Integer webClientTcpKeepIdleInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS_SV) Integer webClientTcpKeepIntervalInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV) Integer webClientTcpKeepConnetionNumberOfTries,
-            @Value(ProjectManagerConst.WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV) Integer webClientMaxNumberOfRetries,
-            @Value(ProjectManagerConst.WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV) Integer webClientTimeInSecondsAfterRetryWithFailure,
-            @Value(ProjectManagerConst.WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV) Integer webClientBufferSizeInBytes,
             BridgeheadConfiguration bridgeheadConfiguration,
             ProjectRepository projectRepository,
             SessionUser sessionUser,
-            BridgeheadOperationRepository bridgeheadOperationRepository) {
+            BridgeheadOperationRepository bridgeheadOperationRepository,
+            WebClientFactory webClientFactory) {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
-        this.webClientMaxNumberOfRetries = webClientMaxNumberOfRetries;
-        this.webClientTimeInSecondsAfterRetryWithFailure = webClientTimeInSecondsAfterRetryWithFailure;
-        this.webClientRequestTimeoutInSeconds = webClientRequestTimeoutInSeconds;
-        this.webClientConnectionTimeoutInSeconds = webClientConnectionTimeoutInSeconds;
-        this.webClientTcpKeepIdleInSeconds = webClientTcpKeepIdleInSeconds;
-        this.webClientTcpKeepIntervalInSeconds = webClientTcpKeepIntervalInSeconds;
-        this.webClientTcpKeepConnetionNumberOfTries = webClientTcpKeepConnetionNumberOfTries;
-        this.webClientBufferSizeInBytes = webClientBufferSizeInBytes;
         this.sessionUser = sessionUser;
         this.projectRepository = projectRepository;
         this.bridgeheadOperationRepository = bridgeheadOperationRepository;
         this.exportTemplates = exportTemplates;
         this.datashieldTemplates = datashieldTemplates;
-    }
-
-    private WebClient createWebClient(String exporterUrl) {
-        return WebClient.builder()
-                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(webClientBufferSizeInBytes))
-                .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create()
-                                .responseTimeout(Duration.ofSeconds(webClientRequestTimeoutInSeconds))
-                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, webClientConnectionTimeoutInSeconds * 1000)
-                                .option(ChannelOption.SO_KEEPALIVE, true)
-                                .option(EpollChannelOption.TCP_KEEPIDLE, webClientTcpKeepIdleInSeconds)
-                                .option(EpollChannelOption.TCP_KEEPINTVL, webClientTcpKeepIntervalInSeconds)
-                                .option(EpollChannelOption.TCP_KEEPCNT, webClientTcpKeepConnetionNumberOfTries)
-                ))
-                .baseUrl(exporterUrl).build();
+        this.webClientFactory = webClientFactory;
     }
 
     public void sendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
@@ -127,7 +91,7 @@ public class ExporterService {
                 .retrieve()
                 .bodyToMono(String.class)
                 .retryWhen(
-                        Retry.fixedDelay(webClientMaxNumberOfRetries, Duration.ofSeconds(webClientTimeInSecondsAfterRetryWithFailure))
+                        Retry.fixedDelay(webClientFactory.getWebClientMaxNumberOfRetries(), Duration.ofSeconds(webClientFactory.getWebClientTimeInSecondsAfterRetryWithFailure()))
                                 .filter(error -> error instanceof WebClientResponseException)
                                 .doBeforeRetry(s -> retryCount.incrementAndGet())
                 )
@@ -142,7 +106,7 @@ public class ExporterService {
                     } else {
                         log.error("Received HTTP Status Code: " + statusCode);
                     }
-                    if (retryCount.get() >= webClientMaxNumberOfRetries) {
+                    if (retryCount.get() >= webClientFactory.getWebClientMaxNumberOfRetries()) {
                         createBridgeheadOperation(restService, (HttpStatus) ex.getStatusCode(), error, bridgehead, projectCode, email);
                     }
                 })
@@ -173,7 +137,7 @@ public class ExporterService {
     private WebClient fetchWebClient(String bridgehead) {
         WebClient webClient = bridgeheadWebClientMap.get(bridgehead);
         if (webClient == null) {
-            webClient = createWebClient(bridgeheadConfiguration.getExporterUrl(bridgehead));
+            webClient = webClientFactory.createWebClient(bridgeheadConfiguration.getExporterUrl(bridgehead));
             bridgeheadWebClientMap.put(bridgehead, webClient);
         }
         return webClient;
@@ -246,7 +210,6 @@ public class ExporterService {
         return switch (projectType) {
             case EXPORT -> exportTemplates;
             case DATASHIELD -> datashieldTemplates;
-            default -> new HashSet<>();
         };
     }
 
