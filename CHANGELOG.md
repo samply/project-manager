@@ -73,3 +73,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Notification Service
 - Integration in Focus and Beam
 - Frontend DTO
+- Email as Mime message

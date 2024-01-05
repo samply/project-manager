@@ -22,7 +22,8 @@ public class NotificationService {
         this.projectRepository = projectRepository;
     }
 
-    public void createNotification(@NotNull String projectCode, String bridgehead, @NotNull String email, @NotNull OperationType operationType,
+    public void createNotification(@NotNull String projectCode, String bridgehead, @NotNull String email,
+                                   @NotNull OperationType operationType,
                                    @NotNull String details, String error
     ) throws NotificationServiceException {
         Project project = fetchProject(projectCode);
