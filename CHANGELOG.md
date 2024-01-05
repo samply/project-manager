@@ -73,3 +73,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Notification Service
 - Frontend DTO
 - Email as Mime message
+- EmailSenderIfError annotation
