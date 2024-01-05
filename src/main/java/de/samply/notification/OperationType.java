@@ -11,5 +11,4 @@ public enum OperationType {
     EDIT_QUERY,
     ADD_DOCUMENT,
     EDIT_PROJECT
-
 }

@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch all actions
 - Accept, Reject and request changes in project results
 - Notification Service
+- Token Manager services
 - Integration in Focus and Beam
 - Frontend DTO
 - Email as Mime message

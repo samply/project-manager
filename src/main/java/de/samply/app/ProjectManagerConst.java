@@ -71,6 +71,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT_ACTION";
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
+    public final static String FETCH_OPAL_STATUS_ACTION = "FETCH_OPAL_STATUS";
 
 
     // REST Services
@@ -125,6 +126,7 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
+    public final static String FETCH_OPAL_STATUS = "/opal-status";
     public final static String FETCH_PUBLICATIONS = "/publications";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
     public final static String FETCH_NOTIFICATIONS = "/notifications";
@@ -189,6 +191,14 @@ public class ProjectManagerConst {
     public final static String FOCUS_METADATA_PROJECT = "exporter";
     public final static String FOCUS_TASK = "/v1/tasks";
 
+    // Token Manager Variables
+    public final static String TOKEN_MANAGER_TOKENS = "/tokens";
+    public final static String TOKEN_MANAGER_PROJECT_STATUS = "/projects";
+    public final static String TOKEN_MANAGER_PROJECT_STATUS_SUFFIX = "/status";
+    public final static String TOKEN_MANAGER_SCRIPTS = "/scripts";
+    public final static String AUTHENTICATION_SCRIPT_FILENAME_PREFIX = "authentication-script-";
+    public final static String AUTHENTICATION_SCRIPT_FILENAME_SUFFIX = ".r";
+
 
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
@@ -220,6 +230,7 @@ public class ProjectManagerConst {
     public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES = "FOCUS_FAILURE_STRATEGY_MAX_TRIES";
     public final static String FOCUS_URL = "FOCUS_URL";
     public final static String FOCUS_API_KEY = "FOCUS_API_KEY";
+    public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -260,6 +271,8 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
+    public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
+
     public final static String FOCUS_PROJECT_MANAGER_ID_SV = HEAD_SV + FOCUS_PROJECT_MANAGER_ID + BOTTOM_SV;
     public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":10s" + BOTTOM_SV;
     public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
@@ -277,9 +290,4 @@ public class ProjectManagerConst {
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
 
-    // Token Manager
-    public final static String BASE_URL = "http://localhost:3030/api"; // Base URL of Rust application
-    public final static String TOKENS_ENDPOINT = BASE_URL + "/tokens";
-    public final static String PROJECT_STATUS_ENDPOINT = BASE_URL + "/projects/";
-    public final static String SCRIPTS_ENDPOINT = BASE_URL + "/scripts";
 }

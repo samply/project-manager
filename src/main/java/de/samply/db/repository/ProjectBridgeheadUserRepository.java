@@ -20,6 +20,8 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
 
     Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(String email, ProjectBridgehead projectBridgehead);
 
+    Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(String email, Project project, String bridgehead);
+
     List<ProjectBridgeheadUser> getByProjectBridgehead(ProjectBridgehead projectBridgehead);
 
     @Query("SELECT DISTINCT pbu.projectBridgehead.project FROM ProjectBridgeheadUser pbu WHERE pbu.email = :email")
