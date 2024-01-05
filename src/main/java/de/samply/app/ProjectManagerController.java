@@ -405,8 +405,8 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectBridgeheadService.rejectProject(projectCode, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
     @EmailSender(templateType = EmailTemplateType.SCRIPT_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_SCRIPT_ACTION)
@@ -418,8 +418,8 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> userService.acceptProject(projectCode, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
     @EmailSender(templateType = EmailTemplateType.SCRIPT_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_SCRIPT_ACTION)
@@ -431,13 +431,52 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
     @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_SCRIPT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_SCRIPT_CHANGES_ACTION)
     @PostMapping(value = ProjectManagerConst.REQUEST_SCRIPT_CHANGES)
     public ResponseEntity<String> requestChangesInScript(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.SCRIPT_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_ACTION)
+    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS)
+    public ResponseEntity<String> acceptProjectResults(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> userService.acceptProject(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.SCRIPT_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_ACTION)
+    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
+    public ResponseEntity<String> rejectProjectResults(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_SCRIPT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
+    public ResponseEntity<String> requestChangesInProject(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {

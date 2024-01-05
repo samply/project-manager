@@ -69,3 +69,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch project bridgeheads
 - Accept, reject and request changes in script
 - Fetch all actions
+- Accept, Reject and request changes in project results

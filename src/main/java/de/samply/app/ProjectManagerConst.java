@@ -62,6 +62,9 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECTS_ACTION = "FETCH_PROJECTS";
     public final static String FETCH_PUBLICATIONS_ACTION = "FETCH_PUBLICATIONS";
     public final static String FETCH_OTHER_DOCUMENTS_ACTION = "FETCH_OTHER_DOCUMENTS";
+    public final static String ACCEPT_PROJECT_RESULTS_ACTION = "ACCEPT_PROJECT_RESULTS";
+    public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
+    public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
 
 
 
@@ -89,6 +92,9 @@ public class ProjectManagerConst {
     public final static String ACCEPT_SCRIPT = "/accept-script";
     public final static String REJECT_SCRIPT = "/reject-script";
     public final static String REQUEST_SCRIPT_CHANGES = "/request-script-changes";
+    public final static String ACCEPT_PROJECT_RESULTS = "/accept-project-results";
+    public final static String REJECT_PROJECT_RESULTS = "/reject-project-results";
+    public final static String REQUEST_CHANGES_IN_PROJECT = "/request-changes-in-project";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
     public final static String ARCHIVE_PROJECT = "/archive-project";
     public final static String START_DEVELOP_STAGE = "/start-develop-project";
