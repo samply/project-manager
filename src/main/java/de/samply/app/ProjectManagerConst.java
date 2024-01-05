@@ -16,6 +16,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_BRIDGEHEAD_MODULE = "PROJECT_BRIDGEHEAD";
     public final static String PROJECT_EDITION_MODULE = "PROJECT_EDITION";
     public final static String PROJECT_DOCUMENTS_MODULE = "PROJECT_DOCUMENTS";
+    public final static String NOTIFICATIONS_MODULE = "NOTIFICATIONS";
     public final static String VOTUM_ACTIONS_MODULE = "VOTUM_ACTIONS";
     public final static String EXPORT_MODULE = "EXPORT";
     public final static String TOKEN_MANAGER_MODULE = "TOKEN_MANAGER";
@@ -65,8 +66,7 @@ public class ProjectManagerConst {
     public final static String ACCEPT_PROJECT_RESULTS_ACTION = "ACCEPT_PROJECT_RESULTS";
     public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
-
-
+    public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
 
 
     // REST Services
@@ -121,6 +121,7 @@ public class ProjectManagerConst {
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
     public final static String FETCH_PUBLICATIONS = "/publications";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
+    public final static String FETCH_NOTIFICATIONS = "/notifications";
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";

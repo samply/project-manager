@@ -12,6 +12,7 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
+import de.samply.notification.NotificationService;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
@@ -62,6 +63,7 @@ public class ProjectManagerController {
     private final TokenManagerService tokenManagerService;
     private final ProjectService projectService;
     private final ProjectBridgeheadService projectBridgeheadService;
+    private final NotificationService notificationService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -71,7 +73,8 @@ public class ProjectManagerController {
                                     ExporterService exporterService,
                                     TokenManagerService tokenManagerService,
                                     ProjectService projectService,
-                                    ProjectBridgeheadService projectBridgeheadService) {
+                                    ProjectBridgeheadService projectBridgeheadService,
+                                    NotificationService notificationService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -81,6 +84,7 @@ public class ProjectManagerController {
         this.tokenManagerService = tokenManagerService;
         this.projectService = projectService;
         this.projectBridgeheadService = projectBridgeheadService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -794,6 +798,19 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
+    @PostMapping(value = ProjectManagerConst.FETCH_NOTIFICATIONS)
+    public ResponseEntity<String> fetchNotifications(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> this.notificationService.fetchNotifications(projectCode, Optional.ofNullable(bridgehead)));
     }
 
 
