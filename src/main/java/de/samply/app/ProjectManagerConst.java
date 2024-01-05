@@ -277,4 +277,9 @@ public class ProjectManagerConst {
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
 
+    // Token Manager
+    public final static String BASE_URL = "http://localhost:3030/api"; // Base URL of Rust application
+    public final static String TOKENS_ENDPOINT = BASE_URL + "/tokens";
+    public final static String PROJECT_STATUS_ENDPOINT = BASE_URL + "/projects/";
+    public final static String SCRIPTS_ENDPOINT = BASE_URL + "/scripts";
 }
