@@ -192,6 +192,7 @@ public class ProjectManagerConst {
     public final static String FOCUS_TASK = "/v1/tasks";
 
     // Token Manager Variables
+    public final static String TOKEN_MANAGER_ROOT = "/api";
     public final static String TOKEN_MANAGER_TOKENS = "/tokens";
     public final static String TOKEN_MANAGER_PROJECT_STATUS = "/projects";
     public final static String TOKEN_MANAGER_PROJECT_STATUS_SUFFIX = "/status";

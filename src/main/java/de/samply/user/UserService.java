@@ -118,7 +118,7 @@ public class UserService {
 
     private void generateTokensAndProjectsInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectBridgeheadUser projectBridgeheadUser) throws UserServiceException {
         try {
-            tokenManagerService.generateTokensAndProjectsInOpal(projectCode, bridgehead,
+            tokenManagerService.generateTokensAndProjectsInOpal(projectCode, bridgehead, projectBridgeheadUser.getEmail(),
                     () -> projectBridgeheadUserRepository.delete(projectBridgeheadUser));
         } catch (TokenManagerServiceException e) {
             throw new UserServiceException(e);

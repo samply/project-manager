@@ -64,12 +64,13 @@ public class TokenManagerService {
         this.webClient = webClientFactory.createWebClient(tokenManagerUrl);
     }
 
-    public void generateTokensAndProjectsInOpal(@NotNull String projectCode, @NotNull String bridgehead, Runnable errorRunnable) throws TokenManagerServiceException {
-        List<String> bridgeheads = fetchSessionUserProjectBridgeheads(projectCode, bridgehead);
+    public void generateTokensAndProjectsInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable errorRunnable) throws TokenManagerServiceException {
+        List<String> bridgeheads = fetchProjectBridgeheads(projectCode, bridgehead, email);
         AtomicInteger retryCount = new AtomicInteger(0);
-        webClient.post().uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_TOKENS).build())
+        webClient.post().uri(uriBuilder ->
+                        uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS).build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(BodyInserters.fromValue(new TokenParams(sessionUser.getEmail(), projectCode, bridgeheads)))
+                .bodyValue(new TokenParams(email, projectCode, bridgeheads))
                 .retrieve()
                 .bodyToMono(String.class)
                 .retryWhen(
@@ -90,21 +91,21 @@ public class TokenManagerService {
                     }
                     if (retryCount.get() >= webClientFactory.getWebClientMaxNumberOfRetries()) {
                         bridgeheads.forEach(tempBridgehead ->
-                                notificationService.createNotification(projectCode, tempBridgehead, sessionUser.getEmail(),
+                                notificationService.createNotification(projectCode, tempBridgehead, email,
                                         OperationType.GENERATE_TOKEN, "Error generating token", error));
                         errorRunnable.run();
                     }
                 })
                 .subscribe(result -> bridgeheads.forEach(tempBridgehead ->
-                        notificationService.createNotification(projectCode, tempBridgehead, sessionUser.getEmail(),
+                        notificationService.createNotification(projectCode, tempBridgehead, email,
                                 OperationType.GENERATE_TOKEN, "Token generated successfully in Token Manager", null)));
     }
 
-    private List<String> fetchSessionUserProjectBridgeheads(String projectCode, String bridgehead) throws TokenManagerServiceException {
+    private List<String> fetchProjectBridgeheads(String projectCode, String bridgehead, String email) throws TokenManagerServiceException {
         Project project = fetchProject(projectCode);
-        Optional<ProjectBridgeheadUser> projectBridgeheadUser = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(sessionUser.getEmail(), project, bridgehead);
+        Optional<ProjectBridgeheadUser> projectBridgeheadUser = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(email, project, bridgehead);
         if (projectBridgeheadUser.isEmpty()) {
-            throw new TokenManagerServiceException("User " + sessionUser.getEmail() + " with token manager rights not found for project " + projectCode);
+            throw new TokenManagerServiceException("User " + email + " with token manager rights not found for project " + projectCode);
         }
         ProjectRole userProjectRole = projectBridgeheadUser.get().getProjectRole();
         if (userProjectRole == ProjectRole.DEVELOPER || userProjectRole == ProjectRole.PILOT) {
@@ -112,7 +113,7 @@ public class TokenManagerService {
         } else if (userProjectRole == ProjectRole.FINAL) {
             return projectBridgeheadRepository.findByProject(project).stream().map(projectBridgehead -> projectBridgehead.getBridgehead()).toList();
         } else {
-            throw new TokenManagerServiceException("Role " + userProjectRole + " of user " + sessionUser.getEmail() + " not supported");
+            throw new TokenManagerServiceException("Role " + userProjectRole + " of user " + email + " not supported");
         }
     }
 
@@ -127,12 +128,12 @@ public class TokenManagerService {
     public OpalStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
         //TODO add bridgehead to request
         return webClient.get()
-                .uri(ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX)
+                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX)
                 .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(OpalStatus.class).block();
     }
 
     public Resource fetchAuthenticationScript(String projectCode) throws UserServiceException {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ProjectManagerConst.TOKEN_MANAGER_SCRIPTS)
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_SCRIPTS)
                 .queryParam("project", projectCode)
                 .queryParam("user", sessionUser.getEmail());
         String uri = builder.toUriString();
