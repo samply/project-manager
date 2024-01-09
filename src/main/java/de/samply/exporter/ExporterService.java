@@ -5,13 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.bridgehead.BridgeheadOperationType;
 import de.samply.db.model.BridgeheadOperation;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
 import de.samply.db.repository.BridgeheadOperationRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.exporter.focus.FocusQuery;
+import de.samply.exporter.focus.FocusService;
+import de.samply.exporter.focus.FocusServiceException;
 import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
@@ -21,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -30,21 +33,22 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.netty.http.client.HttpClient;
-import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
 public class ExporterService {
 
-    private final BridgeheadConfiguration bridgeheadConfiguration;
-    private final Map<String, WebClient> bridgeheadWebClientMap = new HashMap<>();
+    private final FocusService focusService;
+    private final WebClient webClient;
     private final int webClientMaxNumberOfRetries;
     private final int webClientTimeInSecondsAfterRetryWithFailure;
     private final int webClientRequestTimeoutInSeconds;
@@ -58,10 +62,15 @@ public class ExporterService {
     private final BridgeheadOperationRepository bridgeheadOperationRepository;
     private final Set<String> exportTemplates;
     private final Set<String> datashieldTemplates;
+    private final String focusProjectManagerId;
+    private final String focusApiKey;
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public ExporterService(
+            @Value(ProjectManagerConst.FOCUS_API_KEY_SV) String focusApiKey,
+            @Value(ProjectManagerConst.FOCUS_PROJECT_MANAGER_ID_SV) String focusProjectManagerId,
+            @Value(ProjectManagerConst.FOCUS_URL_SV) String focusUrl,
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
             @Value(ProjectManagerConst.WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS_SV) Integer webClientRequestTimeoutInSeconds,
@@ -72,11 +81,11 @@ public class ExporterService {
             @Value(ProjectManagerConst.WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV) Integer webClientMaxNumberOfRetries,
             @Value(ProjectManagerConst.WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV) Integer webClientTimeInSecondsAfterRetryWithFailure,
             @Value(ProjectManagerConst.WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV) Integer webClientBufferSizeInBytes,
-            BridgeheadConfiguration bridgeheadConfiguration,
+            FocusService focusService,
             ProjectRepository projectRepository,
             SessionUser sessionUser,
             BridgeheadOperationRepository bridgeheadOperationRepository) {
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.focusService = focusService;
         this.webClientMaxNumberOfRetries = webClientMaxNumberOfRetries;
         this.webClientTimeInSecondsAfterRetryWithFailure = webClientTimeInSecondsAfterRetryWithFailure;
         this.webClientRequestTimeoutInSeconds = webClientRequestTimeoutInSeconds;
@@ -90,6 +99,9 @@ public class ExporterService {
         this.bridgeheadOperationRepository = bridgeheadOperationRepository;
         this.exportTemplates = exportTemplates;
         this.datashieldTemplates = datashieldTemplates;
+        this.focusProjectManagerId = focusProjectManagerId;
+        this.webClient = createWebClient(focusUrl);
+        this.focusApiKey = focusApiKey;
     }
 
     private WebClient createWebClient(String exporterUrl) {
@@ -109,28 +121,26 @@ public class ExporterService {
 
     public void sendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
         log.info("Sending query of project " + projectCode + " to bridgehead " + bridgehead + " ...");
-        postRequest(bridgehead, projectCode, ProjectManagerConst.EXPORTER_CREATE_QUERY, generateBodyConfigurationForExportRequest(projectCode));
+        postRequest(bridgehead, projectCode, generateFocusBody(projectCode, bridgehead, false), true);
     }
 
     public void sendQueryToBridgeheadAndExecute(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
         log.info("Sending query of project " + projectCode + " to bridgehead " + bridgehead + " to be executed...");
-        postRequest(bridgehead, projectCode, ProjectManagerConst.EXPORTER_REQUEST, generateBodyConfigurationForExportCreateQuery(projectCode));
+        postRequest(bridgehead, projectCode, generateFocusBody(projectCode, bridgehead, true), true);
     }
 
-    private void postRequest(String bridgehead, String projectCode, String restService, Map<String, String> bodyParameters) {
-        AtomicInteger retryCount = new AtomicInteger(0);
+    private void postRequest(String bridgehead, String projectCode, FocusQuery focusQuery, boolean toBeExecuted) {
+        postRequest(bridgehead, projectCode, focusQuery, toBeExecuted, 0);
+    }
+
+    private void postRequest(String bridgehead, String projectCode, FocusQuery focusQuery, boolean toBeExecuted, int numberOfRetries) {
         String email = sessionUser.getEmail();
-        fetchWebClient(bridgehead).post().uri(uriBuilder -> uriBuilder.path(restService).build())
-                .header(ProjectManagerConst.HTTP_HEADER_API_KEY, bridgeheadConfiguration.getExporterApiKey(bridgehead))
+        webClient.post().uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.FOCUS_TASK).build())
+                .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(createBody(bodyParameters))
+                .bodyValue(focusQuery)
                 .retrieve()
                 .bodyToMono(String.class)
-                .retryWhen(
-                        Retry.fixedDelay(webClientMaxNumberOfRetries, Duration.ofSeconds(webClientTimeInSecondsAfterRetryWithFailure))
-                                .filter(error -> error instanceof WebClientResponseException)
-                                .doBeforeRetry(s -> retryCount.incrementAndGet())
-                )
                 .doOnError(WebClientResponseException.class, ex -> {
                     HttpStatusCode statusCode = ex.getStatusCode();
                     String error = ExceptionUtils.getStackTrace(ex);
@@ -142,52 +152,57 @@ public class ExporterService {
                     } else {
                         log.error("Received HTTP Status Code: " + statusCode);
                     }
-                    if (retryCount.get() >= webClientMaxNumberOfRetries) {
-                        createBridgeheadOperation(restService, (HttpStatus) ex.getStatusCode(), error, bridgehead, projectCode, email);
+                    // We don't use the normal retry functionality of webclient, because focus requires to change the focus query ID after every retry
+                    if (numberOfRetries >= webClientMaxNumberOfRetries) {
+                        createBridgeheadOperation((HttpStatus) ex.getStatusCode(), error, bridgehead, projectCode, email, toBeExecuted);
+                    } else {
+                        waitUntilNextRetry();
+                        focusQuery.setId(focusService.generateId()); // Generate new Focus Query ID
+                        postRequest(bridgehead, projectCode, focusQuery, toBeExecuted, numberOfRetries + 1);
                     }
                 })
-                .subscribe(result -> createBridgeheadOperation(restService, HttpStatus.OK, null, bridgehead, projectCode, email));
+                .subscribe(result -> createBridgeheadOperation(HttpStatus.OK, null, bridgehead, projectCode, email, toBeExecuted));
+    }
+
+    private void waitUntilNextRetry() {
+        try {
+            Thread.sleep(webClientTimeInSecondsAfterRetryWithFailure * 1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String fetchAuthorization() {
+        return ProjectManagerConst.API_KEY + ' ' + focusProjectManagerId + ' ' + focusApiKey;
     }
 
     private void createBridgeheadOperation(
-            String restService, HttpStatus status, String error, String bridgehead, String projectCode, String email) {
+            HttpStatus status, String error, String bridgehead, String projectCode, String email, boolean toBeExecuted) {
         BridgeheadOperation bridgeheadOperation = new BridgeheadOperation();
         bridgeheadOperation.setBridgehead(bridgehead);
         bridgeheadOperation.setProject(projectRepository.findByCode(projectCode).get());
         bridgeheadOperation.setTimestamp(Instant.now());
-        bridgeheadOperation.setType(fetchBridgeheadOperationType(restService));
+        bridgeheadOperation.setType(fetchBridgeheadOperationType(toBeExecuted));
         bridgeheadOperation.setHttpStatus(status);
         bridgeheadOperation.setError(error);
         bridgeheadOperation.setUserEmail(email);
         bridgeheadOperationRepository.save(bridgeheadOperation);
     }
 
-    private BridgeheadOperationType fetchBridgeheadOperationType(String restService) {
-        return switch (restService) {
-            case ProjectManagerConst.EXPORTER_REQUEST -> BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE;
-            case ProjectManagerConst.EXPORTER_CREATE_QUERY -> BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD;
-            default -> throw new IllegalStateException("Unexpected value: " + restService);
-        };
+    private BridgeheadOperationType fetchBridgeheadOperationType(boolean toBeExecuted) {
+        return (toBeExecuted) ? BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE :
+                BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD;
     }
 
-    private WebClient fetchWebClient(String bridgehead) {
-        WebClient webClient = bridgeheadWebClientMap.get(bridgehead);
-        if (webClient == null) {
-            webClient = createWebClient(bridgeheadConfiguration.getExporterUrl(bridgehead));
-            bridgeheadWebClientMap.put(bridgehead, webClient);
-        }
-        return webClient;
-    }
-
-    private String createBody(Map<String, String> bodyParameters) {
+    private String convertToBase64String(Object jsonObject) {
         try {
-            return Base64Utils.encode(objectMapper.writeValueAsString(bodyParameters));
+            return Base64Utils.encode(objectMapper.writeValueAsString(jsonObject));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Map<String, String> generateBodyConfigurationForExportRequest(String projectCode)
+    private String generateExportQueryInBase64ForExporterRequest(String projectCode)
             throws ExporterServiceException {
         Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
@@ -206,10 +221,10 @@ public class ExporterService {
                 ProjectManagerConst.EXPORTER_PARAM_TEMPLATE_ID, query.getTemplateId(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.get().getExpiresAt()));
         result.values().removeIf(value -> !StringUtils.hasText(value));
-        return result;
+        return convertToBase64String(result);
     }
 
-    private Map<String, String> generateBodyConfigurationForExportCreateQuery(String projectCode)
+    private String generateExporterQueryInBase64ForExporterCreateQuery(String projectCode)
             throws ExporterServiceException {
         Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
@@ -227,8 +242,23 @@ public class ExporterService {
                 ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query.getTemplateId(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.get().getExpiresAt()));
         result.values().removeIf(value -> !StringUtils.hasText(value));
-        return result;
+        return convertToBase64String(result);
     }
+
+    private FocusQuery generateFocusBody(String projectCode, String bridgehead, boolean toBeExecuted) throws ExporterServiceException {
+        try {
+            return generateFocusQueryWithoutExceptionHandling(projectCode, bridgehead, toBeExecuted);
+        } catch (FocusServiceException e) {
+            throw new ExporterServiceException(e);
+        }
+    }
+
+    private FocusQuery generateFocusQueryWithoutExceptionHandling(String projectCode, String bridgehead, boolean toBeExecuted) throws ExporterServiceException, FocusServiceException {
+        String exporterQueryInBase64 = (toBeExecuted) ? generateExportQueryInBase64ForExporterRequest(projectCode) :
+                generateExporterQueryInBase64ForExporterCreateQuery(projectCode);
+        return focusService.generateFocusQuery(exporterQueryInBase64, toBeExecuted, bridgehead);
+    }
+
 
     private String convertToString(LocalDate date) {
         return date.format(DateTimeFormatter.ISO_DATE);

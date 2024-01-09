@@ -20,8 +20,7 @@ public class BridgeheadConfiguration {
     @Data
     public static class BridgeheadConfig {
         private String explorerCode;
-        private String exporterUrl;
-        private String exporterApiKey;
+        private String focusId;
         private String humanReadable;
     }
 
@@ -29,12 +28,8 @@ public class BridgeheadConfiguration {
         return config.keySet().contains(bridgehead);
     }
 
-    public String getExporterUrl(String bridgehead) {
-        return config.get(bridgehead).getExporterUrl();
-    }
-
-    public String getExporterApiKey(String bridgehead) {
-        return config.get(bridgehead).getExporterApiKey();
+    public String getFocusId(String bridgehead) {
+        return config.get(bridgehead).getFocusId();
     }
 
     public String getHumanReadable(String bridgehead) {
