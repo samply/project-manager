@@ -157,10 +157,9 @@ public class ProjectManagerConst {
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
 
-    // Exporter Variables
+    // Exporter
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
     public final static String IS_TEST_ENVIRONMENT = "IS_TEST_ENVIRONMENT";
-    public final static String EXPORTER_REQUEST = "/request";
     public final static String EXPORTER_CREATE_QUERY = "/create-query";
     public final static String EXPORTER_PARAM_QUERY = "query";
     public final static String EXPORTER_PARAM_QUERY_FORMAT = "query-format";
@@ -175,7 +174,11 @@ public class ProjectManagerConst {
     public static final String EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
     public static final String EXPORTER_PARAM_DEFAULT_TEMPLATE_ID = "query-default-template-id";
     public static final String EXPORTER_QUERY_CONTEXT_PROJECT_ID = "PROJECT-ID";
-    public final static String HTTP_HEADER_API_KEY = "x-api-key";
+    public final static String API_KEY = "ApiKey";
+
+    // Focus
+    public final static String FOCUS_METADATA_PROJECT = "exporter";
+    public final static String FOCUS_TASK = "/v1/tasks";
 
 
     // Environment Variables
@@ -202,7 +205,12 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
     public final static String DATASHIELD_TEMPLATES = "DATASHIELD_TEMPLATES";
-
+    public final static String FOCUS_PROJECT_MANAGER_ID = "FOCUS_PROJECT_MANAGER_ID";
+    public final static String FOCUS_TTL = "FOCUS_TTL";
+    public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
+    public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES = "FOCUS_FAILURE_STRATEGY_MAX_TRIES";
+    public final static String FOCUS_URL = "FOCUS_URL";
+    public final static String FOCUS_API_KEY = "FOCUS_API_KEY";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -243,7 +251,13 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
-
+    public final static String FOCUS_PROJECT_MANAGER_ID_SV = HEAD_SV + FOCUS_PROJECT_MANAGER_ID + BOTTOM_SV;
+    public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":10s" + BOTTOM_SV;
+    public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
+            HEAD_SV + FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
+    public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + FOCUS_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
+    public final static String FOCUS_URL_SV = HEAD_SV + FOCUS_URL + BOTTOM_SV;
+    public final static String FOCUS_API_KEY_SV = HEAD_SV + FOCUS_API_KEY + BOTTOM_SV;
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";
