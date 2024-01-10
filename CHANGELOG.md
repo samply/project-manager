@@ -75,3 +75,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Frontend DTO
 - Email as Mime message
 - EmailSenderIfError annotation
+- Frontend DTO converters

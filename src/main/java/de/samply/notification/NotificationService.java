@@ -4,6 +4,7 @@ import de.samply.db.model.Notification;
 import de.samply.db.model.Project;
 import de.samply.db.repository.NotificationRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.frontend.dto.DtoFactory;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -45,11 +46,12 @@ public class NotificationService {
         return project.get();
     }
 
-    public List<Notification> fetchNotifications(String projectCode, Optional<String> bridghead) throws NotificationServiceException {
+    public List<de.samply.frontend.dto.Notification> fetchNotifications(String projectCode, Optional<String> bridghead) throws NotificationServiceException {
         Project project = fetchProject(projectCode);
-        return (bridghead.isEmpty()) ?
+        return ((bridghead.isEmpty()) ?
                 notificationRepository.findAllByProjectOrderByTimestampDesc(project) :
-                notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridghead.get());
+                notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridghead.get()))
+                .stream().map(DtoFactory::convert).toList();
     }
 
 

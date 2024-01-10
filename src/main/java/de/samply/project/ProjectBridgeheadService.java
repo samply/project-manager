@@ -5,6 +5,7 @@ import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.frontend.dto.DtoFactory;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -52,14 +53,14 @@ public class ProjectBridgeheadService {
         projectBridgeheadRepository.save(projectBridgehead.get());
     }
 
-    public List<ProjectBridgehead> fetchUserVisibleProjectBridgeheads(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
+    public List<de.samply.frontend.dto.ProjectBridgehead> fetchUserVisibleProjectBridgeheads(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
         Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new ProjectBridgeheadServiceException("Project " + projectCode + " not found");
         }
         Set<ProjectBridgehead> projectBridgeheads = projectBridgeheadRepository.findByProject(project.get());
         if (isProjectManagerAdmin()) {
-            return new ArrayList<>(projectBridgeheads);
+            return new ArrayList<>(projectBridgeheads).stream().map(DtoFactory::convert).toList();
         }
         Set<ProjectBridgehead> tempProjectBridgeheads = new HashSet<>();
         projectBridgeheads.forEach(projectBridgehead -> {
@@ -67,7 +68,7 @@ public class ProjectBridgeheadService {
                 tempProjectBridgeheads.add(projectBridgehead);
             }
         });
-        return new ArrayList<>(tempProjectBridgeheads);
+        return new ArrayList<>(tempProjectBridgeheads).stream().map(DtoFactory::convert).toList();
     }
 
     private boolean isProjectManagerAdmin() {
