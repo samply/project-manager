@@ -5,6 +5,7 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectDocument;
 import de.samply.db.repository.ProjectDocumentRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.frontend.dto.DtoFactory;
 import de.samply.security.SessionUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -192,12 +193,17 @@ public class DocumentService {
         return fetchPublicDocument(applicationFormFile);
     }
 
-    public List<ProjectDocument> fetchPublications(String projectCode) {
-        return fetchDocuments(projectCode, Optional.empty(), DocumentType.PUBLICATION);
+    public List<de.samply.frontend.dto.ProjectDocument> fetchPublications(String projectCode) {
+        return convertToDto(fetchDocuments(projectCode, Optional.empty(), DocumentType.PUBLICATION));
+
     }
 
-    public List<ProjectDocument> fetchOtherDocuments(String projectCode, Optional<String> bridgehead) {
-        return fetchDocuments(projectCode, bridgehead, DocumentType.OTHERS);
+    private List<de.samply.frontend.dto.ProjectDocument> convertToDto(List<ProjectDocument> projectDocumentList){
+        return projectDocumentList.stream().map(DtoFactory::convert).toList();
+    }
+
+    public List<de.samply.frontend.dto.ProjectDocument> fetchOtherDocuments(String projectCode, Optional<String> bridgehead) {
+        return convertToDto(fetchDocuments(projectCode, bridgehead, DocumentType.OTHERS));
     }
 
 

@@ -4,6 +4,7 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.frontend.dto.DtoFactory;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
@@ -73,18 +74,18 @@ public class ProjectService {
         projectBridgeheadRepository.save(projectBridgehead);
     }
 
-    public Page<Project> fetchUserVisibleProjects(
+    public Page<de.samply.frontend.dto.Project> fetchUserVisibleProjects(
             Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize, boolean modifiedDescendant) {
         PageRequest pageRequest = PageRequest.of(page, pageSize);
         if (isProjectManagerAdmin()) {
-            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant);
+            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
         }
         Set<String> bridgeheads = sessionUser.getBridgeheads();
         // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
         if (isBridgeheadAdmin()) {
-            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest, modifiedDescendant);
+            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
         }
-        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant);
+        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
     }
 
     private boolean isProjectManagerAdmin() {

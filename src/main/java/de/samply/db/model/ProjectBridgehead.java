@@ -33,6 +33,6 @@ public class ProjectBridgehead {
     private ProjectBridgeheadState state = ProjectBridgeheadState.CREATED;
 
     @Column(name = "modified_at", nullable = false)
-    private Instant modifiedAt;
+    private Instant modifiedAt = Instant.now();
 
 }
