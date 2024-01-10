@@ -792,7 +792,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT_ACTION)
-    @PostMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
+    @GetMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
     public ResponseEntity<String> fetchTokenScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -804,7 +804,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
-    @PostMapping(value = ProjectManagerConst.FETCH_NOTIFICATIONS)
+    @GetMapping(value = ProjectManagerConst.FETCH_NOTIFICATIONS)
     public ResponseEntity<String> fetchNotifications(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
