@@ -197,6 +197,8 @@ public class ProjectManagerConst {
     public final static String TOKEN_MANAGER_PROJECT_STATUS = "/projects";
     public final static String TOKEN_MANAGER_PROJECT_STATUS_SUFFIX = "/status";
     public final static String TOKEN_MANAGER_SCRIPTS = "/scripts";
+    public final static String TOKEN_MANAGER_REMOVE_PROJECTS = "/projects";
+    public final static String TOKEN_MANAGER_REFRESH_TOKEN = "/refreshToken";
     public final static String AUTHENTICATION_SCRIPT_FILENAME_PREFIX = "authentication-script-";
     public final static String AUTHENTICATION_SCRIPT_FILENAME_SUFFIX = ".r";
 

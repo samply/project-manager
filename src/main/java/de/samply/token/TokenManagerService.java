@@ -16,19 +16,20 @@ import de.samply.user.roles.ProjectRole;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -126,9 +127,8 @@ public class TokenManagerService {
     }
 
     public OpalStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
-        //TODO add bridgehead to request
         return webClient.get()
-                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX)
+                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + bridgehead)
                 .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(OpalStatus.class).block();
     }
 
@@ -145,16 +145,28 @@ public class TokenManagerService {
         return new ByteArrayResource(authenticationScript.getBytes());
     }
 
-    public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead) {
-        //TODO
+    public Mono<String> refreshToken(@NotNull String projectCode, @NotNull String email, @NotNull String bridgehead) throws TokenManagerServiceException {
+        List<String> bridgeheads = fetchProjectBridgeheads(projectCode, bridgehead, email);
+        TokenParams tokenParams = new TokenParams(email, projectCode, bridgeheads);
+        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REFRESH_TOKEN;
+
+        return webClient.put()
+                .uri(uriBuilder -> uriBuilder.path(uri).build())
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(BodyInserters.fromValue(tokenParams))
+                .retrieve()
+                .bodyToMono(String.class);
     }
 
-    public void recreateProject(@NotNull String projectCode, @NotNull String bridgehead) {
-        //TODO
-    }
+    public Mono<ClientResponse> removeProjectAndTokens(@NotNull String projectCode, @NotNull String email, @NotNull List<String> bridgeheads) {
+        TokenParams tokenParams = new TokenParams(email, projectCode, bridgeheads);
+        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REMOVE_PROJECTS;
 
-    public void removeProjectAndTokens(@NotNull String projectCode) {
-        //TODO
+        return webClient.method(HttpMethod.DELETE)
+                .uri(uri)
+                .contentType(MediaType.APPLICATION_JSON) // Set content type as JSON
+                .body(BodyInserters.fromValue(tokenParams)) // Insert the tokenParams object
+                .exchange();
     }
 
 }
