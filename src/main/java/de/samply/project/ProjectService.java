@@ -3,6 +3,7 @@ package de.samply.project;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.project.state.ProjectBridgeheadState;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,13 +27,16 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
+    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
 
     public ProjectService(ProjectRepository projectRepository,
                           ProjectBridgeheadRepository projectBridgeheadRepository,
-                          SessionUser sessionUser) {
+                          SessionUser sessionUser,
+                          ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
+        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
     }
 
     public void editProject(@NotNull String projectCode, ProjectType type, String[] bridgeheads) {
@@ -72,6 +77,12 @@ public class ProjectService {
         projectBridgehead.setState(ProjectBridgeheadState.CREATED);
         projectBridgehead.setModifiedAt(Instant.now());
         projectBridgeheadRepository.save(projectBridgehead);
+    }
+
+    public List<Project> fetchAllUserVisibleProjects() {
+        List<Project> result = projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
+        //TODO
+        return result;
     }
 
     public Page<de.samply.frontend.dto.Project> fetchUserVisibleProjects(
