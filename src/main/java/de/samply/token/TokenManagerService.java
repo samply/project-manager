@@ -24,10 +24,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -147,27 +145,30 @@ public class TokenManagerService {
         return new ByteArrayResource(authenticationScript.getBytes());
     }
 
-    public Mono<String> refreshToken(@NotNull String projectCode, @NotNull String email, @NotNull String bridgehead) throws TokenManagerServiceException {
+    public void refreshToken(@NotNull String projectCode, @NotNull String email, @NotNull String bridgehead) throws TokenManagerServiceException {
         List<String> bridgeheads = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));
         TokenParams tokenParams = new TokenParams(email, projectCode, bridgeheads);
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REFRESH_TOKEN;
 
-        return webClient.put()
+        webClient.put()
                 .uri(uriBuilder -> uriBuilder.path(uri).build())
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(BodyInserters.fromValue(tokenParams))
                 .retrieve()
                 .bodyToMono(String.class);
     }
+    public void removeTokens(@NotNull String projectCode, @NotNull String email, @NotNull String bridgehead) {
+        //TODO
+    }
 
-    public Mono<ClientResponse> removeProjectAndTokens(@NotNull String projectCode, @NotNull String email, @NotNull List<String> bridgeheads) {
-        TokenParams tokenParams = new TokenParams(email, projectCode, fetchTokenManagerIds(bridgeheads));
+    public void removeProjectAndTokens(@NotNull String projectCode) {
+        //TokenParams tokenParams = new TokenParams(email, projectCode, fetchTokenManagerIds(bridgeheads));
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REMOVE_PROJECTS;
-        return webClient.method(HttpMethod.DELETE)
+        webClient.method(HttpMethod.DELETE)
                 .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON) // Set content type as JSON
-                .body(BodyInserters.fromValue(tokenParams)) // Insert the tokenParams object
-                .exchange();
+                //.contentType(MediaType.APPLICATION_JSON) // Set content type as JSON
+                //.body(BodyInserters.fromValue(tokenParams)) // Insert the tokenParams object
+                .retrieve().bodyToMono(String.class);
     }
 
     private List<String> fetchTokenManagerIds(List<String> bridgeheads) {
