@@ -234,6 +234,7 @@ public class ProjectManagerConst {
     public final static String FOCUS_URL = "FOCUS_URL";
     public final static String FOCUS_API_KEY = "FOCUS_API_KEY";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
+    public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -283,6 +284,7 @@ public class ProjectManagerConst {
     public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + FOCUS_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
     public final static String FOCUS_URL_SV = HEAD_SV + FOCUS_URL + BOTTOM_SV;
     public final static String FOCUS_API_KEY_SV = HEAD_SV + FOCUS_API_KEY + BOTTOM_SV;
+    public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

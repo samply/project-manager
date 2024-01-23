@@ -818,7 +818,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT_ACTION)
-    @PostMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
+    @GetMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
     public ResponseEntity<Resource> fetchTokenScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // Bridgehead required for checking constraints
@@ -834,7 +834,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_OPAL_STATUS_ACTION)
-    @PostMapping(value = ProjectManagerConst.FETCH_OPAL_STATUS)
+    @GetMapping(value = ProjectManagerConst.FETCH_OPAL_STATUS)
     public ResponseEntity<String> fetchOpalStatus(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead

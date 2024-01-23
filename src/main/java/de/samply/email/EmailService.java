@@ -22,6 +22,7 @@ import java.util.Optional;
 public class EmailService {
 
     private final String emailFrom;
+    private final boolean enableEmails;
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final EmailTemplates emailTemplates;
@@ -29,6 +30,7 @@ public class EmailService {
 
 
     public EmailService(
+            @Value(ProjectManagerConst.ENABLE_EMAILS_SV) Boolean enableEmails,
             @Value(ProjectManagerConst.PROJECT_MANAGER_EMAIL_FROM_SV) String emailFrom,
             JavaMailSender mailSender,
             TemplateEngine templateEngine,
@@ -38,10 +40,16 @@ public class EmailService {
         this.templateEngine = templateEngine;
         this.emailTemplates = emailTemplates;
         this.emailContext = emailContext;
+        this.enableEmails = enableEmails;
     }
 
     public void sendEmail(@NotNull String email, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
-        sendEmail(email, bridgehead, role, type, new HashMap<>());
+        if (enableEmails) {
+            sendEmail(email, bridgehead, role, type, new HashMap<>());
+        } else {
+            log.info("SMTP Server not enabled. Email to " + email + " with role " + role + " for bridgehead " +
+                    (bridgehead.isPresent() ? bridgehead.get() : "NONE") + " and type " + type + " could not be sent");
+        }
     }
 
     public void sendEmail(@NotNull String email, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, Map<String, String> keyValues) throws EmailServiceException {

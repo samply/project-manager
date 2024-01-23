@@ -112,13 +112,13 @@ public class UserService {
                     "Set role " + projectRole + " to user", null, null);
         }
         if (project.get().getType() == ProjectType.DATASHIELD) {
-            generateTokensAndProjectsInOpal(projectCode, bridgehead, projectBridgeheadUserOptional.get());
+            generateTokensInOpal(projectCode, bridgehead, projectBridgeheadUserOptional.get());
         }
     }
 
-    private void generateTokensAndProjectsInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectBridgeheadUser projectBridgeheadUser) throws UserServiceException {
+    private void generateTokensInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectBridgeheadUser projectBridgeheadUser) throws UserServiceException {
         try {
-            tokenManagerService.generateTokensAndProjectsInOpal(projectCode, bridgehead, projectBridgeheadUser.getEmail(),
+            tokenManagerService.generateTokensInOpal(projectCode, bridgehead, projectBridgeheadUser.getEmail(),
                     () -> projectBridgeheadUserRepository.delete(projectBridgeheadUser));
         } catch (TokenManagerServiceException e) {
             throw new UserServiceException(e);

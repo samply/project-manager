@@ -1,6 +1,7 @@
 package de.samply.token;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadRepository;
@@ -16,7 +17,6 @@ import de.samply.user.roles.ProjectRole;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -48,6 +48,7 @@ public class TokenManagerService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final NotificationService notificationService;
+    private final BridgeheadConfiguration bridgeheadConfiguration;
 
     public TokenManagerService(SessionUser sessionUser,
                                WebClientFactory webClientFactory,
@@ -55,23 +56,26 @@ public class TokenManagerService {
                                ProjectRepository projectRepository,
                                ProjectBridgeheadRepository projectBridgeheadRepository,
                                ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                               NotificationService notificationService) {
+                               NotificationService notificationService,
+                               BridgeheadConfiguration bridgeheadConfiguration) {
         this.sessionUser = sessionUser;
         this.webClientFactory = webClientFactory;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.notificationService = notificationService;
+        this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.webClient = webClientFactory.createWebClient(tokenManagerUrl);
     }
 
-    public void generateTokensAndProjectsInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable errorRunnable) throws TokenManagerServiceException {
+    public void generateTokensInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable errorRunnable) throws TokenManagerServiceException {
         List<String> bridgeheads = fetchProjectBridgeheads(projectCode, bridgehead, email);
+        List<String> tokenManagerIds = fetchTokenManagerIds(bridgeheads);
         AtomicInteger retryCount = new AtomicInteger(0);
         webClient.post().uri(uriBuilder ->
                         uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS).build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new TokenParams(email, projectCode, bridgeheads))
+                .bodyValue(new TokenParams(email, projectCode, tokenManagerIds))
                 .retrieve()
                 .bodyToMono(String.class)
                 .retryWhen(
@@ -127,9 +131,9 @@ public class TokenManagerService {
     }
 
     public OpalStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
-        return webClient.get()
-                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + bridgehead)
-                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(OpalStatus.class).block();
+        return replaceTokenManagerId(webClient.get()
+                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
+                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(OpalStatus.class).block());
     }
 
     public Resource fetchAuthenticationScript(String projectCode) throws UserServiceException {
@@ -146,7 +150,7 @@ public class TokenManagerService {
     }
 
     public Mono<String> refreshToken(@NotNull String projectCode, @NotNull String email, @NotNull String bridgehead) throws TokenManagerServiceException {
-        List<String> bridgeheads = fetchProjectBridgeheads(projectCode, bridgehead, email);
+        List<String> bridgeheads = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));
         TokenParams tokenParams = new TokenParams(email, projectCode, bridgeheads);
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REFRESH_TOKEN;
 
@@ -159,14 +163,34 @@ public class TokenManagerService {
     }
 
     public Mono<ClientResponse> removeProjectAndTokens(@NotNull String projectCode, @NotNull String email, @NotNull List<String> bridgeheads) {
-        TokenParams tokenParams = new TokenParams(email, projectCode, bridgeheads);
+        TokenParams tokenParams = new TokenParams(email, projectCode, fetchTokenManagerIds(bridgeheads));
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REMOVE_PROJECTS;
-
         return webClient.method(HttpMethod.DELETE)
                 .uri(uri)
                 .contentType(MediaType.APPLICATION_JSON) // Set content type as JSON
                 .body(BodyInserters.fromValue(tokenParams)) // Insert the tokenParams object
                 .exchange();
+    }
+
+    private List<String> fetchTokenManagerIds(List<String> bridgeheads) {
+        return bridgeheads.stream().map(this::fetchTokenManagerId).toList();
+    }
+
+    private String fetchTokenManagerId(String bridgehead) {
+        return bridgeheadConfiguration.getTokenManagerId(bridgehead);
+    }
+
+    private OpalStatus replaceTokenManagerId(OpalStatus opalStatus) {
+        return (opalStatus != null) ?
+                new OpalStatus(
+                        opalStatus.projectCode(),
+                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(opalStatus.bridgehead()),
+                        opalStatus.email(),
+                        opalStatus.createdAt(),
+                        opalStatus.projectStatus(),
+                        opalStatus.tokenStatus()
+                )
+                : opalStatus;
     }
 
 }
