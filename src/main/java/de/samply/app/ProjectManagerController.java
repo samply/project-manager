@@ -821,13 +821,12 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
     public ResponseEntity<Resource> fetchTokenScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            // Bridgehead required for checking constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
-    ) throws UserServiceException {
+    ) {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" +
                         ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_PREFIX + projectCode + ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_SUFFIX + "\"")
-                .body(this.tokenManagerService.fetchAuthenticationScript(projectCode));
+                .body(this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})

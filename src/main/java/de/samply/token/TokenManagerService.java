@@ -12,7 +12,6 @@ import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
 import de.samply.token.dto.OpalStatus;
 import de.samply.token.dto.TokenParams;
-import de.samply.user.UserServiceException;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
@@ -28,7 +27,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -136,15 +134,15 @@ public class TokenManagerService {
                 .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(OpalStatus.class).block());
     }
 
-    public Resource fetchAuthenticationScript(String projectCode) throws UserServiceException {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_SCRIPTS)
-                .queryParam("project", projectCode)
-                .queryParam("user", sessionUser.getEmail());
-        String uri = builder.toUriString();
-        String authenticationScript = webClient.get().uri(uri)
+    public Resource fetchAuthenticationScript(String projectCode, String bridgehead) throws TokenManagerServiceException {
+        List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
+        String authenticationScript = webClient.post().uri(uriBuilder ->
+                        uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_SCRIPTS).build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(new TokenParams(sessionUser.getEmail(), projectCode, tokenManagerIds))
                 .accept(MediaType.TEXT_PLAIN).retrieve().bodyToMono(String.class).block();
         if (!StringUtils.hasText(authenticationScript)) {
-            throw new UserServiceException("Script could not be generated for project " + projectCode + " and user " + sessionUser.getEmail());
+            throw new TokenManagerServiceException("Script could not be generated for project " + projectCode + " and user " + sessionUser.getEmail());
         }
         return new ByteArrayResource(authenticationScript.getBytes());
     }

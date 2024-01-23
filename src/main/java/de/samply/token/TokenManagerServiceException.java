@@ -1,6 +1,6 @@
 package de.samply.token;
 
-public class TokenManagerServiceException extends Exception {
+public class TokenManagerServiceException extends RuntimeException {
     public TokenManagerServiceException(Throwable cause) {
         super(cause);
     }
