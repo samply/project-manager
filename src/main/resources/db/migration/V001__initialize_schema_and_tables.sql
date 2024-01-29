@@ -104,6 +104,15 @@ CREATE TABLE samply.notification
     error          TEXT
 );
 
+CREATE TABLE samply.notification_user_action
+(
+    id              SERIAL PRIMARY KEY,
+    email           TEXT    NOT NULL,
+    read            BOOLEAN NOT NULL DEFAULT false,
+    notification_id BIGINT
+);
+
+
 ALTER TABLE samply.project
     ADD CONSTRAINT fk_project_query
         FOREIGN KEY (query_id)
@@ -133,9 +142,14 @@ ALTER TABLE samply.notification
     ADD CONSTRAINT fk_project_id
         FOREIGN KEY (project_id) REFERENCES samply.project (id);
 
+ALTER TABLE samply.notification_user_action
+    ADD CONSTRAINT fk_notification_id
+        FOREIGN KEY (notification_id) REFERENCES samply.notification (id);
+
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);
 CREATE INDEX idx_project_document_project_id ON samply.project_document (project_id);
 CREATE INDEX idx_project_query_id ON samply.project (query_id);
 CREATE INDEX idx_bridgehead_operation_project_id ON samply.bridgehead_operation (project_id);
 CREATE INDEX idx_notification_project_id ON samply.notification (project_id);
+CREATE INDEX idx_notification_id ON samply.notification_user_action (notification_id);
