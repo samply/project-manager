@@ -1,6 +1,7 @@
 package de.samply.bridgehead;
 
 import de.samply.app.ProjectManagerConst;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -15,13 +16,40 @@ import java.util.Optional;
 public class BridgeheadConfiguration {
 
     private Map<String, BridgeheadConfig> config = new HashMap<>();
-    private Map<String, String> explorerCodeBridgeheadMap = new HashMap<>();
+    private Map<String, String> explorerIdBridgeheadMap = new HashMap<>();
+    private Map<String, String> tokenManagerIdBridgeheadMap = new HashMap<>();
+    private Map<String, String> focusIdBridgeheadMap = new HashMap<>();
+
 
     @Data
     public static class BridgeheadConfig {
-        private String explorerCode;
+        private String explorerId;
         private String focusId;
+        private String tokenManagerId;
         private String humanReadable;
+    }
+
+    @PostConstruct
+    private void initIdBridgeheadMaps() {
+        config.forEach((bridgehead, bridgeheadConfig) -> {
+            addBridgeheadId(bridgehead, bridgeheadConfig.getExplorerId(), explorerIdBridgeheadMap);
+            addBridgeheadId(bridgehead, bridgeheadConfig.getFocusId(), focusIdBridgeheadMap);
+            addBridgeheadId(bridgehead, bridgeheadConfig.getTokenManagerId(), tokenManagerIdBridgeheadMap);
+        });
+    }
+
+    private String fetchBridgehead(String id, Map<String, String> idBridgeheadMap) {
+        return idBridgeheadMap.get(id);
+    }
+
+    private Optional<String> fetchBridgeheadOptional(String id, Map<String, String> idBridgeheadMap) {
+        return Optional.ofNullable(fetchBridgehead(id, idBridgeheadMap));
+    }
+
+    private void addBridgeheadId(String bridgehead, String id, Map<String, String> idBridgeheadMap) {
+        if (bridgehead != null && id != null) {
+            idBridgeheadMap.put(id, bridgehead);
+        }
     }
 
     public boolean isRegisteredBridgehead(String bridgehead) {
@@ -36,23 +64,32 @@ public class BridgeheadConfiguration {
         return config.get(bridgehead).getHumanReadable();
     }
 
-    public Optional<String> getBridgehead(String explorerCode) {
-        String bridgehead = explorerCodeBridgeheadMap.get(explorerCode);
-        if (bridgehead == null) {
-            bridgehead = fetchBridgehead(explorerCode);
-            explorerCodeBridgeheadMap.put(explorerCode, bridgehead);
-        }
-        return Optional.ofNullable(bridgehead);
+    public String getTokenManagerId(String bridgehead) {
+        return config.get(bridgehead).getTokenManagerId();
     }
 
-    private String fetchBridgehead(String explorerCode) {
-        for (String bridgehead : config.keySet()) {
-            BridgeheadConfig bridgeheadConfig = config.get(bridgehead);
-            if (bridgeheadConfig.explorerCode.equals(explorerCode)) {
-                return bridgehead;
-            }
-        }
-        return null;
+    public Optional<String> getBridgeheadForExplorerId(String explorerId) {
+        return fetchBridgeheadOptional(explorerId, explorerIdBridgeheadMap);
+    }
+
+    public String fetchBridgeheadForExplorerId(String explorerId) {
+        return fetchBridgehead(explorerId, explorerIdBridgeheadMap);
+    }
+
+    public Optional<String> getBridgeheadForFocusId(String focusId) {
+        return fetchBridgeheadOptional(focusId, focusIdBridgeheadMap);
+    }
+
+    public String fetchBridgeheadForFocusId(String focusId) {
+        return fetchBridgehead(focusId, focusIdBridgeheadMap);
+    }
+
+    public Optional<String> getBridgeheadForTokenManagerId(String tokenManagerId) {
+        return fetchBridgeheadOptional(tokenManagerId, tokenManagerIdBridgeheadMap);
+    }
+
+    public String fetchBridgeheadForTokenManagerId(String tokenManagerId) {
+        return fetchBridgehead(tokenManagerId, tokenManagerIdBridgeheadMap);
     }
 
 
