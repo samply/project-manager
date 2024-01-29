@@ -800,17 +800,16 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_NOTIFICATIONS)
     public ResponseEntity<String> fetchNotifications(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.notificationService.fetchNotifications(projectCode, Optional.ofNullable(bridgehead)));
+        return convertToResponseEntity(() -> this.notificationService.fetchUserVisibleNotifications(Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead)));
     }
 
 
