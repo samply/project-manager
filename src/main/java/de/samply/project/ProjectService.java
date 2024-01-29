@@ -80,13 +80,23 @@ public class ProjectService {
     }
 
     public List<Project> fetchAllUserVisibleProjects() {
-        List<Project> result = projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
-        //TODO
-        return result;
+        // Fetch projects as project manager
+        if (isProjectManagerAdmin()) {
+            return projectRepository.findAll();
+        }
+        Set<String> bridgeheads = sessionUser.getBridgeheads();
+        // Fetch projects as bridgehead admin
+        // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
+        if (isBridgeheadAdmin()) {
+            return projectRepository.findByBridgeheads(bridgeheads);
+        }
+        // Fetch projects as researcher
+        return projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
     }
 
     public Page<de.samply.frontend.dto.Project> fetchUserVisibleProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize, boolean modifiedDescendant) {
+            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize,
+            boolean modifiedDescendant) {
         PageRequest pageRequest = PageRequest.of(page, pageSize);
         if (isProjectManagerAdmin()) {
             return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
@@ -114,7 +124,8 @@ public class ProjectService {
     }
 
     private Page<Project> fetchProjectManagerAdminProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
+            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest,
+            boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
@@ -212,7 +223,8 @@ public class ProjectService {
         }
     }
 
-    private Page<Project> fetchResearcherProjects(String email, Set<String> bridgeheads, Optional<ProjectState> projectState,
+    private Page<Project> fetchResearcherProjects(String
+                                                          email, Set<String> bridgeheads, Optional<ProjectState> projectState,
                                                   Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
