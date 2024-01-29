@@ -7,6 +7,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.project.ProjectService;
 import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -57,11 +58,32 @@ public class NotificationService {
 
     public List<de.samply.frontend.dto.Notification> fetchUserVisibleNotifications(Optional<String> projectCodeOptional, Optional<String> bridgheadOptional) throws NotificationServiceException {
         List<Notification> result = new ArrayList<>();
-        List<Project> projects = (projectCodeOptional.isEmpty()) ? projectService.fetchAllUserVisibleProjects() : List.of(fetchProject(projectCodeOptional.get()));
-        List<String> bridgeheads = (bridgheadOptional.isEmpty()) ? sessionUser.getBridgeheads().stream().toList() : List.of(bridgheadOptional.get());
-        projects.forEach(project -> bridgeheads.forEach(bridgehead -> result.addAll(
-                notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridgehead))));
+        List<Project> projects = (projectCodeOptional.isEmpty()) ?
+                projectService.fetchAllUserVisibleProjects() : List.of(fetchProject(projectCodeOptional.get()));
+        List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgheadOptional);
+        projects.forEach(project -> {
+            if (bridgeheads.isEmpty() && sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
+                notificationRepository.findAllByProjectOrderByTimestampDesc(project);
+            } else {
+                bridgeheads.forEach(bridgehead -> result.addAll(
+                        notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridgehead)));
+            }
+        });
         return result.stream().map(DtoFactory::convert).toList();
+    }
+
+    List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {
+        if (sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
+            return (requestedBridgehead.isEmpty()) ? new ArrayList<>() : List.of(requestedBridgehead.get());
+        } else {
+            if (requestedBridgehead.isEmpty()) {
+                return sessionUser.getBridgeheads().stream().toList();
+            } else {
+                return (sessionUser.getBridgeheads().contains(requestedBridgehead.get())) ?
+                        List.of(requestedBridgehead.get()) : new ArrayList<>();
+            }
+
+        }
     }
 
 
