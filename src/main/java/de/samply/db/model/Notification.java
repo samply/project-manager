@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 
@@ -42,5 +43,10 @@ public class Notification {
 
     @Column(name = "error")
     private String error;
+
+    @Column(name = "http_status")
+    @Enumerated(EnumType.STRING)
+    private HttpStatus httpStatus;
+
 
 }

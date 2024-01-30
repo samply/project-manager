@@ -9,6 +9,7 @@ import de.samply.project.ProjectService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class NotificationService {
 
     public void createNotification(@NotNull String projectCode, String bridgehead, @NotNull String email,
                                    @NotNull OperationType operationType,
-                                   @NotNull String details, String error
+                                   @NotNull String details, String error, HttpStatus httpStatus
     ) throws NotificationServiceException {
         Project project = fetchProject(projectCode);
         Notification notification = new Notification();
@@ -45,6 +46,7 @@ public class NotificationService {
         notification.setOperationType(operationType);
         notification.setDetails(details);
         notification.setError(error);
+        notification.setHttpStatus(httpStatus);
         notificationRepository.save(notification);
     }
 
