@@ -31,6 +31,7 @@ public class DtoFactory {
 
     public static Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
         return new Notification(
+                notification.getId(),
                 notification.getEmail(),
                 notification.getTimestamp(),
                 notification.getProject().getCode(),

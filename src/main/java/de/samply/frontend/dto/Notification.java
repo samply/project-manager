@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import java.time.Instant;
 
 public record Notification(
+        Long id,
         String email,
         Instant timestamp,
         String projectCode,
