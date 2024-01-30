@@ -78,3 +78,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Frontend DTO converters
 - Fetch all user visible notifications
 - Accepted state requirement for setting user as developer or pilot
+- Notification User Action
+- Replace Bridgehead Operation through Notification
+- Set notification as read

@@ -228,7 +228,7 @@ public class ProjectManagerController {
         String projectCode = this.projectEventService.draft(bridgeheads, queryCode, projectType);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
-                Map.of(ProjectManagerConst.QUERY_CODE, projectCode)
+                Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)
         ));
     }
 
@@ -811,6 +811,17 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.notificationService.fetchUserVisibleNotifications(Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead)));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SET_NOTIFICATION_AS_READ_ACTION)
+    @PostMapping(value = ProjectManagerConst.SET_NOTIFICATION_AS_READ)
+    public ResponseEntity<String> setNotificationAsRead(
+            @RequestParam(name = ProjectManagerConst.NOTIFICATION_ID) Long notificationId
+    ) {
+        return convertToResponseEntity(() -> this.notificationService.setNotificationAsRead(notificationId));
     }
 
 

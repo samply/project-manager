@@ -67,6 +67,7 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
+    public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
 
 
     // REST Services
@@ -122,9 +123,11 @@ public class ProjectManagerConst {
     public final static String FETCH_PUBLICATIONS = "/publications";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
     public final static String FETCH_NOTIFICATIONS = "/notifications";
+    public final static String SET_NOTIFICATION_AS_READ = "/read-notification";
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
+    public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String BRIDGEHEADS = "bridgeheads";
     public final static String SITE = "site";

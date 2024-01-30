@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 
@@ -33,14 +34,19 @@ public class Notification {
     @Column(name = "bridgehead")
     private String bridgehead;
 
-    @Column(name = "operation_type", nullable = false)
+    @Column(name = "operation_type")
     @Enumerated(EnumType.STRING)
     private OperationType operationType;
 
-    @Column(name = "details", nullable = false)
+    @Column(name = "details")
     private String details;
 
     @Column(name = "error")
     private String error;
+
+    @Column(name = "http_status")
+    @Enumerated(EnumType.STRING)
+    private HttpStatus httpStatus;
+
 
 }
