@@ -83,3 +83,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Set notification as read
 - Fetch User Visible Projects and User Visible Notifications without constraints
 - Fetch Project
+- Fetch Project States

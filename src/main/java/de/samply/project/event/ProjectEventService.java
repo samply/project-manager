@@ -168,16 +168,21 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     private void createProjectBridgeheadUser(String projectCode) throws ProjectEventActionsException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectEventActionsException("Project not found");
-        }
+        Project project = fetchProject(projectCode);
         sessionUser.getBridgeheads().stream().forEach(bridgehead -> {
-            Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+            Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project);
             if (projectBridgehead.isPresent()) {
                 this.userService.createProjectBridgeheadUserIfNotExists(sessionUser.getEmail(), projectBridgehead.get(), ProjectRole.CREATOR);
             }
         });
+    }
+
+    private Project fetchProject(String projectCode) throws ProjectEventActionsException {
+        Optional<Project> project = this.projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectEventActionsException("Project not found");
+        }
+        return project.get();
     }
 
     @Override

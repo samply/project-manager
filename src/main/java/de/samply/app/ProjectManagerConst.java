@@ -69,6 +69,7 @@ public class ProjectManagerConst {
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
     public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
     public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT_ACTION";
+    public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
 
 
     // REST Services
@@ -99,6 +100,7 @@ public class ProjectManagerConst {
     public final static String REQUEST_CHANGES_IN_PROJECT = "/request-changes-in-project";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
     public final static String FETCH_PROJECT = "/project";
+    public final static String FETCH_PROJECT_STATES = "/project-states";
     public final static String ARCHIVE_PROJECT = "/archive-project";
     public final static String START_DEVELOP_STAGE = "/start-develop-project";
     public final static String START_PILOT_STAGE = "/start-pilot-project";
