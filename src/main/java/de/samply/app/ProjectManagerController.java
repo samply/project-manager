@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
+import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
@@ -65,6 +66,7 @@ public class ProjectManagerController {
     private final ProjectService projectService;
     private final ProjectBridgeheadService projectBridgeheadService;
     private final NotificationService notificationService;
+    private final BridgeheadConfiguration bridgeheadConfiguration;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -75,7 +77,8 @@ public class ProjectManagerController {
                                     TokenManagerService tokenManagerService,
                                     ProjectService projectService,
                                     ProjectBridgeheadService projectBridgeheadService,
-                                    NotificationService notificationService) {
+                                    NotificationService notificationService,
+                                    BridgeheadConfiguration bridgeheadConfiguration) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -86,6 +89,7 @@ public class ProjectManagerController {
         this.projectService = projectService;
         this.projectBridgeheadService = projectBridgeheadService;
         this.notificationService = notificationService;
+        this.bridgeheadConfiguration = bridgeheadConfiguration;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -839,6 +843,14 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.NOTIFICATION_ID) Long notificationId
     ) {
         return convertToResponseEntity(() -> this.notificationService.setNotificationAsRead(notificationId));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
+    public ResponseEntity<Resource> fetchAllRegisteredBridgeheads() {
+        return convertToResponseEntity(() -> bridgeheadConfiguration.getRegisteredBridgeheads());
     }
 
 

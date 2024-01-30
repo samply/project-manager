@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Configuration
 @ConfigurationProperties(prefix = ProjectManagerConst.REGISTERED_BRIDGEHEADS)
@@ -90,6 +91,10 @@ public class BridgeheadConfiguration {
 
     public String fetchBridgeheadForTokenManagerId(String tokenManagerId) {
         return fetchBridgehead(tokenManagerId, tokenManagerIdBridgeheadMap);
+    }
+
+    public Set<String> getRegisteredBridgeheads() {
+        return config.keySet();
     }
 
 
