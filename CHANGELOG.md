@@ -85,3 +85,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch Project
 - Fetch Project States
 - Fetch registered bridgeheads for project manager admin
+- Add notifications for services: document, project bridgehead, project event, project, query, user
