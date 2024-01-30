@@ -82,3 +82,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Replace Bridgehead Operation through Notification
 - Set notification as read
 - Fetch User Visible Projects and User Visible Notifications without constraints
+- Fetch Project

@@ -134,6 +134,18 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchProject(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // Bridgehead required for role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectService.fetchProject(projectCode));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchProjectsBridgeheads(

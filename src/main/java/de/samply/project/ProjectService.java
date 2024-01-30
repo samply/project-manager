@@ -39,6 +39,14 @@ public class ProjectService {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
     }
 
+    public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
+        if (projectOptional.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        return DtoFactory.convert(projectOptional.get());
+    }
+
     public void editProject(@NotNull String projectCode, ProjectType type, String[] bridgeheads) {
         Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
         boolean hasChanged = false;
