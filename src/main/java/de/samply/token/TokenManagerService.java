@@ -155,20 +155,27 @@ public class TokenManagerService {
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(BodyInserters.fromValue(tokenParams))
                 .retrieve()
-                .bodyToMono(String.class);
+                .bodyToMono(String.class)
+                .subscribe();
     }
-    public void removeTokens(@NotNull String projectCode, @NotNull String email, @NotNull String bridgehead) {
-        //TODO
+    public void removeTokens(@NotNull String email, @NotNull String bridgehead) {
+        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS + '/' + email + '/' + bridgehead;
+
+        webClient.delete()
+                .uri(uriBuilder -> uriBuilder.path(uri).build())
+                .retrieve()
+                .bodyToMono(Void.class)
+                .subscribe();
     }
 
-    public void removeProjectAndTokens(@NotNull String projectCode) {
-        //TokenParams tokenParams = new TokenParams(email, projectCode, fetchTokenManagerIds(bridgeheads));
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REMOVE_PROJECTS;
-        webClient.method(HttpMethod.DELETE)
-                .uri(uri)
-                //.contentType(MediaType.APPLICATION_JSON) // Set content type as JSON
-                //.body(BodyInserters.fromValue(tokenParams)) // Insert the tokenParams object
-                .retrieve().bodyToMono(String.class);
+    public void removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
+        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + '/' + bridgehead;
+
+        webClient.delete()
+                .uri(uriBuilder -> uriBuilder.path(uri).build())
+                .retrieve()
+                .bodyToMono(Void.class)
+                .subscribe();
     }
 
     private List<String> fetchTokenManagerIds(List<String> bridgeheads) {
