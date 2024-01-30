@@ -87,8 +87,8 @@ CREATE TABLE samply.notification
     timestamp      TIMESTAMP WITH TIME ZONE NOT NULL,
     project_id     BIGINT                   NOT NULL,
     bridgehead     TEXT,
-    operation_type TEXT                     NOT NULL,
-    details        TEXT                     NOT NULL,
+    operation_type TEXT,
+    details        TEXT,
     error          TEXT,
     http_status    TEXT
 );
@@ -96,9 +96,10 @@ CREATE TABLE samply.notification
 CREATE TABLE samply.notification_user_action
 (
     id              SERIAL PRIMARY KEY,
-    email           TEXT    NOT NULL,
-    read            BOOLEAN NOT NULL DEFAULT false,
-    notification_id BIGINT
+    email           TEXT      NOT NULL,
+    read            BOOLEAN   NOT NULL DEFAULT false,
+    notification_id BIGINT    NOT NULL,
+    modified_at     TIMESTAMP NOT NULL
 );
 
 

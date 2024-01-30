@@ -1,8 +1,10 @@
 package de.samply.notification;
 
 import de.samply.db.model.Notification;
+import de.samply.db.model.NotificationUserAction;
 import de.samply.db.model.Project;
 import de.samply.db.repository.NotificationRepository;
+import de.samply.db.repository.NotificationUserActionRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.project.ProjectService;
@@ -12,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,15 +23,18 @@ import java.util.Optional;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationUserActionRepository notificationUserActionRepository;
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
     private final SessionUser sessionUser;
 
     public NotificationService(NotificationRepository notificationRepository,
+                               NotificationUserActionRepository notificationUserActionRepository,
                                ProjectRepository projectRepository,
                                ProjectService projectService,
                                SessionUser sessionUser) {
         this.notificationRepository = notificationRepository;
+        this.notificationUserActionRepository = notificationUserActionRepository;
         this.projectRepository = projectRepository;
         this.projectService = projectService;
         this.sessionUser = sessionUser;
@@ -71,10 +77,11 @@ public class NotificationService {
                         notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridgehead)));
             }
         });
-        return result.stream().map(DtoFactory::convert).toList();
+        return result.stream().map(notification ->
+                DtoFactory.convert(notification, () -> fetchNotificationUserAction(notification))).toList();
     }
 
-    List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {
+    private List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {
         if (sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
             return (requestedBridgehead.isEmpty()) ? new ArrayList<>() : List.of(requestedBridgehead.get());
         } else {
@@ -86,6 +93,35 @@ public class NotificationService {
             }
 
         }
+    }
+
+    public void setNotificationAsRead(@NotNull Long notificationId) {
+        NotificationUserAction notificationUserAction = fetchNotificationUserAction(notificationId);
+        notificationUserAction.setRead(true);
+        notificationUserAction.setModifiedAt(Instant.now());
+        notificationUserActionRepository.save(notificationUserAction);
+    }
+
+    public NotificationUserAction fetchNotificationUserAction(@NotNull Long notificationId) {
+        Optional<Notification> notificationOptional = notificationRepository.findById(notificationId);
+        if (notificationOptional.isEmpty()) {
+            throw new NotificationServiceException("Notification " + notificationId + " not found");
+        }
+        return fetchNotificationUserAction(notificationOptional.get());
+    }
+
+    public NotificationUserAction fetchNotificationUserAction(@NotNull Notification notification) {
+        Optional<NotificationUserAction> notificationUserActionOptional = notificationUserActionRepository.findByNotification(notification);
+        NotificationUserAction notificationUserAction;
+        if (notificationUserActionOptional.isEmpty()) {
+            notificationUserAction = new NotificationUserAction();
+            notificationUserAction.setNotification(notification);
+            notificationUserAction.setEmail(sessionUser.getEmail());
+            notificationUserActionRepository.save(notificationUserAction);
+        } else {
+            notificationUserAction = notificationUserActionOptional.get();
+        }
+        return notificationUserAction;
     }
 
 

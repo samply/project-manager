@@ -80,3 +80,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Accepted state requirement for setting user as developer or pilot
 - Notification User Action
 - Replace Bridgehead Operation through Notification
+- Set notification as read

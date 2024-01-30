@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "notification_user_action", schema = "samply")
 @Data
@@ -24,7 +26,10 @@ public class NotificationUserAction {
     private boolean read = false;
 
     @ManyToOne
-    @JoinColumn(name = "notification_id")
+    @JoinColumn(name = "notification_id", nullable = false)
     private Notification notification;
+
+    @Column(name = "modified_at", nullable = false)
+    private Instant modifiedAt = Instant.now();
 
 }

@@ -34,11 +34,11 @@ public class Notification {
     @Column(name = "bridgehead")
     private String bridgehead;
 
-    @Column(name = "operation_type", nullable = false)
+    @Column(name = "operation_type")
     @Enumerated(EnumType.STRING)
     private OperationType operationType;
 
-    @Column(name = "details", nullable = false)
+    @Column(name = "details")
     private String details;
 
     @Column(name = "error")
