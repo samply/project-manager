@@ -6,6 +6,8 @@ import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
@@ -24,15 +26,18 @@ import java.util.Set;
 @Service
 public class ProjectService {
 
+    private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
 
-    public ProjectService(ProjectRepository projectRepository,
+    public ProjectService(NotificationService notificationService,
+                          ProjectRepository projectRepository,
                           ProjectBridgeheadRepository projectBridgeheadRepository,
                           SessionUser sessionUser,
                           ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
+        this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
@@ -53,6 +58,8 @@ public class ProjectService {
         if (projectOptional.isPresent()) {
             if (type != null) {
                 projectOptional.get().setType(type);
+                this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+                        OperationType.EDIT_PROJECT, "Changed project type to " + type, null, null);
                 hasChanged = true;
             }
             if (hasChanged) {
@@ -76,6 +83,9 @@ public class ProjectService {
                 map(projectBridgehead -> projectBridgehead.getBridgehead()).toList());
         editionBridgeheads.stream().filter(bridgehead -> !oldBridgeheads.contains(bridgehead)).forEach(bridgehead ->
                 createProjectBridgehead(project, bridgehead));
+        this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
+                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + bridgeheads), null, null);
+
     }
 
     private void createProjectBridgehead(Project project, String bridgehead) {

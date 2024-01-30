@@ -7,6 +7,8 @@ import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.QueryRepository;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
@@ -37,6 +39,7 @@ import java.util.function.Consumer;
 @Service
 public class ProjectEventService implements ProjectEventActions {
 
+    private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
     private final QueryRepository queryRepository;
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
@@ -47,7 +50,8 @@ public class ProjectEventService implements ProjectEventActions {
     private final int projectExpirationTimeInDays;
 
 
-    public ProjectEventService(ProjectRepository projectRepository,
+    public ProjectEventService(NotificationService notificationService,
+                               ProjectRepository projectRepository,
                                QueryRepository queryRepository,
                                StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory,
                                LogUtils logUtils,
@@ -55,6 +59,7 @@ public class ProjectEventService implements ProjectEventActions {
                                SessionUser sessionUser,
                                UserService userService,
                                @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays) {
+        this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.queryRepository = queryRepository;
         this.projectStateMachineFactory = projectStateMachineFactory;
@@ -103,6 +108,8 @@ public class ProjectEventService implements ProjectEventActions {
                     project.get().setState(stateMachine.getState().getId());
                     project.get().setModifiedAt(Instant.now());
                     this.projectRepository.save(project.get());
+                    this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+                            OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
                 }
             });
         });
@@ -151,6 +158,8 @@ public class ProjectEventService implements ProjectEventActions {
         stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
             project.setState(stateMachine.getState().getId());
             projectConsumer.accept(this.projectRepository.save(project));
+            this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+                    OperationType.CHANGE_PROJECT_STATE, "Design project", null, null);
         });
     }
 
