@@ -20,7 +20,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -93,13 +96,13 @@ public class TokenManagerService {
                     if (retryCount.get() >= webClientFactory.getWebClientMaxNumberOfRetries()) {
                         bridgeheads.forEach(tempBridgehead ->
                                 notificationService.createNotification(projectCode, tempBridgehead, email,
-                                        OperationType.GENERATE_TOKEN, "Error generating token", error));
+                                        OperationType.CREATE_DATASHIELD_TOKEN, "Error generating token", error, (HttpStatus) statusCode));
                         errorRunnable.run();
                     }
                 })
                 .subscribe(result -> bridgeheads.forEach(tempBridgehead ->
                         notificationService.createNotification(projectCode, tempBridgehead, email,
-                                OperationType.GENERATE_TOKEN, "Token generated successfully in Token Manager", null)));
+                                OperationType.CREATE_DATASHIELD_TOKEN, "Token generated successfully in Token Manager", null, null)));
     }
 
     private List<String> fetchProjectBridgeheads(String projectCode, String bridgehead, String email) throws TokenManagerServiceException {
@@ -158,6 +161,7 @@ public class TokenManagerService {
                 .bodyToMono(String.class)
                 .subscribe();
     }
+
     public void removeTokens(@NotNull String email, @NotNull String bridgehead) {
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS + '/' + email + '/' + bridgehead;
 
