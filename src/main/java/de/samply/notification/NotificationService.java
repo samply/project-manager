@@ -7,7 +7,6 @@ import de.samply.db.repository.NotificationRepository;
 import de.samply.db.repository.NotificationUserActionRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
-import de.samply.project.ProjectService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +17,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 public class NotificationService {
@@ -25,18 +25,15 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationUserActionRepository notificationUserActionRepository;
     private final ProjectRepository projectRepository;
-    private final ProjectService projectService;
     private final SessionUser sessionUser;
 
     public NotificationService(NotificationRepository notificationRepository,
                                NotificationUserActionRepository notificationUserActionRepository,
                                ProjectRepository projectRepository,
-                               ProjectService projectService,
                                SessionUser sessionUser) {
         this.notificationRepository = notificationRepository;
         this.notificationUserActionRepository = notificationUserActionRepository;
         this.projectRepository = projectRepository;
-        this.projectService = projectService;
         this.sessionUser = sessionUser;
     }
 
@@ -64,10 +61,14 @@ public class NotificationService {
         return project.get();
     }
 
-    public List<de.samply.frontend.dto.Notification> fetchUserVisibleNotifications(Optional<String> projectCodeOptional, Optional<String> bridgheadOptional) throws NotificationServiceException {
+    // We use a supplier of ProjectService.fetchAllUserVisibleProjects in order to remove interdependence
+    // between the notification service and the project service.
+    public List<de.samply.frontend.dto.Notification> fetchUserVisibleNotifications(
+            Optional<String> projectCodeOptional, Optional<String> bridgheadOptional,
+            Supplier<List<Project>> allUserVisibleProjectFetcher) throws NotificationServiceException {
         List<Notification> result = new ArrayList<>();
         List<Project> projects = (projectCodeOptional.isEmpty()) ?
-                projectService.fetchAllUserVisibleProjects() : List.of(fetchProject(projectCodeOptional.get()));
+                allUserVisibleProjectFetcher.get() : List.of(fetchProject(projectCodeOptional.get()));
         List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgheadOptional);
         projects.forEach(project -> {
             if (bridgeheads.isEmpty() && sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
