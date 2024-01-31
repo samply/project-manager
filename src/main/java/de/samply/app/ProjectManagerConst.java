@@ -71,7 +71,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT_ACTION";
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
-    public final static String FETCH_OPAL_STATUS_ACTION = "FETCH_OPAL_STATUS";
+    public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
 
 
     // REST Services
@@ -126,7 +126,7 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
-    public final static String FETCH_OPAL_STATUS = "/opal-status";
+    public final static String FETCH_DATASHIELD_STATUS = "/datashield-status";
     public final static String FETCH_PUBLICATIONS = "/publications";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
     public final static String FETCH_NOTIFICATIONS = "/notifications";
@@ -235,6 +235,7 @@ public class ProjectManagerConst {
     public final static String FOCUS_API_KEY = "FOCUS_API_KEY";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
+    public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -285,6 +286,9 @@ public class ProjectManagerConst {
     public final static String FOCUS_URL_SV = HEAD_SV + FOCUS_URL + BOTTOM_SV;
     public final static String FOCUS_API_KEY_SV = HEAD_SV + FOCUS_API_KEY + BOTTOM_SV;
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
+    public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
+            HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 0 * * * *'}" + BOTTOM_SV;
+
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

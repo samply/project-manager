@@ -83,7 +83,7 @@ CREATE TABLE samply.project_document
 CREATE TABLE samply.notification
 (
     id             SERIAL                   NOT NULL PRIMARY KEY,
-    email          TEXT                     NOT NULL,
+    email          TEXT,
     timestamp      TIMESTAMP WITH TIME ZONE NOT NULL,
     project_id     BIGINT                   NOT NULL,
     bridgehead     TEXT,

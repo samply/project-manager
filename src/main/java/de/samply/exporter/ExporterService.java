@@ -256,7 +256,7 @@ public class ExporterService {
 
     private String generateQueryContextForExporter(String queryContext, String projectCode) {
         String context = ProjectManagerConst.EXPORTER_QUERY_CONTEXT_PROJECT_ID + '=' + projectCode;
-        if (queryContext != null) {
+        if (StringUtils.hasText(queryContext)) {
             context += ',' + queryContext;
         }
         return Base64Utils.encode(context);

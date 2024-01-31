@@ -10,7 +10,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
-import de.samply.token.dto.OpalStatus;
+import de.samply.token.dto.DataShieldStatus;
 import de.samply.token.dto.TokenParams;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.WebClientFactory;
@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
-public class TokenManagerService {
+public class DataShieldTokenManagerService {
 
     private final SessionUser sessionUser;
     private final WebClientFactory webClientFactory;
@@ -49,14 +49,14 @@ public class TokenManagerService {
     private final NotificationService notificationService;
     private final BridgeheadConfiguration bridgeheadConfiguration;
 
-    public TokenManagerService(SessionUser sessionUser,
-                               WebClientFactory webClientFactory,
-                               @Value(ProjectManagerConst.TOKEN_MANAGER_URL_SV) String tokenManagerUrl,
-                               ProjectRepository projectRepository,
-                               ProjectBridgeheadRepository projectBridgeheadRepository,
-                               ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                               NotificationService notificationService,
-                               BridgeheadConfiguration bridgeheadConfiguration) {
+    public DataShieldTokenManagerService(SessionUser sessionUser,
+                                         WebClientFactory webClientFactory,
+                                         @Value(ProjectManagerConst.TOKEN_MANAGER_URL_SV) String tokenManagerUrl,
+                                         ProjectRepository projectRepository,
+                                         ProjectBridgeheadRepository projectBridgeheadRepository,
+                                         ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
+                                         NotificationService notificationService,
+                                         BridgeheadConfiguration bridgeheadConfiguration) {
         this.sessionUser = sessionUser;
         this.webClientFactory = webClientFactory;
         this.projectRepository = projectRepository;
@@ -67,7 +67,7 @@ public class TokenManagerService {
         this.webClient = webClientFactory.createWebClient(tokenManagerUrl);
     }
 
-    public void generateTokensInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable errorRunnable) throws TokenManagerServiceException {
+    public void generateTokensInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) throws DataShieldTokenManagerServiceException {
         List<String> bridgeheads = fetchProjectBridgeheads(projectCode, bridgehead, email);
         List<String> tokenManagerIds = fetchTokenManagerIds(bridgeheads);
         AtomicInteger retryCount = new AtomicInteger(0);
@@ -97,7 +97,6 @@ public class TokenManagerService {
                         bridgeheads.forEach(tempBridgehead ->
                                 notificationService.createNotification(projectCode, tempBridgehead, email,
                                         OperationType.CREATE_DATASHIELD_TOKEN, "Error generating token", error, (HttpStatus) statusCode));
-                        errorRunnable.run();
                     }
                 })
                 .subscribe(result -> bridgeheads.forEach(tempBridgehead ->
@@ -105,11 +104,11 @@ public class TokenManagerService {
                                 OperationType.CREATE_DATASHIELD_TOKEN, "Token generated successfully in Token Manager", null, null)));
     }
 
-    private List<String> fetchProjectBridgeheads(String projectCode, String bridgehead, String email) throws TokenManagerServiceException {
+    private List<String> fetchProjectBridgeheads(String projectCode, String bridgehead, String email) throws DataShieldTokenManagerServiceException {
         Project project = fetchProject(projectCode);
         Optional<ProjectBridgeheadUser> projectBridgeheadUser = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(email, project, bridgehead);
         if (projectBridgeheadUser.isEmpty()) {
-            throw new TokenManagerServiceException("User " + email + " with token manager rights not found for project " + projectCode);
+            throw new DataShieldTokenManagerServiceException("User " + email + " with token manager rights not found for project " + projectCode);
         }
         ProjectRole userProjectRole = projectBridgeheadUser.get().getProjectRole();
         if (userProjectRole == ProjectRole.DEVELOPER || userProjectRole == ProjectRole.PILOT) {
@@ -117,25 +116,25 @@ public class TokenManagerService {
         } else if (userProjectRole == ProjectRole.FINAL) {
             return projectBridgeheadRepository.findByProject(project).stream().map(projectBridgehead -> projectBridgehead.getBridgehead()).toList();
         } else {
-            throw new TokenManagerServiceException("Role " + userProjectRole + " of user " + email + " not supported");
+            throw new DataShieldTokenManagerServiceException("Role " + userProjectRole + " of user " + email + " not supported");
         }
     }
 
-    private Project fetchProject(String projectCode) throws TokenManagerServiceException {
+    private Project fetchProject(String projectCode) throws DataShieldTokenManagerServiceException {
         Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
-            throw new TokenManagerServiceException("Project " + projectCode + " not found");
+            throw new DataShieldTokenManagerServiceException("Project " + projectCode + " not found");
         }
         return project.get();
     }
 
-    public OpalStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
+    public DataShieldStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
         return replaceTokenManagerId(webClient.get()
                 .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
-                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(OpalStatus.class).block());
+                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldStatus.class).block());
     }
 
-    public Resource fetchAuthenticationScript(String projectCode, String bridgehead) throws TokenManagerServiceException {
+    public Resource fetchAuthenticationScript(String projectCode, String bridgehead) throws DataShieldTokenManagerServiceException {
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
         String authenticationScript = webClient.post().uri(uriBuilder ->
                         uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_SCRIPTS).build())
@@ -143,12 +142,12 @@ public class TokenManagerService {
                 .bodyValue(new TokenParams(sessionUser.getEmail(), projectCode, tokenManagerIds))
                 .accept(MediaType.TEXT_PLAIN).retrieve().bodyToMono(String.class).block();
         if (!StringUtils.hasText(authenticationScript)) {
-            throw new TokenManagerServiceException("Script could not be generated for project " + projectCode + " and user " + sessionUser.getEmail());
+            throw new DataShieldTokenManagerServiceException("Script could not be generated for project " + projectCode + " and user " + sessionUser.getEmail());
         }
         return new ByteArrayResource(authenticationScript.getBytes());
     }
 
-    public void refreshToken(@NotNull String projectCode, @NotNull String email, @NotNull String bridgehead) throws TokenManagerServiceException {
+    public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) throws DataShieldTokenManagerServiceException {
         List<String> bridgeheads = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));
         TokenParams tokenParams = new TokenParams(email, projectCode, bridgeheads);
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REFRESH_TOKEN;
@@ -159,17 +158,19 @@ public class TokenManagerService {
                 .body(BodyInserters.fromValue(tokenParams))
                 .retrieve()
                 .bodyToMono(String.class)
-                .subscribe();
+                .subscribe(s -> notificationService.createNotification(projectCode, bridgehead, email,
+                        OperationType.REFRESH_DATASHIELD_TOKEN, "Token refreshed", null, null));
     }
 
-    public void removeTokens(@NotNull String email, @NotNull String bridgehead) {
+    public void removeTokens(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS + '/' + email + '/' + bridgehead;
 
         webClient.delete()
                 .uri(uriBuilder -> uriBuilder.path(uri).build())
                 .retrieve()
                 .bodyToMono(Void.class)
-                .subscribe();
+                .subscribe(s -> notificationService.createNotification(projectCode, bridgehead, email,
+                        OperationType.REMOVE_DATASHIELD_TOKEN, "Token removed", null, null));
     }
 
     public void removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
@@ -179,7 +180,8 @@ public class TokenManagerService {
                 .uri(uriBuilder -> uriBuilder.path(uri).build())
                 .retrieve()
                 .bodyToMono(Void.class)
-                .subscribe();
+                .subscribe(s -> notificationService.createNotification(projectCode, bridgehead, null,
+                        OperationType.REMOVE_DATASHIELD_TOKEN, "Token removed", null, null));
     }
 
     private List<String> fetchTokenManagerIds(List<String> bridgeheads) {
@@ -190,17 +192,17 @@ public class TokenManagerService {
         return bridgeheadConfiguration.getTokenManagerId(bridgehead);
     }
 
-    private OpalStatus replaceTokenManagerId(OpalStatus opalStatus) {
-        return (opalStatus != null) ?
-                new OpalStatus(
-                        opalStatus.projectCode(),
-                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(opalStatus.bridgehead()),
-                        opalStatus.email(),
-                        opalStatus.createdAt(),
-                        opalStatus.projectStatus(),
-                        opalStatus.tokenStatus()
+    private DataShieldStatus replaceTokenManagerId(DataShieldStatus dataShieldStatus) {
+        return (dataShieldStatus != null) ?
+                new DataShieldStatus(
+                        dataShieldStatus.projectCode(),
+                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(dataShieldStatus.bridgehead()),
+                        dataShieldStatus.email(),
+                        dataShieldStatus.createdAt(),
+                        dataShieldStatus.projectStatus(),
+                        dataShieldStatus.tokenStatus()
                 )
-                : opalStatus;
+                : dataShieldStatus;
     }
 
 }

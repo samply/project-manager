@@ -1,7 +1,7 @@
 package de.samply.token.dto;
 
-public enum OpalTokenStatus {
+public enum DataShieldProjectStatus {
     CREATED,
-    EXPIRED,
+    WITH_DATA,
     NOT_FOUND
 }
