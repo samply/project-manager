@@ -127,7 +127,11 @@ public class DataShieldTokenManagerService {
         }
         return project.get();
     }
-
+    public DataShieldStatus fetchTokenStatus(@NotNull String email, @NotNull String bridgehead) {
+        return replaceTokenManagerId(webClient.get()
+                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS + '/' + email + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
+                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldStatus.class).block());
+    }
     public DataShieldStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
         return replaceTokenManagerId(webClient.get()
                 .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
