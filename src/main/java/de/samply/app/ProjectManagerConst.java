@@ -197,7 +197,6 @@ public class ProjectManagerConst {
     public final static String TOKEN_MANAGER_PROJECT_STATUS = "/projects";
     public final static String TOKEN_MANAGER_PROJECT_STATUS_SUFFIX = "/status";
     public final static String TOKEN_MANAGER_SCRIPTS = "/scripts";
-    public final static String TOKEN_MANAGER_REMOVE_PROJECTS = "/projects";
     public final static String TOKEN_MANAGER_REFRESH_TOKEN = "/refreshToken";
     public final static String AUTHENTICATION_SCRIPT_FILENAME_PREFIX = "authentication-script-";
     public final static String AUTHENTICATION_SCRIPT_FILENAME_SUFFIX = ".r";
@@ -236,6 +235,7 @@ public class ProjectManagerConst {
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
+    public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION = "CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -288,6 +288,8 @@ public class ProjectManagerConst {
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
             HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 0 * * * *'}" + BOTTOM_SV;
+    public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION_SV =
+            HEAD_SV + CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION + ":#{'0 0 1,13 * * *'}" + BOTTOM_SV;
 
 
     // Others

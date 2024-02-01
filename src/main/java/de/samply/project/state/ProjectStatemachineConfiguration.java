@@ -48,6 +48,7 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
     @Override
     public void configure(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions) throws Exception {
         addRejectTransitions(transitions);
+        addArchiveTransitions(transitions);
         transitions
                 .withExternal().source(ProjectState.DRAFT).target(ProjectState.CREATED).event(ProjectEvent.CREATE).and()
                 .withExternal().source(ProjectState.CREATED).target(ProjectState.ACCEPTED).event(ProjectEvent.ACCEPT).and()
@@ -60,12 +61,22 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
     }
 
     private void addRejectTransitions(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions) throws Exception {
+        ProjectState[] statesToBeRejected = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.ACCEPTED,
+                ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.ARCHIVED};
+        createTransitions(statesToBeRejected, state -> rejectState(transitions, state));
+    }
+
+    private void addArchiveTransitions(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions) throws Exception {
+        ProjectState[] statesToBeRejected = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP,
+                ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED};
+        createTransitions(statesToBeRejected, state -> archiveState(transitions, state));
+    }
+
+    private void createTransitions(ProjectState[] sourceStates, ConsumerWithException<ProjectState> transitionCreator) throws Exception {
         try {
-            ProjectState[] statesToBeRejected = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.ACCEPTED,
-                    ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.ARCHIVED};
-            Arrays.stream(statesToBeRejected).forEach(state -> {
+            Arrays.stream(sourceStates).forEach(state -> {
                 try {
-                    rejectState(transitions, state);
+                    transitionCreator.accept(state);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -75,8 +86,16 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
         }
     }
 
+    private interface ConsumerWithException<T> {
+        void accept(T t) throws Exception;
+    }
+
     private void rejectState(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions, ProjectState state) throws Exception {
         transitions.withExternal().source(state).target(ProjectState.REJECTED).event(ProjectEvent.REJECT).and();
+    }
+
+    private void archiveState(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions, ProjectState state) throws Exception {
+        transitions.withExternal().source(state).target(ProjectState.ARCHIVED).event(ProjectEvent.ARCHIVE).and();
     }
 
 

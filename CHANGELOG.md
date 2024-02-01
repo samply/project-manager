@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-01-31]
+## [0.0.1 - 2024-02-01]
 ### Added
 - First version of the project
 - Spring Application
@@ -88,3 +88,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch registered bridgeheads for project manager admin
 - Add notifications for services: document, project bridgehead, project event, project, query, user
 - DataSHIELD Token Manager Job
+- Check Expired Active Projects Job
