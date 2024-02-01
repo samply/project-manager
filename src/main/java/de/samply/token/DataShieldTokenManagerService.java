@@ -10,7 +10,8 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
-import de.samply.token.dto.DataShieldStatus;
+import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
+import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
 import de.samply.token.dto.TokenParams;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.WebClientFactory;
@@ -127,15 +128,16 @@ public class DataShieldTokenManagerService {
         }
         return project.get();
     }
-    public DataShieldStatus fetchTokenStatus(@NotNull String email, @NotNull String bridgehead) {
+    public DataShieldTokenManagerTokenStatus fetchTokenStatus(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
         return replaceTokenManagerId(webClient.get()
                 .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS + '/' + email + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
-                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldStatus.class).block());
+                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldTokenManagerTokenStatus.class).block());
     }
-    public DataShieldStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
+
+    public DataShieldTokenManagerProjectStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
         return replaceTokenManagerId(webClient.get()
                 .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
-                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldStatus.class).block());
+                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldTokenManagerProjectStatus.class).block());
     }
 
     public Resource fetchAuthenticationScript(String projectCode, String bridgehead) throws DataShieldTokenManagerServiceException {
@@ -198,17 +200,27 @@ public class DataShieldTokenManagerService {
         return bridgeheadConfiguration.getTokenManagerId(bridgehead);
     }
 
-    private DataShieldStatus replaceTokenManagerId(DataShieldStatus dataShieldStatus) {
-        return (dataShieldStatus != null) ?
-                new DataShieldStatus(
-                        dataShieldStatus.projectCode(),
-                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(dataShieldStatus.bridgehead()),
-                        dataShieldStatus.email(),
-                        dataShieldStatus.createdAt(),
-                        dataShieldStatus.projectStatus(),
-                        dataShieldStatus.tokenStatus()
+    private DataShieldTokenManagerProjectStatus replaceTokenManagerId(DataShieldTokenManagerProjectStatus dataShieldTokenManagerProjectStatus) {
+        return (dataShieldTokenManagerProjectStatus != null) ?
+                new DataShieldTokenManagerProjectStatus(
+                        dataShieldTokenManagerProjectStatus.projectCode(),
+                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(dataShieldTokenManagerProjectStatus.bridgehead()),
+                        dataShieldTokenManagerProjectStatus.projectStatus()
                 )
-                : dataShieldStatus;
+                : dataShieldTokenManagerProjectStatus;
+    }
+
+    private DataShieldTokenManagerTokenStatus replaceTokenManagerId(DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus) {
+        return (dataShieldTokenManagerTokenStatus != null) ?
+                new DataShieldTokenManagerTokenStatus(
+                        dataShieldTokenManagerTokenStatus.projectCode(),
+                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(dataShieldTokenManagerTokenStatus.bridgehead()),
+                        dataShieldTokenManagerTokenStatus.email(),
+                        dataShieldTokenManagerTokenStatus.createdAt(),
+                        dataShieldTokenManagerTokenStatus.projectStatus(),
+                        dataShieldTokenManagerTokenStatus.tokenStatus()
+                        )
+                : dataShieldTokenManagerTokenStatus;
     }
 
 }

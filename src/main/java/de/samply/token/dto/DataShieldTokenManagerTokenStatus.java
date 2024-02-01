@@ -2,7 +2,7 @@ package de.samply.token.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record DataShieldStatus(
+public record DataShieldTokenManagerTokenStatus(
         @JsonProperty("project_id") String projectCode,
         @JsonProperty("bk") String bridgehead,
         @JsonProperty("user_id") String email,
@@ -10,5 +10,4 @@ public record DataShieldStatus(
         @JsonProperty("project_status") DataShieldProjectStatus projectStatus,
         @JsonProperty("token_status") DataShieldTokenStatus tokenStatus
 ) {
-
 }

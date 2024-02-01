@@ -90,3 +90,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - DataSHIELD Token Manager Job
 - Check Expired Active Projects Job
 - Check if session scope is active before creating a notification for changing project state
+- Fetch token status and project status of token manager
