@@ -90,12 +90,12 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
         void accept(T t) throws Exception;
     }
 
-    private void rejectState(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions, ProjectState state) throws Exception {
-        transitions.withExternal().source(state).target(ProjectState.REJECTED).event(ProjectEvent.REJECT).and();
+    private void rejectState(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions, ProjectState sourceState) throws Exception {
+        transitions.withExternal().source(sourceState).target(ProjectState.REJECTED).event(ProjectEvent.REJECT).and();
     }
 
-    private void archiveState(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions, ProjectState state) throws Exception {
-        transitions.withExternal().source(state).target(ProjectState.ARCHIVED).event(ProjectEvent.ARCHIVE).and();
+    private void archiveState(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions, ProjectState sourceState) throws Exception {
+        transitions.withExternal().source(sourceState).target(ProjectState.ARCHIVED).event(ProjectEvent.ARCHIVE).and();
     }
 
 

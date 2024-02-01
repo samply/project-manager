@@ -89,3 +89,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add notifications for services: document, project bridgehead, project event, project, query, user
 - DataSHIELD Token Manager Job
 - Check Expired Active Projects Job
+- Check if session scope is active before creating a notification for changing project state

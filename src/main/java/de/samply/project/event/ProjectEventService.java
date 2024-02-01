@@ -18,6 +18,7 @@ import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.support.ScopeNotActiveException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -92,14 +93,18 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     private void changeEvent(String projectCode, ProjectEvent projectEvent) throws ProjectEventActionsException {
+        changeEvent(projectCode, projectEvent, Optional.empty());
+    }
+
+    private void changeEvent(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccesfulChangeEvent) throws ProjectEventActionsException {
         try {
-            changeEventWithoutExceptionHandling(projectCode, projectEvent);
+            changeEventWithoutExceptionHandling(projectCode, projectEvent, consumerAfterSuccesfulChangeEvent);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private void changeEventWithoutExceptionHandling(String projectCode, ProjectEvent projectEvent) {
+    private void changeEventWithoutExceptionHandling(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccesfulChangeEvent) {
         loadProject(projectCode, stateMachine -> {
             Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
             stateMachine.sendEvent(Mono.just(createEventMessage)).subscribe(null, logUtils::logError, () -> {
@@ -108,11 +113,22 @@ public class ProjectEventService implements ProjectEventActions {
                     project.get().setState(stateMachine.getState().getId());
                     project.get().setModifiedAt(Instant.now());
                     this.projectRepository.save(project.get());
-                    this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+                    this.notificationService.createNotification(projectCode, null, fetchSessionUserEmailIfSessionIsActive(),
                             OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
+                    if (consumerAfterSuccesfulChangeEvent.isPresent()) {
+                        consumerAfterSuccesfulChangeEvent.get().accept(project.get());
+                    }
                 }
             });
         });
+    }
+
+    private String fetchSessionUserEmailIfSessionIsActive() {
+        try {
+            return sessionUser.getEmail();
+        } catch (ScopeNotActiveException e) {
+            return null;
+        }
     }
 
     @Override
@@ -212,7 +228,10 @@ public class ProjectEventService implements ProjectEventActions {
 
     @Override
     public void archive(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.ARCHIVE);
+        changeEvent(projectCode, ProjectEvent.ARCHIVE, Optional.of(project -> {
+            project.setArchivedAt(project.getModifiedAt());
+            this.projectRepository.save(project);
+        }));
     }
 
     @Override
