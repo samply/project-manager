@@ -1,12 +1,10 @@
-package de.samply.jobs;
+package de.samply.token;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
-import de.samply.token.DataShieldTokenManagerService;
 import de.samply.token.dto.DataShieldProjectStatus;
 import de.samply.token.dto.DataShieldStatus;
 import de.samply.token.dto.DataShieldTokenStatus;
@@ -23,14 +21,11 @@ public class DataShieldTokenManagerJob {
 
     private final DataShieldTokenManagerService tokenManagerService;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
 
     public DataShieldTokenManagerJob(DataShieldTokenManagerService tokenManagerService,
-                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                                     ProjectBridgeheadRepository projectBridgeheadRepository) {
+                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
         this.tokenManagerService = tokenManagerService;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
 
     @Scheduled(cron = ProjectManagerConst.MANAGE_TOKENS_CRON_EXPRESSION_SV)

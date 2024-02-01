@@ -163,7 +163,8 @@ public class DataShieldTokenManagerService {
     }
 
     public void removeTokens(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS + '/' + email + '/' + bridgehead;
+        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS
+                + '/' + email + '/' + fetchTokenManagerId(bridgehead);
 
         webClient.delete()
                 .uri(uriBuilder -> uriBuilder.path(uri).build())
@@ -174,7 +175,8 @@ public class DataShieldTokenManagerService {
     }
 
     public void removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + '/' + bridgehead;
+        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS
+                + '/' + projectCode + '/' + fetchTokenManagerId(bridgehead);
 
         webClient.delete()
                 .uri(uriBuilder -> uriBuilder.path(uri).build())
