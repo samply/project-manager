@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -129,15 +130,32 @@ public class DataShieldTokenManagerService {
         return project.get();
     }
     public DataShieldTokenManagerTokenStatus fetchTokenStatus(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
+        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS)
+                .queryParam("bk", bridgehead)
+                .queryParam("project_id", projectCode)
+                .queryParam("user_id", email)
+                .toUriString();
+
         return replaceTokenManagerId(webClient.get()
-                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS + '/' + email + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
-                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldTokenManagerTokenStatus.class).block());
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(DataShieldTokenManagerTokenStatus.class)
+                .block());
     }
 
     public DataShieldTokenManagerProjectStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
+        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS)
+                .queryParam("bk", bridgehead)
+                .queryParam("project_id", projectCode)
+                .toUriString();
+
         return replaceTokenManagerId(webClient.get()
-                .uri(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS + '/' + projectCode + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS_SUFFIX + '/' + fetchTokenManagerId(bridgehead))
-                .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(DataShieldTokenManagerProjectStatus.class).block());
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(DataShieldTokenManagerProjectStatus.class)
+                .block());
     }
 
     public Resource fetchAuthenticationScript(String projectCode, String bridgehead) throws DataShieldTokenManagerServiceException {
@@ -181,7 +199,7 @@ public class DataShieldTokenManagerService {
     }
 
     public void removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS
+        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT
                 + '/' + projectCode + '/' + fetchTokenManagerId(bridgehead);
 
         webClient.delete()
