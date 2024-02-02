@@ -194,13 +194,19 @@ public class ProjectManagerConst {
     // Token Manager Variables
     public final static String TOKEN_MANAGER_ROOT = "/api";
     public final static String TOKEN_MANAGER_TOKENS = "/token";
+    public final static String TOKEN_MANAGER_TOKEN_STATUS = "/token-status";
     public final static String TOKEN_MANAGER_PROJECT = "/project";
     public final static String TOKEN_MANAGER_PROJECT_STATUS = "/project-status";
-    public final static String TOKEN_MANAGER_PROJECT_STATUS_SUFFIX = "/status";
     public final static String TOKEN_MANAGER_SCRIPTS = "/script";
     public final static String TOKEN_MANAGER_REFRESH_TOKEN = "/refreshToken";
     public final static String AUTHENTICATION_SCRIPT_FILENAME_PREFIX = "authentication-script-";
     public final static String AUTHENTICATION_SCRIPT_FILENAME_SUFFIX = ".r";
+    public final static String TOKEN_MANAGER_PARAMETER_BRIDGEHEAD = "bk";
+    public final static String TOKEN_MANAGER_PARAMETER_PROJECT_CODE = "project_id";
+    public final static String TOKEN_MANAGER_PARAMETER_EMAIL = "user_id";
+    public final static String TOKEN_MANAGER_PARAMETER_PROJECT_STATUS = "project_status";
+    public final static String TOKEN_MANAGER_PARAMETER_TOKEN_STATUS = "token_status";
+    public final static String TOKEN_MANAGER_PARAMETER_TOKEN_CREATED_AT = "token_created_at";
 
 
     // Environment Variables

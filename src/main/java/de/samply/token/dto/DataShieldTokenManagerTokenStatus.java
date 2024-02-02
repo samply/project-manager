@@ -1,13 +1,14 @@
 package de.samply.token.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.samply.app.ProjectManagerConst;
 
 public record DataShieldTokenManagerTokenStatus(
-        @JsonProperty("project_id") String projectCode,
-        @JsonProperty("bk") String bridgehead,
-        @JsonProperty("user_id") String email,
-        @JsonProperty("token_created_at") String createdAt,
-        @JsonProperty("project_status") DataShieldProjectStatus projectStatus,
-        @JsonProperty("token_status") DataShieldTokenStatus tokenStatus
+        @JsonProperty(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE) String projectCode,
+        @JsonProperty(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD) String bridgehead,
+        @JsonProperty(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL) String email,
+        @JsonProperty(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_TOKEN_CREATED_AT) String createdAt,
+        @JsonProperty(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_STATUS) DataShieldProjectStatus projectStatus,
+        @JsonProperty(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_TOKEN_STATUS) DataShieldTokenStatus tokenStatus
 ) {
 }

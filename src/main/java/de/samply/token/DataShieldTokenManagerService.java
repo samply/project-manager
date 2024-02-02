@@ -129,13 +129,13 @@ public class DataShieldTokenManagerService {
         }
         return project.get();
     }
-    public DataShieldTokenManagerTokenStatus fetchTokenStatus(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
-        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS)
-                .queryParam("bk", bridgehead)
-                .queryParam("project_id", projectCode)
-                .queryParam("user_id", email)
-                .toUriString();
 
+    public DataShieldTokenManagerTokenStatus fetchTokenStatus(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
+        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKEN_STATUS)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
+                .toUriString();
         return replaceTokenManagerId(webClient.get()
                 .uri(uri)
                 .accept(MediaType.APPLICATION_JSON)
@@ -146,10 +146,9 @@ public class DataShieldTokenManagerService {
 
     public DataShieldTokenManagerProjectStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
         String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS)
-                .queryParam("bk", bridgehead)
-                .queryParam("project_id", projectCode)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                 .toUriString();
-
         return replaceTokenManagerId(webClient.get()
                 .uri(uri)
                 .accept(MediaType.APPLICATION_JSON)
@@ -237,7 +236,7 @@ public class DataShieldTokenManagerService {
                         dataShieldTokenManagerTokenStatus.createdAt(),
                         dataShieldTokenManagerTokenStatus.projectStatus(),
                         dataShieldTokenManagerTokenStatus.tokenStatus()
-                        )
+                )
                 : dataShieldTokenManagerTokenStatus;
     }
 
