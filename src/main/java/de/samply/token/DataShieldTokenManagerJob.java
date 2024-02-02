@@ -3,6 +3,9 @@ package de.samply.token;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
+import de.samply.email.EmailService;
+import de.samply.email.EmailServiceException;
+import de.samply.email.EmailTemplateType;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
 import de.samply.token.dto.DataShieldProjectStatus;
@@ -10,11 +13,13 @@ import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
 import de.samply.token.dto.DataShieldTokenStatus;
 import de.samply.user.roles.ProjectRole;
+import lombok.EqualsAndHashCode;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -22,11 +27,14 @@ public class DataShieldTokenManagerJob {
 
     private final DataShieldTokenManagerService tokenManagerService;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    private final EmailService emailService;
 
     public DataShieldTokenManagerJob(DataShieldTokenManagerService tokenManagerService,
-                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
+                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
+                                     EmailService emailService) {
         this.tokenManagerService = tokenManagerService;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.emailService = emailService;
     }
 
     @Scheduled(cron = ProjectManagerConst.MANAGE_TOKENS_CRON_EXPRESSION_SV)
@@ -41,19 +49,33 @@ public class DataShieldTokenManagerJob {
         List<ProjectBridgeheadUser> activeUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER);
         activeUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT));
         activeUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL));
+        Set<EmailProject> usersToSendAnEmail = new HashSet<>();
         activeUsers.forEach(user -> {
             // Check user status
             DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail());
             if (dataShieldTokenManagerTokenStatus.projectStatus() == DataShieldProjectStatus.WITH_DATA) {
                 if (dataShieldTokenManagerTokenStatus.tokenStatus() == DataShieldTokenStatus.NOT_FOUND) { // If user token not found: Create token
                     tokenManagerService.generateTokensInOpal(user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail());
-                    // TODO: Send email to user
+                    usersToSendAnEmail.add(new EmailProject(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectRole()));
                 } else if (dataShieldTokenManagerTokenStatus.tokenStatus() == DataShieldTokenStatus.EXPIRED) { // If user token expired: Refresh Token
                     tokenManagerService.refreshToken(user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail());
-                    // TODO: Send email to user
+                    usersToSendAnEmail.add(new EmailProject(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectRole()));
                 }
             }
         });
+        usersToSendAnEmail.forEach(userProject -> sendEmail(userProject.email(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, userProject.projectRole()));
+    }
+
+    @EqualsAndHashCode(of = {"email", "projectCode"})
+    private record EmailProject(String email, String projectCode, ProjectRole projectRole) {
+    }
+
+    private void sendEmail(String email, EmailTemplateType type, ProjectRole projectRole) {
+        try {
+            emailService.sendEmail(email, Optional.empty(), projectRole, type);
+        } catch (EmailServiceException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void manageInactiveUsers() {
