@@ -5,15 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadOperationType;
-import de.samply.db.model.BridgeheadOperation;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
-import de.samply.db.repository.BridgeheadOperationRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.exporter.focus.FocusQuery;
 import de.samply.exporter.focus.FocusService;
 import de.samply.exporter.focus.FocusServiceException;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
@@ -35,10 +34,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -59,7 +56,7 @@ public class ExporterService {
     private final int webClientBufferSizeInBytes;
     private final SessionUser sessionUser;
     private final ProjectRepository projectRepository;
-    private final BridgeheadOperationRepository bridgeheadOperationRepository;
+    private final NotificationService notificationService;
     private final Set<String> exportTemplates;
     private final Set<String> datashieldTemplates;
     private final String focusProjectManagerId;
@@ -84,7 +81,7 @@ public class ExporterService {
             FocusService focusService,
             ProjectRepository projectRepository,
             SessionUser sessionUser,
-            BridgeheadOperationRepository bridgeheadOperationRepository) {
+            NotificationService notificationService) {
         this.focusService = focusService;
         this.webClientMaxNumberOfRetries = webClientMaxNumberOfRetries;
         this.webClientTimeInSecondsAfterRetryWithFailure = webClientTimeInSecondsAfterRetryWithFailure;
@@ -96,7 +93,7 @@ public class ExporterService {
         this.webClientBufferSizeInBytes = webClientBufferSizeInBytes;
         this.sessionUser = sessionUser;
         this.projectRepository = projectRepository;
-        this.bridgeheadOperationRepository = bridgeheadOperationRepository;
+        this.notificationService = notificationService;
         this.exportTemplates = exportTemplates;
         this.datashieldTemplates = datashieldTemplates;
         this.focusProjectManagerId = focusProjectManagerId;
@@ -154,14 +151,14 @@ public class ExporterService {
                     }
                     // We don't use the normal retry functionality of webclient, because focus requires to change the focus query ID after every retry
                     if (numberOfRetries >= webClientMaxNumberOfRetries) {
-                        createBridgeheadOperation((HttpStatus) ex.getStatusCode(), error, bridgehead, projectCode, email, toBeExecuted);
+                        createBridgeheadNotification((HttpStatus) ex.getStatusCode(), error, bridgehead, projectCode, email, toBeExecuted);
                     } else {
                         waitUntilNextRetry();
                         focusQuery.setId(focusService.generateId()); // Generate new Focus Query ID
                         postRequest(bridgehead, projectCode, focusQuery, toBeExecuted, numberOfRetries + 1);
                     }
                 })
-                .subscribe(result -> createBridgeheadOperation(HttpStatus.OK, null, bridgehead, projectCode, email, toBeExecuted));
+                .subscribe(result -> createBridgeheadNotification(HttpStatus.OK, null, bridgehead, projectCode, email, toBeExecuted));
     }
 
     private void waitUntilNextRetry() {
@@ -176,22 +173,15 @@ public class ExporterService {
         return ProjectManagerConst.API_KEY + ' ' + focusProjectManagerId + ' ' + focusApiKey;
     }
 
-    private void createBridgeheadOperation(
+    private void createBridgeheadNotification(
             HttpStatus status, String error, String bridgehead, String projectCode, String email, boolean toBeExecuted) {
-        BridgeheadOperation bridgeheadOperation = new BridgeheadOperation();
-        bridgeheadOperation.setBridgehead(bridgehead);
-        bridgeheadOperation.setProject(projectRepository.findByCode(projectCode).get());
-        bridgeheadOperation.setTimestamp(Instant.now());
-        bridgeheadOperation.setType(fetchBridgeheadOperationType(toBeExecuted));
-        bridgeheadOperation.setHttpStatus(status);
-        bridgeheadOperation.setError(error);
-        bridgeheadOperation.setUserEmail(email);
-        bridgeheadOperationRepository.save(bridgeheadOperation);
+        notificationService.createNotification(
+                projectCode, bridgehead, email,
+                fetchBridgeheadOperationType(toBeExecuted), null, error, status);
     }
 
-    private BridgeheadOperationType fetchBridgeheadOperationType(boolean toBeExecuted) {
-        return (toBeExecuted) ? BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE :
-                BridgeheadOperationType.SEND_QUERY_TO_BRIDGEHEAD;
+    private OperationType fetchBridgeheadOperationType(boolean toBeExecuted) {
+        return (toBeExecuted) ? OperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE : OperationType.SEND_QUERY_TO_BRIDGEHEAD;
     }
 
     private String convertToBase64String(Object jsonObject) {
@@ -261,12 +251,12 @@ public class ExporterService {
 
 
     private String convertToString(LocalDate date) {
-        return date.format(DateTimeFormatter.ISO_DATE);
+        return (date != null) ? date.format(DateTimeFormatter.ISO_DATE) : null;
     }
 
     private String generateQueryContextForExporter(String queryContext, String projectCode) {
         String context = ProjectManagerConst.EXPORTER_QUERY_CONTEXT_PROJECT_ID + '=' + projectCode;
-        if (queryContext != null) {
+        if (StringUtils.hasText(queryContext)) {
             context += ',' + queryContext;
         }
         return Base64Utils.encode(context);
@@ -276,7 +266,6 @@ public class ExporterService {
         return switch (projectType) {
             case EXPORT -> exportTemplates;
             case DATASHIELD -> datashieldTemplates;
-            default -> new HashSet<>();
         };
     }
 

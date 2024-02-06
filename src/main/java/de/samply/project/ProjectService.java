@@ -3,8 +3,11 @@ package de.samply.project;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
@@ -16,22 +19,37 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @Service
 public class ProjectService {
 
+    private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
+    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
 
-    public ProjectService(ProjectRepository projectRepository,
+    public ProjectService(NotificationService notificationService,
+                          ProjectRepository projectRepository,
                           ProjectBridgeheadRepository projectBridgeheadRepository,
-                          SessionUser sessionUser) {
+                          SessionUser sessionUser,
+                          ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
+        this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
+        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+    }
+
+    public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
+        if (projectOptional.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        return DtoFactory.convert(projectOptional.get());
     }
 
     public void editProject(@NotNull String projectCode, ProjectType type, String[] bridgeheads) {
@@ -40,6 +58,8 @@ public class ProjectService {
         if (projectOptional.isPresent()) {
             if (type != null) {
                 projectOptional.get().setType(type);
+                this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+                        OperationType.EDIT_PROJECT, "Changed project type to " + type, null, null);
                 hasChanged = true;
             }
             if (hasChanged) {
@@ -63,6 +83,9 @@ public class ProjectService {
                 map(projectBridgehead -> projectBridgehead.getBridgehead()).toList());
         editionBridgeheads.stream().filter(bridgehead -> !oldBridgeheads.contains(bridgehead)).forEach(bridgehead ->
                 createProjectBridgehead(project, bridgehead));
+        this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
+                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + bridgeheads), null, null);
+
     }
 
     private void createProjectBridgehead(Project project, String bridgehead) {
@@ -74,8 +97,24 @@ public class ProjectService {
         projectBridgeheadRepository.save(projectBridgehead);
     }
 
+    public List<Project> fetchAllUserVisibleProjects() {
+        // Fetch projects as project manager
+        if (isProjectManagerAdmin()) {
+            return projectRepository.findAll();
+        }
+        Set<String> bridgeheads = sessionUser.getBridgeheads();
+        // Fetch projects as bridgehead admin
+        // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
+        if (isBridgeheadAdmin()) {
+            return projectRepository.findByBridgeheads(bridgeheads);
+        }
+        // Fetch projects as researcher
+        return projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
+    }
+
     public Page<de.samply.frontend.dto.Project> fetchUserVisibleProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize, boolean modifiedDescendant) {
+            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize,
+            boolean modifiedDescendant) {
         PageRequest pageRequest = PageRequest.of(page, pageSize);
         if (isProjectManagerAdmin()) {
             return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
@@ -103,7 +142,8 @@ public class ProjectService {
     }
 
     private Page<Project> fetchProjectManagerAdminProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
+            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest,
+            boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
@@ -201,7 +241,8 @@ public class ProjectService {
         }
     }
 
-    private Page<Project> fetchResearcherProjects(String email, Set<String> bridgeheads, Optional<ProjectState> projectState,
+    private Page<Project> fetchResearcherProjects(String
+                                                          email, Set<String> bridgeheads, Optional<ProjectState> projectState,
                                                   Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
+import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
@@ -18,11 +19,12 @@ import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
-import de.samply.token.TokenManagerService;
+import de.samply.token.DataShieldTokenManagerService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
@@ -60,10 +62,11 @@ public class ProjectManagerController {
     private final QueryService queryService;
     private final DocumentService documentService;
     private final ExporterService exporterService;
-    private final TokenManagerService tokenManagerService;
+    private final DataShieldTokenManagerService dataShieldTokenManagerService;
     private final ProjectService projectService;
     private final ProjectBridgeheadService projectBridgeheadService;
     private final NotificationService notificationService;
+    private final BridgeheadConfiguration bridgeheadConfiguration;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -71,20 +74,22 @@ public class ProjectManagerController {
                                     QueryService queryService,
                                     DocumentService documentService,
                                     ExporterService exporterService,
-                                    TokenManagerService tokenManagerService,
+                                    DataShieldTokenManagerService dataShieldTokenManagerService,
                                     ProjectService projectService,
                                     ProjectBridgeheadService projectBridgeheadService,
-                                    NotificationService notificationService) {
+                                    NotificationService notificationService,
+                                    BridgeheadConfiguration bridgeheadConfiguration) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
         this.queryService = queryService;
         this.documentService = documentService;
         this.exporterService = exporterService;
-        this.tokenManagerService = tokenManagerService;
+        this.dataShieldTokenManagerService = dataShieldTokenManagerService;
         this.projectService = projectService;
         this.projectBridgeheadService = projectBridgeheadService;
         this.notificationService = notificationService;
+        this.bridgeheadConfiguration = bridgeheadConfiguration;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -99,9 +104,9 @@ public class ProjectManagerController {
 
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchActions(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.SITE) String site
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_SITE) String site
     ) {
         return convertToResponseEntity(() ->
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), true));
@@ -109,27 +114,46 @@ public class ProjectManagerController {
 
     @GetMapping(value = ProjectManagerConst.ALL_ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchAllActions(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.SITE) String site
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_SITE) String site
     ) {
         return convertToResponseEntity(() ->
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), false));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECTS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchProjects(
-            @RequestParam(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
-            @RequestParam(name = ProjectManagerConst.ARCHIVED, required = false) Boolean archived,
-            @RequestParam(name = ProjectManagerConst.LAST_MODIFIED_DESC, required = false, defaultValue = "true") boolean modifiedDescendant,
-            @RequestParam(name = ProjectManagerConst.PAGE) int page,
-            @RequestParam(name = ProjectManagerConst.PAGE_SIZE) int pageSize
+            @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_STATE, required = false) ProjectState projectState,
+            @RequestParam(name = ProjectManagerConst.PARAM_ARCHIVED, required = false) Boolean archived,
+            @RequestParam(name = ProjectManagerConst.PARAM_LAST_MODIFIED_DESC, required = false, defaultValue = "true") boolean modifiedDescendant,
+            @RequestParam(name = ProjectManagerConst.PARAM_PAGE) int page,
+            @RequestParam(name = ProjectManagerConst.PARAM_PAGE_SIZE) int pageSize
     ) {
         return convertToResponseEntity(() -> projectService.fetchUserVisibleProjects(
                 Optional.ofNullable(projectState), Optional.ofNullable(archived), page, pageSize, modifiedDescendant));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchProject(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            // Bridgehead required for role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectService.fetchProject(projectCode));
+    }
+
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_STATES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_STATES, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchProjectStates(
+    ) {
+        return convertToResponseEntity(() -> ProjectState.values());
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -137,7 +161,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchProjectsBridgeheads(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.fetchUserVisibleProjectBridgeheads(projectCode));
     }
@@ -146,16 +170,17 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
+    //TODO: Send email to PM-ADMIN, that there was a problem with the operation
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
     public ResponseEntity<String> setUserAsDeveloper(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead,
+            @Email @RequestParam(name = ProjectManagerConst.PARAM_EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
+                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -166,12 +191,12 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
     public ResponseEntity<String> setUserAsPilot(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead,
+            @Email @RequestParam(name = ProjectManagerConst.PARAM_EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.PILOT));
+                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.PILOT));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -182,26 +207,26 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
     public ResponseEntity<String> setUserAsFinal(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead,
+            @Email @RequestParam(name = ProjectManagerConst.PARAM_EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.FINAL));
+                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.FINAL));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
     public ResponseEntity<String> createProjectQuery(
             @NotEmpty @RequestBody() String query,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
-            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
-            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
-            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
-            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
+            @NotEmpty @RequestParam(name = ProjectManagerConst.PARAM_QUERY_FORMAT) QueryFormat queryFormat,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DESCRIPTION, required = false) String description,
+            @RequestParam(name = ProjectManagerConst.PARAM_OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestParam(name = ProjectManagerConst.PARAM_TEMPLATE_ID, required = false) String templateId,
+            @RequestParam(name = ProjectManagerConst.PARAM_HUMAN_READABLE, required = false) String humanReadable,
+            @RequestParam(name = ProjectManagerConst.PARAM_EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.PARAM_QUERY_CONTEXT, required = false) String queryContext
     ) {
         return convertToResponseEntity(() ->
                 this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext));
@@ -211,23 +236,23 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT)
     public ResponseEntity<String> createQueryAndDesignProject(
             @NotEmpty @RequestBody() String query,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
-            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
-            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
-            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
-            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
+            @NotEmpty @RequestParam(name = ProjectManagerConst.PARAM_QUERY_FORMAT) QueryFormat queryFormat,
+            @NotEmpty @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEADS) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DESCRIPTION, required = false) String description,
+            @RequestParam(name = ProjectManagerConst.PARAM_OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestParam(name = ProjectManagerConst.PARAM_TEMPLATE_ID, required = false) String templateId,
+            @RequestParam(name = ProjectManagerConst.PARAM_HUMAN_READABLE, required = false) String humanReadable,
+            @RequestParam(name = ProjectManagerConst.PARAM_EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_TYPE, required = false) ProjectType projectType,
+            @RequestParam(name = ProjectManagerConst.PARAM_QUERY_CONTEXT, required = false) String queryContext
     ) throws ProjectEventActionsException {
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
         String projectCode = this.projectEventService.draft(bridgeheads, queryCode, projectType);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
-                Map.of(ProjectManagerConst.QUERY_CODE, projectCode)
+                Map.of(ProjectManagerConst.PARAM_PROJECT_CODE, projectCode)
         ));
     }
 
@@ -238,23 +263,23 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.EDIT_PROJECT)
     public ResponseEntity<String> editProject(
             @RequestBody() String query,
-            @RequestParam(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
-            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
-            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
-            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
-            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
-            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @RequestParam(name = ProjectManagerConst.PARAM_QUERY_FORMAT, required = false) QueryFormat queryFormat,
+            @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEADS, required = false) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DESCRIPTION, required = false) String description,
+            @RequestParam(name = ProjectManagerConst.PARAM_OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestParam(name = ProjectManagerConst.PARAM_TEMPLATE_ID, required = false) String templateId,
+            @RequestParam(name = ProjectManagerConst.PARAM_HUMAN_READABLE, required = false) String humanReadable,
+            @RequestParam(name = ProjectManagerConst.PARAM_EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_TYPE, required = false) ProjectType projectType,
+            @RequestParam(name = ProjectManagerConst.PARAM_QUERY_CONTEXT, required = false) String queryContext,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         projectService.editProject(projectCode, projectType, bridgeheads);
         queryService.editQuery(projectCode, query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
-                Map.of(ProjectManagerConst.QUERY_CODE, projectCode)
+                Map.of(ProjectManagerConst.PARAM_QUERY_CODE, projectCode)
         ));
     }
 
@@ -265,8 +290,8 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES)
     public ResponseEntity<String> fetchExporterTemplates(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_TYPE) ProjectType projectType
     ) {
         return convertToResponseEntity(() -> exporterService.getExporterTemplates(projectType));
     }
@@ -278,7 +303,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_QUERY_FORMATS)
     public ResponseEntity<String> fetchQueryFormats(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> QueryFormat.values());
     }
@@ -290,7 +315,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_OUTPUT_FORMATS)
     public ResponseEntity<String> fetchOutputFormats(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> OutputFormat.values());
     }
@@ -302,7 +327,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_TYPES)
     public ResponseEntity<String> fetchProjectTypes(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> ProjectType.values());
     }
@@ -310,9 +335,9 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity<String> designProject(
-            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
-            @RequestParam(name = ProjectManagerConst.QUERY_CODE) String queryCode,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEADS) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.PARAM_QUERY_CODE) String queryCode,
+            @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_TYPE) ProjectType projectType
     ) {
         return convertToResponseEntity(() -> this.projectEventService.draft(bridgeheads, queryCode, projectType));
     }
@@ -324,7 +349,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.CREATE_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.CREATE_PROJECT)
     public ResponseEntity<String> createProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.create(projectCode));
     }
@@ -335,7 +360,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
     public ResponseEntity<String> startDevelopStage(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.startDevelopStage(projectCode));
     }
@@ -346,7 +371,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.START_PILOT_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_PILOT_STAGE)
     public ResponseEntity<String> startPilotStage(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.startPilotStage(projectCode));
     }
@@ -357,7 +382,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.START_FINAL_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_FINAL_STAGE)
     public ResponseEntity<String> startFinalStage(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.startFinalStage(projectCode));
     }
@@ -368,7 +393,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT)
     public ResponseEntity<String> acceptProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.accept(projectCode));
     }
@@ -378,7 +403,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_PROJECT)
     public ResponseEntity<String> rejectProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.reject(projectCode));
     }
@@ -390,8 +415,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT)
     public ResponseEntity<String> acceptBridgeheadProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.acceptProject(projectCode, bridgehead));
     }
@@ -403,8 +428,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT)
     public ResponseEntity<String> rejectBridgeheadProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.rejectProject(projectCode, bridgehead));
     }
@@ -416,8 +441,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ACCEPT_SCRIPT_ACTION)
     @PostMapping(value = ProjectManagerConst.ACCEPT_SCRIPT)
     public ResponseEntity<String> acceptScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.acceptProject(projectCode, bridgehead));
     }
@@ -429,8 +454,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REJECT_SCRIPT_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_SCRIPT)
     public ResponseEntity<String> rejectScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
@@ -442,8 +467,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REQUEST_SCRIPT_CHANGES_ACTION)
     @PostMapping(value = ProjectManagerConst.REQUEST_SCRIPT_CHANGES)
     public ResponseEntity<String> requestChangesInScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
@@ -455,8 +480,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_ACTION)
     @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS)
     public ResponseEntity<String> acceptProjectResults(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.acceptProject(projectCode, bridgehead));
     }
@@ -468,8 +493,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
     public ResponseEntity<String> rejectProjectResults(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
@@ -481,8 +506,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
     public ResponseEntity<String> requestChangesInProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
@@ -492,7 +517,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ARCHIVE_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.ARCHIVE_PROJECT)
     public ResponseEntity<String> archiveProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.archive(projectCode));
     }
@@ -504,7 +529,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FINISH_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.FINISH_PROJECT)
     public ResponseEntity<String> finishProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.finish(projectCode));
     }
@@ -514,11 +539,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT)
     public ResponseEntity<String> uploadOtherDocument(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.empty(), document, DocumentType.OTHERS, Optional.ofNullable(label)));
@@ -530,9 +555,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PUBLICATION_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_PUBLICATION)
     public ResponseEntity<String> uploadPublication(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.empty(), document, DocumentType.PUBLICATION, Optional.ofNullable(label)));
@@ -544,11 +569,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_SCRIPT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_SCRIPT)
     public ResponseEntity<String> uploadScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.empty(), document, DocumentType.SCRIPT, Optional.ofNullable(label)));
@@ -560,11 +585,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_APPLICATION_FORM_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_APPLICATION_FORM)
     public ResponseEntity<String> uploadApplicationForm(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
             // bridgehead required for identifying bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.empty(), document, DocumentType.APPLICATION_FORM, Optional.ofNullable(label)));
@@ -577,10 +602,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_VOTUM_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM)
     public ResponseEntity<String> uploadVotum(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.PARAM_DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.ofNullable(bridgehead), document, DocumentType.VOTUM, Optional.ofNullable(label)));
@@ -592,11 +617,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ADD_PUBLICATION_URL_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_PUBLICATION_URL)
     public ResponseEntity<String> addPublicationUrl(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
             // bridgehead required for identifying bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_DOCUMENT_URL) String documentUrl,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label
     ) {
         return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
                 projectCode, Optional.empty(), documentUrl, DocumentType.PUBLICATION, Optional.ofNullable(label)));
@@ -607,10 +632,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ADD_OTHER_DOCUMENT_URL_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_OTHER_DOCUMENT_URL)
     public ResponseEntity<String> addOtherDocumentUrl(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_DOCUMENT_URL) String documentUrl,
+            @RequestParam(name = ProjectManagerConst.PARAM_LABEL, required = false) String label
     ) {
         return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
                 projectCode, Optional.ofNullable(bridgehead), documentUrl, DocumentType.OTHERS, Optional.ofNullable(label)));
@@ -622,9 +647,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_SCRIPT)
     public ResponseEntity<Resource> downloadScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, DocumentType.SCRIPT);
     }
@@ -636,8 +661,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM)
     public ResponseEntity<Resource> downloadVotum(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, bridgehead, DocumentType.VOTUM);
     }
@@ -648,9 +673,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM)
     public ResponseEntity<Resource> downloadApplicationForm(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
             // bridgehead required for identifying bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, DocumentType.APPLICATION_FORM);
     }
@@ -662,7 +687,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_APPLICATION_FORM_TEMPLATE)
     public ResponseEntity<Resource> downloadApplicationFormTemplate(
             // Project code is needed for the project constraint.
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) throws DocumentServiceException {
         Optional<Path> filePath = documentService.fetchApplicationForm();
         return (filePath.isEmpty()) ? ResponseEntity.notFound().build() :
@@ -674,8 +699,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PUBLICATION_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_PUBLICATION)
     public ResponseEntity<Resource> downloadPublication(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.FILENAME) String filename
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.PARAM_FILENAME) String filename
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, filename, DocumentType.PUBLICATION);
     }
@@ -685,7 +710,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PUBLICATIONS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PUBLICATIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchPublications(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> documentService.fetchPublications(projectCode));
     }
@@ -695,9 +720,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT)
     public ResponseEntity<Resource> downloadOtherProjectDocument(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.FILENAME) String filename
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARAM_FILENAME) String filename
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, bridgehead, filename, DocumentType.OTHERS);
     }
@@ -707,8 +732,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_OTHER_DOCUMENTS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_OTHER_DOCUMENTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchOtherDocuments(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> documentService.fetchOtherDocuments(projectCode, Optional.ofNullable(bridgehead)));
     }
@@ -770,8 +795,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
     @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity<String> saveQueryInBridgehead(
-            @NotEmpty @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @NotEmpty @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @NotEmpty @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @NotEmpty @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgehead(projectCode, bridgehead));
     }
@@ -782,35 +807,66 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION)
     @PostMapping(value = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity<String> saveAndExecuteQueryInBridgehead(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.exporterService.sendQueryToBridgeheadAndExecute(projectCode, bridgehead));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
-    public ResponseEntity<String> fetchTokenScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    public ResponseEntity<Resource> fetchTokenScript(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" +
+                        ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_PREFIX + projectCode + ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_SUFFIX + "\"")
+                .body(this.dataShieldTokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_DATASHIELD_STATUS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_DATASHIELD_STATUS)
+    public ResponseEntity<String> fetchOpalStatus(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> this.dataShieldTokenManagerService.fetchProjectStatus(projectCode, bridgehead));
+    }
+
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_NOTIFICATIONS)
     public ResponseEntity<String> fetchNotifications(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PARAM_PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.PARAM_BRIDGEHEAD, required = false) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.notificationService.fetchNotifications(projectCode, Optional.ofNullable(bridgehead)));
+        return convertToResponseEntity(() -> this.notificationService.fetchUserVisibleNotifications(Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), () -> projectService.fetchAllUserVisibleProjects()));
+    }
+
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SET_NOTIFICATION_AS_READ_ACTION)
+    @PostMapping(value = ProjectManagerConst.SET_NOTIFICATION_AS_READ)
+    public ResponseEntity<String> setNotificationAsRead(
+            @RequestParam(name = ProjectManagerConst.PARAM_NOTIFICATION_ID) Long notificationId
+    ) {
+        return convertToResponseEntity(() -> this.notificationService.setNotificationAsRead(notificationId));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
+    public ResponseEntity<Resource> fetchAllRegisteredBridgeheads() {
+        return convertToResponseEntity(() -> bridgeheadConfiguration.getRegisteredBridgeheads());
     }
 
 

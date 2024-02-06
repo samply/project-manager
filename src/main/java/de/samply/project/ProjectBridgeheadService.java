@@ -6,6 +6,8 @@ import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -17,15 +19,18 @@ import java.util.*;
 @Service
 public class ProjectBridgeheadService {
 
+    private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final SessionUser sessionUser;
 
-    public ProjectBridgeheadService(ProjectRepository projectRepository,
+    public ProjectBridgeheadService(NotificationService notificationService,
+                                    ProjectRepository projectRepository,
                                     ProjectBridgeheadRepository projectBridgeheadRepository,
                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                                     SessionUser sessionUser) {
+        this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
@@ -51,6 +56,8 @@ public class ProjectBridgeheadService {
         }
         projectBridgehead.get().setState(state);
         projectBridgeheadRepository.save(projectBridgehead.get());
+        this.notificationService.createNotification(projectCode, bridgehead, sessionUser.getEmail(), OperationType.CHANGE_PROJECT_STATE,
+                "Set project bridgehead state to " + state, null, null);
     }
 
     public List<de.samply.frontend.dto.ProjectBridgehead> fetchUserVisibleProjectBridgeheads(@NotNull String projectCode) throws ProjectBridgeheadServiceException {

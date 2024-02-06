@@ -1,9 +1,9 @@
 package de.samply.frontend.dto;
 
-import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.db.model.NotificationUserAction;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.Instant;
+import java.util.function.Supplier;
 
 public class DtoFactory {
 
@@ -29,15 +29,18 @@ public class DtoFactory {
         );
     }
 
-    public static Notification convert(@NotNull de.samply.db.model.Notification notification) {
+    public static Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
         return new Notification(
+                notification.getId(),
                 notification.getEmail(),
                 notification.getTimestamp(),
                 notification.getProject().getCode(),
                 notification.getBridgehead(),
                 notification.getOperationType(),
                 notification.getDetails(),
-                notification.getError()
+                notification.getError(),
+                notification.getHttpStatus(),
+                userActionSupplier.get().isRead()
         );
     }
 

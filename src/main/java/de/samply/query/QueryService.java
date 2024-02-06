@@ -1,25 +1,42 @@
 package de.samply.query;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.QueryRepository;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
+import de.samply.security.SessionUser;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class QueryService {
 
+    private final NotificationService notificationService;
+    private final SessionUser sessionUser;
     private final QueryRepository queryRepository;
     private final ProjectRepository projectRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public QueryService(QueryRepository queryRepository,
+    public QueryService(NotificationService notificationService,
+                        SessionUser sessionUser,
+                        QueryRepository queryRepository,
                         ProjectRepository projectRepository) {
+        this.notificationService = notificationService;
+        this.sessionUser = sessionUser;
         this.queryRepository = queryRepository;
         this.projectRepository = projectRepository;
     }
@@ -54,47 +71,58 @@ public class QueryService {
         if (projectOptional.isPresent()) {
             Query projectQuery = projectOptional.get().getQuery();
             if (projectQuery != null) {
-                boolean hasChanged = false;
+                Map<String, String> changedKeyValueMap = new HashMap<>();
                 if (query != null) {
                     projectQuery.setQuery(query);
-                    hasChanged = true;
+                    changedKeyValueMap.put("query", query);
                 }
                 if (queryFormat != null) {
                     projectQuery.setQueryFormat(queryFormat);
-                    hasChanged = true;
+                    changedKeyValueMap.put("query format", queryFormat.toString());
                 }
                 if (label != null) {
                     projectQuery.setLabel(label);
-                    hasChanged = true;
+                    changedKeyValueMap.put("label", label);
                 }
                 if (description != null) {
                     projectQuery.setDescription(description);
-                    hasChanged = true;
+                    changedKeyValueMap.put("description", description);
                 }
                 if (outputFormat != null) {
                     projectQuery.setOutputFormat(outputFormat);
-                    hasChanged = true;
+                    changedKeyValueMap.put("output format", outputFormat.toString());
                 }
                 if (templateId != null) {
                     projectQuery.setTemplateId(templateId);
-                    hasChanged = true;
+                    changedKeyValueMap.put("template id", templateId);
                 }
                 if (humanReadable != null) {
                     projectQuery.setHumanReadable(humanReadable);
-                    hasChanged = true;
+                    changedKeyValueMap.put("human readable", humanReadable);
                 }
                 if (explorerUrl != null) {
                     projectQuery.setExplorerUrl(explorerUrl);
-                    hasChanged = true;
+                    changedKeyValueMap.put("explorer url", explorerUrl);
                 }
                 if (queryContext != null) {
                     projectQuery.setContext(queryContext);
-                    hasChanged = true;
+                    changedKeyValueMap.put("query context", queryContext);
                 }
-                if (hasChanged) {
+                if (!changedKeyValueMap.isEmpty()) {
                     queryRepository.save(projectQuery);
+                    this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+                            OperationType.EDIT_QUERY, printInOneLine(changedKeyValueMap), null, null);
                 }
             }
+        }
+    }
+
+    private String printInOneLine(Map<String, String> changedKeyValuesMaps) {
+        try {
+            return objectMapper.writeValueAsString(changedKeyValuesMaps);
+        } catch (JsonProcessingException e) {
+            log.error(ExceptionUtils.getStackTrace(e));
+            return null;
         }
     }
 

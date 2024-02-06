@@ -2,6 +2,8 @@ package de.samply.user;
 
 import de.samply.db.model.*;
 import de.samply.db.repository.*;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.ProjectRole;
@@ -14,6 +16,7 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    private final NotificationService notificationService;
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
     private final ProjectManagerAdminUserRepository projectManagerAdminUserRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
@@ -21,12 +24,14 @@ public class UserService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
 
-    public UserService(BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
+    public UserService(NotificationService notificationService,
+                       BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
                        ProjectManagerAdminUserRepository projectManagerAdminUserRepository,
                        ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                        ProjectRepository projectRepository,
                        ProjectBridgeheadRepository projectBridgeheadRepository,
                        SessionUser sessionUser) {
+        this.notificationService = notificationService;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
@@ -71,13 +76,15 @@ public class UserService {
             result.setProjectBridgehead(projectBridgehead);
             result.setProjectRole(projectRole);
             result = this.projectBridgeheadUserRepository.save(result);
+            this.notificationService.createNotification(projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, OperationType.ASSIGN_USER_TO_PROJECT,
+                    "Set role " + projectRole + " to user", null, null);
         } else {
             result = projectBridgeheadUserOptional.get();
         }
         return result;
     }
 
-    public void setProjectBridgheadUserWithRole(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
+    public void setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
         Optional<Project> project = this.projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new UserServiceException("Project " + projectCode + " not found");
@@ -95,6 +102,8 @@ public class UserService {
             projectBridgeheadUser.setProjectState(UserProjectState.CREATED);
             projectBridgeheadUser.setModifiedAt(Instant.now());
             this.projectBridgeheadUserRepository.save(projectBridgeheadUser);
+            this.notificationService.createNotification(projectCode, bridgehead, email, OperationType.ASSIGN_USER_TO_PROJECT,
+                    "Set role " + projectRole + " to user", null, null);
         }
     }
 
@@ -126,6 +135,8 @@ public class UserService {
         projectBridgeheadUser.get().setProjectState(state);
         projectBridgeheadUser.get().setModifiedAt(Instant.now());
         projectBridgeheadUserRepository.save(projectBridgeheadUser.get());
+        this.notificationService.createNotification(projectCode, bridgehead, sessionUser.getEmail(), OperationType.CHANGE_PROJECT_BRIDGEHEAD_USER_EVALUATION,
+                "Set project bridgehead user evaluation to " + state, null, null);
     }
 
 }

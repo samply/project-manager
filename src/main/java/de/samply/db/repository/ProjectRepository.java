@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,8 +19,14 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Optional<Project> findByCode(String projectCode);
 
 
+    @Query("SELECT p FROM Project p WHERE p.expiresAt < :expirationTime AND p.state IN :states")
+    List<Project> findByExpiresAtBeforeAndStateIn(LocalDate expirationTime, Set<ProjectState> states);
+
     ////////// Project Manager Admins:
+    List<Project> findAll();
+
     Page<Project> findAllByOrderByModifiedAtDesc(Pageable pageable);
+
     Page<Project> findAllByOrderByModifiedAtAsc(Pageable pageable);
 
     @Query("SELECT p FROM Project p WHERE p.archivedAt IS NOT NULL ORDER BY p.modifiedAt DESC")
@@ -52,6 +60,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
 
     ////////// Bridgehead Admins:
+
+    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb  ON pb.project = p " +
+            "WHERE pb.bridgehead IN :bridgeheads ORDER BY p.modifiedAt DESC")
+    List<Project> findByBridgeheads(Set<String> bridgeheads);
+
     @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb  ON pb.project = p " +
             "WHERE pb.bridgehead IN :bridgeheads ORDER BY p.modifiedAt DESC")
     Page<Project> findByBridgeheadsModifiedAtDesc(Set<String> bridgeheads, Pageable pageable);

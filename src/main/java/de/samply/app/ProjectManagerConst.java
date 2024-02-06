@@ -67,6 +67,11 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
+    public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
+    public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT_ACTION";
+    public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
+    public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
+    public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
 
 
     // REST Services
@@ -96,6 +101,8 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT_RESULTS = "/reject-project-results";
     public final static String REQUEST_CHANGES_IN_PROJECT = "/request-changes-in-project";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
+    public final static String FETCH_PROJECT = "/project";
+    public final static String FETCH_PROJECT_STATES = "/project-states";
     public final static String ARCHIVE_PROJECT = "/archive-project";
     public final static String START_DEVELOP_STAGE = "/start-develop-project";
     public final static String START_PILOT_STAGE = "/start-pilot-project";
@@ -119,34 +126,38 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
+    public final static String FETCH_DATASHIELD_STATUS = "/datashield-status";
     public final static String FETCH_PUBLICATIONS = "/publications";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
     public final static String FETCH_NOTIFICATIONS = "/notifications";
+    public final static String SET_NOTIFICATION_AS_READ = "/read-notification";
+    public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS = "/bridgeheads";
 
     // REST Parameters
-    public final static String PROJECT_CODE = "project-code";
-    public final static String BRIDGEHEAD = "bridgehead";
-    public final static String BRIDGEHEADS = "bridgeheads";
-    public final static String SITE = "site";
-    public final static String EMAIL = "email";
-    public final static String QUERY_FORMAT = "query-format";
-    public final static String PROJECT_TYPE = "project-type";
-    public final static String PROJECT_STATE = "project-state";
-    public final static String ARCHIVED = "archived";
-    public final static String PAGE = "page";
-    public final static String PAGE_SIZE = "page-size";
-    public final static String LAST_MODIFIED_DESC = "modified-desc";
-    public final static String DOCUMENT = "document";
-    public final static String DOCUMENT_URL = "document-url";
-    public final static String FILENAME = "filename";
-    public final static String QUERY_CODE = "query-code";
-    public final static String LABEL = "label";
-    public final static String DESCRIPTION = "description";
-    public final static String OUTPUT_FORMAT = "output-format";
-    public final static String TEMPLATE_ID = "template-id";
-    public final static String HUMAN_READABLE = "human-readable";
-    public final static String EXPLORER_URL = "explorer-url";
-    public final static String QUERY_CONTEXT = "query-context";
+    public final static String PARAM_PROJECT_CODE = "project-code";
+    public final static String PARAM_NOTIFICATION_ID = "notification-id";
+    public final static String PARAM_BRIDGEHEAD = "bridgehead";
+    public final static String PARAM_BRIDGEHEADS = "bridgeheads";
+    public final static String PARAM_SITE = "site";
+    public final static String PARAM_EMAIL = "email";
+    public final static String PARAM_QUERY_FORMAT = "query-format";
+    public final static String PARAM_PROJECT_TYPE = "project-type";
+    public final static String PARAM_PROJECT_STATE = "project-state";
+    public final static String PARAM_ARCHIVED = "archived";
+    public final static String PARAM_PAGE = "page";
+    public final static String PARAM_PAGE_SIZE = "page-size";
+    public final static String PARAM_LAST_MODIFIED_DESC = "modified-desc";
+    public final static String PARAM_DOCUMENT = "document";
+    public final static String PARAM_DOCUMENT_URL = "document-url";
+    public final static String PARAM_FILENAME = "filename";
+    public final static String PARAM_QUERY_CODE = "query-code";
+    public final static String PARAM_LABEL = "label";
+    public final static String PARAM_DESCRIPTION = "description";
+    public final static String PARAM_OUTPUT_FORMAT = "output-format";
+    public final static String PARAM_TEMPLATE_ID = "template-id";
+    public final static String PARAM_HUMAN_READABLE = "human-readable";
+    public final static String PARAM_EXPLORER_URL = "explorer-url";
+    public final static String PARAM_QUERY_CONTEXT = "query-context";
 
     // Email context properties
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
@@ -180,6 +191,23 @@ public class ProjectManagerConst {
     public final static String FOCUS_METADATA_PROJECT = "exporter";
     public final static String FOCUS_TASK = "/v1/tasks";
 
+    // Token Manager Variables
+    public final static String TOKEN_MANAGER_ROOT = "/api";
+    public final static String TOKEN_MANAGER_TOKENS = "/token";
+    public final static String TOKEN_MANAGER_TOKEN_STATUS = "/token-status";
+    public final static String TOKEN_MANAGER_PROJECT = "/project";
+    public final static String TOKEN_MANAGER_PROJECT_STATUS = "/project-status";
+    public final static String TOKEN_MANAGER_SCRIPTS = "/script";
+    public final static String TOKEN_MANAGER_REFRESH_TOKEN = "/refreshToken";
+    public final static String AUTHENTICATION_SCRIPT_FILENAME_PREFIX = "authentication-script-";
+    public final static String AUTHENTICATION_SCRIPT_FILENAME_SUFFIX = ".r";
+    public final static String TOKEN_MANAGER_PARAMETER_BRIDGEHEAD = "bk";
+    public final static String TOKEN_MANAGER_PARAMETER_PROJECT_CODE = "project_id";
+    public final static String TOKEN_MANAGER_PARAMETER_EMAIL = "user_id";
+    public final static String TOKEN_MANAGER_PARAMETER_PROJECT_STATUS = "project_status";
+    public final static String TOKEN_MANAGER_PARAMETER_TOKEN_STATUS = "token_status";
+    public final static String TOKEN_MANAGER_PARAMETER_TOKEN_CREATED_AT = "token_created_at";
+
 
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
@@ -211,6 +239,11 @@ public class ProjectManagerConst {
     public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES = "FOCUS_FAILURE_STRATEGY_MAX_TRIES";
     public final static String FOCUS_URL = "FOCUS_URL";
     public final static String FOCUS_API_KEY = "FOCUS_API_KEY";
+    public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
+    public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
+    public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
+    public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION = "CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION";
+    public final static String EXPLORER_URL = "EXPLORER_URL";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -251,6 +284,8 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
+    public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
+
     public final static String FOCUS_PROJECT_MANAGER_ID_SV = HEAD_SV + FOCUS_PROJECT_MANAGER_ID + BOTTOM_SV;
     public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":10s" + BOTTOM_SV;
     public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
@@ -258,6 +293,13 @@ public class ProjectManagerConst {
     public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + FOCUS_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
     public final static String FOCUS_URL_SV = HEAD_SV + FOCUS_URL + BOTTOM_SV;
     public final static String FOCUS_API_KEY_SV = HEAD_SV + FOCUS_API_KEY + BOTTOM_SV;
+    public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
+    public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
+            HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 0 * * * *'}" + BOTTOM_SV;
+    public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION_SV =
+            HEAD_SV + CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION + ":#{'0 0 1,13 * * *'}" + BOTTOM_SV;
+    public final static String EXPLORER_URL_SV = HEAD_SV + EXPLORER_URL + BOTTOM_SV;
+
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

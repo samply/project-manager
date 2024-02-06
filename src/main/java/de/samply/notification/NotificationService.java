@@ -1,31 +1,45 @@
 package de.samply.notification;
 
 import de.samply.db.model.Notification;
+import de.samply.db.model.NotificationUserAction;
 import de.samply.db.model.Project;
 import de.samply.db.repository.NotificationRepository;
+import de.samply.db.repository.NotificationUserActionRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationUserActionRepository notificationUserActionRepository;
     private final ProjectRepository projectRepository;
+    private final SessionUser sessionUser;
 
     public NotificationService(NotificationRepository notificationRepository,
-                               ProjectRepository projectRepository) {
+                               NotificationUserActionRepository notificationUserActionRepository,
+                               ProjectRepository projectRepository,
+                               SessionUser sessionUser) {
         this.notificationRepository = notificationRepository;
+        this.notificationUserActionRepository = notificationUserActionRepository;
         this.projectRepository = projectRepository;
+        this.sessionUser = sessionUser;
     }
 
-    public void createNotification(@NotNull String projectCode, String bridgehead, @NotNull String email,
+    public void createNotification(@NotNull String projectCode, String bridgehead, String email,
                                    @NotNull OperationType operationType,
-                                   @NotNull String details, String error
+                                   @NotNull String details, String error, HttpStatus httpStatus
     ) throws NotificationServiceException {
         Project project = fetchProject(projectCode);
         Notification notification = new Notification();
@@ -35,6 +49,7 @@ public class NotificationService {
         notification.setOperationType(operationType);
         notification.setDetails(details);
         notification.setError(error);
+        notification.setHttpStatus(httpStatus);
         notificationRepository.save(notification);
     }
 
@@ -46,12 +61,68 @@ public class NotificationService {
         return project.get();
     }
 
-    public List<de.samply.frontend.dto.Notification> fetchNotifications(String projectCode, Optional<String> bridghead) throws NotificationServiceException {
-        Project project = fetchProject(projectCode);
-        return ((bridghead.isEmpty()) ?
-                notificationRepository.findAllByProjectOrderByTimestampDesc(project) :
-                notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridghead.get()))
-                .stream().map(DtoFactory::convert).toList();
+    // We use a supplier of ProjectService.fetchAllUserVisibleProjects in order to remove interdependence
+    // between the notification service and the project service.
+    public List<de.samply.frontend.dto.Notification> fetchUserVisibleNotifications(
+            Optional<String> projectCodeOptional, Optional<String> bridgheadOptional,
+            Supplier<List<Project>> allUserVisibleProjectFetcher) throws NotificationServiceException {
+        List<Notification> result = new ArrayList<>();
+        List<Project> projects = (projectCodeOptional.isEmpty()) ?
+                allUserVisibleProjectFetcher.get() : List.of(fetchProject(projectCodeOptional.get()));
+        List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgheadOptional);
+        projects.forEach(project -> {
+            if (bridgeheads.isEmpty() && sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
+                notificationRepository.findAllByProjectOrderByTimestampDesc(project);
+            } else {
+                bridgeheads.forEach(bridgehead -> result.addAll(
+                        notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridgehead)));
+            }
+        });
+        return result.stream().map(notification ->
+                DtoFactory.convert(notification, () -> fetchNotificationUserAction(notification))).toList();
+    }
+
+    private List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {
+        if (sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
+            return (requestedBridgehead.isEmpty()) ? new ArrayList<>() : List.of(requestedBridgehead.get());
+        } else {
+            if (requestedBridgehead.isEmpty()) {
+                return sessionUser.getBridgeheads().stream().toList();
+            } else {
+                return (sessionUser.getBridgeheads().contains(requestedBridgehead.get())) ?
+                        List.of(requestedBridgehead.get()) : new ArrayList<>();
+            }
+
+        }
+    }
+
+    public void setNotificationAsRead(@NotNull Long notificationId) {
+        NotificationUserAction notificationUserAction = fetchNotificationUserAction(notificationId);
+        notificationUserAction.setRead(true);
+        notificationUserAction.setModifiedAt(Instant.now());
+        notificationUserActionRepository.save(notificationUserAction);
+    }
+
+    public NotificationUserAction fetchNotificationUserAction(@NotNull Long notificationId) {
+        Optional<Notification> notificationOptional = notificationRepository.findById(notificationId);
+        if (notificationOptional.isEmpty()) {
+            throw new NotificationServiceException("Notification " + notificationId + " not found");
+        }
+        return fetchNotificationUserAction(notificationOptional.get());
+    }
+
+    public NotificationUserAction fetchNotificationUserAction(@NotNull Notification notification) {
+        Optional<NotificationUserAction> notificationUserActionOptional = notificationUserActionRepository.findByNotification(notification);
+        NotificationUserAction notificationUserAction;
+        if (notificationUserActionOptional.isEmpty()) {
+            notificationUserAction = new NotificationUserAction();
+            notificationUserAction.setNotification(notification);
+            notificationUserAction.setEmail(sessionUser.getEmail());
+            notificationUserActionRepository.save(notificationUserAction);
+        } else {
+            notificationUserAction = notificationUserActionOptional.get();
+        }
+        return notificationUserAction;
     }
 
 

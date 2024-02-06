@@ -6,6 +6,8 @@ import de.samply.db.model.ProjectDocument;
 import de.samply.db.repository.ProjectDocumentRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,7 @@ import java.util.UUID;
 @Slf4j
 public class DocumentService {
 
+    private final NotificationService notificationService;
     private final ProjectDocumentRepository projectDocumentRepository;
     private final ProjectRepository projectRepository;
     private final Path documentsDirectory;
@@ -35,13 +38,15 @@ public class DocumentService {
     private final String timestampFormat;
     private final SessionUser sessionUser;
 
-    public DocumentService(ProjectDocumentRepository projectDocumentRepository,
+    public DocumentService(NotificationService notificationService,
+                           ProjectDocumentRepository projectDocumentRepository,
                            ProjectRepository projectRepository,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_SV) String documentsDirectory,
                            @Value(ProjectManagerConst.PUBLIC_DOCUMENTS_DIRECTORY_SV) String publicDocumentsDirectory,
                            @Value(ProjectManagerConst.APPLICATION_FORM_FILENAME_SV) String applicationFormFile,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV) String timestampFormat,
                            SessionUser sessionUser) throws IOException {
+        this.notificationService = notificationService;
         this.projectDocumentRepository = projectDocumentRepository;
         this.projectRepository = projectRepository;
         this.documentsDirectory = fetchPathDirectory(documentsDirectory);
@@ -114,6 +119,8 @@ public class DocumentService {
         projectDocument.setCreatorEmail(sessionUser.getEmail());
         documentSetter.accept(projectDocument);
         this.projectDocumentRepository.save(projectDocument);
+        this.notificationService.createNotification(projectCode, bridgehead, sessionUser.getEmail(), OperationType.ADD_DOCUMENT,
+                "Add document of type " + documentType + ": " + projectDocument.getOriginalFilename(), null, null);
     }
 
     private Path writeDocumentInDirectory(MultipartFile document) throws DocumentServiceException {
@@ -198,7 +205,7 @@ public class DocumentService {
 
     }
 
-    private List<de.samply.frontend.dto.ProjectDocument> convertToDto(List<ProjectDocument> projectDocumentList){
+    private List<de.samply.frontend.dto.ProjectDocument> convertToDto(List<ProjectDocument> projectDocumentList) {
         return projectDocumentList.stream().map(DtoFactory::convert).toList();
     }
 
