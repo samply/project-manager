@@ -66,7 +66,7 @@ public class DataShieldTokenManagerJob {
         usersToSendAnEmail.forEach(userProject -> sendEmail(userProject.email(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, userProject.projectRole()));
     }
 
-    @EqualsAndHashCode(of = {"email", "projectCode"})
+    //@EqualsAndHashCode(of = {"email", "projectCode"})
     private record EmailProject(String email, String projectCode, ProjectRole projectRole) {
     }
 
