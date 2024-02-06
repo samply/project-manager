@@ -134,30 +134,30 @@ public class ProjectManagerConst {
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS = "/bridgeheads";
 
     // REST Parameters
-    public final static String PROJECT_CODE = "project-code";
-    public final static String NOTIFICATION_ID = "notification-id";
-    public final static String BRIDGEHEAD = "bridgehead";
-    public final static String BRIDGEHEADS = "bridgeheads";
-    public final static String SITE = "site";
-    public final static String EMAIL = "email";
-    public final static String QUERY_FORMAT = "query-format";
-    public final static String PROJECT_TYPE = "project-type";
-    public final static String PROJECT_STATE = "project-state";
-    public final static String ARCHIVED = "archived";
-    public final static String PAGE = "page";
-    public final static String PAGE_SIZE = "page-size";
-    public final static String LAST_MODIFIED_DESC = "modified-desc";
-    public final static String DOCUMENT = "document";
-    public final static String DOCUMENT_URL = "document-url";
-    public final static String FILENAME = "filename";
-    public final static String QUERY_CODE = "query-code";
-    public final static String LABEL = "label";
-    public final static String DESCRIPTION = "description";
-    public final static String OUTPUT_FORMAT = "output-format";
-    public final static String TEMPLATE_ID = "template-id";
-    public final static String HUMAN_READABLE = "human-readable";
-    public final static String EXPLORER_URL = "explorer-url";
-    public final static String QUERY_CONTEXT = "query-context";
+    public final static String PARAM_PROJECT_CODE = "project-code";
+    public final static String PARAM_NOTIFICATION_ID = "notification-id";
+    public final static String PARAM_BRIDGEHEAD = "bridgehead";
+    public final static String PARAM_BRIDGEHEADS = "bridgeheads";
+    public final static String PARAM_SITE = "site";
+    public final static String PARAM_EMAIL = "email";
+    public final static String PARAM_QUERY_FORMAT = "query-format";
+    public final static String PARAM_PROJECT_TYPE = "project-type";
+    public final static String PARAM_PROJECT_STATE = "project-state";
+    public final static String PARAM_ARCHIVED = "archived";
+    public final static String PARAM_PAGE = "page";
+    public final static String PARAM_PAGE_SIZE = "page-size";
+    public final static String PARAM_LAST_MODIFIED_DESC = "modified-desc";
+    public final static String PARAM_DOCUMENT = "document";
+    public final static String PARAM_DOCUMENT_URL = "document-url";
+    public final static String PARAM_FILENAME = "filename";
+    public final static String PARAM_QUERY_CODE = "query-code";
+    public final static String PARAM_LABEL = "label";
+    public final static String PARAM_DESCRIPTION = "description";
+    public final static String PARAM_OUTPUT_FORMAT = "output-format";
+    public final static String PARAM_TEMPLATE_ID = "template-id";
+    public final static String PARAM_HUMAN_READABLE = "human-readable";
+    public final static String PARAM_EXPLORER_URL = "explorer-url";
+    public final static String PARAM_QUERY_CONTEXT = "query-context";
 
     // Email context properties
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
@@ -243,6 +243,7 @@ public class ProjectManagerConst {
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION = "CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION";
+    public final static String EXPLORER_URL = "EXPLORER_URL";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -297,6 +298,7 @@ public class ProjectManagerConst {
             HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 0 * * * *'}" + BOTTOM_SV;
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION_SV =
             HEAD_SV + CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION + ":#{'0 0 1,13 * * *'}" + BOTTOM_SV;
+    public final static String EXPLORER_URL_SV = HEAD_SV + EXPLORER_URL + BOTTOM_SV;
 
 
     // Others

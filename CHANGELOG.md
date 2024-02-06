@@ -92,3 +92,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Check if session scope is active before creating a notification for changing project state
 - Fetch token status and project status of token manager
 - New email if authentication script for DataSHIELD has changed
+- Explorer URL in CORS
