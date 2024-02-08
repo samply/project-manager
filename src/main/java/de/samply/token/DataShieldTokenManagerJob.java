@@ -13,7 +13,6 @@ import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
 import de.samply.token.dto.DataShieldTokenStatus;
 import de.samply.user.roles.ProjectRole;
-import lombok.EqualsAndHashCode;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
