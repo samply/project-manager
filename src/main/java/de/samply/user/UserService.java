@@ -84,7 +84,7 @@ public class UserService {
         return result;
     }
 
-    public void setProjectBridgheadUserWithRole(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
+    public void setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
         Optional<Project> project = this.projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new UserServiceException("Project " + projectCode + " not found");

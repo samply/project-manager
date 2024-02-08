@@ -1,6 +1,6 @@
 package de.samply.project.event;
 
-public class ProjectEventActionsException extends Exception {
+public class ProjectEventActionsException extends RuntimeException {
 
     public ProjectEventActionsException() {    }
 

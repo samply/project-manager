@@ -37,7 +37,7 @@ public class NotificationService {
         this.sessionUser = sessionUser;
     }
 
-    public void createNotification(@NotNull String projectCode, String bridgehead, @NotNull String email,
+    public void createNotification(@NotNull String projectCode, String bridgehead, String email,
                                    @NotNull OperationType operationType,
                                    @NotNull String details, String error, HttpStatus httpStatus
     ) throws NotificationServiceException {

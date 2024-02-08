@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-01-29]
+## [0.0.1 - 2024-02-02]
 ### Added
 - First version of the project
 - Spring Application
@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch all actions
 - Accept, Reject and request changes in project results
 - Notification Service
+- Token Manager services
 - Integration in Focus and Beam
 - Frontend DTO
 - Email as Mime message
@@ -86,3 +87,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch Project States
 - Fetch registered bridgeheads for project manager admin
 - Add notifications for services: document, project bridgehead, project event, project, query, user
+- DataSHIELD Token Manager Job
+- Check Expired Active Projects Job
+- Check if session scope is active before creating a notification for changing project state
+- Fetch token status and project status of token manager
+- New email if authentication script for DataSHIELD has changed
+- Explorer URL in CORS

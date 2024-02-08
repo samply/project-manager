@@ -45,6 +45,9 @@ public class SecurityConfiguration {
     @Value(ProjectManagerConst.SECURITY_ENABLED_SV)
     private boolean isSecurityEnabled;
 
+    @Value(ProjectManagerConst.EXPLORER_URL_SV)
+    private String explorerUrl;
+
     @Autowired
     private FrontendConfiguration frontendConfiguration;
 
@@ -105,7 +108,7 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(frontendConfiguration.getBaseUrl()));
+        configuration.setAllowedOrigins(Arrays.asList(frontendConfiguration.getBaseUrl(), explorerUrl));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
         //configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization")); // Allow required headers
         configuration.setAllowCredentials(true); // Allow credentials

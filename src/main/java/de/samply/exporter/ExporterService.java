@@ -251,12 +251,12 @@ public class ExporterService {
 
 
     private String convertToString(LocalDate date) {
-        return date.format(DateTimeFormatter.ISO_DATE);
+        return (date != null) ? date.format(DateTimeFormatter.ISO_DATE) : null;
     }
 
     private String generateQueryContextForExporter(String queryContext, String projectCode) {
         String context = ProjectManagerConst.EXPORTER_QUERY_CONTEXT_PROJECT_ID + '=' + projectCode;
-        if (queryContext != null) {
+        if (StringUtils.hasText(queryContext)) {
             context += ',' + queryContext;
         }
         return Base64Utils.encode(context);

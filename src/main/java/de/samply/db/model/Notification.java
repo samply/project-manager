@@ -21,7 +21,7 @@ public class Notification {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "timestamp", nullable = false)

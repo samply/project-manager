@@ -24,7 +24,7 @@ import de.samply.project.state.ProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
-import de.samply.token.TokenManagerService;
+import de.samply.token.DataShieldTokenManagerService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
@@ -62,7 +62,7 @@ public class ProjectManagerController {
     private final QueryService queryService;
     private final DocumentService documentService;
     private final ExporterService exporterService;
-    private final TokenManagerService tokenManagerService;
+    private final DataShieldTokenManagerService dataShieldTokenManagerService;
     private final ProjectService projectService;
     private final ProjectBridgeheadService projectBridgeheadService;
     private final NotificationService notificationService;
@@ -74,7 +74,7 @@ public class ProjectManagerController {
                                     QueryService queryService,
                                     DocumentService documentService,
                                     ExporterService exporterService,
-                                    TokenManagerService tokenManagerService,
+                                    DataShieldTokenManagerService dataShieldTokenManagerService,
                                     ProjectService projectService,
                                     ProjectBridgeheadService projectBridgeheadService,
                                     NotificationService notificationService,
@@ -85,7 +85,7 @@ public class ProjectManagerController {
         this.queryService = queryService;
         this.documentService = documentService;
         this.exporterService = exporterService;
-        this.tokenManagerService = tokenManagerService;
+        this.dataShieldTokenManagerService = dataShieldTokenManagerService;
         this.projectService = projectService;
         this.projectBridgeheadService = projectBridgeheadService;
         this.notificationService = notificationService;
@@ -167,9 +167,10 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
+    //TODO: Send email to PM-ADMIN, that there was a problem with the operation
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
     @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
@@ -179,11 +180,11 @@ public class ProjectManagerController {
             @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
+                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.PILOT}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
+    @StateConstraints(projectStates = {ProjectState.PILOT})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
@@ -195,7 +196,7 @@ public class ProjectManagerController {
             @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.PILOT));
+                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.PILOT));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -211,7 +212,7 @@ public class ProjectManagerController {
             @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRole(email, projectCode, bridgehead, ProjectRole.FINAL));
+                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.FINAL));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -224,7 +225,7 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
             @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
             @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
     ) {
         return convertToResponseEntity(() ->
@@ -242,7 +243,7 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
             @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
             @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
             @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
     ) throws ProjectEventActionsException {
@@ -269,7 +270,7 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
             @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_URL, required = false) String explorerUrl,
+            @RequestParam(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
             @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
             @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
@@ -813,15 +814,30 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
-    public ResponseEntity<String> fetchTokenScript(
+    public ResponseEntity<Resource> fetchTokenScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.tokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" +
+                        ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_PREFIX + projectCode + ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_SUFFIX + "\"")
+                .body(this.dataShieldTokenManagerService.fetchAuthenticationScript(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_DATASHIELD_STATUS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_DATASHIELD_STATUS)
+    public ResponseEntity<String> fetchOpalStatus(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> this.dataShieldTokenManagerService.fetchProjectStatus(projectCode, bridgehead));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)

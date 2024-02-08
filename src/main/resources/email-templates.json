@@ -47,6 +47,12 @@
         "DEFAULT": "default-script-rejected.html"
       }
     },
+    "NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT": {
+      "subject": "New Authentication Script for DataSHIELD",
+      "files": {
+        "DEFAULT": "default-new-authentication-script.html"
+      }
+    },
     "REQUEST_CHANGES_IN_SCRIPT": {
       "subject": "Changes in script requested",
       "files": {
