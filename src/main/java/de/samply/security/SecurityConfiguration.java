@@ -70,11 +70,9 @@ public class SecurityConfiguration {
                         .csrf(csrf -> csrf.disable())
                         .oauth2ResourceServer(resourceServerConfigurer ->
                                 resourceServerConfigurer.jwt(jwtConfigurer -> {
-                                            jwtConfigurer.jwkSetUri(jwksUri);
-                                            jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter());
-                                        }
-                                )
-                        )
+                                    jwtConfigurer.jwkSetUri(jwksUri);
+                                    jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter());
+                                }))
                         .oauth2Login(oauth2 -> oauth2
                                 .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(oidcProjectUserService))
                                 .successHandler(successHandler()))
