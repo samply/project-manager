@@ -36,7 +36,7 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
     @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state = :projectState AND pbu.projectRole != :projectRole")
     List<ProjectBridgeheadUser> getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType projectType, ProjectState projectState, ProjectRole projectRole);
 
-    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state IN :projectStates")
+    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state NOT IN :projectStates")
     List<ProjectBridgeheadUser> getByProjectTypeAndNotProjectState(ProjectType projectType, Set<ProjectState> projectStates);
 
 }
