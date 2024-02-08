@@ -127,7 +127,7 @@ public class SecurityConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(frontendConfiguration.getBaseUrl(), explorerUrl));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
-        //configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization")); // Allow required headers
+        configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization")); // Allow required headers
         configuration.setAllowCredentials(true); // Allow credentials
         configuration.setExposedHeaders(Arrays.asList(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS)); // Expose required headers
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

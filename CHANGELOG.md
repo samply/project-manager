@@ -94,3 +94,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New email if authentication script for DataSHIELD has changed
 - Explorer URL in CORS
 - Oauth2 Resource Server configuration
+- Allow required headers
