@@ -186,8 +186,11 @@ public class DataShieldTokenManagerService {
     }
 
     public void removeTokens(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS
-                + '/' + email + '/' + fetchTokenManagerId(bridgehead);
+        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
+                .toUriString();
 
         webClient.delete()
                 .uri(uriBuilder -> uriBuilder.path(uri).build())
@@ -198,8 +201,10 @@ public class DataShieldTokenManagerService {
     }
 
     public void removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT
-                + '/' + projectCode + '/' + fetchTokenManagerId(bridgehead);
+        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
+                .toUriString();
 
         webClient.delete()
                 .uri(uriBuilder -> uriBuilder.path(uri).build())
