@@ -93,3 +93,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch token status and project status of token manager
 - New email if authentication script for DataSHIELD has changed
 - Explorer URL in CORS
+- Oauth2 Resource Server configuration
