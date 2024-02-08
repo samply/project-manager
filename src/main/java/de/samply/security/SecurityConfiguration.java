@@ -78,8 +78,6 @@ public class SecurityConfiguration {
                         .oauth2Login(oauth2 -> oauth2
                                 .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(oidcProjectUserService))
                                 .successHandler(successHandler()))
-//                        .headers(headersConfigurer -> headersConfigurer.referrerPolicy(policyConfig ->
-//                                policyConfig.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
                         .build() :
                 http.authorizeRequests(authorize -> authorize.requestMatchers("/**").permitAll()).build();
     }
