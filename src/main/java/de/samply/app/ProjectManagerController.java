@@ -480,10 +480,9 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
 
-    //TODO: Email Template: Results accepted
     @RoleConstraints(projectRoles = {ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.FINAL})
-    @EmailSender(templateType = EmailTemplateType.SCRIPT_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @EmailSender(templateType = EmailTemplateType.RESULTS_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_ACTION)
     @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS)
@@ -494,10 +493,9 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> userService.acceptProject(projectCode, bridgehead));
     }
 
-    // TODO: Email Template Results rejected
     @RoleConstraints(projectRoles = {ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.FINAL})
-    @EmailSender(templateType = EmailTemplateType.SCRIPT_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @EmailSender(templateType = EmailTemplateType.RESULTS_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
@@ -508,10 +506,9 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
 
-    // TODO: Email Template: Request Changes in Project
     @RoleConstraints(projectRoles = {ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.FINAL})
-    @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_SCRIPT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_PROJECT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
