@@ -95,3 +95,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Explorer URL in CORS
 - Oauth2 Resource Server configuration
 - Allow required headers
+- Project Constraints: Project Type

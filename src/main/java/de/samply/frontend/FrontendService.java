@@ -59,6 +59,10 @@ public class FrontendService {
                 Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
                 responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridgehead);
             }
+            if (responseEntity.isEmpty()) {
+                Optional<ProjectConstraints> projectConstraints = Optional.ofNullable(method.getAnnotation(ProjectConstraints.class));
+                responseEntity = this.constraintsService.checkProjectConstraints(projectConstraints, projectCode);
+            }
             if (responseEntity.isEmpty() || !withConstraints) { // If there are no restrictions
                 addAction(moduleActionsMap, frontendSiteModule, frontendAction, rootPath, path, method);
             }

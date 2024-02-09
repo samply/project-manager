@@ -28,14 +28,14 @@ public class StateConstraintsAspect {
 
     @Around("stateConstraintsPointcut()")
     public Object aroundStateConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
-        Optional<StateConstraints> stateConstraints = fetchStateConstrains(joinPoint);
+        Optional<StateConstraints> stateConstraints = fetchStateConstraints(joinPoint);
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
         Optional<String> bridghead = AspectUtils.fetchBridghead(joinPoint);
         Optional<ResponseEntity> result = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridghead);
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 
-    private Optional<StateConstraints> fetchStateConstrains(JoinPoint joinPoint) {
+    private Optional<StateConstraints> fetchStateConstraints(JoinPoint joinPoint) {
         return AspectUtils.fetchT(joinPoint, StateConstraints.class);
     }
 
