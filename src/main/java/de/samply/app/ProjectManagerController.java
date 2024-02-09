@@ -862,7 +862,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity<Resource> fetchAllRegisteredBridgeheads() {
