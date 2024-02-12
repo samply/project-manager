@@ -98,3 +98,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Constraints: Project Type
 - Email template for Accept/Reject/Request changes in project
 - User Autocomplete
+- Explorer Ids to create and edit query

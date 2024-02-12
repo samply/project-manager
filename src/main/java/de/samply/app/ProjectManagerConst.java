@@ -140,6 +140,7 @@ public class ProjectManagerConst {
     public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String BRIDGEHEADS = "bridgeheads";
+    public final static String EXPLORER_IDS = "explorer-ids";
     public final static String PARTIAL_EMAIL = "partial-email";
     public final static String SITE = "site";
     public final static String EMAIL = "email";
