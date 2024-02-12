@@ -251,6 +251,7 @@ public class ProjectManagerController {
     ) throws ProjectEventActionsException {
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
+        // Explorer Ids / BK
         String projectCode = this.projectEventService.draft(bridgeheads, queryCode, projectType);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
@@ -878,6 +879,20 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity<Resource> fetchAllRegisteredBridgeheads() {
         return convertToResponseEntity(() -> bridgeheadConfiguration.getRegisteredBridgeheads());
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE)
+    public ResponseEntity<String> fetchUsersForAutocomplete(
+            // Project Code Required for state constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARTIAL_EMAIL) String partialEmail
+    ) {
+        return convertToResponseEntity(() -> this.userService.fetchUsersForAutocomplete(partialEmail, bridgehead));
     }
 
 
