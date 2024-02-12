@@ -168,6 +168,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     //TODO: Send email to PM-ADMIN, that there was a problem with the operation
@@ -185,6 +186,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.PILOT})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
@@ -356,6 +358,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.ACCEPTED})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
@@ -367,6 +370,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_PILOT_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_PILOT_STAGE)
@@ -436,6 +440,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @EmailSender(templateType = EmailTemplateType.SCRIPT_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_SCRIPT_ACTION)
@@ -449,6 +454,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @EmailSender(templateType = EmailTemplateType.SCRIPT_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_SCRIPT_ACTION)
@@ -462,6 +468,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_SCRIPT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_SCRIPT_CHANGES_ACTION)
@@ -475,7 +482,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.FINAL})
-    @EmailSender(templateType = EmailTemplateType.SCRIPT_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @EmailSender(templateType = EmailTemplateType.RESULTS_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_ACTION)
     @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS)
@@ -488,7 +495,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.FINAL})
-    @EmailSender(templateType = EmailTemplateType.SCRIPT_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @EmailSender(templateType = EmailTemplateType.RESULTS_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
@@ -501,7 +508,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.FINAL})
-    @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_SCRIPT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_PROJECT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
@@ -565,6 +572,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_SCRIPT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_SCRIPT)
@@ -643,6 +651,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_SCRIPT)
@@ -815,6 +824,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_AUTHENTICATION_SCRIPT)
@@ -830,6 +840,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_DATASHIELD_STATUS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_DATASHIELD_STATUS)
@@ -862,7 +873,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity<Resource> fetchAllRegisteredBridgeheads() {

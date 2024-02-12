@@ -131,7 +131,7 @@ public class DataShieldTokenManagerService {
     }
 
     public DataShieldTokenManagerTokenStatus fetchTokenStatus(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
-        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKEN_STATUS)
+        String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKEN_STATUS)
                 .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
                 .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                 .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
@@ -145,7 +145,7 @@ public class DataShieldTokenManagerService {
     }
 
     public DataShieldTokenManagerProjectStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
-        String uri = UriComponentsBuilder.fromUriString(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS)
+        String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS)
                 .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
                 .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                 .toUriString();
@@ -176,7 +176,7 @@ public class DataShieldTokenManagerService {
         String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REFRESH_TOKEN;
 
         webClient.put()
-                .uri(uriBuilder -> uriBuilder.path(uri).build())
+                .uri(uri)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(BodyInserters.fromValue(tokenParams))
                 .retrieve()
@@ -186,11 +186,14 @@ public class DataShieldTokenManagerService {
     }
 
     public void removeTokens(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS
-                + '/' + email + '/' + fetchTokenManagerId(bridgehead);
+        String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
+                .toUriString();
 
         webClient.delete()
-                .uri(uriBuilder -> uriBuilder.path(uri).build())
+                .uri(uri)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .subscribe(s -> notificationService.createNotification(projectCode, bridgehead, email,
@@ -198,11 +201,13 @@ public class DataShieldTokenManagerService {
     }
 
     public void removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
-        String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT
-                + '/' + projectCode + '/' + fetchTokenManagerId(bridgehead);
+        String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT)
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
+                .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
+                .toUriString();
 
         webClient.delete()
-                .uri(uriBuilder -> uriBuilder.path(uri).build())
+                .uri(uri)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .subscribe(s -> notificationService.createNotification(projectCode, bridgehead, null,

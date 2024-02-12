@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-02-02]
+## [0.0.1 - 2024-02-09]
 ### Added
 - First version of the project
 - Spring Application
@@ -93,3 +93,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch token status and project status of token manager
 - New email if authentication script for DataSHIELD has changed
 - Explorer URL in CORS
+- Oauth2 Resource Server configuration
+- Allow required headers
+- Project Constraints: Project Type
+- Email template for Accept/Reject/Request changes in project

@@ -1,11 +1,13 @@
 package de.samply.aop;
 
+import de.samply.annotations.ProjectConstraints;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
@@ -121,6 +123,32 @@ public class ConstraintsService {
                     }
                 }
                 if (!hasAnyProjectBridgeheadStateConstraint) {
+                    return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<ResponseEntity> checkProjectConstraints(Optional<ProjectConstraints> projectConstraints, Optional<String> projectCode) {
+        //TODO
+        if (projectConstraints.isPresent()) {
+            if (projectCode.isEmpty() || projectCode.get().length() == 0) {
+                return Optional.of(ResponseEntity.badRequest().body("Project code not provided"));
+            }
+            Optional<Project> project = AspectUtils.fetchProject(projectRepository, projectCode);
+            if (project.isEmpty()) {
+                return Optional.of(ResponseEntity.notFound().build());
+            }
+            if (projectConstraints.get().projectTypes().length > 0) {
+                boolean hasAnyProjectTypeConstraint = false;
+                for (ProjectType projectType : projectConstraints.get().projectTypes()) {
+                    if (project.get().getType() == projectType) {
+                        hasAnyProjectTypeConstraint = true;
+                        break;
+                    }
+                }
+                if (!hasAnyProjectTypeConstraint) {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
                 }
             }

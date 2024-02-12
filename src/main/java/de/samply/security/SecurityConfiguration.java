@@ -18,8 +18,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -48,13 +48,17 @@ public class SecurityConfiguration {
     @Value(ProjectManagerConst.EXPLORER_URL_SV)
     private String explorerUrl;
 
+    @Value(ProjectManagerConst.JWKS_URI_PROPERTY_SV)
+    private String jwksUri;
+
     @Autowired
     private FrontendConfiguration frontendConfiguration;
 
-    @Bean
-    public OidcUserService customOidcUserService() {
-        return new OidcProjectUserService();
-    }
+    @Autowired
+    private ProjectUserJwtGrantedAuthoritiesConverter projectUserJwtGrantedAuthoritiesConverter;
+
+    @Autowired
+    private OidcProjectUserService oidcProjectUserService;
 
     @Order(1)
     @Bean
@@ -64,12 +68,14 @@ public class SecurityConfiguration {
                         .authorizeHttpRequests(this::addAuthorityMapping)
                         .cors(Customizer.withDefaults())
                         .csrf(csrf -> csrf.disable())
-                        //.oauth2ResourceServer(resourceServerConfigurer -> resourceServerConfigurer.jwt(Customizer.withDefaults()))
+                        .oauth2ResourceServer(resourceServerConfigurer ->
+                                resourceServerConfigurer.jwt(jwtConfigurer -> {
+                                    jwtConfigurer.jwkSetUri(jwksUri);
+                                    jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter());
+                                }))
                         .oauth2Login(oauth2 -> oauth2
-                                .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(customOidcUserService()))
+                                .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(oidcProjectUserService))
                                 .successHandler(successHandler()))
-//                        .headers(headersConfigurer -> headersConfigurer.referrerPolicy(policyConfig ->
-//                                policyConfig.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
                         .build() :
                 http.authorizeRequests(authorize -> authorize.requestMatchers("/**").permitAll()).build();
     }
@@ -104,13 +110,20 @@ public class SecurityConfiguration {
         };
     }
 
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(projectUserJwtGrantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
+
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(frontendConfiguration.getBaseUrl(), explorerUrl));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
-        //configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization")); // Allow required headers
+        configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization")); // Allow required headers
         configuration.setAllowCredentials(true); // Allow credentials
         configuration.setExposedHeaders(Arrays.asList(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS)); // Expose required headers
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

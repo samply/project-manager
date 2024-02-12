@@ -58,6 +58,24 @@
       "files": {
         "DEFAULT": "default-script-changes-requested.html"
       }
+    },
+    "RESULTS_ACCEPTED": {
+      "subject": "Results accepted",
+      "files": {
+        "DEFAULT": "default-results-accepted.html"
+      }
+    },
+    "RESULTS_REJECTED": {
+      "subject": "Results rejected",
+      "files": {
+        "DEFAULT": "default-results-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_PROJECT": {
+      "subject": "Changes in project requested",
+      "files": {
+        "DEFAULT": "default-results-changes-requested.html"
+      }
     }
   }
 }

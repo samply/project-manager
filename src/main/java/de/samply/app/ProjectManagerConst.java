@@ -68,7 +68,7 @@ public class ProjectManagerConst {
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
     public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
-    public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT_ACTION";
+    public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT";
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
@@ -165,6 +165,7 @@ public class ProjectManagerConst {
 
     // Application Properties
     public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";
+    public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
 
@@ -250,6 +251,7 @@ public class ProjectManagerConst {
     public final static String BOTTOM_SV = "}";
     public final static String PM_ADMIN_GROUPS_SV = HEAD_SV + PM_ADMIN_GROUPS + BOTTOM_SV;
     public final static String JWT_GROUPS_CLAIM_PROPERTY_SV = HEAD_SV + JWT_GROUPS_CLAIM_PROPERTY + BOTTOM_SV;
+    public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
@@ -309,5 +311,6 @@ public class ProjectManagerConst {
     public final static int QUERY_CODE_SIZE = 20;
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
+    public final static String OIDC_EMAIL_CLAIM = "email";
 
 }
