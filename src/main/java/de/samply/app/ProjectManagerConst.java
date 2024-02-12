@@ -72,6 +72,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
+    public final static String FETCH_USERS_FOR_AUTOCOMPLETE_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE";
 
 
     // REST Services
@@ -132,12 +133,14 @@ public class ProjectManagerConst {
     public final static String FETCH_NOTIFICATIONS = "/notifications";
     public final static String SET_NOTIFICATION_AS_READ = "/read-notification";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS = "/bridgeheads";
+    public final static String FETCH_USERS_FOR_AUTOCOMPLETE = "/autocomplete-users";
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
     public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String BRIDGEHEADS = "bridgeheads";
+    public final static String PARTIAL_EMAIL = "partial-email";
     public final static String SITE = "site";
     public final static String EMAIL = "email";
     public final static String QUERY_FORMAT = "query-format";

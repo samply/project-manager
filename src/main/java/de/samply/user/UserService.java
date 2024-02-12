@@ -2,6 +2,8 @@ package de.samply.user;
 
 import de.samply.db.model.*;
 import de.samply.db.repository.*;
+import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.User;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.UserProjectState;
@@ -11,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -137,6 +140,10 @@ public class UserService {
         projectBridgeheadUserRepository.save(projectBridgeheadUser.get());
         this.notificationService.createNotification(projectCode, bridgehead, sessionUser.getEmail(), OperationType.CHANGE_PROJECT_BRIDGEHEAD_USER_EVALUATION,
                 "Set project bridgehead user evaluation to " + state, null, null);
+    }
+
+    public List<User> fetchUsersForAutocomplete(@NotNull String partialEmail, @NotNull String bridgehead) {
+        return projectBridgeheadUserRepository.getByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(DtoFactory::convert).toList();
     }
 
 }
