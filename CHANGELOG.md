@@ -99,3 +99,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email template for Accept/Reject/Request changes in project
 - User Autocomplete
 - Explorer Ids to create and edit query
+- Decode redirect explorer URL

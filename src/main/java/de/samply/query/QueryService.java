@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +56,7 @@ public class QueryService {
         tempQuery.setOutputFormat(outputFormat);
         tempQuery.setTemplateId(templateId);
         tempQuery.setHumanReadable(humanReadable);
-        tempQuery.setExplorerUrl(explorerUrl);
+        tempQuery.setExplorerUrl(decodeUrlIfNecessary(explorerUrl));
         tempQuery.setContext(queryContext);
         tempQuery = this.queryRepository.save(tempQuery);
         return tempQuery.getCode();
@@ -101,7 +103,7 @@ public class QueryService {
                     changedKeyValueMap.put("human readable", humanReadable);
                 }
                 if (explorerUrl != null) {
-                    projectQuery.setExplorerUrl(explorerUrl);
+                    projectQuery.setExplorerUrl(decodeUrlIfNecessary(explorerUrl));
                     changedKeyValueMap.put("explorer url", explorerUrl);
                 }
                 if (queryContext != null) {
@@ -114,6 +116,14 @@ public class QueryService {
                             OperationType.EDIT_QUERY, printInOneLine(changedKeyValueMap), null, null);
                 }
             }
+        }
+    }
+
+    private String decodeUrlIfNecessary(String encodedUrl) {
+        try {
+            return URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return encodedUrl;
         }
     }
 
