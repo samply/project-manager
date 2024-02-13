@@ -66,4 +66,11 @@ public class DtoFactory {
         );
     }
 
+    public static User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
+        return new User(
+                projectBridgeheadUser.getEmail(),
+                projectBridgeheadUser.getProjectBridgehead().getBridgehead()
+        );
+    }
+
 }

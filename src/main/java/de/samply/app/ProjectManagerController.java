@@ -46,6 +46,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -239,7 +240,8 @@ public class ProjectManagerController {
     public ResponseEntity<String> createQueryAndDesignProject(
             @NotEmpty @RequestBody() String query,
             @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
             @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
             @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
@@ -249,13 +251,23 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
             @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
     ) throws ProjectEventActionsException {
+        if (areBridgeheadsOrExplorerIdsEmpty(bridgeheads, explorerIds)) {
+            return ResponseEntity.badRequest().body("Bridgeheads or explorer ids cannot be empty");
+        }
+        String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
+                Arrays.stream(explorerIds).map(explorerId ->
+                        bridgeheadConfiguration.getBridgeheadForExplorerId(explorerId).get()).toArray(String[]::new) : bridgeheads;
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
-        String projectCode = this.projectEventService.draft(bridgeheads, queryCode, projectType);
+        String projectCode = this.projectEventService.draft(tempBridgeheads, queryCode, projectType);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)
         ));
+    }
+
+    private boolean areBridgeheadsOrExplorerIdsEmpty(String[] bridgeheads, String[] explorerIds) {
+        return (bridgeheads == null || bridgeheads.length == 0) && (explorerIds == null || explorerIds.length == 0);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -267,6 +279,7 @@ public class ProjectManagerController {
             @RequestBody() String query,
             @RequestParam(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
             @RequestParam(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
+            @RequestParam(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
             @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
             @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
@@ -277,7 +290,10 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        projectService.editProject(projectCode, projectType, bridgeheads);
+        String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
+                Arrays.stream(explorerIds).map(explorerId ->
+                        bridgeheadConfiguration.getBridgeheadForExplorerId(explorerId).get()).toArray(String[]::new) : bridgeheads;
+        projectService.editProject(projectCode, projectType, tempBridgeheads);
         queryService.editQuery(projectCode, query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
         return convertToResponseEntity(() -> this.frontendService.fetchUrl(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
@@ -878,6 +894,20 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity<Resource> fetchAllRegisteredBridgeheads() {
         return convertToResponseEntity(() -> bridgeheadConfiguration.getRegisteredBridgeheads());
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE)
+    public ResponseEntity<String> fetchUsersForAutocomplete(
+            // Project Code Required for state constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.PARTIAL_EMAIL) String partialEmail
+    ) {
+        return convertToResponseEntity(() -> this.userService.fetchUsersForAutocomplete(partialEmail, bridgehead));
     }
 
 
