@@ -72,10 +72,10 @@ public class NotificationService {
         List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgheadOptional);
         projects.forEach(project -> {
             if (bridgeheads.isEmpty() && sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
-                notificationRepository.findAllByProjectOrderByTimestampDesc(project);
+                result.addAll(notificationRepository.findByProjectOrderByTimestampDesc(project));
             } else {
                 bridgeheads.forEach(bridgehead -> result.addAll(
-                        notificationRepository.findAllByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridgehead)));
+                        notificationRepository.findByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridgehead)));
             }
         });
         return result.stream().map(notification ->
