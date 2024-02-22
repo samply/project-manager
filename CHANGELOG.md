@@ -102,3 +102,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Decode redirect explorer URL
 - Fetch project users
 - rejectProject state constraints
+- Filter output formats for DataSHIELD

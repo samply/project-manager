@@ -10,6 +10,7 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.query.OutputFormat;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
@@ -18,10 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ProjectService {
@@ -289,6 +287,17 @@ public class ProjectService {
                 }
             }
         }
+    }
+
+    public OutputFormat[] fetchOutputFormats(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
+        if (projectOptional.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        return switch (projectOptional.get().getType()){
+            case DATASHIELD -> new OutputFormat[]{OutputFormat.OPAL};
+            default -> Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toArray(OutputFormat[]::new);
+        };
     }
 
 }

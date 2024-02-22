@@ -331,10 +331,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_OUTPUT_FORMATS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_OUTPUT_FORMATS)
     public ResponseEntity<String> fetchOutputFormats(
-            // Project code needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> OutputFormat.values());
+        return convertToResponseEntity(() -> projectService.fetchOutputFormats(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
