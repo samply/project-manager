@@ -101,3 +101,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Explorer Ids to create and edit query
 - Decode redirect explorer URL
 - Fetch project users
+- rejectProject state constraints
