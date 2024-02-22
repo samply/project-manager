@@ -129,7 +129,7 @@ public class QueryService {
 
     private String printInOneLine(Map<String, String> changedKeyValuesMaps) {
         try {
-            return objectMapper.writeValueAsString(changedKeyValuesMaps);
+            return "Query edited: " + objectMapper.writeValueAsString(changedKeyValuesMaps);
         } catch (JsonProcessingException e) {
             log.error(ExceptionUtils.getStackTrace(e));
             return null;
