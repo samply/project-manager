@@ -910,6 +910,19 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.userService.fetchUsersForAutocomplete(partialEmail, bridgehead));
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_USERS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_USERS)
+    public ResponseEntity<String> fetchProjectUsers(
+            // Project Code Required for state constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode, bridgehead));
+    }
+
 
     private ResponseEntity convertToResponseEntity(RunnableWithException runnable) {
         try {

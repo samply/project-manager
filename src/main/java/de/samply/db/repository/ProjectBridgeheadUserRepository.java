@@ -41,4 +41,6 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
 
     List<ProjectBridgeheadUser> getByEmailContainingAndProjectBridgehead_Bridgehead(String email, String bridgehead);
 
+    List<ProjectBridgeheadUser> getByProjectRoleAndProjectBridgehead(ProjectRole role, ProjectBridgehead projectBridgehead);
+
 }

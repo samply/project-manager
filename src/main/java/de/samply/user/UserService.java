@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -123,15 +124,9 @@ public class UserService {
     }
 
     private void changeProjectState(@NotNull String projectCode, @NotNull String bridgehead, @NotNull UserProjectState state) throws UserServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new UserServiceException("Project " + projectCode + " not found");
-        }
-        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
-        if (projectBridgehead.isEmpty()) {
-            throw new UserServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " not found");
-        }
-        Optional<ProjectBridgeheadUser> projectBridgeheadUser = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(sessionUser.getEmail(), projectBridgehead.get());
+        Optional<ProjectBridgeheadUser> projectBridgeheadUser =
+                projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(sessionUser.getEmail(),
+                        fetchProjectBridgehead(projectCode, bridgehead));
         if (projectBridgeheadUser.isEmpty()) {
             throw new UserServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " and user " + sessionUser.getEmail());
         }
@@ -145,5 +140,31 @@ public class UserService {
     public List<User> fetchUsersForAutocomplete(@NotNull String partialEmail, @NotNull String bridgehead) {
         return projectBridgeheadUserRepository.getByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(DtoFactory::convert).toList();
     }
+
+    public List<User> fetchProjectUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
+        ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
+        return (switch (projectBridgehead.getProject().getState()) {
+            case DEVELOP ->
+                    this.projectBridgeheadUserRepository.getByProjectRoleAndProjectBridgehead(ProjectRole.DEVELOPER, projectBridgehead);
+            case PILOT ->
+                    this.projectBridgeheadUserRepository.getByProjectRoleAndProjectBridgehead(ProjectRole.PILOT, projectBridgehead);
+            case FINAL ->
+                    this.projectBridgeheadUserRepository.getByProjectRoleAndProjectBridgehead(ProjectRole.FINAL, projectBridgehead);
+            default -> new ArrayList<ProjectBridgeheadUser>();
+        }).stream().map(DtoFactory::convert).toList();
+    }
+
+    private ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws UserServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new UserServiceException("Project " + projectCode + " not found");
+        }
+        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+        if (projectBridgehead.isEmpty()) {
+            throw new UserServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " not found");
+        }
+        return projectBridgehead.get();
+    }
+
 
 }
