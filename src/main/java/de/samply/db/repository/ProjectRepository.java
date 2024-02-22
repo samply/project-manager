@@ -25,21 +25,23 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     ////////// Project Manager Admins:
     List<Project> findAll();
 
+    @Query("SELECT p FROM Project p WHERE p.state != 'DRAFT' ORDER BY p.modifiedAt DESC")
     Page<Project> findAllByOrderByModifiedAtDesc(Pageable pageable);
 
+    @Query("SELECT p FROM Project p WHERE p.state != 'DRAFT' ORDER BY p.modifiedAt ASC")
     Page<Project> findAllByOrderByModifiedAtAsc(Pageable pageable);
 
-    @Query("SELECT p FROM Project p WHERE p.archivedAt IS NOT NULL ORDER BY p.modifiedAt DESC")
+    @Query("SELECT p FROM Project p WHERE p.state != 'DRAFT' AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt DESC")
     Page<Project> findAllArchivedProjectsModifiedAtDesc(Pageable pageable);
 
-    @Query("SELECT p FROM Project p WHERE p.archivedAt IS NOT NULL ORDER BY p.modifiedAt ASC")
+    @Query("SELECT p FROM Project p WHERE p.state != 'DRAFT' AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt ASC")
     Page<Project> findAllArchivedProjectsModifiedAtAsc(Pageable pageable);
 
 
-    @Query("SELECT DISTINCT p FROM Project p WHERE p.archivedAt IS NULL ORDER BY p.modifiedAt DESC")
+    @Query("SELECT DISTINCT p FROM Project p WHERE p.state != 'DRAFT'AND p.archivedAt IS NULL ORDER BY p.modifiedAt DESC")
     Page<Project> findAllNotArchivedProjectsModifiedAtDesc(Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p WHERE p.archivedAt IS NULL ORDER BY p.modifiedAt ASC")
+    @Query("SELECT DISTINCT p FROM Project p WHERE p.state != 'DRAFT' AND p.archivedAt IS NULL ORDER BY p.modifiedAt ASC")
     Page<Project> findAllNotArchivedProjectsModifiedAtAsc(Pageable pageable);
 
     Page<Project> findByStateOrderByModifiedAtDesc(ProjectState state, Pageable pageable);
