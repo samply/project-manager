@@ -39,8 +39,14 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
     @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state NOT IN :projectStates")
     List<ProjectBridgeheadUser> getByProjectTypeAndNotProjectState(ProjectType projectType, Set<ProjectState> projectStates);
 
-    List<ProjectBridgeheadUser> getByEmailContainingAndProjectBridgehead_Bridgehead(String email, String bridgehead);
+    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.email LIKE %:email% AND pbu.projectBridgehead.bridgehead = :bridgehead AND (" +
+            "(pbu.projectBridgehead.project.code = :projectCode AND pbu.projectBridgehead.project.state = 'DEVELOP' AND pbu.projectRole = 'DEVELOPER') OR " +
+            "(pbu.projectBridgehead.project.code = :projectCode AND pbu.projectBridgehead.project.state = 'PILOT' AND pbu.projectRole = 'PILOT') OR" +
+            "(pbu.projectBridgehead.project.code = :projectCode AND pbu.projectBridgehead.project.state = 'FINAL' AND pbu.projectRole = 'FINAL'))")
+    List<ProjectBridgeheadUser> getDistinctByEmailContainingAndProjectBridgehead_BridgeheadAndUserAlreadySetForThisProjectInThisRole(String email, String bridgehead, String projectCode);
 
-    List<ProjectBridgeheadUser> getByProjectRoleAndProjectBridgehead(ProjectRole role, ProjectBridgehead projectBridgehead);
+    List<ProjectBridgeheadUser> getDistinctByEmailContainingAndProjectBridgehead_Bridgehead(String email, String bridgehead);
+
+    List<ProjectBridgeheadUser> getDistinctByProjectRoleAndProjectBridgehead(ProjectRole role, ProjectBridgehead projectBridgehead);
 
 }

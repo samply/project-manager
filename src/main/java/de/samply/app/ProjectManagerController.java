@@ -902,12 +902,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE)
     public ResponseEntity<String> fetchUsersForAutocomplete(
-            // Project Code Required for state constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.PARTIAL_EMAIL) String partialEmail
     ) {
-        return convertToResponseEntity(() -> this.userService.fetchUsersForAutocomplete(partialEmail, bridgehead));
+        return convertToResponseEntity(() -> this.userService.fetchUsersForAutocomplete(projectCode, partialEmail, bridgehead));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})

@@ -14,8 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -137,21 +138,24 @@ public class UserService {
                 "Set project bridgehead user evaluation to " + state, null, null);
     }
 
-    public List<User> fetchUsersForAutocomplete(@NotNull String partialEmail, @NotNull String bridgehead) {
-        return projectBridgeheadUserRepository.getByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(DtoFactory::convert).toList();
+    public Set<User> fetchUsersForAutocomplete(@NotNull String projectCode, @NotNull String partialEmail, @NotNull String bridgehead) {
+        Set<User> allUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(DtoFactory::convert).collect(Collectors.toSet());
+        Set<User> alreadySetUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_BridgeheadAndUserAlreadySetForThisProjectInThisRole(partialEmail, bridgehead, projectCode).stream().map(DtoFactory::convert).collect(Collectors.toSet());
+        allUsers.removeAll(alreadySetUsers);
+        return allUsers;
     }
 
-    public List<User> fetchProjectUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
+    public Set<User> fetchProjectUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
         ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
         return (switch (projectBridgehead.getProject().getState()) {
             case DEVELOP ->
-                    this.projectBridgeheadUserRepository.getByProjectRoleAndProjectBridgehead(ProjectRole.DEVELOPER, projectBridgehead);
+                    this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.DEVELOPER, projectBridgehead);
             case PILOT ->
-                    this.projectBridgeheadUserRepository.getByProjectRoleAndProjectBridgehead(ProjectRole.PILOT, projectBridgehead);
+                    this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.PILOT, projectBridgehead);
             case FINAL ->
-                    this.projectBridgeheadUserRepository.getByProjectRoleAndProjectBridgehead(ProjectRole.FINAL, projectBridgehead);
+                    this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.FINAL, projectBridgehead);
             default -> new ArrayList<ProjectBridgeheadUser>();
-        }).stream().map(DtoFactory::convert).toList();
+        }).stream().map(DtoFactory::convert).collect(Collectors.toSet());
     }
 
     private ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws UserServiceException {
