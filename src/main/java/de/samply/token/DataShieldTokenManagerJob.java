@@ -13,6 +13,7 @@ import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
 import de.samply.token.dto.DataShieldTokenStatus;
 import de.samply.user.roles.ProjectRole;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,20 +28,26 @@ public class DataShieldTokenManagerJob {
     private final DataShieldTokenManagerService tokenManagerService;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final EmailService emailService;
+    private final boolean isTokenManagerActive;
 
     public DataShieldTokenManagerJob(DataShieldTokenManagerService tokenManagerService,
                                      ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                                     EmailService emailService) {
+                                     EmailService emailService,
+                                     @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive
+    ) {
         this.tokenManagerService = tokenManagerService;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.emailService = emailService;
+        this.isTokenManagerActive = isTokenManagerActive;
     }
 
     @Scheduled(cron = ProjectManagerConst.MANAGE_TOKENS_CRON_EXPRESSION_SV)
     public void manageTokens() {
-        manageActiveUsers();
-        manageInactiveUsers();
-        manageInactiveProjects();
+        if (isTokenManagerActive){
+            manageActiveUsers();
+            manageInactiveUsers();
+            manageInactiveProjects();
+        }
     }
 
     private void manageActiveUsers() {

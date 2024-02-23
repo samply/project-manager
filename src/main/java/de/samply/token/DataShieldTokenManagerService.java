@@ -10,9 +10,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
-import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
-import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
-import de.samply.token.dto.TokenParams;
+import de.samply.token.dto.*;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
@@ -50,6 +48,7 @@ public class DataShieldTokenManagerService {
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final NotificationService notificationService;
     private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final boolean isTokenManagerActive;
 
     public DataShieldTokenManagerService(SessionUser sessionUser,
                                          WebClientFactory webClientFactory,
@@ -58,7 +57,8 @@ public class DataShieldTokenManagerService {
                                          ProjectBridgeheadRepository projectBridgeheadRepository,
                                          ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                                          NotificationService notificationService,
-                                         BridgeheadConfiguration bridgeheadConfiguration) {
+                                         BridgeheadConfiguration bridgeheadConfiguration,
+                                         @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive) {
         this.sessionUser = sessionUser;
         this.webClientFactory = webClientFactory;
         this.projectRepository = projectRepository;
@@ -66,6 +66,7 @@ public class DataShieldTokenManagerService {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.notificationService = notificationService;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.isTokenManagerActive = isTokenManagerActive;
         this.webClient = webClientFactory.createWebClient(tokenManagerUrl);
     }
 
@@ -145,6 +146,9 @@ public class DataShieldTokenManagerService {
     }
 
     public DataShieldTokenManagerProjectStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
+        if (!isTokenManagerActive) {
+            return new DataShieldTokenManagerProjectStatus(projectCode, bridgehead, DataShieldProjectStatus.INACTIVE);
+        }
         String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT_STATUS)
                 .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, fetchTokenManagerId(bridgehead))
                 .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
@@ -158,6 +162,9 @@ public class DataShieldTokenManagerService {
     }
 
     public Resource fetchAuthenticationScript(String projectCode, String bridgehead) throws DataShieldTokenManagerServiceException {
+        if (!isTokenManagerActive) {
+            return new ByteArrayResource("Token Manager inactive".getBytes());
+        }
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
         String authenticationScript = webClient.post().uri(uriBuilder ->
                         uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_SCRIPTS).build())
