@@ -49,7 +49,9 @@ public class ProjectManagerConst {
     public final static String ADD_PUBLICATION_URL_ACTION = "ADD_PUBLICATION_URL";
     public final static String ADD_OTHER_DOCUMENT_URL_ACTION = "ADD_OTHER_DOCUMENT_URL";
     public final static String DOWNLOAD_VOTUM_ACTION = "DOWNLOAD_VOTUM";
+    public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
     public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
+    public final static String EXISTS_APPLICATION_FORM_ACTION = "EXISTS_APPLICATION_FORM";
     public final static String DOWNLOAD_PUBLICATION_ACTION = "DOWNLOAD_PUBLICATION";
     public final static String DOWNLOAD_SCRIPT_ACTION = "DOWNLOAD_SCRIPT";
     public final static String DOWNLOAD_OTHER_DOCUMENT_ACTION = "DOWNLOAD_OTHER_DOCUMENT";
@@ -121,7 +123,9 @@ public class ProjectManagerConst {
     public final static String ADD_PUBLICATION_URL = "/add-publication-url";
     public final static String ADD_OTHER_DOCUMENT_URL = "/add-other-document-url";
     public final static String DOWNLOAD_VOTUM = "/download-votum";
+    public final static String EXISTS_VOTUM = "/exists-votum";
     public final static String DOWNLOAD_APPLICATION_FORM = "/download-application-form";
+    public final static String EXISTS_APPLICATION_FORM = "/exists-application-form";
     public final static String DOWNLOAD_PUBLICATION = "/download-publication";
     public final static String DOWNLOAD_SCRIPT = "/download-script";
     public final static String DOWNLOAD_OTHER_DOCUMENT = "/download-other-document";
