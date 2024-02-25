@@ -104,3 +104,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - rejectProject state constraints
 - Filter output formats for DataSHIELD
 - Flag ENABLE_TOKEN_MANAGER
+- Content Disposition in exposed headers
