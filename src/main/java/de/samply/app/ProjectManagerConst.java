@@ -36,7 +36,7 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE_ACTION = "DOWNLOAD_APPLICATION_FORM_TEMPLATE";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_QUERY_IN_BRIDGEHEAD";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
-    public final static String FETCH_AUTHENTICATION_SCRIPT_ACTION = "FETCH_AUTHENTICATION_SCRIPT";
+    public final static String DOWNLOAD_AUTHENTICATION_SCRIPT_ACTION = "DOWNLOAD_AUTHENTICATION_SCRIPT";
     public final static String EDIT_PROJECT_ACTION = "EDIT_PROJECT";
     public final static String FETCH_EXPORTER_TEMPLATES_ACTION = "EXPORTER_TEMPLATES";
     public final static String FETCH_QUERY_FORMATS_ACTION = "FETCH_QUERY_FORMATS";
@@ -128,7 +128,7 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE = "/download-application-form-template";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
-    public final static String FETCH_AUTHENTICATION_SCRIPT = "/authentication-script";
+    public final static String DOWNLOAD_AUTHENTICATION_SCRIPT = "/download-authentication-script";
     public final static String FETCH_DATASHIELD_STATUS = "/datashield-status";
     public final static String FETCH_PUBLICATIONS = "/publications";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
