@@ -52,6 +52,7 @@ public class ProjectManagerConst {
     public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
     public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
     public final static String EXISTS_APPLICATION_FORM_ACTION = "EXISTS_APPLICATION_FORM";
+    public final static String EXISTS_SCRIPT_ACTION = "EXISTS_SCRIPT";
     public final static String DOWNLOAD_PUBLICATION_ACTION = "DOWNLOAD_PUBLICATION";
     public final static String DOWNLOAD_SCRIPT_ACTION = "DOWNLOAD_SCRIPT";
     public final static String DOWNLOAD_OTHER_DOCUMENT_ACTION = "DOWNLOAD_OTHER_DOCUMENT";
@@ -128,6 +129,7 @@ public class ProjectManagerConst {
     public final static String EXISTS_APPLICATION_FORM = "/exists-application-form";
     public final static String DOWNLOAD_PUBLICATION = "/download-publication";
     public final static String DOWNLOAD_SCRIPT = "/download-script";
+    public final static String EXISTS_SCRIPT = "/exists-script";
     public final static String DOWNLOAD_OTHER_DOCUMENT = "/download-other-document";
     public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE = "/download-application-form-template";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";

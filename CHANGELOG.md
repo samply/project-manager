@@ -106,3 +106,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Flag ENABLE_TOKEN_MANAGER
 - Content Disposition in exposed headers
 - Exists Votum and Application Form
+- Exists Script

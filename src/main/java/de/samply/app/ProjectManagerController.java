@@ -679,6 +679,20 @@ public class ProjectManagerController {
         return downloadProjectDocument(projectCode, null, DocumentType.SCRIPT);
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_SCRIPT_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXISTS_SCRIPT)
+    public ResponseEntity<Boolean> existsScript(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying developer user or bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+    ) throws DocumentServiceException {
+        return existsProjectDocument(projectCode, null, DocumentType.SCRIPT);
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
