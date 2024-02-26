@@ -743,7 +743,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
-        return existsProjectDocument(projectCode, bridgehead, DocumentType.APPLICATION_FORM);
+        return existsProjectDocument(projectCode, null, DocumentType.APPLICATION_FORM);
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
