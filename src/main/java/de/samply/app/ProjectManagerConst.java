@@ -259,6 +259,7 @@ public class ProjectManagerConst {
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION = "CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION";
     public final static String EXPLORER_URL = "EXPLORER_URL";
     public final static String ENABLE_TOKEN_MANAGER = "ENABLE_TOKEN_MANAGER";
+    public final static String EXPLORER_REDIRECT_URI_PARAMETER = "EXPLORER_REDIRECT_URI_PARAMETER";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -316,6 +317,8 @@ public class ProjectManagerConst {
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION_SV =
             HEAD_SV + CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION + ":#{'0 0 1,13 * * *'}" + BOTTOM_SV;
     public final static String EXPLORER_URL_SV = HEAD_SV + EXPLORER_URL + BOTTOM_SV;
+    public final static String EXPLORER_REDIRECT_URI_PARAMETER_SV = HEAD_SV + EXPLORER_REDIRECT_URI_PARAMETER + BOTTOM_SV;
+
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

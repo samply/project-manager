@@ -259,7 +259,7 @@ public class ProjectManagerController {
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
         String projectCode = this.projectEventService.draft(tempBridgeheads, queryCode, projectType);
-        return convertToResponseEntity(() -> this.frontendService.fetchUrl(
+        return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)
         ));
@@ -294,7 +294,7 @@ public class ProjectManagerController {
                         bridgeheadConfiguration.getBridgeheadForExplorerId(explorerId).get()).toArray(String[]::new) : bridgeheads;
         projectService.editProject(projectCode, projectType, tempBridgeheads);
         queryService.editQuery(projectCode, (query != null && query.trim().length() > 0 && !query.equals("{}")) ? query : null, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
-        return convertToResponseEntity(() -> this.frontendService.fetchUrl(
+        return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.QUERY_CODE, projectCode)
         ));

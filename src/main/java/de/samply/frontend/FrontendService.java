@@ -2,9 +2,11 @@ package de.samply.frontend;
 
 import de.samply.annotations.*;
 import de.samply.aop.ConstraintsService;
+import de.samply.app.ProjectManagerConst;
 import de.samply.app.ProjectManagerController;
 import de.samply.user.roles.RolesExtractor;
 import de.samply.utils.AspectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -17,12 +19,15 @@ public class FrontendService {
 
     private final ConstraintsService constraintsService;
     private final FrontendConfiguration frontendConfiguration;
+    private final String explorerUrlRedirectUriParameter;
 
     public FrontendService(
             ConstraintsService constraintsService,
-            FrontendConfiguration frontendConfiguration) {
+            FrontendConfiguration frontendConfiguration,
+            @Value(ProjectManagerConst.EXPLORER_REDIRECT_URI_PARAMETER_SV) String explorerUrlRedirectUriParameter) {
         this.constraintsService = constraintsService;
         this.frontendConfiguration = frontendConfiguration;
+        this.explorerUrlRedirectUriParameter = explorerUrlRedirectUriParameter;
     }
 
     public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<String> projectCode, Optional<String> bridgehead, boolean withConstraints) {
@@ -101,6 +106,12 @@ public class FrontendService {
                     result.queryParamIfPresent(parameter, Optional.ofNullable(parameters.get(parameter))));
         }
         return result.toUriString();
+    }
+
+    public Map<String, String> fetchExplorerRedirectUri(String site, Map<String, String> parameters){
+        Map<String, String> result = new HashMap<>();
+        result.put(explorerUrlRedirectUriParameter, fetchUrl(site, parameters));
+        return result;
     }
 
 }
