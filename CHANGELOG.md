@@ -108,3 +108,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Exists Votum and Application Form
 - Exists Script
 - Explorer Redirect URI
+- User State in Frontend DTO
