@@ -112,3 +112,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch project configurations
 - Exists authentication script
 - Remove inactive projects in Opal
+- Project Bridgehead DataSHIELD info

@@ -102,6 +102,13 @@ CREATE TABLE samply.notification_user_action
     modified_at     TIMESTAMP NOT NULL
 );
 
+CREATE TABLE samply.project_bridgehead_datashield
+(
+    id                    SERIAL PRIMARY KEY,
+    project_bridgehead_id BIGINT  NOT NULL,
+    removed               BOOLEAN NOT NULL
+);
+
 
 ALTER TABLE samply.project
     ADD CONSTRAINT fk_project_query
@@ -131,9 +138,14 @@ ALTER TABLE samply.notification_user_action
     ADD CONSTRAINT fk_notification_id
         FOREIGN KEY (notification_id) REFERENCES samply.notification (id);
 
+ALTER TABLE samply.project_bridgehead_datashield
+    ADD CONSTRAINT fk_project_bridgehead_datashield FOREIGN KEY (project_bridgehead_id)
+        REFERENCES samply.project_bridgehead (id);
+
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);
 CREATE INDEX idx_project_document_project_id ON samply.project_document (project_id);
 CREATE INDEX idx_project_query_id ON samply.project (query_id);
 CREATE INDEX idx_notification_project_id ON samply.notification (project_id);
 CREATE INDEX idx_notification_id ON samply.notification_user_action (notification_id);
+CREATE INDEX idx_project_bridgehead_id ON samply.project_bridgehead_datashield (project_bridgehead_id);
