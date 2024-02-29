@@ -65,8 +65,9 @@ public class BridgeheadConfiguration {
         return config.get(bridgehead).getHumanReadable();
     }
 
-    public String getTokenManagerId(String bridgehead) {
-        return config.get(bridgehead).getTokenManagerId();
+    public Optional<String> getTokenManagerId(String bridgehead) {
+        BridgeheadConfig bridgeheadConfig = config.get(bridgehead);
+        return Optional.ofNullable((bridgeheadConfig != null) ? bridgeheadConfig.getTokenManagerId() : null);
     }
 
     public Optional<String> getBridgeheadForExplorerId(String explorerId) {

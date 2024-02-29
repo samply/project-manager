@@ -111,3 +111,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - User State in Frontend DTO
 - Fetch project configurations
 - Exists authentication script
+- Remove inactive projects in Opal
