@@ -43,7 +43,7 @@ public class DataShieldTokenManagerJob {
 
     @Scheduled(cron = ProjectManagerConst.MANAGE_TOKENS_CRON_EXPRESSION_SV)
     public void manageTokens() {
-        if (isTokenManagerActive){
+        if (isTokenManagerActive) {
             manageActiveUsers();
             manageInactiveUsers();
             manageInactiveProjects();
@@ -85,7 +85,7 @@ public class DataShieldTokenManagerJob {
         List<ProjectBridgeheadUser> inactiveUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER);
         inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT));
         inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL));
-        inactiveUsers.forEach(user -> {
+        inactiveUsers.stream().filter(user -> user.getProjectRole() != ProjectRole.CREATOR).forEach(user -> {
             // Check user status
             DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail());
             // If user token created or expired: Remove token

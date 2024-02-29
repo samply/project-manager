@@ -110,3 +110,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Explorer Redirect URI
 - User State in Frontend DTO
 - Fetch project configurations
+- Exists authentication script

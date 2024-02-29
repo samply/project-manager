@@ -177,6 +177,16 @@ public class DataShieldTokenManagerService {
         return new ByteArrayResource(authenticationScript.getBytes());
     }
 
+    public Boolean existsAuthenticationScript(String projectCode, String bridgehead) throws DataShieldTokenManagerServiceException {
+        if (!isTokenManagerActive) {
+            return true;
+        }
+        //List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
+        //TODO
+        return true;
+    }
+
+
     public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) throws DataShieldTokenManagerServiceException {
         List<String> bridgeheads = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));
         TokenParams tokenParams = new TokenParams(email, projectCode, bridgeheads);
