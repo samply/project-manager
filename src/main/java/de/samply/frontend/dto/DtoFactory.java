@@ -8,25 +8,25 @@ import java.util.function.Supplier;
 public class DtoFactory {
 
     public static Project convert(@NotNull de.samply.db.model.Project project) {
-        return new Project(
-                project.getCode(),
-                project.getCreatorEmail(),
-                project.getCreatedAt(),
-                project.getExpiresAt(),
-                project.getArchivedAt(),
-                project.getModifiedAt(),
-                project.getState(),
-                project.getType(),
-                project.getQuery().getQuery(),
-                project.getQuery().getHumanReadable(),
-                project.getQuery().getQueryFormat(),
-                project.getQuery().getOutputFormat(),
-                project.getQuery().getTemplateId(),
-                project.getQuery().getLabel(),
-                project.getQuery().getDescription(),
-                project.getQuery().getExplorerUrl(),
-                project.getQuery().getContext()
-        );
+        Project result = new Project();
+        result.setCode(project.getCode());
+        result.setCreatorEmail(project.getCreatorEmail());
+        result.setCreatedAt(project.getCreatedAt());
+        result.setExpiresAt(project.getExpiresAt());
+        result.setArchivedAt(project.getArchivedAt());
+        result.setModifiedAt(project.getModifiedAt());
+        result.setState(project.getState());
+        result.setType(project.getType());
+        result.setQuery(project.getQuery().getQuery());
+        result.setHumanReadable(project.getQuery().getHumanReadable());
+        result.setQueryFormat(project.getQuery().getQueryFormat());
+        result.setOutputFormat(project.getQuery().getOutputFormat());
+        result.setTemplateId(project.getQuery().getTemplateId());
+        result.setLabel(project.getQuery().getLabel());
+        result.setDescription(project.getQuery().getDescription());
+        result.setExplorerUrl(project.getQuery().getExplorerUrl());
+        result.setQueryContext(project.getQuery().getContext());
+        return result;
     }
 
     public static Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {

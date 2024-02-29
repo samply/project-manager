@@ -77,7 +77,7 @@ public class ProjectManagerConst {
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE";
     public final static String FETCH_PROJECT_USERS_ACTION = "FETCH_PROJECT_USERS";
-
+    public final static String FETCH_PROJECT_CONFIGURATIONS_ACTION = "FETCH_PROJECT_CONFIGURATIONS";
 
 
     // REST Services
@@ -94,6 +94,7 @@ public class ProjectManagerConst {
     public final static String FETCH_EXPORTER_TEMPLATES = "/exporter-templates";
     public final static String FETCH_QUERY_FORMATS = "/query-formats";
     public final static String FETCH_OUTPUT_FORMATS = "/output-formats";
+    public final static String FETCH_PROJECT_CONFIGURATIONS = "/project-configurations";
     public final static String DESIGN_PROJECT = "/design-project";
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
@@ -184,8 +185,6 @@ public class ProjectManagerConst {
 
     // Exporter
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
-    public final static String IS_TEST_ENVIRONMENT = "IS_TEST_ENVIRONMENT";
-    public final static String EXPORTER_CREATE_QUERY = "/create-query";
     public final static String EXPORTER_PARAM_QUERY = "query";
     public final static String EXPORTER_PARAM_QUERY_FORMAT = "query-format";
     public final static String EXPORTER_PARAM_TEMPLATE_ID = "template-id";
@@ -260,6 +259,7 @@ public class ProjectManagerConst {
     public final static String EXPLORER_URL = "EXPLORER_URL";
     public final static String ENABLE_TOKEN_MANAGER = "ENABLE_TOKEN_MANAGER";
     public final static String EXPLORER_REDIRECT_URI_PARAMETER = "EXPLORER_REDIRECT_URI_PARAMETER";
+    public final static String FRONTEND_PROJECT_CONFIG = "FRONTEND_PROJECT_CONFIG";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -276,7 +276,6 @@ public class ProjectManagerConst {
     public final static String APPLICATION_FORM_FILENAME_SV = HEAD_SV + APPLICATION_FORM_FILENAME + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMdd-HHmmss" + BOTTOM_SV;
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
-    public final static String IS_TEST_ENVIRONMENT_SV = HEAD_SV + IS_TEST_ENVIRONMENT + ":false" + BOTTOM_SV;
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =
             HEAD_SV + WEBCLIENT_BUFFER_SIZE_IN_BYTES + ":#{36 * 1024 * 1024}" + BOTTOM_SV;
     public final static String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS_SV =
@@ -302,7 +301,6 @@ public class ProjectManagerConst {
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
     public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
-
     public final static String FOCUS_PROJECT_MANAGER_ID_SV = HEAD_SV + FOCUS_PROJECT_MANAGER_ID + BOTTOM_SV;
     public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":10s" + BOTTOM_SV;
     public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
@@ -318,6 +316,7 @@ public class ProjectManagerConst {
             HEAD_SV + CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION + ":#{'0 0 1,13 * * *'}" + BOTTOM_SV;
     public final static String EXPLORER_URL_SV = HEAD_SV + EXPLORER_URL + BOTTOM_SV;
     public final static String EXPLORER_REDIRECT_URI_PARAMETER_SV = HEAD_SV + EXPLORER_REDIRECT_URI_PARAMETER + BOTTOM_SV;
+    public final static String FRONTEND_PROJECT_CONFIG_SV = HEAD_SV + FRONTEND_PROJECT_CONFIG + BOTTOM_SV;
 
 
     // Others

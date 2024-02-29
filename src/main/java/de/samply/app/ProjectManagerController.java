@@ -13,6 +13,7 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
+import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectService;
@@ -68,6 +69,7 @@ public class ProjectManagerController {
     private final ProjectBridgeheadService projectBridgeheadService;
     private final NotificationService notificationService;
     private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final ProjectConfigurations frontendProjectConfigurations;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -79,7 +81,8 @@ public class ProjectManagerController {
                                     ProjectService projectService,
                                     ProjectBridgeheadService projectBridgeheadService,
                                     NotificationService notificationService,
-                                    BridgeheadConfiguration bridgeheadConfiguration) {
+                                    BridgeheadConfiguration bridgeheadConfiguration,
+                                    ProjectConfigurations frontendProjectConfigurations) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -91,6 +94,7 @@ public class ProjectManagerController {
         this.projectBridgeheadService = projectBridgeheadService;
         this.notificationService = notificationService;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.frontendProjectConfigurations = frontendProjectConfigurations;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -334,6 +338,17 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectService.fetchOutputFormats(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS)
+    public ResponseEntity<String> fetchProjectConfigurations(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> this.frontendProjectConfigurations.getConfigurationNameProjectMap());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
