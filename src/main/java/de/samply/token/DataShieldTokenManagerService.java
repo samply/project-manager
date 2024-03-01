@@ -23,10 +23,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -197,14 +194,30 @@ public class DataShieldTokenManagerService {
     }
 
     public Boolean existsAuthenticationScript(String projectCode, String bridgehead) throws DataShieldTokenManagerServiceException {
+
         if (!isTokenManagerActive) {
             return true;
         }
-        //List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
-        //TODO
-        return true;
-    }
 
+        List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
+        try {
+                    ResponseEntity<Boolean> response =
+                            webClient.post()
+                                    .uri(uriBuilder ->
+                                            uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.AUTHENTICATION_SCRIPT_STATUS).build())
+                                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(new TokenParams(sessionUser.getEmail(), projectCode, tokenManagerIds))
+                    .retrieve()
+                    .toEntity(Boolean.class) // Convert the response body to Boolean wrapped in ResponseEntity
+                    .block(); // Block until the response is received
+
+            return response.getStatusCode().is2xxSuccessful();
+
+        } catch (Exception e) {
+            // Handle the case where the WebClient call fails, e.g., due to a 404 response or other error
+            throw new DataShieldTokenManagerServiceException("Authentication Script is not available for any bridgehead");
+        }
+    }
 
     public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) throws DataShieldTokenManagerServiceException {
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));
