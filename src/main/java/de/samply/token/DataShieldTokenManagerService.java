@@ -196,15 +196,18 @@ public class DataShieldTokenManagerService {
         throw new DataShieldTokenManagerServiceException("Script could not be generated for project " + projectCode + " and user " + sessionUser.getEmail());
     }
 
-    public Boolean existsAuthenticationScript(String projectCode, String bridgehead) throws DataShieldTokenManagerServiceException {
+    public Boolean existsAuthenticationScript(String projectCode, String bridgehead) {
         if (!isTokenManagerActive) {
             return true;
         }
-        //List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
-        //TODO
-        return true;
+        List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
+        return Boolean.valueOf(webClient.post()
+                .uri(uriBuilder ->
+                        uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.AUTHENTICATION_SCRIPT_STATUS).build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(new TokenParams(sessionUser.getEmail(), projectCode, tokenManagerIds))
+                .retrieve().bodyToMono(String.class).block());
     }
-
 
     public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) throws DataShieldTokenManagerServiceException {
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));

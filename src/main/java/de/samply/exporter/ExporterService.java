@@ -6,7 +6,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadDataShield;
 import de.samply.db.model.Query;
+import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
+import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.exporter.focus.FocusQuery;
 import de.samply.exporter.focus.FocusService;
@@ -56,6 +60,8 @@ public class ExporterService {
     private final int webClientBufferSizeInBytes;
     private final SessionUser sessionUser;
     private final ProjectRepository projectRepository;
+    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+    private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
     private final NotificationService notificationService;
     private final Set<String> exportTemplates;
     private final Set<String> datashieldTemplates;
@@ -81,6 +87,8 @@ public class ExporterService {
             FocusService focusService,
             ProjectRepository projectRepository,
             SessionUser sessionUser,
+            ProjectBridgeheadRepository projectBridgeheadRepository,
+            ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
             NotificationService notificationService) {
         this.focusService = focusService;
         this.webClientMaxNumberOfRetries = webClientMaxNumberOfRetries;
@@ -93,6 +101,8 @@ public class ExporterService {
         this.webClientBufferSizeInBytes = webClientBufferSizeInBytes;
         this.sessionUser = sessionUser;
         this.projectRepository = projectRepository;
+        this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.notificationService = notificationService;
         this.exportTemplates = exportTemplates;
         this.datashieldTemplates = datashieldTemplates;
@@ -126,8 +136,9 @@ public class ExporterService {
         postRequest(bridgehead, projectCode, generateFocusBody(projectCode, bridgehead, true), true);
     }
 
-    private void postRequest(String bridgehead, String projectCode, FocusQuery focusQuery, boolean toBeExecuted) {
+    private void postRequest(String bridgehead, String projectCode, FocusQuery focusQuery, boolean toBeExecuted) throws ExporterServiceException {
         postRequest(bridgehead, projectCode, focusQuery, toBeExecuted, 0);
+        resetProjectBridgeheadDataShield(projectCode, bridgehead);
     }
 
     private void postRequest(String bridgehead, String projectCode, FocusQuery focusQuery, boolean toBeExecuted, int numberOfRetries) {
@@ -267,6 +278,29 @@ public class ExporterService {
             case EXPORT -> exportTemplates;
             case DATASHIELD -> datashieldTemplates;
         };
+    }
+
+    private void resetProjectBridgeheadDataShield(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
+        Optional<Project> project = this.projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ExporterServiceException("Project " + projectCode + " not found");
+        }
+        if (project.get().getType() == ProjectType.DATASHIELD) {
+            Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+            if (projectBridgehead.isEmpty()) {
+                throw new ExporterServiceException("Bridgehead " + bridgehead + " for project " + projectCode + " not found");
+            }
+            Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataSHIELD = this.projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead.get());
+            ProjectBridgeheadDataShield result;
+            if (projectBridgeheadInDataSHIELD.isEmpty()) {
+                result = new ProjectBridgeheadDataShield();
+                result.setProjectBridgehead(projectBridgehead.get());
+            } else {
+                result = projectBridgeheadInDataSHIELD.get();
+            }
+            result.setRemoved(false);
+            this.projectBridgeheadDataShieldRepository.save(result);
+        }
     }
 
 }
