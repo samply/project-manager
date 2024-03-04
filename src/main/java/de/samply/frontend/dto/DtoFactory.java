@@ -16,6 +16,7 @@ public class DtoFactory {
         result.setArchivedAt(project.getArchivedAt());
         result.setModifiedAt(project.getModifiedAt());
         result.setState(project.getState());
+        result.setCustomConfig(project.isCustomConfig());
         result.setType(project.getType());
         result.setQuery(project.getQuery().getQuery());
         result.setHumanReadable(project.getQuery().getHumanReadable());
@@ -27,6 +28,34 @@ public class DtoFactory {
         result.setExplorerUrl(project.getQuery().getExplorerUrl());
         result.setQueryContext(project.getQuery().getContext());
         return result;
+    }
+
+    public static de.samply.db.model.Project convert(@NotNull Project projectConfiguration, @NotNull de.samply.db.model.Project project) {
+        if (projectConfiguration.getExpiresAt() != null) {
+            project.setExpiresAt(projectConfiguration.getExpiresAt());
+        }
+        if (projectConfiguration.getType() != null) {
+            project.setType(projectConfiguration.getType());
+        }
+        if (projectConfiguration.getQuery() != null) {
+            project.getQuery().setQuery(projectConfiguration.getQuery());
+        }
+        if (projectConfiguration.getHumanReadable() != null) {
+            project.getQuery().setHumanReadable(projectConfiguration.getHumanReadable());
+        }
+        if (projectConfiguration.getQueryFormat() != null) {
+            project.getQuery().setQueryFormat(projectConfiguration.getQueryFormat());
+        }
+        if (projectConfiguration.getOutputFormat() != null) {
+            project.getQuery().setOutputFormat(projectConfiguration.getOutputFormat());
+        }
+        if (projectConfiguration.getTemplateId() != null) {
+            project.getQuery().setTemplateId(projectConfiguration.getTemplateId());
+        }
+        if (projectConfiguration.getQueryContext() != null) {
+            project.getQuery().setContext(projectConfiguration.getQueryContext());
+        }
+        return project;
     }
 
     public static Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {

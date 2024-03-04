@@ -1,10 +1,12 @@
 package de.samply.project;
 
+import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
+import de.samply.db.repository.QueryRepository;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
@@ -27,6 +29,7 @@ public class ProjectService {
 
     private final NotificationService notificationService;
     private final ProjectRepository projectRepository;
+    private final QueryRepository queryRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
@@ -34,12 +37,14 @@ public class ProjectService {
 
     public ProjectService(NotificationService notificationService,
                           ProjectRepository projectRepository,
+                          QueryRepository queryRepository,
                           ProjectBridgeheadRepository projectBridgeheadRepository,
                           SessionUser sessionUser,
                           ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                           ProjectConfigurations projectConfigurations) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
+        this.queryRepository = queryRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
@@ -311,6 +316,26 @@ public class ProjectService {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
         return this.projectConfigurations.fetchCurrentProjectConfiguration(DtoFactory.convert(projectOptional.get()));
+    }
+
+    public void setProjectConfiguration(@NotNull String projectCode, @NotNull String projectConfigurationName) throws ProjectServiceException {
+        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
+        if (projectOptional.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        if (!projectConfigurationName.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
+            de.samply.frontend.dto.Project projectConfiguration = this.projectConfigurations.getConfigurationNameProjectMap().get(projectConfigurationName);
+            if (projectConfiguration == null) {
+                throw new ProjectServiceException("Project configuration " + projectConfigurationName + " not found");
+            }
+            Project project = DtoFactory.convert(projectConfiguration, projectOptional.get());
+            project.setCustomConfig(false);
+            this.projectRepository.save(project);
+            this.queryRepository.save(project.getQuery());
+        } else if (!projectOptional.get().isCustomConfig()) {
+            projectOptional.get().setCustomConfig(true);
+            this.projectRepository.save(projectOptional.get());
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 package de.samply.frontend.dto.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.samply.app.ProjectManagerConst;
 import de.samply.frontend.dto.Project;
 import lombok.Data;
 
@@ -17,6 +18,7 @@ public class ProjectConfigurations {
     @JsonIgnore
     public void initConfigurationNameProjectMap() {
         config.forEach((configurationName, projectConfiguration) -> configurationNameProjectMap.put(configurationName, convert(projectConfiguration)));
+        configurationNameProjectMap.put(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project());
     }
 
     @JsonIgnore
@@ -30,6 +32,5 @@ public class ProjectConfigurations {
     public Map<String, Project> fetchCurrentProjectConfiguration(Project project) {
         return ProjectConfigurationMatcher.fetchMatchProjectConfiguration(project, configurationNameProjectMap);
     }
-
 
 }

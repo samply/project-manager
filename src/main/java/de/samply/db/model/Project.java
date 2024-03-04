@@ -55,4 +55,7 @@ public class Project {
     @Enumerated(EnumType.STRING)
     private ProjectType type;
 
+    @Column(name = "is_custom_config", nullable = false)
+    private boolean isCustomConfig = true;
+
 }

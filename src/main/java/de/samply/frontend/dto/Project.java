@@ -33,6 +33,7 @@ public class Project {
     private String description;
     private String explorerUrl;
     private String queryContext;
+    private boolean isCustomConfig;
 
     @SneakyThrows
     public void setFieldsFromMap(Map<String, String> fieldValues) {

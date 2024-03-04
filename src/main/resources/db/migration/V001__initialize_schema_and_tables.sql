@@ -31,7 +31,8 @@ CREATE TABLE samply.project
     archived_at       TIMESTAMP,
     modified_at       TIMESTAMP NOT NULL,
     query_id          BIGINT,
-    type              TEXT
+    type              TEXT,
+    is_custom_config  BOOLEAN
 );
 
 CREATE TABLE samply.project_bridgehead

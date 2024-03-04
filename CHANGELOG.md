@@ -115,3 +115,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Bridgehead DataSHIELD info
 - Set project bridgehead datashield removed to false while sending query of DATASHIELD project to exporter
 - Fetch current project configuration
+- Custom project configuration

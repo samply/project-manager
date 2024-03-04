@@ -348,7 +348,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> fetchProjectConfigurations(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> this.frontendProjectConfigurations.getConfigurationNameProjectMap());
+        return convertToResponseEntity(() -> this.frontendProjectConfigurations.getConfigurationNameProjectMap().keySet());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -360,6 +360,18 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> this.projectService.fetchCurrentProjectConfiguration(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.SET_PROJECT_CONFIGURATION_ACTION)
+    @PostMapping(value = ProjectManagerConst.SET_PROJECT_CONFIGURATION)
+    public ResponseEntity<String> setProjectConfiguration(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.PROJECT_CONFIGURATION) String projectConfigurationName
+    ) {
+        return convertToResponseEntity(() -> this.projectService.setProjectConfiguration(projectCode, projectConfigurationName));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})

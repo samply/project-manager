@@ -80,6 +80,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_CONFIGURATIONS_ACTION = "FETCH_PROJECT_CONFIGURATIONS";
     public final static String EXISTS_AUTHENTICATION_SCRIPT_ACTION = "EXISTS_AUTHENTICATION_SCRIPT";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
+    public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
 
 
 
@@ -99,6 +100,7 @@ public class ProjectManagerConst {
     public final static String FETCH_OUTPUT_FORMATS = "/output-formats";
     public final static String FETCH_PROJECT_CONFIGURATIONS = "/project-configurations";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION = "/project-configuration";
+    public final static String SET_PROJECT_CONFIGURATION = "/project-configuration";
     public final static String DESIGN_PROJECT = "/design-project";
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
@@ -152,6 +154,7 @@ public class ProjectManagerConst {
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
+    public final static String PROJECT_CONFIGURATION = "project-configuration";
     public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String BRIDGEHEADS = "bridgeheads";
@@ -334,5 +337,6 @@ public class ProjectManagerConst {
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
     public final static String OIDC_EMAIL_CLAIM = "email";
+    public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
 
 }
