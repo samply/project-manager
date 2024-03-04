@@ -6,6 +6,7 @@ import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
@@ -29,17 +30,20 @@ public class ProjectService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    private final ProjectConfigurations projectConfigurations;
 
     public ProjectService(NotificationService notificationService,
                           ProjectRepository projectRepository,
                           ProjectBridgeheadRepository projectBridgeheadRepository,
                           SessionUser sessionUser,
-                          ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
+                          ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
+                          ProjectConfigurations projectConfigurations) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.projectConfigurations = projectConfigurations;
     }
 
     public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
@@ -294,10 +298,19 @@ public class ProjectService {
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
-        return switch (projectOptional.get().getType()){
+        return switch (projectOptional.get().getType()) {
             case DATASHIELD -> new OutputFormat[]{OutputFormat.OPAL};
-            default -> Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toArray(OutputFormat[]::new);
+            default ->
+                    Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toArray(OutputFormat[]::new);
         };
+    }
+
+    public Map<String, de.samply.frontend.dto.Project> fetchCurrentProjectConfiguration(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
+        if (projectOptional.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        return this.projectConfigurations.fetchCurrentProjectConfiguration(DtoFactory.convert(projectOptional.get()));
     }
 
 }

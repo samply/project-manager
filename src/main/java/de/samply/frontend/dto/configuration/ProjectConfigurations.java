@@ -26,5 +26,10 @@ public class ProjectConfigurations {
         return result;
     }
 
+    @JsonIgnore
+    public Map<String, Project> fetchCurrentProjectConfiguration(Project project) {
+        return ProjectConfigurationMatcher.fetchMatchProjectConfiguration(project, configurationNameProjectMap);
+    }
+
 
 }

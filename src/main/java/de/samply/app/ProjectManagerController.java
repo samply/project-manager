@@ -354,6 +354,17 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_CURRENT_PROJECT_CONFIGURATION)
+    public ResponseEntity<String> fetchCurrentProjectConfiguration(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> this.projectService.fetchCurrentProjectConfiguration(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_TYPES_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_TYPES)
     public ResponseEntity<String> fetchProjectTypes(

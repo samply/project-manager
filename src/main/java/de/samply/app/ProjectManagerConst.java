@@ -79,6 +79,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_USERS_ACTION = "FETCH_PROJECT_USERS";
     public final static String FETCH_PROJECT_CONFIGURATIONS_ACTION = "FETCH_PROJECT_CONFIGURATIONS";
     public final static String EXISTS_AUTHENTICATION_SCRIPT_ACTION = "EXISTS_AUTHENTICATION_SCRIPT";
+    public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
 
 
 
@@ -97,6 +98,7 @@ public class ProjectManagerConst {
     public final static String FETCH_QUERY_FORMATS = "/query-formats";
     public final static String FETCH_OUTPUT_FORMATS = "/output-formats";
     public final static String FETCH_PROJECT_CONFIGURATIONS = "/project-configurations";
+    public final static String FETCH_CURRENT_PROJECT_CONFIGURATION = "/project-configuration";
     public final static String DESIGN_PROJECT = "/design-project";
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
