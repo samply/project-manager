@@ -81,6 +81,7 @@ public class ProjectManagerConst {
     public final static String EXISTS_AUTHENTICATION_SCRIPT_ACTION = "EXISTS_AUTHENTICATION_SCRIPT";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
     public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
+    public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_PROJECT_BRIDGEHEADS";
 
 
 
@@ -114,6 +115,7 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT_RESULTS = "/reject-project-results";
     public final static String REQUEST_CHANGES_IN_PROJECT = "/request-changes-in-project";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
+    public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS = "/visible-project-bridgeheads";
     public final static String FETCH_PROJECT = "/project";
     public final static String FETCH_PROJECT_STATES = "/project-states";
     public final static String ARCHIVE_PROJECT = "/archive-project";

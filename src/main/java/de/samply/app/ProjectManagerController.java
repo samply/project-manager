@@ -162,12 +162,21 @@ public class ProjectManagerController {
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> fetchVisibleProjectsBridgeheads(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.fetchUserVisibleProjectBridgeheads(projectCode));
+    }
+
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchProjectsBridgeheads(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> projectBridgeheadService.fetchUserVisibleProjectBridgeheads(projectCode));
+        return convertToResponseEntity(() -> projectBridgeheadService.fetchProjectBridgeheads(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})

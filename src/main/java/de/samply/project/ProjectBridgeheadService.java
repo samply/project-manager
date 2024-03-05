@@ -78,6 +78,14 @@ public class ProjectBridgeheadService {
         return new ArrayList<>(tempProjectBridgeheads).stream().map(DtoFactory::convert).toList();
     }
 
+    public List<de.samply.frontend.dto.ProjectBridgehead> fetchProjectBridgeheads(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Project " + projectCode + " not found");
+        }
+        return projectBridgeheadRepository.findByProject(project.get()).stream().map(DtoFactory::convert).toList();
+    }
+
     private boolean isProjectManagerAdmin() {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }

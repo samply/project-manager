@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-03-04]
+## [0.0.1 - 2024-03-05]
 ### Added
 - First version of the project
 - Spring Application
@@ -116,3 +116,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Set project bridgehead datashield removed to false while sending query of DATASHIELD project to exporter
 - Fetch current project configuration
 - Custom project configuration
+- Fetch visible bridgeheads and fetch project bridgeheads
