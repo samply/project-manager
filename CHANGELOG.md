@@ -117,3 +117,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch current project configuration
 - Custom project configuration
 - Fetch visible bridgeheads and fetch project bridgeheads
+- Allow other documents of certain bridgeheads

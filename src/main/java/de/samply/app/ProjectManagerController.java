@@ -616,7 +616,7 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
-                projectCode, Optional.empty(), document, DocumentType.OTHERS, Optional.ofNullable(label)));
+                projectCode, Optional.of(bridgehead), document, DocumentType.OTHERS, Optional.ofNullable(label)));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
