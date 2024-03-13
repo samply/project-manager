@@ -104,4 +104,13 @@ public class DtoFactory {
         );
     }
 
+    public static User convertFilteringProjectRoleAndState(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
+        return new User(
+                projectBridgeheadUser.getEmail(),
+                projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
+                null,
+                null
+        );
+    }
+
 }

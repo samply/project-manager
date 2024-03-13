@@ -139,10 +139,10 @@ public class UserService {
     }
 
     public Set<User> fetchUsersForAutocomplete(@NotNull String projectCode, @NotNull String partialEmail, @NotNull String bridgehead) {
-        Set<User> allUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(DtoFactory::convert).collect(Collectors.toSet());
-        Set<User> alreadySetUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_BridgeheadAndUserAlreadySetForThisProjectInThisRole(partialEmail, bridgehead, projectCode).stream().map(DtoFactory::convert).collect(Collectors.toSet());
+        Set<User> allUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(DtoFactory::convertFilteringProjectRoleAndState).collect(Collectors.toSet());
+        Set<User> alreadySetUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_BridgeheadAndUserAlreadySetForThisProjectInThisRole(partialEmail, bridgehead, projectCode).stream().map(DtoFactory::convertFilteringProjectRoleAndState).collect(Collectors.toSet());
         allUsers.removeAll(alreadySetUsers);
-        return allUsers.stream().map(user -> new User(user.email(), user.bridgehead(), null, null)).collect(Collectors.toSet()); // Remove duplicates
+        return allUsers;
     }
 
     public Set<User> fetchProjectUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
