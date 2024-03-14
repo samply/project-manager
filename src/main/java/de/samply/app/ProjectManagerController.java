@@ -338,6 +338,19 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> QueryFormat.values());
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ROLES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_ROLES)
+    public ResponseEntity<String> fetchProjectRoles(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+    ) {
+        //TODO
+        return convertToResponseEntity(() -> userService.fetchProjectRoles(projectCode, Optional.ofNullable(bridgehead)));
+    }
+
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)

@@ -8,12 +8,16 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
+import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
+import de.samply.user.roles.UserProjectRoles;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +32,7 @@ public class UserService {
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
+    private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
 
     public UserService(NotificationService notificationService,
                        BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
@@ -35,7 +40,8 @@ public class UserService {
                        ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                        ProjectRepository projectRepository,
                        ProjectBridgeheadRepository projectBridgeheadRepository,
-                       SessionUser sessionUser) {
+                       SessionUser sessionUser,
+                       OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper) {
         this.notificationService = notificationService;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
@@ -43,6 +49,7 @@ public class UserService {
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
+        this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
     }
 
     public BridgeheadAdminUser createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
@@ -170,5 +177,16 @@ public class UserService {
         return projectBridgehead.get();
     }
 
+    public Set<ProjectRole> fetchProjectRoles(@NotNull String projectCode, Optional<String> bridgehead) throws UserServiceException {
+        Optional<UserProjectRoles> userProjectRoles = organisationRoleToProjectRoleMapper.map(projectCode);
+        if (userProjectRoles.isEmpty()){
+            return new HashSet<>();
+        }
+        Set<ProjectRole> result = userProjectRoles.get().getRolesNotDependentOnBridgeheads();
+        if (bridgehead.isPresent()){
+            result.addAll(userProjectRoles.get().getBridgeheadRoles(bridgehead.get()));
+        }
+        return result;
+    }
 
 }

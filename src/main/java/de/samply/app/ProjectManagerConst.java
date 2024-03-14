@@ -82,7 +82,7 @@ public class ProjectManagerConst {
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
     public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
     public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_PROJECT_BRIDGEHEADS";
-
+    public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
 
 
     // REST Services
@@ -98,6 +98,7 @@ public class ProjectManagerConst {
     public final static String EDIT_PROJECT = "/edit-project";
     public final static String FETCH_EXPORTER_TEMPLATES = "/exporter-templates";
     public final static String FETCH_QUERY_FORMATS = "/query-formats";
+    public final static String FETCH_PROJECT_ROLES = "/project-roles";
     public final static String FETCH_OUTPUT_FORMATS = "/output-formats";
     public final static String FETCH_PROJECT_CONFIGURATIONS = "/project-configurations";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION = "/project-configuration";

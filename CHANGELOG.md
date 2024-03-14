@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-03-05]
+## [0.0.1 - 2024-03-14]
 ### Added
 - First version of the project
 - Spring Application
@@ -118,3 +118,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Custom project configuration
 - Fetch visible bridgeheads and fetch project bridgeheads
 - Allow other documents of certain bridgeheads
+- Fetch Project Roles
