@@ -303,6 +303,9 @@ public class ProjectService {
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
+        if (projectOptional.get().getType() == null){
+            return OutputFormat.values();
+        }
         return switch (projectOptional.get().getType()) {
             case DATASHIELD -> new OutputFormat[]{OutputFormat.OPAL};
             default ->
