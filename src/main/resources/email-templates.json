@@ -1,50 +1,84 @@
 {
   "templates": {
+    "NEW_PROJECT": {
+      "subject": "New project",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-new-project.html"
+      }
+    },
+    "NEW_PROJECT_ACCEPTED": {
+      "subject": "Project accepted",
+      "files": {
+        "CREATOR": "creator-new-project-accepted.html",
+        "BRIDGEHEAD_ADMIN": "bridgehead-admin-new-project-accepted.html"
+      }
+    },
+    "NEW_VOTUM": {
+      "subject": "New votum for project",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-new-votum.html"
+      }
+    },
     "INVITATION": {
       "subject": "Access to DataSHIELD",
       "files": {
         "DEVELOPER": "developer-invitation.html",
         "PILOT": "pilot-invitation.html",
-        "FINAL": "final-execution-user-invitation.html",
-        "DEFAULT": "default-invitation.html"
-      }
-    },
-    "NEW_PROJECT": {
-      "subject": "New project",
-      "files": {
-        "BRIDGEHEAD_ADMIN": "bridgehead-admin-new-project.html",
-        "PROJECT_MANAGER_ADMIN": "project-manager-admin-new-project.html",
-        "DEFAULT": "default-new-project.html"
-      }
-    },
-    "FINISHED_PROJECT": {
-      "subject": "Project finished",
-      "files": {
-        "DEFAULT": "default-project-finished.html"
+        "FINAL": "final-execution-user-invitation.html"
       }
     },
     "PROJECT_BRIDGEHEAD_ACCEPTED": {
       "subject": "Project accepted in bridgehead",
       "files": {
-        "DEFAULT": "default-project-bridgehead-accepted.html"
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-project-bridgehead-accepted.html"
       }
     },
     "PROJECT_BRIDGEHEAD_REJECTED": {
       "subject": "Project rejected in bridgehead",
       "files": {
-        "DEFAULT": "default-project-bridgehead-rejected.html"
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-project-bridgehead-rejected.html"
+      }
+    },
+    "REQUEST_TECHNICAL_APPROVAL": {
+      "subject": "Technical approval requested",
+      "files": {
+        "BRIDGEHEAD_ADMIN": "bridgehead-admin-request-technical-approval.html"
       }
     },
     "SCRIPT_ACCEPTED": {
       "subject": "Script accepted",
       "files": {
-        "DEFAULT": "default-script-accepted.html"
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-script-accepted.html"
       }
     },
     "SCRIPT_REJECTED": {
       "subject": "Script rejected",
       "files": {
-        "DEFAULT": "default-script-rejected.html"
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-script-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_SCRIPT": {
+      "subject": "Changes in script requested",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-script-changes-requested.html"
+      }
+    },
+    "RESULTS_ACCEPTED": {
+      "subject": "Results accepted",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-results-accepted.html"
+      }
+    },
+    "RESULTS_REJECTED": {
+      "subject": "Results rejected",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-results-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_PROJECT": {
+      "subject": "Changes in project requested",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-results-changes-requested.html"
       }
     },
     "NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT": {
@@ -53,28 +87,16 @@
         "DEFAULT": "default-new-authentication-script.html"
       }
     },
-    "REQUEST_CHANGES_IN_SCRIPT": {
-      "subject": "Changes in script requested",
+    "FINISHED_PROJECT": {
+      "subject": "Project finished",
       "files": {
-        "DEFAULT": "default-script-changes-requested.html"
+        "DEFAULT": "default-project-finished.html"
       }
     },
-    "RESULTS_ACCEPTED": {
-      "subject": "Results accepted",
+    "NEW_PUBLICATION": {
+      "subject": "New publication",
       "files": {
-        "DEFAULT": "default-results-accepted.html"
-      }
-    },
-    "RESULTS_REJECTED": {
-      "subject": "Results rejected",
-      "files": {
-        "DEFAULT": "default-results-rejected.html"
-      }
-    },
-    "REQUEST_CHANGES_IN_PROJECT": {
-      "subject": "Changes in project requested",
-      "files": {
-        "DEFAULT": "default-results-changes-requested.html"
+        "DEFAULT": "default-new-publication.html"
       }
     }
   }

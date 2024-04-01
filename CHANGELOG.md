@@ -120,3 +120,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Allow other documents of certain bridgeheads
 - Fetch Project Roles
 - Email Types: NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
+- Email config for types NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION

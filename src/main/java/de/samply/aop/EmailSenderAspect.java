@@ -179,13 +179,40 @@ public class EmailSenderAspect {
         Arrays.stream(emailRecipientTypesSupplier.get()).forEach(emailRecipientType ->
                 result.addAll(switch (emailRecipientType) {
                     case SESSION_USER -> fetchEmailRecipientsForSessionUser(projectCode, bridgehead);
+                    case CREATOR -> fetchEmailRecipientsForCreator(projectCode);
                     case EMAIL_ANNOTATION -> fetchEmailRecipientsForEmailAnnotation(projectCode, bridgehead, email);
+                    case ALL_BRIDGEHEAD_ADMINS -> fetchEmailRecipientsForAllBridgeheadAdminsOfTheProject(projectCode);
                     case BRIDGEHEAD_ADMIN -> fetchEmailRecipientsForBridgeheadAdmin(projectCode, bridgehead);
                     case BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT ->
                             fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(projectCode);
                     case PROJECT_MANAGER_ADMIN -> fetchEmailRecipientsForProjectManagerAdmin();
                     case PROJECT_ALL -> fetchEmailRecipientsForAllProjectUsers(projectCode, bridgehead);
                 }));
+        return result;
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForCreator(Optional<String> projectCode) {
+        Set<EmailRecipient> result = new HashSet<>();
+        if (projectCode.isPresent()) {
+            Optional<Project> project = this.projectRepository.findByCode(projectCode.get());
+            if (project.isPresent()) {
+                result.add(new EmailRecipient(project.get().getCreatorEmail(), Optional.empty(), ProjectRole.CREATOR));
+            }
+        }
+        return result;
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForAllBridgeheadAdminsOfTheProject(Optional<String> projectCode) {
+        Set<EmailRecipient> result = new HashSet<>();
+        if (projectCode.isPresent()) {
+            Optional<Project> project = this.projectRepository.findByCode(projectCode.get());
+            if (project.isPresent()) {
+                this.projectBridgeheadRepository.findByProject(project.get()).forEach(projectBridgehead ->
+                        this.bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdminUser ->
+                                result.add(new EmailRecipient(bridgeheadAdminUser.getEmail(),
+                                        Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN))));
+            }
+        }
         return result;
     }
 
