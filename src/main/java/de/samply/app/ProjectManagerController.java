@@ -1010,7 +1010,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.notificationService.setNotificationAsRead(notificationId));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
