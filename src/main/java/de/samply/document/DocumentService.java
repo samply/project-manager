@@ -242,4 +242,9 @@ public class DocumentService {
         return Optional.empty();
     }
 
+    public Optional<String> fetchLabelOfLastDocumentOfThisType(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
+        Optional<ProjectDocument> projectDocument = fetchLastDocumentOfThisType(projectCode, bridgeheadOptional, type);
+        return Optional.ofNullable((projectDocument.isPresent()) ? projectDocument.get().getLabel() : null);
+    }
+
 }

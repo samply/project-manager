@@ -12,6 +12,7 @@ import de.samply.email.EmailService;
 import de.samply.email.EmailServiceException;
 import de.samply.email.EmailTemplateType;
 import de.samply.project.ProjectType;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.token.dto.DataShieldProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
@@ -65,9 +66,9 @@ public class DataShieldTokenManagerJob {
 
     private void manageActiveUsers() {
         // Get active users of active DataSHIELD projects
-        List<ProjectBridgeheadUser> activeUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER);
-        activeUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT));
-        activeUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL));
+        List<ProjectBridgeheadUser> activeUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectBridgeheadState.ACCEPTED, ProjectRole.DEVELOPER);
+        activeUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectBridgeheadState.ACCEPTED, ProjectRole.PILOT));
+        activeUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectBridgeheadState.ACCEPTED, ProjectRole.FINAL));
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
         activeUsers.forEach(user -> tokenManagerService.fetchProjectBridgeheads(user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail()).stream().filter(this::isBridgeheadConfiguredForTokenManager).forEach(bridgehead -> {
             // Check user status
@@ -95,7 +96,10 @@ public class DataShieldTokenManagerJob {
 
     private void manageInactiveUsers() {
         // Get inactive users of active DataSHIELD projects
-        List<ProjectBridgeheadUser> inactiveUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER);
+        List<ProjectBridgeheadUser> inactiveUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectBridgeheadState(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectBridgeheadState.ACCEPTED);
+        inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectBridgeheadState(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectBridgeheadState.ACCEPTED));
+        inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectBridgeheadState(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectBridgeheadState.ACCEPTED));
+        inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER));
         inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT));
         inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL));
         inactiveUsers.stream().filter(user -> user.getProjectRole() != ProjectRole.CREATOR).forEach(user -> {

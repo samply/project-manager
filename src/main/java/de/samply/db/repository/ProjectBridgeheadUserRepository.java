@@ -4,6 +4,7 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.project.ProjectType;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.user.roles.ProjectRole;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,11 +31,14 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
     @Query("SELECT DISTINCT pbu.projectBridgehead.project FROM ProjectBridgeheadUser pbu WHERE pbu.email = :email")
     List<Project> findProjectsByEmail(String email);
 
-    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state = :projectState AND pbu.projectRole = :projectRole")
-    List<ProjectBridgeheadUser> getByProjectTypeAndProjectStateAndProjectRole(ProjectType projectType, ProjectState projectState, ProjectRole projectRole);
+    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state = :projectState AND pbu.projectBridgehead.state = :projectBridgeheadState AND pbu.projectRole = :projectRole")
+    List<ProjectBridgeheadUser> getByProjectTypeAndProjectStateAndProjectRole(ProjectType projectType, ProjectState projectState, ProjectBridgeheadState projectBridgeheadState, ProjectRole projectRole);
 
     @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state = :projectState AND pbu.projectRole != :projectRole")
     List<ProjectBridgeheadUser> getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType projectType, ProjectState projectState, ProjectRole projectRole);
+
+    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND pbu.projectBridgehead.project.state = :projectState AND pbu.projectBridgehead.state != :projectBridgeheadState")
+    List<ProjectBridgeheadUser> getByProjectTypeAndProjectStateAndNotProjectBridgeheadState(ProjectType projectType, ProjectState projectState, ProjectBridgeheadState projectBridgeheadState);
 
     @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.email LIKE %:email% AND pbu.projectBridgehead.bridgehead = :bridgehead AND (" +
             "(pbu.projectBridgehead.project.code = :projectCode AND pbu.projectBridgehead.project.state = 'DEVELOP' AND pbu.projectRole = 'DEVELOPER') OR " +

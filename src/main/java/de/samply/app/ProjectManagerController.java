@@ -746,6 +746,20 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_SCRIPT_LABEL_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_SCRIPT_LABEL)
+    public ResponseEntity<String> fetchScriptLabel(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying developer user or bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+    ){
+        return convertToResponseEntity(() -> this.documentService.fetchLabelOfLastDocumentOfThisType(projectCode, Optional.ofNullable(bridgehead), DocumentType.SCRIPT));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.EXISTS_SCRIPT)
     public ResponseEntity<Boolean> existsScript(
@@ -767,6 +781,19 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, bridgehead, DocumentType.VOTUM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_LABEL_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_VOTUM_LABEL)
+    public ResponseEntity<String> fetchVotumLabel(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> this.documentService.fetchLabelOfLastDocumentOfThisType(projectCode, Optional.ofNullable(bridgehead), DocumentType.VOTUM));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -794,6 +821,19 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, DocumentType.APPLICATION_FORM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_APPLICATION_FORM_LABEL_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_APPLICATION_FORM_LABEL)
+    public ResponseEntity<String> fetchApplicationFormLabel(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // bridgehead required for identifying bridgehead admin in role constraints
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> this.documentService.fetchLabelOfLastDocumentOfThisType(projectCode, Optional.ofNullable(bridgehead), DocumentType.APPLICATION_FORM));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
