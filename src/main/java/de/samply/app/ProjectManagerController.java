@@ -1084,6 +1084,18 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode, bridgehead));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXIST_INVITED_USERS_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXIST_INVITED_USERS)
+    public ResponseEntity<String> existInvitedUsers(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> this.userService.existInvatedUsers(projectCode, bridgehead));
+    }
+
 
     private ResponseEntity convertToResponseEntity(RunnableWithException runnable) {
         try {

@@ -127,7 +127,7 @@ public class DataShieldTokenManagerService {
         }
         ProjectRole userProjectRole = projectBridgeheadUser.get().getProjectRole();
         if (userProjectRole == ProjectRole.DEVELOPER || userProjectRole == ProjectRole.PILOT) {
-            return List.of(bridgehead);
+            return (filter.apply(projectBridgeheadUser.get().getProjectBridgehead())) ? List.of(bridgehead) : List.of();
         } else if (userProjectRole == ProjectRole.FINAL) {
             return projectBridgeheadRepository.findByProject(project).stream().filter(filter::apply).map(projectBridgehead -> projectBridgehead.getBridgehead()).toList();
         } else {

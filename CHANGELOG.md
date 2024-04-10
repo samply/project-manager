@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-04-05]
+## [0.0.1 - 2024-04-10]
 ### Added
 - First version of the project
 - Spring Application
@@ -122,3 +122,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email Types: NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
 - Email config for types NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
 - Fetch label of application form, label and script
+- Service exist invited users

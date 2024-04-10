@@ -165,6 +165,10 @@ public class UserService {
         }).stream().map(DtoFactory::convert).collect(Collectors.toSet());
     }
 
+    public boolean existInvatedUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
+        return !fetchProjectUsers(projectCode, bridgehead).isEmpty();
+    }
+
     private ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws UserServiceException {
         Optional<Project> project = projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {

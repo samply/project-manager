@@ -80,6 +80,7 @@ public class ProjectManagerConst {
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE";
     public final static String FETCH_PROJECT_USERS_ACTION = "FETCH_PROJECT_USERS";
+    public final static String EXIST_INVITED_USERS_ACTION = "EXIST_INVITED_USERS";
     public final static String FETCH_PROJECT_CONFIGURATIONS_ACTION = "FETCH_PROJECT_CONFIGURATIONS";
     public final static String EXISTS_AUTHENTICATION_SCRIPT_ACTION = "EXISTS_AUTHENTICATION_SCRIPT";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
@@ -160,6 +161,7 @@ public class ProjectManagerConst {
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS = "/bridgeheads";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE = "/autocomplete-users";
     public final static String FETCH_PROJECT_USERS = "/project-users";
+    public final static String EXIST_INVITED_USERS = "/exist-invited-users";
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
