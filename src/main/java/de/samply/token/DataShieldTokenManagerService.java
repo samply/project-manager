@@ -3,6 +3,7 @@ package de.samply.token;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
@@ -39,6 +40,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -114,6 +116,10 @@ public class DataShieldTokenManagerService {
     }
 
     public List<String> fetchProjectBridgeheads(String projectCode, String bridgehead, String email) throws DataShieldTokenManagerServiceException {
+        return fetchProjectBridgeheads(projectCode, bridgehead, email, projectBridgehead -> true);
+    }
+
+    public List<String> fetchProjectBridgeheads(String projectCode, String bridgehead, String email, Function<ProjectBridgehead, Boolean> filter) throws DataShieldTokenManagerServiceException {
         Project project = fetchProject(projectCode);
         Optional<ProjectBridgeheadUser> projectBridgeheadUser = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(email, project, bridgehead);
         if (projectBridgeheadUser.isEmpty()) {
@@ -123,7 +129,7 @@ public class DataShieldTokenManagerService {
         if (userProjectRole == ProjectRole.DEVELOPER || userProjectRole == ProjectRole.PILOT) {
             return List.of(bridgehead);
         } else if (userProjectRole == ProjectRole.FINAL) {
-            return projectBridgeheadRepository.findByProject(project).stream().map(projectBridgehead -> projectBridgehead.getBridgehead()).toList();
+            return projectBridgeheadRepository.findByProject(project).stream().filter(filter::apply).map(projectBridgehead -> projectBridgehead.getBridgehead()).toList();
         } else {
             throw new DataShieldTokenManagerServiceException("Role " + userProjectRole + " of user " + email + " not supported");
         }
