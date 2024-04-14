@@ -23,6 +23,8 @@ public interface ProjectBridgeheadRepository extends JpaRepository<ProjectBridge
 
     Set<ProjectBridgehead> findByProject(Project project);
 
+    Set<ProjectBridgehead> findByProjectCodeAndState(String projectCode, ProjectBridgeheadState state);
+
     Set<ProjectBridgehead> findByProjectAndState(Project project, ProjectBridgeheadState state);
 
     Page<ProjectBridgehead> findAll(Pageable pageable);

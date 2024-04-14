@@ -20,8 +20,7 @@ import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.epoll.EpollChannelOption;
+import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -30,14 +29,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.netty.http.client.HttpClient;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -89,7 +85,8 @@ public class ExporterService {
             SessionUser sessionUser,
             ProjectBridgeheadRepository projectBridgeheadRepository,
             ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            WebClientFactory webClientFactory) {
         this.focusService = focusService;
         this.webClientMaxNumberOfRetries = webClientMaxNumberOfRetries;
         this.webClientTimeInSecondsAfterRetryWithFailure = webClientTimeInSecondsAfterRetryWithFailure;
@@ -107,23 +104,8 @@ public class ExporterService {
         this.exportTemplates = exportTemplates;
         this.datashieldTemplates = datashieldTemplates;
         this.focusProjectManagerId = focusProjectManagerId;
-        this.webClient = createWebClient(focusUrl);
+        this.webClient = webClientFactory.createWebClient(focusUrl);
         this.focusApiKey = focusApiKey;
-    }
-
-    private WebClient createWebClient(String exporterUrl) {
-        return WebClient.builder()
-                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(webClientBufferSizeInBytes))
-                .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create()
-                                .responseTimeout(Duration.ofSeconds(webClientRequestTimeoutInSeconds))
-                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, webClientConnectionTimeoutInSeconds * 1000)
-                                .option(ChannelOption.SO_KEEPALIVE, true)
-                                .option(EpollChannelOption.TCP_KEEPIDLE, webClientTcpKeepIdleInSeconds)
-                                .option(EpollChannelOption.TCP_KEEPINTVL, webClientTcpKeepIntervalInSeconds)
-                                .option(EpollChannelOption.TCP_KEEPCNT, webClientTcpKeepConnetionNumberOfTries)
-                ))
-                .baseUrl(exporterUrl).build();
     }
 
     public void sendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {

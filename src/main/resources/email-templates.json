@@ -87,6 +87,12 @@
         "DEFAULT": "default-new-authentication-script.html"
       }
     },
+    "INVALID_AUTHENTICATION_SCRIPT": {
+      "subject": "Some tokens of Authentication Script no longer valid for DataSHIELD",
+      "files": {
+        "DEFAULT": "default-invalid-authentication-script.html"
+      }
+    },
     "FINISHED_PROJECT": {
       "subject": "Project finished",
       "files": {

@@ -14,6 +14,7 @@ import de.samply.email.EmailTemplateType;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.rstudio.group.RstudioGroupManager;
 import de.samply.token.dto.DataShieldProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
@@ -31,6 +32,7 @@ import java.util.Set;
 @Component
 public class DataShieldTokenManagerJob {
 
+    private final RstudioGroupManager rstudioGroupManager;
     private final DataShieldTokenManagerService tokenManagerService;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
@@ -39,13 +41,15 @@ public class DataShieldTokenManagerJob {
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final boolean isTokenManagerActive;
 
-    public DataShieldTokenManagerJob(DataShieldTokenManagerService tokenManagerService,
+    public DataShieldTokenManagerJob(RstudioGroupManager rstudioGroupManager,
+                                     DataShieldTokenManagerService tokenManagerService,
                                      ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                                      ProjectBridgeheadRepository projectBridgeheadRepository,
                                      ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
                                      EmailService emailService, BridgeheadConfiguration bridgeheadConfiguration,
                                      @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive
     ) {
+        this.rstudioGroupManager = rstudioGroupManager;
         this.tokenManagerService = tokenManagerService;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -84,7 +88,10 @@ public class DataShieldTokenManagerJob {
                         }
                     }
                 }));
-        usersToSendAnEmail.forEach(userProject -> sendEmail(userProject.getEmail(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, userProject.getProjectRole()));
+        usersToSendAnEmail.forEach(userProject -> {
+            sendEmail(userProject.getEmail(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
+            this.rstudioGroupManager.addUserToRstudioGroup(userProject.getEmail());
+        });
     }
 
     private Set<ProjectBridgeheadUser> fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState() {
@@ -104,29 +111,38 @@ public class DataShieldTokenManagerJob {
 
     private void manageInactiveUsers() {
         // Manage users that are not developers in develop, pilot in pilot or final in final
+        Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
         Set<ProjectBridgeheadUser> inactiveUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER);
         inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT));
         inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL));
         inactiveUsers.stream().filter(projectBridgeheadUser -> projectBridgeheadUser.getProjectRole() != ProjectRole.CREATOR).forEach(user -> this.tokenManagerService.fetchProjectBridgeheads(
                 user.getProjectBridgehead().getProject().getCode(),
                 user.getProjectBridgehead().getBridgehead(),
-                user.getEmail()).forEach(bridgehead -> manageInactiveUsers(user, bridgehead)));
+                user.getEmail()).forEach(bridgehead -> manageInactiveUsers(user, bridgehead, usersToSendAnEmail)));
         // Manage active users that are not accepted in any of the bridgeheads
         fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().forEach(user ->
                 this.tokenManagerService.fetchProjectBridgeheads(
                         user.getProjectBridgehead().getProject().getCode(),
                         user.getProjectBridgehead().getBridgehead(),
                         user.getEmail(),
-                        projectBridgehead -> projectBridgehead.getState() != ProjectBridgeheadState.ACCEPTED).forEach(bridgehead -> manageInactiveUsers(user, bridgehead)));
+                        projectBridgehead -> projectBridgehead.getState() != ProjectBridgeheadState.ACCEPTED).forEach(bridgehead -> manageInactiveUsers(user, bridgehead, usersToSendAnEmail)));
+        usersToSendAnEmail.forEach(userProject -> {
+            sendEmail(userProject.getEmail(), EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
+            if (userProject.getProjectRole() != ProjectRole.FINAL ||
+                    this.projectBridgeheadRepository.findByProjectCodeAndState(userProject.getProjectCode(), ProjectBridgeheadState.ACCEPTED).isEmpty()) {
+                this.rstudioGroupManager.removeUserFromRstudioGroup(userProject.getEmail());
+            }
+        });
     }
 
-    private void manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead) {
+    private void manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead, Set<ProjectEmail> usersToSendAnEmail) {
         if (isBridgeheadConfiguredForTokenManager(bridgehead)) {
             // Check user status
             DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
             // If user token created or expired: Remove token
             if (dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.NOT_FOUND) {
                 tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
+                usersToSendAnEmail.add(new ProjectEmail(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectRole()));
             }
         }
     }
