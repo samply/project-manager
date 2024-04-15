@@ -483,7 +483,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REJECT_PROJECT)
     public ResponseEntity<String> rejectProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> projectEventService.reject(projectCode));
     }
@@ -509,7 +511,9 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT)
     public ResponseEntity<String> rejectBridgeheadProject(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.rejectProject(projectCode, bridgehead));
     }
@@ -537,7 +541,9 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.REJECT_SCRIPT)
     public ResponseEntity<String> rejectScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
@@ -579,7 +585,9 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
     public ResponseEntity<String> rejectProjectResults(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }

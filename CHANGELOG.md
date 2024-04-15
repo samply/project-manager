@@ -129,3 +129,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project and project view url in email context
 - Create notification after sending an email
 - Send message while requesting changes in script or project
+- Send message while rejecting a project
