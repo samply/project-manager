@@ -182,6 +182,9 @@ public class EmailSenderAspect {
                     case CREATOR -> fetchEmailRecipientsForCreator(projectCode);
                     case EMAIL_ANNOTATION -> fetchEmailRecipientsForEmailAnnotation(projectCode, bridgehead, email);
                     case ALL_BRIDGEHEAD_ADMINS -> fetchEmailRecipientsForAllBridgeheadAdminsOfTheProject(projectCode);
+                    case ALL_DEVELOPERS -> fetchEmailRecipientsForAllDeveloperUsersOfTheProject(projectCode);
+                    case ALL_PILOTS -> fetchEmailRecipientsForAllPilotUsersOfTheProject(projectCode);
+                    case ALL_FINALS -> fetchEmailRecipientsForAllFinalUsersOfTheProject(projectCode);
                     case BRIDGEHEAD_ADMIN -> fetchEmailRecipientsForBridgeheadAdmin(projectCode, bridgehead);
                     case BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT ->
                             fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(projectCode);
@@ -201,6 +204,29 @@ public class EmailSenderAspect {
         }
         return result;
     }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForAllDeveloperUsersOfTheProject(Optional<String> projectCode) {
+        return fetchEmailRecipientsForAllDeveloperUsersOfTheProject(projectCode, ProjectRole.DEVELOPER);
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForAllPilotUsersOfTheProject(Optional<String> projectCode) {
+        return fetchEmailRecipientsForAllDeveloperUsersOfTheProject(projectCode, ProjectRole.PILOT);
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForAllFinalUsersOfTheProject(Optional<String> projectCode) {
+        return fetchEmailRecipientsForAllDeveloperUsersOfTheProject(projectCode, ProjectRole.FINAL);
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForAllDeveloperUsersOfTheProject(Optional<String> projectCode, ProjectRole projectRole) {
+        Set<EmailRecipient> result = new HashSet<>();
+        if (projectCode.isPresent()) {
+            projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectCode(projectRole, projectCode.get()).stream()
+                    .filter(projectBridgeheadUser -> !projectBridgeheadUser.getEmail().equals(sessionUser.getEmail())).forEach(projectBridgeheadUser ->
+                            result.add(new EmailRecipient(projectBridgeheadUser.getEmail(), Optional.of(projectBridgeheadUser.getProjectBridgehead().getBridgehead()), projectRole)));
+        }
+        return result;
+    }
+
 
     private Set<EmailRecipient> fetchEmailRecipientsForAllBridgeheadAdminsOfTheProject(Optional<String> projectCode) {
         Set<EmailRecipient> result = new HashSet<>();

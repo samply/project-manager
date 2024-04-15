@@ -48,37 +48,37 @@
     "SCRIPT_ACCEPTED": {
       "subject": "Script accepted",
       "files": {
-        "PROJECT_MANAGER_ADMIN": "project-manager-admin-script-accepted.html"
+        "DEFAULT": "default-script-accepted.html"
       }
     },
     "SCRIPT_REJECTED": {
       "subject": "Script rejected",
       "files": {
-        "PROJECT_MANAGER_ADMIN": "project-manager-admin-script-rejected.html"
+        "DEFAULT": "default-script-rejected.html"
       }
     },
     "REQUEST_CHANGES_IN_SCRIPT": {
       "subject": "Changes in script requested",
       "files": {
-        "PROJECT_MANAGER_ADMIN": "project-manager-admin-script-changes-requested.html"
+        "DEFAULT": "default-script-changes-requested.html"
       }
     },
     "RESULTS_ACCEPTED": {
       "subject": "Results accepted",
       "files": {
-        "PROJECT_MANAGER_ADMIN": "project-manager-admin-results-accepted.html"
+        "DEFAULT": "default-admin-results-accepted.html"
       }
     },
     "RESULTS_REJECTED": {
       "subject": "Results rejected",
       "files": {
-        "PROJECT_MANAGER_ADMIN": "project-manager-admin-results-rejected.html"
+        "DEFAULT": "default-admin-results-rejected.html"
       }
     },
     "REQUEST_CHANGES_IN_PROJECT": {
       "subject": "Changes in project requested",
       "files": {
-        "PROJECT_MANAGER_ADMIN": "project-manager-admin-results-changes-requested.html"
+        "DEFAULT": "default-results-changes-requested.html"
       }
     },
     "NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT": {

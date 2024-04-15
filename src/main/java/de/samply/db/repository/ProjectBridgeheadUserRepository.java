@@ -47,4 +47,7 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
 
     List<ProjectBridgeheadUser> getDistinctByProjectRoleAndProjectBridgehead(ProjectRole role, ProjectBridgehead projectBridgehead);
 
+    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.code = :projectCode AND pbu.projectRole = :projectRole")
+    Set<ProjectBridgeheadUser> getDistinctByProjectRoleAndProjectCode(ProjectRole projectRole, String projectCode);
+
 }
