@@ -3,6 +3,7 @@ package de.samply.email;
 import de.samply.app.ProjectManagerConst;
 import de.samply.frontend.FrontendService;
 import de.samply.notification.NotificationService;
+import de.samply.notification.OperationType;
 import de.samply.user.roles.ProjectRole;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -74,7 +75,10 @@ public class EmailService {
         Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
         if (messageSubject.isPresent()) {
             mailSender.send(createMimeMessage(email, emailFrom, messageSubject.get()));
-            // TODO: Add notification
+            if (project.isPresent()) {
+                notificationService.createNotification(project.get(), bridgehead.isPresent() ? bridgehead.get() : null,
+                        email, OperationType.SEND_EMAIL, type.toString(), null, null);
+            }
         } else {
             throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
         }

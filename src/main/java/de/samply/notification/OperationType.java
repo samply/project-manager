@@ -13,5 +13,6 @@ public enum OperationType {
     CHANGE_PROJECT_BRIDGEHEAD_STATE,
     EDIT_QUERY,
     ADD_DOCUMENT,
-    EDIT_PROJECT
+    EDIT_PROJECT,
+    SEND_EMAIL
 }
