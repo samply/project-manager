@@ -126,3 +126,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - R-Studio Group Manager
 - Email Sender: ALL_DEVELOP, ALL_PILOT, ALL_FINAL
 - Send email to all involved users after a publication has been uploaded
+- Project and project view url in email context

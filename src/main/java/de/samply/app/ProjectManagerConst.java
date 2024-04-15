@@ -212,6 +212,8 @@ public class ProjectManagerConst {
 
     // Email context properties
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
+    public final static String EMAIL_CONTEXT_PROJECT_CODE = "projectCode";
+    public final static String EMAIL_CONTEXT_PROJECT_VIEW_URL = "projectViewUrl";
 
 
     // Application Properties

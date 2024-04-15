@@ -89,7 +89,7 @@ public class DataShieldTokenManagerJob {
                     }
                 }));
         usersToSendAnEmail.forEach(userProject -> {
-            sendEmail(userProject.getEmail(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
+            sendEmail(userProject.getEmail(), userProject.getProjectCode(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
             this.rstudioGroupManager.addUserToRstudioGroup(userProject.getEmail());
         });
     }
@@ -101,9 +101,9 @@ public class DataShieldTokenManagerJob {
         return activeUsers;
     }
 
-    private void sendEmail(String email, EmailTemplateType type, ProjectRole projectRole) {
+    private void sendEmail(String email, String projectCode, EmailTemplateType type, ProjectRole projectRole) {
         try {
-            emailService.sendEmail(email, Optional.empty(), projectRole, type); //TODO: Add project code
+            emailService.sendEmail(email, Optional.ofNullable(projectCode), Optional.empty(), projectRole, type); //TODO: Add project code
         } catch (EmailServiceException e) {
             throw new RuntimeException(e);
         }
@@ -127,7 +127,7 @@ public class DataShieldTokenManagerJob {
                         user.getEmail(),
                         projectBridgehead -> projectBridgehead.getState() != ProjectBridgeheadState.ACCEPTED).forEach(bridgehead -> manageInactiveUsers(user, bridgehead, usersToSendAnEmail)));
         usersToSendAnEmail.forEach(userProject -> {
-            sendEmail(userProject.getEmail(), EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
+            sendEmail(userProject.getEmail(), userProject.getProjectCode(), EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
             if (userProject.getProjectRole() != ProjectRole.FINAL ||
                     this.projectBridgeheadRepository.findByProjectCodeAndState(userProject.getProjectCode(), ProjectBridgeheadState.ACCEPTED).isEmpty()) {
                 this.rstudioGroupManager.removeUserFromRstudioGroup(userProject.getEmail());
