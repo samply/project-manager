@@ -30,7 +30,7 @@ public class ProjectRoleConstraintsAspect {
     public Object aroundRoleConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<RoleConstraints> roleConstraints = fetchRoleConstrains(joinPoint);
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
-        Optional<String> bridgehead = AspectUtils.fetchBridghead(joinPoint);
+        Optional<String> bridgehead = AspectUtils.fetchBridgehead(joinPoint);
         Optional<ResponseEntity> result = this.constraintsService.checkProjectRoleConstraints(roleConstraints, projectCode, bridgehead);
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }

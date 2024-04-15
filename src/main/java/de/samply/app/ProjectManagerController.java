@@ -20,7 +20,6 @@ import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
-import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
@@ -552,7 +551,9 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.REQUEST_SCRIPT_CHANGES)
     public ResponseEntity<String> requestChangesInScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
@@ -591,7 +592,9 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
     public ResponseEntity<String> requestChangesInProject(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
@@ -753,7 +756,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
-    ){
+    ) {
         return convertToResponseEntity(() -> this.documentService.fetchLabelOfLastDocumentOfThisType(projectCode, Optional.empty(), DocumentType.SCRIPT));
     }
 

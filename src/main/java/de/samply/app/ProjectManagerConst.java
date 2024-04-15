@@ -186,6 +186,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_CONFIGURATION = "project-configuration";
     public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
+    public final static String MESSAGE = "message";
     public final static String BRIDGEHEADS = "bridgeheads";
     public final static String EXPLORER_IDS = "explorer-ids";
     public final static String PARTIAL_EMAIL = "partial-email";
@@ -214,6 +215,7 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
     public final static String EMAIL_CONTEXT_PROJECT_CODE = "projectCode";
     public final static String EMAIL_CONTEXT_PROJECT_VIEW_URL = "projectViewUrl";
+    public final static String EMAIL_CONTEXT_MESSAGE = "message";
 
 
     // Application Properties

@@ -4,6 +4,7 @@ import de.samply.annotations.EmailSender;
 import de.samply.annotations.EmailSenderIfError;
 import de.samply.annotations.EmailSenders;
 import de.samply.annotations.EmailSendersIfError;
+import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -149,7 +150,8 @@ public class EmailSenderAspect {
 
     private void sendEmail(EmailRecipient emailRecipient, Supplier<EmailTemplateType> emailTemplateTypeSupplier) {
         try {
-            emailService.sendEmail(emailRecipient.email(), emailRecipient.projectCode(), emailRecipient.bridgehead(), emailRecipient.role(), emailTemplateTypeSupplier.get());
+            Map<String, String> keyValues = (emailRecipient.getMessage().isPresent()) ? Map.of(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE, emailRecipient.getMessage().get()) : new HashMap<>();
+            emailService.sendEmail(emailRecipient.getEmail(), emailRecipient.getProjectCode(), emailRecipient.getBridgehead(), emailRecipient.getRole(), emailTemplateTypeSupplier.get(), keyValues);
         } catch (EmailServiceException e) {
             throw new RuntimeException(e);
         }
@@ -174,8 +176,9 @@ public class EmailSenderAspect {
     private Set<EmailRecipient> fetchEmailRecipients(Supplier<EmailRecipientType[]> emailRecipientTypesSupplier, ProceedingJoinPoint joinPoint) {
         Set<EmailRecipient> result = new HashSet<>();
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
-        Optional<String> bridgehead = AspectUtils.fetchBridghead(joinPoint);
+        Optional<String> bridgehead = AspectUtils.fetchBridgehead(joinPoint);
         Optional<String> email = AspectUtils.fetchEmail(joinPoint);
+        Optional<String> message = AspectUtils.fetchMessage(joinPoint);
         Arrays.stream(emailRecipientTypesSupplier.get()).forEach(emailRecipientType ->
                 result.addAll(switch (emailRecipientType) {
                     case SESSION_USER -> fetchEmailRecipientsForSessionUser(projectCode, bridgehead);
@@ -191,6 +194,9 @@ public class EmailSenderAspect {
                     case PROJECT_MANAGER_ADMIN -> fetchEmailRecipientsForProjectManagerAdmin(projectCode, bridgehead);
                     case PROJECT_ALL -> fetchEmailRecipientsForAllProjectUsers(projectCode, bridgehead);
                 }));
+        if (message.isPresent()) {
+            result.forEach(emailRecipient -> emailRecipient.setMessage(message));
+        }
         return result;
     }
 
@@ -361,7 +367,7 @@ public class EmailSenderAspect {
                 boolean addUser;
                 EmailRecipient emailRecipient = userEmailRecipientMap.get(projectBridgeheadUser.getEmail());
                 if (emailRecipient != null) {
-                    addUser = ProjectRolesUtils.compare(emailRecipient.role(), projectBridgeheadUser.getProjectRole()) > 0;
+                    addUser = ProjectRolesUtils.compare(emailRecipient.getRole(), projectBridgeheadUser.getProjectRole()) > 0;
                 } else {
                     addUser = true;
                 }

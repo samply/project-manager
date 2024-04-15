@@ -2,6 +2,7 @@ package de.samply.utils;
 
 import de.samply.annotations.Bridgehead;
 import de.samply.annotations.Email;
+import de.samply.annotations.Message;
 import de.samply.annotations.ProjectCode;
 import de.samply.db.model.Project;
 import de.samply.db.repository.ProjectRepository;
@@ -19,7 +20,7 @@ import java.util.Set;
 
 public class AspectUtils {
 
-    public static Optional<String> fetchBridghead(JoinPoint joinPoint) {
+    public static Optional<String> fetchBridgehead(JoinPoint joinPoint) {
         return fetchStringParameterAnnotation(joinPoint, Bridgehead.class);
     }
 
@@ -29,6 +30,10 @@ public class AspectUtils {
 
     public static Optional<String> fetchEmail(JoinPoint joinPoint) {
         return fetchStringParameterAnnotation(joinPoint, Email.class);
+    }
+
+    public static Optional<String> fetchMessage(JoinPoint joinPoint) {
+        return fetchStringParameterAnnotation(joinPoint, Message.class);
     }
 
     private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class annotationClass) {

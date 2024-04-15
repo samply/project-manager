@@ -76,8 +76,13 @@ public class EmailService {
         if (messageSubject.isPresent()) {
             mailSender.send(createMimeMessage(email, emailFrom, messageSubject.get()));
             if (project.isPresent()) {
+                String details = type.toString();
+                String message = keyValues.get(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE);
+                if (message != null) {
+                    details += " : " + message;
+                }
                 notificationService.createNotification(project.get(), bridgehead.isPresent() ? bridgehead.get() : null,
-                        email, OperationType.SEND_EMAIL, type.toString(), null, null);
+                        email, OperationType.SEND_EMAIL, details, null, null);
             }
         } else {
             throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());

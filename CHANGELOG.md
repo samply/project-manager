@@ -128,3 +128,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send email to all involved users after a publication has been uploaded
 - Project and project view url in email context
 - Create notification after sending an email
+- Send message while requesting changes in script or project

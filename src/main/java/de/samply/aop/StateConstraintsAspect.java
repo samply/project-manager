@@ -30,7 +30,7 @@ public class StateConstraintsAspect {
     public Object aroundStateConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<StateConstraints> stateConstraints = fetchStateConstraints(joinPoint);
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
-        Optional<String> bridghead = AspectUtils.fetchBridghead(joinPoint);
+        Optional<String> bridghead = AspectUtils.fetchBridgehead(joinPoint);
         Optional<ResponseEntity> result = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridghead);
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
