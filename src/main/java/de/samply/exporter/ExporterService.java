@@ -34,6 +34,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -95,19 +96,23 @@ public class ExporterService {
     }
 
     private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, FocusQuery focusQuery, boolean toBeExecuted) throws ExporterServiceException {
-        Mono<ExporterServiceResult> result = postRequest(projectBridgehead, focusQuery, toBeExecuted, 0);
-        result.subscribe(r -> resetProjectBridgeheadDataShield(projectBridgehead));
-        return result;
+        return postRequest(projectBridgehead, focusQuery, toBeExecuted, 0);
     }
 
     private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, FocusQuery focusQuery, boolean toBeExecuted, int numberOfRetries) {
-        Mono<String> result = webClient.post().uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.FOCUS_TASK).build())
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.FOCUS_TASK).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(focusQuery)
                 .retrieve()
                 .bodyToMono(String.class)
-                .doOnError(WebClientResponseException.class, ex -> {
+                .flatMap(response -> {
+                    createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), toBeExecuted);
+                    resetProjectBridgeheadDataShield(projectBridgehead);
+                    return Mono.just(new ExporterServiceResult(projectBridgehead, response));
+                })
+                .onErrorResume(WebClientResponseException.class, ex -> {
                     HttpStatusCode statusCode = ex.getStatusCode();
                     String error = ExceptionUtils.getStackTrace(ex);
                     log.error(error);
@@ -118,27 +123,19 @@ public class ExporterService {
                     } else {
                         log.error("Received HTTP Status Code: " + statusCode);
                     }
-                    // We don't use the normal retry functionality of webclient, because focus requires to change the focus query ID after every retry
                     if (numberOfRetries >= webClientMaxNumberOfRetries) {
                         createBridgeheadNotification((HttpStatus) ex.getStatusCode(), error, projectBridgehead, projectBridgehead.getExporterUser(), toBeExecuted);
                         projectBridgehead.setQueryState(QueryState.ERROR);
                         projectBridgeheadRepository.save(projectBridgehead);
+                        return Mono.error(ex); // End retrying
                     } else {
-                        waitUntilNextRetry();
-                        focusQuery.setId(focusService.generateId()); // Generate new Focus Query ID
-                        postRequest(projectBridgehead, focusQuery, toBeExecuted, numberOfRetries + 1);
+                        return Mono.delay(Duration.ofMillis(webClientTimeInSecondsAfterRetryWithFailure * 1000))
+                                .flatMap(delay -> {
+                                    focusQuery.setId(focusService.generateId()); // Generate new Focus Query ID
+                                    return postRequest(projectBridgehead, focusQuery, toBeExecuted, numberOfRetries + 1);
+                                });
                     }
                 });
-        result.subscribe(r -> createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), toBeExecuted));
-        return result.flatMap(r -> Mono.just(new ExporterServiceResult(projectBridgehead, r)));
-    }
-
-    private void waitUntilNextRetry() {
-        try {
-            Thread.sleep(webClientTimeInSecondsAfterRetryWithFailure * 1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private String fetchAuthorization() {
