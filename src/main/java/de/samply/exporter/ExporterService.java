@@ -11,14 +11,13 @@ import de.samply.db.model.ProjectBridgeheadDataShield;
 import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectRepository;
 import de.samply.exporter.focus.FocusQuery;
 import de.samply.exporter.focus.FocusService;
 import de.samply.exporter.focus.FocusServiceException;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
-import de.samply.security.SessionUser;
+import de.samply.query.QueryState;
 import de.samply.utils.Base64Utils;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -43,20 +43,12 @@ import java.util.Set;
 @Service
 @Slf4j
 public class ExporterService {
+    private final ProjectBridgeheadRepository projectBridgeheadRepository;
 
     private final FocusService focusService;
     private final WebClient webClient;
     private final int webClientMaxNumberOfRetries;
     private final int webClientTimeInSecondsAfterRetryWithFailure;
-    private final int webClientRequestTimeoutInSeconds;
-    private final int webClientConnectionTimeoutInSeconds;
-    private final int webClientTcpKeepIdleInSeconds;
-    private final int webClientTcpKeepIntervalInSeconds;
-    private final int webClientTcpKeepConnetionNumberOfTries;
-    private final int webClientBufferSizeInBytes;
-    private final SessionUser sessionUser;
-    private final ProjectRepository projectRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
     private final NotificationService notificationService;
     private final Set<String> exportTemplates;
@@ -72,33 +64,16 @@ public class ExporterService {
             @Value(ProjectManagerConst.FOCUS_URL_SV) String focusUrl,
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
-            @Value(ProjectManagerConst.WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS_SV) Integer webClientRequestTimeoutInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS_SV) Integer webClientConnectionTimeoutInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS_SV) Integer webClientTcpKeepIdleInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS_SV) Integer webClientTcpKeepIntervalInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV) Integer webClientTcpKeepConnetionNumberOfTries,
             @Value(ProjectManagerConst.WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV) Integer webClientMaxNumberOfRetries,
             @Value(ProjectManagerConst.WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV) Integer webClientTimeInSecondsAfterRetryWithFailure,
-            @Value(ProjectManagerConst.WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV) Integer webClientBufferSizeInBytes,
             FocusService focusService,
-            ProjectRepository projectRepository,
-            SessionUser sessionUser,
-            ProjectBridgeheadRepository projectBridgeheadRepository,
             ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
             NotificationService notificationService,
-            WebClientFactory webClientFactory) {
+            WebClientFactory webClientFactory,
+            ProjectBridgeheadRepository projectBridgeheadRepository) {
         this.focusService = focusService;
         this.webClientMaxNumberOfRetries = webClientMaxNumberOfRetries;
         this.webClientTimeInSecondsAfterRetryWithFailure = webClientTimeInSecondsAfterRetryWithFailure;
-        this.webClientRequestTimeoutInSeconds = webClientRequestTimeoutInSeconds;
-        this.webClientConnectionTimeoutInSeconds = webClientConnectionTimeoutInSeconds;
-        this.webClientTcpKeepIdleInSeconds = webClientTcpKeepIdleInSeconds;
-        this.webClientTcpKeepIntervalInSeconds = webClientTcpKeepIntervalInSeconds;
-        this.webClientTcpKeepConnetionNumberOfTries = webClientTcpKeepConnetionNumberOfTries;
-        this.webClientBufferSizeInBytes = webClientBufferSizeInBytes;
-        this.sessionUser = sessionUser;
-        this.projectRepository = projectRepository;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.notificationService = notificationService;
         this.exportTemplates = exportTemplates;
@@ -106,26 +81,27 @@ public class ExporterService {
         this.focusProjectManagerId = focusProjectManagerId;
         this.webClient = webClientFactory.createWebClient(focusUrl);
         this.focusApiKey = focusApiKey;
+        this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
 
-    public void sendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
-        log.info("Sending query of project " + projectCode + " to bridgehead " + bridgehead + " ...");
-        postRequest(bridgehead, projectCode, generateFocusBody(projectCode, bridgehead, false), true);
+    public Mono<ExporterServiceResult> sendQueryToBridgehead(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
+        log.info("Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " ...");
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, false), true);
     }
 
-    public void sendQueryToBridgeheadAndExecute(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
-        log.info("Sending query of project " + projectCode + " to bridgehead " + bridgehead + " to be executed...");
-        postRequest(bridgehead, projectCode, generateFocusBody(projectCode, bridgehead, true), true);
+    public Mono<ExporterServiceResult> sendQueryToBridgeheadAndExecute(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
+        log.info("Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " to be executed...");
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, true), true);
     }
 
-    private void postRequest(String bridgehead, String projectCode, FocusQuery focusQuery, boolean toBeExecuted) throws ExporterServiceException {
-        postRequest(bridgehead, projectCode, focusQuery, toBeExecuted, 0);
-        resetProjectBridgeheadDataShield(projectCode, bridgehead);
+    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, FocusQuery focusQuery, boolean toBeExecuted) throws ExporterServiceException {
+        Mono<ExporterServiceResult> result = postRequest(projectBridgehead, focusQuery, toBeExecuted, 0);
+        result.subscribe(r -> resetProjectBridgeheadDataShield(projectBridgehead));
+        return result;
     }
 
-    private void postRequest(String bridgehead, String projectCode, FocusQuery focusQuery, boolean toBeExecuted, int numberOfRetries) {
-        String email = sessionUser.getEmail();
-        webClient.post().uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.FOCUS_TASK).build())
+    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, FocusQuery focusQuery, boolean toBeExecuted, int numberOfRetries) {
+        Mono<String> result = webClient.post().uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.FOCUS_TASK).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(focusQuery)
@@ -144,14 +120,17 @@ public class ExporterService {
                     }
                     // We don't use the normal retry functionality of webclient, because focus requires to change the focus query ID after every retry
                     if (numberOfRetries >= webClientMaxNumberOfRetries) {
-                        createBridgeheadNotification((HttpStatus) ex.getStatusCode(), error, bridgehead, projectCode, email, toBeExecuted);
+                        createBridgeheadNotification((HttpStatus) ex.getStatusCode(), error, projectBridgehead, projectBridgehead.getExporterUser(), toBeExecuted);
+                        projectBridgehead.setQueryState(QueryState.ERROR);
+                        projectBridgeheadRepository.save(projectBridgehead);
                     } else {
                         waitUntilNextRetry();
                         focusQuery.setId(focusService.generateId()); // Generate new Focus Query ID
-                        postRequest(bridgehead, projectCode, focusQuery, toBeExecuted, numberOfRetries + 1);
+                        postRequest(projectBridgehead, focusQuery, toBeExecuted, numberOfRetries + 1);
                     }
-                })
-                .subscribe(result -> createBridgeheadNotification(HttpStatus.OK, null, bridgehead, projectCode, email, toBeExecuted));
+                });
+        result.subscribe(r -> createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), toBeExecuted));
+        return result.flatMap(r -> Mono.just(new ExporterServiceResult(projectBridgehead, r)));
     }
 
     private void waitUntilNextRetry() {
@@ -167,9 +146,9 @@ public class ExporterService {
     }
 
     private void createBridgeheadNotification(
-            HttpStatus status, String error, String bridgehead, String projectCode, String email, boolean toBeExecuted) {
+            HttpStatus status, String error, ProjectBridgehead projectBridgehead, String email, boolean toBeExecuted) {
         notificationService.createNotification(
-                projectCode, bridgehead, email,
+                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email,
                 fetchBridgeheadOperationType(toBeExecuted), null, error, status);
     }
 
@@ -185,61 +164,53 @@ public class ExporterService {
         }
     }
 
-    private String generateExportQueryInBase64ForExporterRequest(String projectCode)
+    private String generateExportQueryInBase64ForExporterRequest(ProjectBridgehead projectBridgehead)
             throws ExporterServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ExporterServiceException("Project " + projectCode + " not found");
-        }
-        Query query = project.get().getQuery();
+        Query query = projectBridgehead.getProject().getQuery();
         Map<String, String> result = Map.of(
                 ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectCode),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.get().getCreatorEmail(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID, sessionUser.getEmail(),
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectBridgehead.getProject().getCode()),
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, projectBridgehead.getProject().getCreatorEmail(),
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID, projectBridgehead.getExporterUser(),
                 ProjectManagerConst.EXPORTER_PARAM_OUTPUT_FORMAT, query.getOutputFormat().name(),
                 ProjectManagerConst.EXPORTER_PARAM_TEMPLATE_ID, query.getTemplateId(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.get().getExpiresAt()));
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(projectBridgehead.getProject().getExpiresAt()));
         result.values().removeIf(value -> !StringUtils.hasText(value));
         return convertToBase64String(result);
     }
 
-    private String generateExporterQueryInBase64ForExporterCreateQuery(String projectCode)
+    private String generateExporterQueryInBase64ForExporterCreateQuery(Project project)
             throws ExporterServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ExporterServiceException("Project " + projectCode + " not found");
-        }
-        Query query = project.get().getQuery();
+        Query query = project.getQuery();
         Map<String, String> result = Map.of(
                 ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel(),
                 ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectCode),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.get().getCreatorEmail(),
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), project.getCode()),
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.getCreatorEmail(),
                 ProjectManagerConst.EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT, query.getOutputFormat().name(),
                 ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query.getTemplateId(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.get().getExpiresAt()));
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.getExpiresAt()));
         result.values().removeIf(value -> !StringUtils.hasText(value));
         return convertToBase64String(result);
     }
 
-    private FocusQuery generateFocusBody(String projectCode, String bridgehead, boolean toBeExecuted) throws ExporterServiceException {
+    private FocusQuery generateFocusBody(ProjectBridgehead projectBridgehead, boolean toBeExecuted) throws ExporterServiceException {
         try {
-            return generateFocusQueryWithoutExceptionHandling(projectCode, bridgehead, toBeExecuted);
+            return generateFocusQueryWithoutExceptionHandling(projectBridgehead, toBeExecuted);
         } catch (FocusServiceException e) {
             throw new ExporterServiceException(e);
         }
     }
 
-    private FocusQuery generateFocusQueryWithoutExceptionHandling(String projectCode, String bridgehead, boolean toBeExecuted) throws ExporterServiceException, FocusServiceException {
-        String exporterQueryInBase64 = (toBeExecuted) ? generateExportQueryInBase64ForExporterRequest(projectCode) :
-                generateExporterQueryInBase64ForExporterCreateQuery(projectCode);
-        return focusService.generateFocusQuery(exporterQueryInBase64, toBeExecuted, bridgehead);
+    private FocusQuery generateFocusQueryWithoutExceptionHandling(ProjectBridgehead projectBridgehead, boolean toBeExecuted) throws FocusServiceException {
+        String exporterQueryInBase64 = (toBeExecuted) ? generateExportQueryInBase64ForExporterRequest(projectBridgehead) :
+                generateExporterQueryInBase64ForExporterCreateQuery(projectBridgehead.getProject());
+        return focusService.generateFocusQuery(exporterQueryInBase64, toBeExecuted, projectBridgehead.getBridgehead());
     }
 
 
@@ -262,27 +233,29 @@ public class ExporterService {
         };
     }
 
-    private void resetProjectBridgeheadDataShield(@NotNull String projectCode, @NotNull String bridgehead) throws ExporterServiceException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ExporterServiceException("Project " + projectCode + " not found");
-        }
-        if (project.get().getType() == ProjectType.DATASHIELD) {
-            Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
-            if (projectBridgehead.isEmpty()) {
-                throw new ExporterServiceException("Bridgehead " + bridgehead + " for project " + projectCode + " not found");
-            }
-            Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataSHIELD = this.projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead.get());
+    private void resetProjectBridgeheadDataShield(ProjectBridgehead projectBridgehead) {
+        if (projectBridgehead.getProject().getType() == ProjectType.DATASHIELD) {
+            Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataSHIELD = this.projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead);
             ProjectBridgeheadDataShield result;
             if (projectBridgeheadInDataSHIELD.isEmpty()) {
                 result = new ProjectBridgeheadDataShield();
-                result.setProjectBridgehead(projectBridgehead.get());
+                result.setProjectBridgehead(projectBridgehead);
             } else {
                 result = projectBridgeheadInDataSHIELD.get();
             }
             result.setRemoved(false);
             this.projectBridgeheadDataShieldRepository.save(result);
         }
+    }
+
+    public Mono<ExporterServiceResult> checkIfQueryIsAlreadySent(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
+        //TODO
+        return Mono.just(new ExporterServiceResult(projectBridgehead, "TODO"));
+    }
+
+    public Mono<ExporterServiceResult> checkIfQueryIsAlreadySentAndExecuted(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
+        //TODO
+        return Mono.just(new ExporterServiceResult(projectBridgehead, "TODO"));
     }
 
 }

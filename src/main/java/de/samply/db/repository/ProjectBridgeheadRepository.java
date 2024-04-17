@@ -2,10 +2,10 @@ package de.samply.db.repository;
 
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.query.QueryState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,5 +31,8 @@ public interface ProjectBridgeheadRepository extends JpaRepository<ProjectBridge
 
     @Query("SELECT DISTINCT pb FROM ProjectBridgehead pb WHERE pb.project.type = :projectType AND pb.project.state NOT IN :projectStates")
     List<ProjectBridgehead> getByProjectTypeAndNotProjectState(ProjectType projectType, Set<ProjectState> projectStates);
+
+    @Query("SELECT DISTINCT pb FROM ProjectBridgehead pb WHERE pb.queryState = :queryState AND pb.project.state IN :projectStates")
+    Set<ProjectBridgehead> getByQueryStateAndProjectState(QueryState queryState, Set<ProjectState> projectStates);
 
 }

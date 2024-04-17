@@ -10,6 +10,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
@@ -110,16 +111,28 @@ public class ConstraintsService {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
                 }
             }
-            if (stateConstraints.get().projectBridgeheadStates().length > 0) {
+            if (stateConstraints.get().projectBridgeheadStates().length > 0 || stateConstraints.get().queryStates().length > 0) {
                 Optional<ProjectBridgehead> projectBridgehead = fetchProjectBridgehead(project.get(), bridgehead);
                 if (projectBridgehead.isEmpty()) {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
                 }
-                boolean hasAnyProjectBridgeheadStateConstraint = false;
-                for (ProjectBridgeheadState projectBridgeheadState : stateConstraints.get().projectBridgeheadStates()) {
-                    if (projectBridgehead.get().getState() == projectBridgeheadState) {
-                        hasAnyProjectBridgeheadStateConstraint = true;
-                        break;
+                boolean hasAnyProjectBridgeheadStateConstraint = true;
+                if (stateConstraints.get().projectBridgeheadStates().length > 0) {
+                    hasAnyProjectBridgeheadStateConstraint = false;
+                    for (ProjectBridgeheadState projectBridgeheadState : stateConstraints.get().projectBridgeheadStates()) {
+                        if (projectBridgehead.get().getState() == projectBridgeheadState) {
+                            hasAnyProjectBridgeheadStateConstraint = true;
+                            break;
+                        }
+                    }
+                }
+                if (hasAnyProjectBridgeheadStateConstraint && stateConstraints.get().queryStates().length > 0) {
+                    hasAnyProjectBridgeheadStateConstraint = false;
+                    for (QueryState queryState : stateConstraints.get().queryStates()) {
+                        if (projectBridgehead.get().getQueryState() == queryState) {
+                            hasAnyProjectBridgeheadStateConstraint = true;
+                            break;
+                        }
                     }
                 }
                 if (!hasAnyProjectBridgeheadStateConstraint) {

@@ -1,6 +1,6 @@
 package de.samply.exporter;
 
-public class ExporterServiceException extends Exception{
+public class ExporterServiceException extends RuntimeException {
 
     public ExporterServiceException(String message) {
         super(message);

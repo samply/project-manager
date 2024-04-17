@@ -91,7 +91,8 @@ public class DtoFactory {
                 projectBridgehead.getProject().getCode(),
                 projectBridgehead.getBridgehead(),
                 projectBridgehead.getState(),
-                projectBridgehead.getModifiedAt()
+                projectBridgehead.getModifiedAt(),
+                projectBridgehead.getQueryState()
         );
     }
 

@@ -297,6 +297,7 @@ public class ProjectManagerConst {
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
+    public final static String EXPORTER_CRON_EXPRESSION = "EXPORTER_CRON_EXPRESSION";
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION = "CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION";
     public final static String EXPLORER_URL = "EXPLORER_URL";
     public final static String ENABLE_TOKEN_MANAGER = "ENABLE_TOKEN_MANAGER";
@@ -309,6 +310,7 @@ public class ProjectManagerConst {
     public final static String ENABLE_RSTUDIO_GROUP_MANAGER = "ENABLE_RSTUDIO_GROUP_MANAGER";
     public final static String OIDC_URL = "OIDC_URL";
     public final static String OIDC_REALM = "OIDC_REALM";
+    public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -359,10 +361,13 @@ public class ProjectManagerConst {
     public final static String FOCUS_API_KEY_SV = HEAD_SV + FOCUS_API_KEY + BOTTOM_SV;
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String ENABLE_TOKEN_MANAGER_SV = HEAD_SV + ENABLE_TOKEN_MANAGER + ":true" + BOTTOM_SV;
+    public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;
     public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
-            HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 0 * * * *'}" + BOTTOM_SV;
+            HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 * * * * *'}" + BOTTOM_SV;
+    public final static String EXPORTER_CRON_EXPRESSION_SV =
+            HEAD_SV + EXPORTER_CRON_EXPRESSION + ":#{'45 * * * * *'}" + BOTTOM_SV;
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION_SV =
-            HEAD_SV + CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION + ":#{'0 0 1,13 * * *'}" + BOTTOM_SV;
+            HEAD_SV + CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION + ":#{'30 * * * * *'}" + BOTTOM_SV;
     public final static String EXPLORER_URL_SV = HEAD_SV + EXPLORER_URL + BOTTOM_SV;
     public final static String EXPLORER_REDIRECT_URI_PARAMETER_SV = HEAD_SV + EXPLORER_REDIRECT_URI_PARAMETER + BOTTOM_SV;
     public final static String FRONTEND_PROJECT_CONFIG_SV = HEAD_SV + FRONTEND_PROJECT_CONFIG + BOTTOM_SV;
