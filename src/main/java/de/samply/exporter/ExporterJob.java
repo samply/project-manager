@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -78,6 +79,7 @@ public class ExporterJob {
                     ProjectBridgehead projectBridgehead = exporterServiceResult.projectBridgehead();
                     projectBridgehead.setQueryState(finalQueryState);
                     projectBridgehead.setExporterResponse(exporterServiceResult.result());
+                    projectBridgehead.setModifiedAt(Instant.now());
                     projectBridgeheadRepository.save(projectBridgehead);
                     return Mono.empty();
                 }).then();

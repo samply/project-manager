@@ -132,3 +132,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send message while rejecting a project
 - Exporter Job
 - Check Queries in Exporter Job
+- Max time to wait focus task in minutes

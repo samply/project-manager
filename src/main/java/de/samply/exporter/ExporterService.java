@@ -32,6 +32,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -55,6 +56,7 @@ public class ExporterService {
 
     private final String focusWaitTime;
     private final String focusWaitCount;
+    private final int maxTimeToWaitFocusTaskInMinutes;
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
@@ -66,6 +68,7 @@ public class ExporterService {
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
             @Value(ProjectManagerConst.FOCUS_TTL_SV) String focusWaitTime,
             @Value(ProjectManagerConst.FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV) String focusWaitCount,
+            @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
             FocusService focusService,
             ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
             NotificationService notificationService,
@@ -79,6 +82,7 @@ public class ExporterService {
         this.focusProjectManagerId = focusProjectManagerId;
         this.focusWaitTime = focusWaitTime;
         this.focusWaitCount = focusWaitCount;
+        this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
         this.webClient = webClientFactory.createWebClient(focusUrl);
         this.focusApiKey = focusApiKey;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -237,7 +241,7 @@ public class ExporterService {
                     } else {
                         log.error("Http Error " + clientResponse.statusCode() + " checking task " + projectBridgehead.getExporterResponse() +
                                 " for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
-                        if (!clientResponse.statusCode().equals(HttpStatus.NO_CONTENT)) {
+                        if (isQueryStateToBeChangedToError((HttpStatus) clientResponse.statusCode(), projectBridgehead)) {
                             projectBridgehead.setQueryState(QueryState.ERROR);
                             projectBridgehead.setModifiedAt(Instant.now());
                             projectBridgeheadRepository.save(projectBridgehead);
@@ -248,6 +252,13 @@ public class ExporterService {
                         });
                     }
                 });
+    }
+
+    private boolean isQueryStateToBeChangedToError(HttpStatus httpStatus, ProjectBridgehead projectBridgehead) {
+        if (httpStatus == HttpStatus.NOT_FOUND) {
+            return Duration.between(projectBridgehead.getModifiedAt(), Instant.now()).toMinutes() > maxTimeToWaitFocusTaskInMinutes;
+        }
+        return httpStatus != HttpStatus.NO_CONTENT;
     }
 
     public Optional<String> fetchExporterExecutionIdFromExporterResponse(String exporterResponse) {

@@ -317,6 +317,7 @@ public class ProjectManagerConst {
     public final static String OIDC_URL = "OIDC_URL";
     public final static String OIDC_REALM = "OIDC_REALM";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
+    public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -345,6 +346,8 @@ public class ProjectManagerConst {
             HEAD_SV + WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS + ":60" + BOTTOM_SV;
     public final static String WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV =
             HEAD_SV + WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES + ":10" + BOTTOM_SV;
+    public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV =
+            HEAD_SV + MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES + ":5" + BOTTOM_SV;
     public final static String WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV =
             HEAD_SV + WEBCLIENT_MAX_NUMBER_OF_RETRIES + ":3" + BOTTOM_SV;
     public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV =
