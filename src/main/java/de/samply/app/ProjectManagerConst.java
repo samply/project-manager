@@ -238,12 +238,18 @@ public class ProjectManagerConst {
     public static final String EXPORTER_PARAM_QUERY_CONTEXT = "query-context";
     public static final String EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT = "query-default-output-format";
     public static final String EXPORTER_PARAM_DEFAULT_TEMPLATE_ID = "query-default-template-id";
+    public final static String EXPORTER_PARAM_QUERY_EXECUTION_ID = "query-execution-id";
     public static final String EXPORTER_QUERY_CONTEXT_PROJECT_ID = "PROJECT-ID";
+    public final static String EXPORTER_QUERY_CONTEXT_SEPARATOR = ";";
     public final static String API_KEY = "ApiKey";
+
 
     // Focus
     public final static String FOCUS_METADATA_PROJECT = "exporter";
-    public final static String FOCUS_TASK = "/v1/tasks";
+    public final static String FOCUS_TASK_PATH = "/v1/tasks";
+    public final static String FOCUS_TASK_RESULTS_PATH = "/results";
+    public final static String FOCUS_TASK_WAIT_TIME_PARAM = "wait_time";
+    public final static String FOCUS_TASK_WAIT_COUNT_PARAM = "wait_count";
 
     // Token Manager Variables
     public final static String TOKEN_MANAGER_ROOT = "/api";
@@ -391,5 +397,6 @@ public class ProjectManagerConst {
     public final static String OIDC_EMAIL_CLAIM = "email";
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
+
 
 }

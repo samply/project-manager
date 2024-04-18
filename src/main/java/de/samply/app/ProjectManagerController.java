@@ -492,7 +492,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, queryStates = {QueryState.FINISHED})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, queryStates = {QueryState.FINISHED, QueryState.ERROR})
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT_ACTION)
@@ -505,7 +505,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, queryStates = {QueryState.FINISHED})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, queryStates = {QueryState.FINISHED, QueryState.ERROR})
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT_ACTION)
@@ -978,7 +978,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL},
-            queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.SENDING, QueryState.SENDING_AND_EXECUTING})
+            queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
     @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
@@ -991,7 +991,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL},
-            queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.SENDING, QueryState.SENDING_AND_EXECUTING})
+            queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION)
     @PostMapping(value = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD)

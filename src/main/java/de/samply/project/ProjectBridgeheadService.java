@@ -127,6 +127,8 @@ public class ProjectBridgeheadService {
         projectBridgehead.get().setQueryState(queryState);
         projectBridgehead.get().setModifiedAt(Instant.now());
         projectBridgehead.get().setExporterUser(sessionUser.getEmail());
+        projectBridgehead.get().setExporterExecutionId(null);
+        projectBridgehead.get().setExporterResponse(null);
         projectBridgeheadRepository.save(projectBridgehead.get());
     }
 

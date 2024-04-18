@@ -1,6 +1,8 @@
 package de.samply.notification;
 
 public enum OperationType {
+    CHECK_SEND_QUERY,
+    CHECK_SEND_AND_EXECUTE_QUERY,
     SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE,
     SEND_QUERY_TO_BRIDGEHEAD,
     CREATE_DATASHIELD_TOKEN,

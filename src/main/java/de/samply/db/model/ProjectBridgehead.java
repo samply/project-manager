@@ -46,4 +46,8 @@ public class ProjectBridgehead {
     @Column(name = "exporter_user")
     private String exporterUser;
 
+    @Column(name = "exporter_execution_id")
+    private String exporterExecutionId;
+
+
 }

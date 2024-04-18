@@ -37,14 +37,15 @@ CREATE TABLE samply.project
 
 CREATE TABLE samply.project_bridgehead
 (
-    id                SERIAL    NOT NULL PRIMARY KEY,
-    project_id        BIGINT    NOT NULL,
-    bridgehead        TEXT      NOT NULL,
-    modified_at       TIMESTAMP NOT NULL,
-    state             TEXT      NOT NULL,
-    query_state       TEXT      NOT NULL,
-    exporter_response TEXT,
-    exporter_user     TEXT
+    id                    SERIAL    NOT NULL PRIMARY KEY,
+    project_id            BIGINT    NOT NULL,
+    bridgehead            TEXT      NOT NULL,
+    modified_at           TIMESTAMP NOT NULL,
+    state                 TEXT      NOT NULL,
+    query_state           TEXT      NOT NULL,
+    exporter_response     TEXT,
+    exporter_user         TEXT,
+    exporter_execution_id TEXT
 );
 
 CREATE TABLE samply.project_bridgehead_user

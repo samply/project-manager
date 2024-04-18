@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Component
@@ -56,14 +58,23 @@ public class ExporterJob {
     }
 
     private Mono<Void> checkQueriesAlreadySentToBeExecuted() {
-        return checkQueries(QueryState.SENDING_AND_EXECUTING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentAndExecuted);
+        return checkQueries(QueryState.SENDING_AND_EXECUTING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySent, Optional.of(
+                exporterServiceResult ->
+                        exporterService.fetchExporterExecutionIdFromExporterResponse(exporterServiceResult.result()).ifPresent(exportExecutionId ->
+                                exporterServiceResult.projectBridgehead().setExporterExecutionId(exportExecutionId))));
     }
 
     private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
                                     Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction) {
+        return checkQueries(initialQueryState, finalQueryState, exporterServiceFunction, Optional.empty());
+    }
+
+    private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
+                                    Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction, Optional<Consumer<ExporterServiceResult>> exporterServiceResultConsumer) {
         return Flux.fromIterable(projectBridgeheadRepository.getByQueryStateAndProjectState(initialQueryState, activeStates))
                 .flatMap(exporterServiceFunction)
                 .flatMap(exporterServiceResult -> {
+                    exporterServiceResultConsumer.ifPresent(consumer -> consumer.accept(exporterServiceResult));
                     ProjectBridgehead projectBridgehead = exporterServiceResult.projectBridgehead();
                     projectBridgehead.setQueryState(finalQueryState);
                     projectBridgehead.setExporterResponse(exporterServiceResult.result());
