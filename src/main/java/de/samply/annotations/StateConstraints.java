@@ -2,6 +2,7 @@ package de.samply.annotations;
 
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.query.QueryState;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,5 +15,6 @@ import java.lang.annotation.Target;
 public @interface StateConstraints {
     ProjectState[] projectStates() default {};
     ProjectBridgeheadState[] projectBridgeheadStates() default {};
+    QueryState[] queryStates() default {};
 
 }

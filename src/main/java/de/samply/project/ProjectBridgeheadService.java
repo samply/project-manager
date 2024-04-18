@@ -9,11 +9,13 @@ import de.samply.frontend.dto.DtoFactory;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -104,5 +106,31 @@ public class ProjectBridgeheadService {
         }
         return !projectBridgeheadUserRepository.getByEmailAndProjectBridgehead(sessionUser.getEmail(), projectBridgehead).isEmpty();
     }
+
+    public void scheduleSendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
+        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT);
+    }
+
+    public void scheduleSendQueryToBridgeheadAndExecute(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
+        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT_AND_EXECUTED);
+    }
+
+    private void changeQueryState(String projectCode, String bridgehead, QueryState queryState) throws ProjectBridgeheadServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
+        }
+        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+        if (projectBridgehead.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Bridghead " + bridgehead + " in project " + projectCode + " not found");
+        }
+        projectBridgehead.get().setQueryState(queryState);
+        projectBridgehead.get().setModifiedAt(Instant.now());
+        projectBridgehead.get().setExporterUser(sessionUser.getEmail());
+        projectBridgehead.get().setExporterExecutionId(null);
+        projectBridgehead.get().setExporterResponse(null);
+        projectBridgeheadRepository.save(projectBridgehead.get());
+    }
+
 
 }

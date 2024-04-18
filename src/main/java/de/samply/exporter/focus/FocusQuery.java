@@ -20,5 +20,9 @@ public class FocusQuery {
     private String[] to;
     @JsonProperty("ttl")
     private String ttl;
+    @JsonProperty("status")
+    private String status;
+    @JsonProperty("task")
+    private String task;
 
 }

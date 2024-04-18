@@ -1,5 +1,7 @@
 package de.samply.exporter.focus;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,7 @@ public class FocusService {
     private final String ttl;
     private final FailureStrategy failureStrategy;
     private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     public FocusService(
@@ -67,6 +70,14 @@ public class FocusService {
         retryStrategy.setBackoffInMilliseconds(backoff);
         failureStrategy.setRetryStrategy(retryStrategy);
         return failureStrategy;
+    }
+
+    public FocusQuery[] deserializeFocusResponse(String focusResponse) throws FocusServiceException {
+        try {
+            return objectMapper.readValue(focusResponse, FocusQuery[].class);
+        } catch (JsonProcessingException e) {
+            throw new FocusServiceException(e);
+        }
     }
 
 }

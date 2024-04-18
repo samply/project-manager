@@ -2,6 +2,7 @@ package de.samply.db.model;
 
 
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.query.QueryState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,5 +35,19 @@ public class ProjectBridgehead {
 
     @Column(name = "modified_at", nullable = false)
     private Instant modifiedAt = Instant.now();
+
+    @Column(name = "query_state", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private QueryState queryState = QueryState.CREATED;
+
+    @Column(name = "exporter_response")
+    private String exporterResponse;
+
+    @Column(name = "exporter_user")
+    private String exporterUser;
+
+    @Column(name = "exporter_execution_id")
+    private String exporterExecutionId;
+
 
 }
