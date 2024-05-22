@@ -41,7 +41,9 @@ public class ExporterJob {
                     checkQueriesToSend(),
                     checkQueriesToSendAndExecute(),
                     checkQueriesAlreadySent(),
-                    checkQueriesAlreadySentToBeExecuted()).block();
+                    checkQueriesAlreadySentToBeExecuted(),
+                    checkQueriesAlreadyExecutingStep1(),
+                    checkQueriesAlreadyExecutingStep2()).block();
 
         }
     }
@@ -55,11 +57,19 @@ public class ExporterJob {
     }
 
     private Mono<Void> checkQueriesAlreadySent() {
-        return checkQueries(QueryState.SENDING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySent);
+        return checkQueries(QueryState.SENDING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted);
+    }
+
+    private Mono<Void> checkQueriesAlreadyExecutingStep1() {
+        return checkQueries(QueryState.EXPORT_RUNNING_1, QueryState.EXPORT_RUNNING_2, exporterService::checkExecutionStatus);
+    }
+
+    private Mono<Void> checkQueriesAlreadyExecutingStep2() {
+        return checkQueries(QueryState.EXPORT_RUNNING_2, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted);
     }
 
     private Mono<Void> checkQueriesAlreadySentToBeExecuted() {
-        return checkQueries(QueryState.SENDING_AND_EXECUTING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySent, Optional.of(
+        return checkQueries(QueryState.SENDING_AND_EXECUTING, QueryState.EXPORT_RUNNING_1, exporterService::checkIfQueryIsAlreadySentOrExecuted, Optional.of(
                 exporterServiceResult ->
                         exporterService.fetchExporterExecutionIdFromExporterResponse(exporterServiceResult.result()).ifPresent(exportExecutionId ->
                                 exporterServiceResult.projectBridgehead().setExporterExecutionId(exportExecutionId))));

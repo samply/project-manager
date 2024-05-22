@@ -1,6 +1,6 @@
 package de.samply.exporter.focus;
 
-public class FocusServiceException extends Exception{
+public class FocusServiceException extends RuntimeException {
     public FocusServiceException(String message) {
         super(message);
     }

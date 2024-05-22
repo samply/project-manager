@@ -8,7 +8,7 @@ public class FocusQueryMetadata {
 
     @JsonProperty("project")
     private String project;
-    @JsonProperty("execute")
-    private boolean execute;
+    @JsonProperty("task_type")
+    private TaskType taskType;
 
 }

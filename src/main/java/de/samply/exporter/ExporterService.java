@@ -14,6 +14,7 @@ import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.exporter.focus.FocusQuery;
 import de.samply.exporter.focus.FocusService;
 import de.samply.exporter.focus.FocusServiceException;
+import de.samply.exporter.focus.TaskType;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
@@ -90,25 +91,34 @@ public class ExporterService {
 
     public Mono<ExporterServiceResult> sendQueryToBridgehead(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
         log.info("Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " ...");
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, false), true);
+        TaskType taskType = TaskType.CREATE;
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
     }
 
     public Mono<ExporterServiceResult> sendQueryToBridgeheadAndExecute(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
         log.info("Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " to be executed...");
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, true), true);
+        TaskType taskType = TaskType.EXECUTE;
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
     }
 
-    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, FocusQuery focusQuery, boolean toBeExecuted) {
+    public Mono<ExporterServiceResult> checkExecutionStatus(ProjectBridgehead projectBridgehead) {
+        log.info("Checking export execution status of project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead());
+        TaskType taskType = TaskType.STATUS;
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
+    }
+
+    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, FocusQuery focusQuery, TaskType taskType) {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.FOCUS_TASK_PATH).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(focusQuery)
                 .exchangeToMono(clientResponse -> {
-                    if (clientResponse.statusCode().equals(HttpStatus.CREATED)) {
-                        createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), fetchBridgeheadOperationType(toBeExecuted));
+                    if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
+                        fetchBridgeheadOperationType(taskType).ifPresent(operationType ->
+                                createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), null, projectBridgehead, projectBridgehead.getExporterUser(), operationType));
                         resetProjectBridgeheadDataShield(projectBridgehead);
-                        return Mono.just(new ExporterServiceResult(projectBridgehead, focusQuery.getId()));
+                        return Mono.just(new ExporterServiceResult(projectBridgehead, focusService.serializeFocusQuery(focusQuery)));
                     } else {
                         log.error("Http Error " + clientResponse.statusCode() + " posting task " + focusQuery.getId() + " : " + focusQuery.getBody() +
                                 " for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
@@ -130,8 +140,12 @@ public class ExporterService {
                 projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, operationType, null, error, status);
     }
 
-    private OperationType fetchBridgeheadOperationType(boolean toBeExecuted) {
-        return (toBeExecuted) ? OperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE : OperationType.SEND_QUERY_TO_BRIDGEHEAD;
+    private Optional<OperationType> fetchBridgeheadOperationType(TaskType taskType) {
+        return switch (taskType) {
+            case CREATE -> Optional.of(OperationType.SEND_QUERY_TO_BRIDGEHEAD);
+            case EXECUTE -> Optional.of(OperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE);
+            default -> Optional.empty();
+        };
     }
 
     private String convertToBase64String(Object jsonObject) {
@@ -160,6 +174,13 @@ public class ExporterService {
         return convertToBase64String(result);
     }
 
+    private String generateExportStatusInBase64ForExporterRequest(ProjectBridgehead projectBridgehead) {
+        Map<String, String> result = Map.of(
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_ID, projectBridgehead.getExporterExecutionId()
+        );
+        return convertToBase64String(result);
+    }
+
     private String generateExporterQueryInBase64ForExporterCreateQuery(Project project)
             throws ExporterServiceException {
         Query query = project.getQuery();
@@ -177,20 +198,22 @@ public class ExporterService {
         return convertToBase64String(result);
     }
 
-    private FocusQuery generateFocusBody(ProjectBridgehead projectBridgehead, boolean toBeExecuted) throws ExporterServiceException {
+    private FocusQuery generateFocusBody(ProjectBridgehead projectBridgehead, TaskType taskType) throws ExporterServiceException {
         try {
-            return generateFocusQueryWithoutExceptionHandling(projectBridgehead, toBeExecuted);
+            return generateFocusQueryWithoutExceptionHandling(projectBridgehead, taskType);
         } catch (FocusServiceException e) {
             throw new ExporterServiceException(e);
         }
     }
 
-    private FocusQuery generateFocusQueryWithoutExceptionHandling(ProjectBridgehead projectBridgehead, boolean toBeExecuted) throws FocusServiceException {
-        String exporterQueryInBase64 = (toBeExecuted) ? generateExportQueryInBase64ForExporterRequest(projectBridgehead) :
-                generateExporterQueryInBase64ForExporterCreateQuery(projectBridgehead.getProject());
-        return focusService.generateFocusQuery(exporterQueryInBase64, toBeExecuted, projectBridgehead.getBridgehead());
+    private FocusQuery generateFocusQueryWithoutExceptionHandling(ProjectBridgehead projectBridgehead, TaskType taskType) throws FocusServiceException {
+        String exporterQueryInBase64 = switch (taskType) {
+            case CREATE -> generateExporterQueryInBase64ForExporterCreateQuery(projectBridgehead.getProject());
+            case EXECUTE -> generateExportQueryInBase64ForExporterRequest(projectBridgehead);
+            case STATUS -> generateExportStatusInBase64ForExporterRequest(projectBridgehead);
+        };
+        return focusService.generateFocusQuery(exporterQueryInBase64, taskType, projectBridgehead.getBridgehead());
     }
-
 
     private String convertToString(LocalDate date) {
         return (date != null) ? date.format(DateTimeFormatter.ISO_DATE) : null;
@@ -226,25 +249,47 @@ public class ExporterService {
         }
     }
 
-    public Mono<ExporterServiceResult> checkIfQueryIsAlreadySent(ProjectBridgehead projectBridgehead) {
+    public Mono<ExporterServiceResult> checkIfQueryIsAlreadySentOrExecuted(ProjectBridgehead projectBridgehead) {
+        Optional<FocusQuery> focusQuery = extractFocusQuery(projectBridgehead);
+        if (focusQuery.isEmpty()) {
+            throw new RuntimeException("Focus Query not found for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
+        }
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(ProjectManagerConst.FOCUS_TASK_PATH + "/" + projectBridgehead.getExporterResponse() + ProjectManagerConst.FOCUS_TASK_RESULTS_PATH)
+                        .path(ProjectManagerConst.FOCUS_TASK_PATH + "/" + extractTaskId(focusQuery.get()) + ProjectManagerConst.FOCUS_TASK_RESULTS_PATH)
                         .queryParam(ProjectManagerConst.FOCUS_TASK_WAIT_TIME_PARAM, focusWaitTime)
                         .queryParam(ProjectManagerConst.FOCUS_TASK_WAIT_COUNT_PARAM, focusWaitCount).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .exchangeToMono(clientResponse -> {
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
-                        OperationType operationType = projectBridgehead.getQueryState() == QueryState.SENDING ? OperationType.CHECK_SEND_QUERY : OperationType.CHECK_SEND_AND_EXECUTE_QUERY;
-                        createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), operationType);
-                        return clientResponse.bodyToMono(String.class).flatMap(body -> Mono.just(new ExporterServiceResult(projectBridgehead, body)));
+                        Optional<OperationType> operationType = switch (projectBridgehead.getQueryState()) {
+                            case SENDING -> Optional.of(OperationType.CHECK_SEND_QUERY);
+                            case SENDING_AND_EXECUTING -> Optional.of(OperationType.CHECK_SEND_AND_EXECUTE_QUERY);
+                            default -> Optional.empty();
+                        };
+                        operationType.ifPresent(type -> createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), type));
+                        return clientResponse.bodyToMono(FocusQuery[].class).filter(focusQueries -> focusQueries != null && focusQueries.length > 0).flatMap(newFocusQuery -> {
+                            if (projectBridgehead.getQueryState() == QueryState.EXPORT_RUNNING_2) {
+                                if (newFocusQuery[0].getBody() == null) {
+                                    return Mono.empty();
+                                }
+                                String decodedBody = Base64Utils.decode(newFocusQuery[0].getBody());
+                                if (!decodedBody.contains("OK")) {
+                                    if (decodedBody.contains("ERROR")) {
+                                        modifyProjectBridgeheadState(projectBridgehead, QueryState.ERROR);
+                                    } else {
+                                        modifyProjectBridgeheadState(projectBridgehead, QueryState.EXPORT_RUNNING_1);
+                                    }
+                                    return Mono.empty();
+                                }
+                            }
+                            return Mono.just(new ExporterServiceResult(projectBridgehead, focusService.serializeFocusQuery(newFocusQuery[0])));
+                        });
                     } else {
-                        log.error("Http Error " + clientResponse.statusCode() + " checking task " + projectBridgehead.getExporterResponse() +
+                        log.error("Http Error " + clientResponse.statusCode() + " checking task " + extractTaskId(focusQuery.get()) +
                                 " for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
                         if (isQueryStateToBeChangedToError((HttpStatus) clientResponse.statusCode(), projectBridgehead)) {
-                            projectBridgehead.setQueryState(QueryState.ERROR);
-                            projectBridgehead.setModifiedAt(Instant.now());
-                            projectBridgeheadRepository.save(projectBridgehead);
+                            modifyProjectBridgeheadState(projectBridgehead, QueryState.ERROR);
                         }
                         return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
                             log.error("Error: {}", errorBody);
@@ -252,6 +297,26 @@ public class ExporterService {
                         });
                     }
                 });
+    }
+
+    private void modifyProjectBridgeheadState(ProjectBridgehead projectBridgehead, QueryState newState) {
+        projectBridgehead.setQueryState(newState);
+        projectBridgehead.setModifiedAt(Instant.now());
+        projectBridgeheadRepository.save(projectBridgehead);
+    }
+
+    private String extractTaskId(FocusQuery focusQuery) {
+        return (focusQuery.getId() != null) ? focusQuery.getId() : focusQuery.getTask();
+    }
+
+    private Optional<FocusQuery> extractFocusQuery(ProjectBridgehead projectBridgehead) {
+        if (projectBridgehead.getExporterResponse() != null) {
+            FocusQuery[] focusQueries = focusService.deserializeFocusResponse(projectBridgehead.getExporterResponse());
+            if (focusQueries != null && focusQueries.length > 0) {
+                return Optional.of(focusQueries[0]);
+            }
+        }
+        return Optional.empty();
     }
 
     private boolean isQueryStateToBeChangedToError(HttpStatus httpStatus, ProjectBridgehead projectBridgehead) {

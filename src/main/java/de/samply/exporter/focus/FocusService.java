@@ -32,14 +32,14 @@ public class FocusService {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
     }
 
-    public FocusQuery generateFocusQuery(String exporterQuery, boolean toBeExecuted, String bridgehead) throws FocusServiceException {
+    public FocusQuery generateFocusQuery(String exporterQuery, TaskType taskType, String bridgehead) throws FocusServiceException {
         FocusQuery focusQuery = new FocusQuery();
         focusQuery.setId(generateId());
         focusQuery.setBody(exporterQuery);
         focusQuery.setFrom(projectManagerId);
         focusQuery.setTo(fetchExporterFocusIds(bridgehead));
         focusQuery.setTtl(ttl);
-        focusQuery.setMetadata(createFocusQueryMetadata(toBeExecuted));
+        focusQuery.setMetadata(createFocusQueryMetadata(taskType));
         focusQuery.setFailureStrategy(failureStrategy);
         return focusQuery;
     }
@@ -56,10 +56,10 @@ public class FocusService {
         return new String[]{focusId};
     }
 
-    private FocusQueryMetadata createFocusQueryMetadata(boolean toBeExecuted) {
+    private FocusQueryMetadata createFocusQueryMetadata(TaskType taskType) {
         FocusQueryMetadata focusQueryMetadata = new FocusQueryMetadata();
         focusQueryMetadata.setProject(ProjectManagerConst.FOCUS_METADATA_PROJECT);
-        focusQueryMetadata.setExecute(toBeExecuted);
+        focusQueryMetadata.setTaskType(taskType);
         return focusQueryMetadata;
     }
 
@@ -75,6 +75,15 @@ public class FocusService {
     public FocusQuery[] deserializeFocusResponse(String focusResponse) throws FocusServiceException {
         try {
             return objectMapper.readValue(focusResponse, FocusQuery[].class);
+        } catch (JsonProcessingException e) {
+            throw new FocusServiceException(e);
+        }
+    }
+
+    public String serializeFocusQuery(FocusQuery focusQuery) throws FocusServiceException {
+        try {
+            FocusQuery[] focusQueries = {focusQuery};
+            return objectMapper.writeValueAsString(focusQueries);
         } catch (JsonProcessingException e) {
             throw new FocusServiceException(e);
         }

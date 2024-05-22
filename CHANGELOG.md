@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-04-18]
+## [0.0.1 - 2024-05-22]
 ### Added
 - First version of the project
 - Spring Application
@@ -133,3 +133,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Exporter Job
 - Check Queries in Exporter Job
 - Max time to wait focus task in minutes
+- Check export execution status
