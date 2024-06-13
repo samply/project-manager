@@ -16,5 +16,7 @@ public enum OperationType {
     EDIT_QUERY,
     ADD_DOCUMENT,
     EDIT_PROJECT,
-    SEND_EMAIL
+    SEND_EMAIL,
+    CREATE_CODER_WORKSPACE,
+    DELETE_CODER_WORKSPACE
 }
