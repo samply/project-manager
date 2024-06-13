@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Slf4j
 @Service
 @ConditionalOnProperty(name = ProjectManagerConst.RSTUDIO_GROUP_IMPLEMENTATION, havingValue = ProjectManagerConst.RSTUDIO_GROUP_KEYCLOAK_IMPLEMENTATION)
-public class RstudioKeycloakGroupManager implements RstudioGroupManager {
+public class RstudioKeycloakGroupService implements RstudioGroupService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String tokenRequestBody;
@@ -29,7 +29,7 @@ public class RstudioKeycloakGroupManager implements RstudioGroupManager {
     private final WebClient webClient;
     private final boolean enabled;
 
-    public RstudioKeycloakGroupManager(
+    public RstudioKeycloakGroupService(
             @Value(ProjectManagerConst.OIDC_URL_SV) String keycloakUrl,
             @Value(ProjectManagerConst.KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID_SV) String clientId,
             @Value(ProjectManagerConst.KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET_SV) String clientSecret,
@@ -59,7 +59,7 @@ public class RstudioKeycloakGroupManager implements RstudioGroupManager {
 
 
     @Override
-    public void addUserToRstudioGroup(String email) throws RstudioGroupManagerException {
+    public void addUserToRstudioGroup(String email) throws RstudioGroupServiceException {
         if (enabled) {
             log.info("Adding user " + email + " to Rstudio-Group");
             addUserToGroup(email);
@@ -67,7 +67,7 @@ public class RstudioKeycloakGroupManager implements RstudioGroupManager {
     }
 
     @Override
-    public void removeUserFromRstudioGroup(String email) throws RstudioGroupManagerException {
+    public void removeUserFromRstudioGroup(String email) throws RstudioGroupServiceException {
         if (enabled) {
             log.info("Removing user " + email + " from Rstudio-Group");
             removeUserFromGroup(email);
@@ -151,7 +151,7 @@ public class RstudioKeycloakGroupManager implements RstudioGroupManager {
         try {
             return attributeExtractor.apply(objectMapper.readTree(jsonObject)).asText();
         } catch (Exception e) {
-            throw new RstudioGroupManagerException(e);
+            throw new RstudioGroupServiceException(e);
         }
     }
 

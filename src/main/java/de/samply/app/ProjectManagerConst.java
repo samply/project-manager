@@ -269,6 +269,17 @@ public class ProjectManagerConst {
     public final static String TOKEN_MANAGER_PARAMETER_TOKEN_STATUS = "token_status";
     public final static String TOKEN_MANAGER_PARAMETER_TOKEN_CREATED_AT = "token_created_at";
 
+    // Coder
+    public final static String CODER_API_PATH = "/api/v2";
+    public final static String CODER_SESSION_TOKEN_HEADER = "Coder-Session-Token";
+
+    public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_KEY = "Enable Jupyter Lab?";
+    public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_KEY = "Enable VS Code Server?";
+    public final static String CODER_DOTFILES_URL_PARAM_KEY = "Your Dotfiles URL";
+    public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_KEY = "Samply.Beam: Enable file receiver";
+    public final static String CODER_SAMPLY_BEAM_APP_ID_PARAM_KEY = "Samply.Beam: App ID (short)";
+    public final static String CODER_SAMPLY_BEAM_APP_SECRET_PARAM_KEY = "Samply.Beam: App Secret";
+    public final static String CODER_DELETE_TRANSITION = "delete";
 
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
@@ -318,6 +329,21 @@ public class ProjectManagerConst {
     public final static String OIDC_REALM = "OIDC_REALM";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
+
+    public final static String CODER_BASE_URL = "CODER_BASE_URL";
+    public final static String CODER_ORGANISATION_ID = "CODER_ORGANISATION_ID";
+    public final static String CODER_MEMBER_ID = "CODER_MEMBER_ID";
+    public final static String CODER_WORKSPACE_ID = "CODER_WORKSPACE_ID";
+    public final static String CODER_TEMPLATE_VERSION_ID = "CODER_TEMPLATE_VERSION_ID";
+    public final static String CODER_CREATE_PATH = "CODER_CREATE_PATH";
+    public final static String CODER_DELETE_PATH = "CODER_DELETE_PATH";
+    public final static String CODER_SESSION_TOKEN = "CODER_SESSION_TOKEN";
+
+    public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE = "CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE";
+    public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE = "CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE";
+    public final static String CODER_DOTFILES_URL_PARAM_VALUE = "CODER_DOTFILES_URL_PARAM_VALUE";
+    public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE = "CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE";
+    public final static String ENABLE_CODER = "ENABLE_CODER";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -387,7 +413,19 @@ public class ProjectManagerConst {
     public final static String ENABLE_RSTUDIO_GROUP_MANAGER_SV = HEAD_SV + ENABLE_RSTUDIO_GROUP_MANAGER + ":true" + BOTTOM_SV;
     public final static String OIDC_URL_SV = HEAD_SV + OIDC_URL + BOTTOM_SV;
     public final static String OIDC_REALM_SV = HEAD_SV + OIDC_REALM + BOTTOM_SV;
+    public final static String CODER_BASE_URL_SV = HEAD_SV + CODER_BASE_URL + BOTTOM_SV;
+    public final static String CODER_ORGANISATION_ID_SV = HEAD_SV + CODER_ORGANISATION_ID + BOTTOM_SV;
+    public final static String CODER_MEMBER_ID_SV = HEAD_SV + CODER_MEMBER_ID + BOTTOM_SV;
+    public final static String CODER_TEMPLATE_VERSION_ID_SV = HEAD_SV + CODER_TEMPLATE_VERSION_ID + BOTTOM_SV;
+    public final static String CODER_CREATE_PATH_SV = HEAD_SV + CODER_CREATE_PATH + BOTTOM_SV;
+    public final static String CODER_DELETE_PATH_SV = HEAD_SV + CODER_DELETE_PATH + BOTTOM_SV;
+    public final static String CODER_SESSION_TOKEN_SV = HEAD_SV + CODER_SESSION_TOKEN + BOTTOM_SV;
 
+    public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE + ":1" + BOTTOM_SV;
+    public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE + ":0" + BOTTOM_SV;
+    public final static String CODER_DOTFILES_URL_PARAM_VALUE_SV = HEAD_SV + CODER_DOTFILES_URL_PARAM_VALUE + ":" + BOTTOM_SV;
+    public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE + ":1" + BOTTOM_SV;
+    public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

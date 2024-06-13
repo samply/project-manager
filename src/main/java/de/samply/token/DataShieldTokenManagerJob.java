@@ -2,6 +2,7 @@ package de.samply.token;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.coder.CoderService;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadDataShield;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -14,7 +15,7 @@ import de.samply.email.EmailTemplateType;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
-import de.samply.rstudio.group.RstudioGroupManager;
+import de.samply.rstudio.group.RstudioGroupService;
 import de.samply.token.dto.DataShieldProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
@@ -32,7 +33,8 @@ import java.util.Set;
 @Component
 public class DataShieldTokenManagerJob {
 
-    private final RstudioGroupManager rstudioGroupManager;
+    private final RstudioGroupService rstudioGroupService;
+    private final CoderService coderService;
     private final DataShieldTokenManagerService tokenManagerService;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
@@ -41,7 +43,8 @@ public class DataShieldTokenManagerJob {
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final boolean isTokenManagerActive;
 
-    public DataShieldTokenManagerJob(RstudioGroupManager rstudioGroupManager,
+    public DataShieldTokenManagerJob(RstudioGroupService rstudioGroupService,
+                                     CoderService coderService,
                                      DataShieldTokenManagerService tokenManagerService,
                                      ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                                      ProjectBridgeheadRepository projectBridgeheadRepository,
@@ -49,7 +52,8 @@ public class DataShieldTokenManagerJob {
                                      EmailService emailService, BridgeheadConfiguration bridgeheadConfiguration,
                                      @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive
     ) {
-        this.rstudioGroupManager = rstudioGroupManager;
+        this.rstudioGroupService = rstudioGroupService;
+        this.coderService = coderService;
         this.tokenManagerService = tokenManagerService;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -90,7 +94,8 @@ public class DataShieldTokenManagerJob {
                 }));
         usersToSendAnEmail.forEach(userProject -> {
             sendEmail(userProject.getEmail(), userProject.getProjectCode(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
-            this.rstudioGroupManager.addUserToRstudioGroup(userProject.getEmail());
+            this.rstudioGroupService.addUserToRstudioGroup(userProject.getEmail());
+            this.coderService.createWorkspace(userProject.getEmail(), userProject.getProjectCode());
         });
     }
 
@@ -130,7 +135,8 @@ public class DataShieldTokenManagerJob {
             sendEmail(userProject.getEmail(), userProject.getProjectCode(), EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, userProject.getProjectRole());
             if (userProject.getProjectRole() != ProjectRole.FINAL ||
                     this.projectBridgeheadRepository.findByProjectCodeAndState(userProject.getProjectCode(), ProjectBridgeheadState.ACCEPTED).isEmpty()) {
-                this.rstudioGroupManager.removeUserFromRstudioGroup(userProject.getEmail());
+                this.rstudioGroupService.removeUserFromRstudioGroup(userProject.getEmail());
+                this.coderService.deleteWorkspace(userProject.getEmail(), userProject.getProjectCode());
             }
         });
     }
