@@ -13,6 +13,13 @@
         "outputFormat": "EXCEL",
         "templateId": "ccp"
       }
+    },
+    "CCP-Researcher-Environment": {
+      "fieldValues": {
+        "type": "RESEARCHER_ENVIRONMENT",
+        "outputFormat": "CSV",
+        "templateId": "ccp"
+      }
     }
   }
 }

@@ -89,6 +89,9 @@ public class ProjectManagerConst {
     public final static String FETCH_OTHER_DOCUMENTS_ACTION = "FETCH_OTHER_DOCUMENTS";
     public final static String ACCEPT_PROJECT_RESULTS_ACTION = "ACCEPT_PROJECT_RESULTS";
     public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
+    public final static String ACCEPT_PROJECT_ANALYSIS_ACTION = "ACCEPT_PROJECT_ANALYSIS_ACTION";
+    public final static String REJECT_PROJECT_ANALYSIS_ACTION = "REJECT_PROJECT_ANALYSIS_ACTION";
+    public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION = "REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION";
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
     public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
@@ -137,6 +140,9 @@ public class ProjectManagerConst {
     public final static String ACCEPT_PROJECT_RESULTS = "/accept-project-results";
     public final static String REJECT_PROJECT_RESULTS = "/reject-project-results";
     public final static String REQUEST_CHANGES_IN_PROJECT = "/request-changes-in-project";
+    public final static String ACCEPT_PROJECT_ANALYSIS = "/accept-project-analysis";
+    public final static String REJECT_PROJECT_ANALYSIS = "/reject-project-analysis";
+    public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS = "/request-changes-in-project-analysis";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
     public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS = "/visible-project-bridgeheads";
     public final static String FETCH_PROJECT = "/project";
@@ -306,6 +312,7 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
     public final static String DATASHIELD_TEMPLATES = "DATASHIELD_TEMPLATES";
+    public final static String RESEARCHER_ENVIRONMENT_TEMPLATES = "RESEARCHER_ENVIRONMENT_TEMPLATES";
     public final static String FOCUS_PROJECT_MANAGER_ID = "FOCUS_PROJECT_MANAGER_ID";
     public final static String FOCUS_TTL = "FOCUS_TTL";
     public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
@@ -388,6 +395,7 @@ public class ProjectManagerConst {
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
+    public final static String RESEARCHER_ENVIRONMENT_TEMPLATES_SV = HEAD_SV + RESEARCHER_ENVIRONMENT_TEMPLATES + BOTTOM_SV;
     public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
     public final static String FOCUS_PROJECT_MANAGER_ID_SV = HEAD_SV + FOCUS_PROJECT_MANAGER_ID + BOTTOM_SV;
     public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":60s" + BOTTOM_SV;

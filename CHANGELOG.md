@@ -136,3 +136,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Check export execution status
 - Coder Service
 - RStudio in Coder
+- Researcher environment project type
