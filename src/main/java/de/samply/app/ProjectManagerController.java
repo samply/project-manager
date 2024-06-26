@@ -713,6 +713,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @EmailSender(templateType = EmailTemplateType.NEW_PUBLICATION, recipients = {EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PUBLICATION_URL_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_PUBLICATION_URL)
