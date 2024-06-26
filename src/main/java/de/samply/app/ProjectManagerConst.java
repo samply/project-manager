@@ -274,6 +274,7 @@ public class ProjectManagerConst {
     public final static String CODER_SESSION_TOKEN_HEADER = "Coder-Session-Token";
 
     public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_KEY = "Enable Jupyter Lab?";
+    public final static String CODER_ENABLE_RSTUDIO_PARAM_KEY = "Enable RStudio?";
     public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_KEY = "Enable VS Code Server?";
     public final static String CODER_DOTFILES_URL_PARAM_KEY = "Your Dotfiles URL";
     public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_KEY = "Samply.Beam: Enable file receiver";
@@ -340,6 +341,7 @@ public class ProjectManagerConst {
     public final static String CODER_SESSION_TOKEN = "CODER_SESSION_TOKEN";
 
     public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE = "CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE";
+    public final static String CODER_ENABLE_RSTUDIO_PARAM_VALUE = "CODER_ENABLE_RSTUDIO_PARAM_VALUE";
     public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE = "CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE";
     public final static String CODER_DOTFILES_URL_PARAM_VALUE = "CODER_DOTFILES_URL_PARAM_VALUE";
     public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE = "CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE";
@@ -388,7 +390,7 @@ public class ProjectManagerConst {
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
     public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
     public final static String FOCUS_PROJECT_MANAGER_ID_SV = HEAD_SV + FOCUS_PROJECT_MANAGER_ID + BOTTOM_SV;
-    public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":10s" + BOTTOM_SV;
+    public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":60s" + BOTTOM_SV;
     public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
             HEAD_SV + FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
     public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + FOCUS_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
@@ -422,6 +424,7 @@ public class ProjectManagerConst {
     public final static String CODER_SESSION_TOKEN_SV = HEAD_SV + CODER_SESSION_TOKEN + BOTTOM_SV;
 
     public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE + ":1" + BOTTOM_SV;
+    public final static String CODER_ENABLE_RSTUDIO_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_RSTUDIO_PARAM_VALUE + ":1" + BOTTOM_SV;
     public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE + ":0" + BOTTOM_SV;
     public final static String CODER_DOTFILES_URL_PARAM_VALUE_SV = HEAD_SV + CODER_DOTFILES_URL_PARAM_VALUE + ":" + BOTTOM_SV;
     public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE + ":1" + BOTTOM_SV;

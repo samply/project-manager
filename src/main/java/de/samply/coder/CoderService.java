@@ -40,6 +40,7 @@ public class CoderService {
     private final String coderCreatePath;
     private final String coderDeletePath;
     private final String enableJupyterLab;
+    private final String enableRstudio;
     private final String enableVsCodeServer;
     private final String dotFilesUrl;
     private final String enableFileReceiver;
@@ -54,11 +55,11 @@ public class CoderService {
             @Value(ProjectManagerConst.ENABLE_CODER_SV) boolean coderEnabled,
             @Value(ProjectManagerConst.CODER_BASE_URL_SV) String coderBaseUrl,
             @Value(ProjectManagerConst.CODER_ORGANISATION_ID_SV) String coderOrganizationId,
-            @Value(ProjectManagerConst.CODER_MEMBER_ID_SV) String coderMemberId,
             @Value(ProjectManagerConst.CODER_TEMPLATE_VERSION_ID_SV) String coderTemplateVersionId,
             @Value(ProjectManagerConst.CODER_CREATE_PATH_SV) String coderCreatePath,
             @Value(ProjectManagerConst.CODER_DELETE_PATH_SV) String coderDeletePath,
             @Value(ProjectManagerConst.CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE_SV) String enableJupyterLab,
+            @Value(ProjectManagerConst.CODER_ENABLE_RSTUDIO_PARAM_VALUE_SV) String enableRstudio,
             @Value(ProjectManagerConst.CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE_SV) String enableVsCodeServer,
             @Value(ProjectManagerConst.CODER_DOTFILES_URL_PARAM_VALUE_SV) String dotFilesUrl,
             @Value(ProjectManagerConst.CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE_SV) String enableFileReceiver,
@@ -69,12 +70,12 @@ public class CoderService {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.enableJupyterLab = enableJupyterLab;
+        this.enableRstudio = enableRstudio;
         this.enableVsCodeServer = enableVsCodeServer;
         this.dotFilesUrl = dotFilesUrl;
         this.enableFileReceiver = enableFileReceiver;
         this.coderSessionToken = coderSessionToken;
-        Map<String, String> pathVariables = Map.of(ProjectManagerConst.CODER_ORGANISATION_ID, coderOrganizationId,
-                ProjectManagerConst.CODER_MEMBER_ID, coderMemberId);
+        Map<String, String> pathVariables = Map.of(ProjectManagerConst.CODER_ORGANISATION_ID, coderOrganizationId);
         this.coderCreatePath = replaceVariablesInPath(coderCreatePath, pathVariables);
         this.coderDeletePath = replaceVariablesInPath(coderDeletePath, pathVariables);
 
@@ -119,7 +120,8 @@ public class CoderService {
 
     private Mono<Response> createWorkspace(ProjectCoder projectCoder, CreateRequestBody createRequestBody) {
         return this.webClient.post()
-                .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.CODER_API_PATH).path(coderCreatePath).build())
+                .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.CODER_API_PATH).path(
+                        replaceVariablesInPath(coderCreatePath, Map.of(ProjectManagerConst.CODER_MEMBER_ID, fetchCoderMemberId(projectCoder.getEmail())))).build())
                 .header(ProjectManagerConst.CODER_SESSION_TOKEN_HEADER, coderSessionToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(createRequestBody)
@@ -198,6 +200,7 @@ public class CoderService {
 
     private void addRichParameterValues(CreateRequestBody createRequestBody, ProjectCoder projectCoder) {
         List<CreateRequestParameter> createRequestParameters = List.of(
+                new CreateRequestParameter(ProjectManagerConst.CODER_ENABLE_RSTUDIO_PARAM_KEY, enableRstudio),
                 new CreateRequestParameter(ProjectManagerConst.CODER_ENABLE_JUPYTER_LAB_PARAM_KEY, enableJupyterLab),
                 new CreateRequestParameter(ProjectManagerConst.CODER_ENABLE_VS_CODE_SERVER_PARAM_KEY, enableVsCodeServer),
                 new CreateRequestParameter(ProjectManagerConst.CODER_DOTFILES_URL_PARAM_KEY, dotFilesUrl),
@@ -216,4 +219,7 @@ public class CoderService {
         return UUID.randomUUID().toString();
     }
 
+    private String fetchCoderMemberId(@NotNull String email) {
+        return email.substring(0, email.indexOf("@")).replace(".", "");
+    }
 }
