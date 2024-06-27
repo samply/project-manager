@@ -14,9 +14,9 @@
         "templateId": "ccp"
       }
     },
-    "CCP-Researcher-Environment": {
+    "CCP-Research-Environment": {
       "fieldValues": {
-        "type": "RESEARCHER_ENVIRONMENT",
+        "type": "RESEARCH_ENVIRONMENT",
         "outputFormat": "CSV",
         "templateId": "ccp"
       }

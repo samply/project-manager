@@ -52,7 +52,7 @@ public class ExporterService {
     private final NotificationService notificationService;
     private final Set<String> exportTemplates;
     private final Set<String> datashieldTemplates;
-    private final Set<String> researcherEnvironmentTemplates;
+    private final Set<String> researchEnvironmentTemplates;
     private final String focusProjectManagerId;
     private final String focusApiKey;
 
@@ -68,7 +68,7 @@ public class ExporterService {
             @Value(ProjectManagerConst.FOCUS_URL_SV) String focusUrl,
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
-            @Value(ProjectManagerConst.RESEARCHER_ENVIRONMENT_TEMPLATES_SV) Set<String> researcherEnvironmentTemplates,
+            @Value(ProjectManagerConst.RESEARCH_ENVIRONMENT_TEMPLATES_SV) Set<String> researchEnvironmentTemplates,
             @Value(ProjectManagerConst.FOCUS_TTL_SV) String focusWaitTime,
             @Value(ProjectManagerConst.FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV) String focusWaitCount,
             @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
@@ -86,7 +86,7 @@ public class ExporterService {
         this.focusWaitTime = focusWaitTime;
         this.focusWaitCount = focusWaitCount;
         this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
-        this.researcherEnvironmentTemplates = researcherEnvironmentTemplates;
+        this.researchEnvironmentTemplates = researchEnvironmentTemplates;
         this.webClient = webClientFactory.createWebClient(focusUrl);
         this.focusApiKey = focusApiKey;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -234,7 +234,7 @@ public class ExporterService {
         return switch (projectType) {
             case EXPORT -> exportTemplates;
             case DATASHIELD -> datashieldTemplates;
-            case RESEARCH_ENVIRONMENT -> researcherEnvironmentTemplates;
+            case RESEARCH_ENVIRONMENT -> researchEnvironmentTemplates;
         };
     }
 
