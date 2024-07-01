@@ -12,6 +12,8 @@ import de.samply.query.QueryState;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,16 +58,22 @@ public class CoderJob {
     }
 
     private List<ProjectBridgeheadUser> fetchActiveUsers() {
-        return projectBridgeheadUserRepository.getDistinctByProjectTypeAndQueryState(ProjectType.RESEARCH_ENVIRONMENT, QueryState.FINISHED, ProjectBridgeheadState.ACCEPTED);
+        return projectBridgeheadUserRepository.getDistinctInValidaProjectStateByProjectTypeAndQueryStateAndProjectBridgeheadState(ProjectType.RESEARCH_ENVIRONMENT, QueryState.FINISHED, ProjectBridgeheadState.ACCEPTED);
     }
 
     public void manageCoderInactiveUsers() {
-        //TODO
+        fetchInactiveUsers().stream().forEach(user -> {
+            Optional<ProjectCoder> projectCoder = projectCoderRepository.findByProjectBridgeheadUserAndDeletedAtIsNull(user);
+            if (projectCoder.isPresent()) {
+                this.coderService.deleteWorkspace(user);
+                projectCoder.get().setDeletedAt(Instant.now());
+                projectCoderRepository.save(projectCoder.get());
+            }
+        });
     }
 
     private List<ProjectBridgeheadUser> fetchInactiveUsers() {
-        //TODO
-        return null;
+        return projectBridgeheadUserRepository.getDistinctInInvalidProjectStateByProjectType(ProjectType.RESEARCH_ENVIRONMENT);
     }
 
 }

@@ -58,6 +58,13 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
             "(pbu.projectBridgehead.project.state = 'DEVELOP' AND pbu.projectRole = 'DEVELOPER') OR " +
             "(pbu.projectBridgehead.project.state = 'PILOT' AND pbu.projectRole = 'PILOT') OR" +
             "(pbu.projectBridgehead.project.state = 'FINAL' AND pbu.projectRole = 'FINAL'))")
-    List<ProjectBridgeheadUser> getDistinctByProjectTypeAndQueryState(ProjectType projectType, QueryState queryState, ProjectBridgeheadState projectBridgeheadState);
+    List<ProjectBridgeheadUser> getDistinctInValidaProjectStateByProjectTypeAndQueryStateAndProjectBridgeheadState(ProjectType projectType, QueryState queryState, ProjectBridgeheadState projectBridgeheadState);
+
+    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND (" +
+            "(pbu.projectRole = 'DEVELOPER' AND pbu.projectBridgehead.project.state != 'DEVELOP') OR " +
+            "(pbu.projectRole = 'PILOT' AND pbu.projectBridgehead.project.state != 'PILOT') OR" +
+            "(pbu.projectRole = 'FINAL' AND pbu.projectBridgehead.project.state != 'FINAL'))")
+    List<ProjectBridgeheadUser> getDistinctInInvalidProjectStateByProjectType(ProjectType projectType);
+
 
 }

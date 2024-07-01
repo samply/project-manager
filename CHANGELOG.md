@@ -138,3 +138,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - RStudio in Coder
 - Research environment project type
 - Upload file to Coder
+- Delete Coder workspace job
