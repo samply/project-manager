@@ -248,14 +248,15 @@ public class ProjectManagerConst {
     public static final String EXPORTER_QUERY_CONTEXT_PROJECT_ID = "PROJECT-ID";
     public final static String EXPORTER_QUERY_CONTEXT_SEPARATOR = ";";
     public final static String API_KEY = "ApiKey";
+    public final static String EXPORTER_FETCH_QUERY_EXECUTION_URL_PATH = "/response?query-execution-id=";
 
 
-    // Focus
-    public final static String FOCUS_METADATA_PROJECT = "exporter";
-    public final static String FOCUS_TASK_PATH = "/v1/tasks";
-    public final static String FOCUS_TASK_RESULTS_PATH = "/results";
-    public final static String FOCUS_TASK_WAIT_TIME_PARAM = "wait_time";
-    public final static String FOCUS_TASK_WAIT_COUNT_PARAM = "wait_count";
+    // Beam
+    public final static String BEAM_FOCUS_METADATA_PROJECT = "exporter";
+    public final static String BEAM_TASK_PATH = "/v1/tasks";
+    public final static String BEAM_TASK_RESULTS_PATH = "/results";
+    public final static String BEAM_TASK_WAIT_TIME_PARAM = "wait_time";
+    public final static String BEAM_TASK_WAIT_COUNT_PARAM = "wait_count";
 
     // Token Manager Variables
     public final static String TOKEN_MANAGER_ROOT = "/api";
@@ -313,12 +314,12 @@ public class ProjectManagerConst {
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
     public final static String DATASHIELD_TEMPLATES = "DATASHIELD_TEMPLATES";
     public final static String RESEARCH_ENVIRONMENT_TEMPLATES = "RESEARCH_ENVIRONMENT_TEMPLATES";
-    public final static String FOCUS_PROJECT_MANAGER_ID = "FOCUS_PROJECT_MANAGER_ID";
-    public final static String FOCUS_TTL = "FOCUS_TTL";
-    public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
-    public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES = "FOCUS_FAILURE_STRATEGY_MAX_TRIES";
-    public final static String FOCUS_URL = "FOCUS_URL";
-    public final static String FOCUS_API_KEY = "FOCUS_API_KEY";
+    public final static String BEAM_PROJECT_MANAGER_ID = "BEAM_PROJECT_MANAGER_ID";
+    public final static String BEAM_TTL = "BEAM_TTL";
+    public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
+    public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES = "BEAM_FAILURE_STRATEGY_MAX_TRIES";
+    public final static String BEAM_URL = "BEAM_URL";
+    public final static String EXPORTER_API_KEY = "EXPORTER_API_KEY";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
@@ -346,12 +347,15 @@ public class ProjectManagerConst {
     public final static String CODER_CREATE_PATH = "CODER_CREATE_PATH";
     public final static String CODER_DELETE_PATH = "CODER_DELETE_PATH";
     public final static String CODER_SESSION_TOKEN = "CODER_SESSION_TOKEN";
+    public final static String CODER_CRON_EXPRESSION = "CODER_CRON_EXPRESSION";
 
     public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE = "CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE";
     public final static String CODER_ENABLE_RSTUDIO_PARAM_VALUE = "CODER_ENABLE_RSTUDIO_PARAM_VALUE";
     public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE = "CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE";
     public final static String CODER_DOTFILES_URL_PARAM_VALUE = "CODER_DOTFILES_URL_PARAM_VALUE";
     public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE = "CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE";
+    public final static String CODER_BEAM_ID_SUFFIX = "CODER_BEAM_ID_SUFFIX";
+    public final static String CODER_TEST_FILE_BEAM_ID = "CODER_TEST_FILE_BEAM_ID";
     public final static String ENABLE_CODER = "ENABLE_CODER";
 
     // Spring Values (SV)
@@ -397,13 +401,13 @@ public class ProjectManagerConst {
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
     public final static String RESEARCH_ENVIRONMENT_TEMPLATES_SV = HEAD_SV + RESEARCH_ENVIRONMENT_TEMPLATES + BOTTOM_SV;
     public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
-    public final static String FOCUS_PROJECT_MANAGER_ID_SV = HEAD_SV + FOCUS_PROJECT_MANAGER_ID + BOTTOM_SV;
-    public final static String FOCUS_TTL_SV = HEAD_SV + FOCUS_TTL + ":60s" + BOTTOM_SV;
-    public final static String FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
-            HEAD_SV + FOCUS_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
-    public final static String FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + FOCUS_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
-    public final static String FOCUS_URL_SV = HEAD_SV + FOCUS_URL + BOTTOM_SV;
-    public final static String FOCUS_API_KEY_SV = HEAD_SV + FOCUS_API_KEY + BOTTOM_SV;
+    public final static String BEAM_PROJECT_MANAGER_ID_SV = HEAD_SV + BEAM_PROJECT_MANAGER_ID + BOTTOM_SV;
+    public final static String BEAM_TTL_SV = HEAD_SV + BEAM_TTL + ":60s" + BOTTOM_SV;
+    public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
+            HEAD_SV + BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
+    public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + BEAM_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
+    public final static String BEAM_URL_SV = HEAD_SV + BEAM_URL + BOTTOM_SV;
+    public final static String EXPORTER_API_KEY_SV = HEAD_SV + EXPORTER_API_KEY + BOTTOM_SV;
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String ENABLE_TOKEN_MANAGER_SV = HEAD_SV + ENABLE_TOKEN_MANAGER + ":true" + BOTTOM_SV;
     public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;
@@ -430,6 +434,9 @@ public class ProjectManagerConst {
     public final static String CODER_CREATE_PATH_SV = HEAD_SV + CODER_CREATE_PATH + BOTTOM_SV;
     public final static String CODER_DELETE_PATH_SV = HEAD_SV + CODER_DELETE_PATH + BOTTOM_SV;
     public final static String CODER_SESSION_TOKEN_SV = HEAD_SV + CODER_SESSION_TOKEN + BOTTOM_SV;
+    public final static String CODER_BEAM_ID_SUFFIX_SV = HEAD_SV + CODER_BEAM_ID_SUFFIX + BOTTOM_SV;
+    public final static String CODER_TEST_FILE_BEAM_ID_SV = HEAD_SV + CODER_TEST_FILE_BEAM_ID + BOTTOM_SV;
+    public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
 
     public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE + ":1" + BOTTOM_SV;
     public final static String CODER_ENABLE_RSTUDIO_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_RSTUDIO_PARAM_VALUE + ":1" + BOTTOM_SV;

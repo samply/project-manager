@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class FocusQuery {
+public class BeamRequest {
 
     @JsonProperty("body")
     private String body;
@@ -15,7 +15,7 @@ public class FocusQuery {
     @JsonProperty("id")
     private String id;
     @JsonProperty("metadata")
-    private FocusQueryMetadata metadata;
+    private BeamRequestMetadata metadata;
     @JsonProperty("to")
     private String[] to;
     @JsonProperty("ttl")

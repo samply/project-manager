@@ -6,6 +6,7 @@ import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.query.QueryState;
 import de.samply.user.roles.ProjectRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,6 +24,8 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
     List<ProjectBridgeheadUser> getByEmailAndProjectBridgehead(String email, ProjectBridgehead projectBridgehead);
 
     Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(String email, ProjectBridgehead projectBridgehead);
+
+    Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgehead_ProjectCodeOrderByModifiedAtDesc(String email, String projectCode);
 
     Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(String email, Project project, String bridgehead);
 
@@ -49,5 +52,12 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
 
     @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.code = :projectCode AND pbu.projectRole = :projectRole")
     Set<ProjectBridgeheadUser> getDistinctByProjectRoleAndProjectCode(ProjectRole projectRole, String projectCode);
+
+    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project.type = :projectType AND " +
+            "pbu.projectBridgehead.state = :projectBridgeheadState AND pbu.projectBridgehead.queryState = :queryState AND (" +
+            "(pbu.projectBridgehead.project.state = 'DEVELOP' AND pbu.projectRole = 'DEVELOPER') OR " +
+            "(pbu.projectBridgehead.project.state = 'PILOT' AND pbu.projectRole = 'PILOT') OR" +
+            "(pbu.projectBridgehead.project.state = 'FINAL' AND pbu.projectRole = 'FINAL'))")
+    List<ProjectBridgeheadUser> getDistinctByProjectTypeAndQueryState(ProjectType projectType, QueryState queryState, ProjectBridgeheadState projectBridgeheadState);
 
 }

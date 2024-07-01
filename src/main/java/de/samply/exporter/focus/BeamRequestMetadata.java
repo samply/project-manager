@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class FocusQueryMetadata {
+public class BeamRequestMetadata {
 
     @JsonProperty("project")
     private String project;

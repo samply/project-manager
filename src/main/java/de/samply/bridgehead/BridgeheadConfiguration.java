@@ -25,7 +25,8 @@ public class BridgeheadConfiguration {
     @Data
     public static class BridgeheadConfig {
         private String explorerId;
-        private String focusId;
+        private String focusBeamId;
+        private String fileDispatcherBeamId;
         private String tokenManagerId;
         private String humanReadable;
     }
@@ -34,7 +35,7 @@ public class BridgeheadConfiguration {
     private void initIdBridgeheadMaps() {
         config.forEach((bridgehead, bridgeheadConfig) -> {
             addBridgeheadId(bridgehead, bridgeheadConfig.getExplorerId(), explorerIdBridgeheadMap);
-            addBridgeheadId(bridgehead, bridgeheadConfig.getFocusId(), focusIdBridgeheadMap);
+            addBridgeheadId(bridgehead, bridgeheadConfig.getFocusBeamId(), focusIdBridgeheadMap);
             addBridgeheadId(bridgehead, bridgeheadConfig.getTokenManagerId(), tokenManagerIdBridgeheadMap);
         });
     }
@@ -57,8 +58,8 @@ public class BridgeheadConfiguration {
         return config.keySet().contains(bridgehead);
     }
 
-    public String getFocusId(String bridgehead) {
-        return config.get(bridgehead).getFocusId();
+    public String getFocusBeamId(String bridgehead) {
+        return config.get(bridgehead).getFocusBeamId();
     }
 
     public String getHumanReadable(String bridgehead) {
@@ -84,6 +85,10 @@ public class BridgeheadConfiguration {
 
     public String fetchBridgeheadForFocusId(String focusId) {
         return fetchBridgehead(focusId, focusIdBridgeheadMap);
+    }
+
+    public String getFileDispatcherBeamId(String bridgehead) {
+        return config.get(bridgehead).getFileDispatcherBeamId();
     }
 
     public Optional<String> getBridgeheadForTokenManagerId(String tokenManagerId) {

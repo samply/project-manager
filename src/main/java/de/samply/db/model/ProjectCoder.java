@@ -25,12 +25,12 @@ public class ProjectCoder {
     @Column(name = "app_secret", nullable = false)
     private String appSecret;
 
-    @Column(name = "email", nullable = false)
-    private String email;
-
     @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @JoinColumn(name = "project_bridgehead_user_id", nullable = false)
+    private ProjectBridgeheadUser projectBridgeheadUser;
+
+    @Column(name = "export_transferred")
+    private boolean isExportTransferred = false;
 
     @Column(name = "workspace_id")
     private String workspaceId;

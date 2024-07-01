@@ -5,15 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
-import de.samply.db.model.Project;
-import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.model.ProjectBridgeheadDataShield;
-import de.samply.db.model.Query;
+import de.samply.db.model.*;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.exporter.focus.FocusQuery;
-import de.samply.exporter.focus.FocusService;
-import de.samply.exporter.focus.FocusServiceException;
+import de.samply.exporter.focus.BeamRequest;
+import de.samply.exporter.focus.BeamService;
+import de.samply.exporter.focus.BeamServiceException;
 import de.samply.exporter.focus.TaskType;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
@@ -46,7 +43,7 @@ import java.util.Set;
 public class ExporterService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
 
-    private final FocusService focusService;
+    private final BeamService beamService;
     private final WebClient webClient;
     private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
     private final NotificationService notificationService;
@@ -54,41 +51,47 @@ public class ExporterService {
     private final Set<String> datashieldTemplates;
     private final Set<String> researchEnvironmentTemplates;
     private final String focusProjectManagerId;
-    private final String focusApiKey;
+    private final String exporterApiKey;
+    private final String coderBeamIdSuffix;
+    private final String testCoderFileBeamId;
 
-    private final String focusWaitTime;
-    private final String focusWaitCount;
+    private final String beamWaitTime;
+    private final String beamWaitCount;
     private final int maxTimeToWaitFocusTaskInMinutes;
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public ExporterService(
-            @Value(ProjectManagerConst.FOCUS_API_KEY_SV) String focusApiKey,
-            @Value(ProjectManagerConst.FOCUS_PROJECT_MANAGER_ID_SV) String focusProjectManagerId,
-            @Value(ProjectManagerConst.FOCUS_URL_SV) String focusUrl,
+            @Value(ProjectManagerConst.EXPORTER_API_KEY_SV) String exporterApiKey,
+            @Value(ProjectManagerConst.BEAM_PROJECT_MANAGER_ID_SV) String focusProjectManagerId,
+            @Value(ProjectManagerConst.BEAM_URL_SV) String focusUrl,
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
             @Value(ProjectManagerConst.RESEARCH_ENVIRONMENT_TEMPLATES_SV) Set<String> researchEnvironmentTemplates,
-            @Value(ProjectManagerConst.FOCUS_TTL_SV) String focusWaitTime,
-            @Value(ProjectManagerConst.FOCUS_FAILURE_STRATEGY_MAX_TRIES_SV) String focusWaitCount,
+            @Value(ProjectManagerConst.BEAM_TTL_SV) String beamWaitTime,
+            @Value(ProjectManagerConst.BEAM_FAILURE_STRATEGY_MAX_TRIES_SV) String beamWaitCount,
             @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
-            FocusService focusService,
+            @Value(ProjectManagerConst.CODER_BEAM_ID_SUFFIX_SV) String coderBeamIdSuffix,
+            @Value(ProjectManagerConst.CODER_TEST_FILE_BEAM_ID_SV) String testCoderFileBeamId,
+            BeamService beamService,
             ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
             NotificationService notificationService,
             WebClientFactory webClientFactory,
             ProjectBridgeheadRepository projectBridgeheadRepository) {
-        this.focusService = focusService;
+        this.beamService = beamService;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.notificationService = notificationService;
         this.exportTemplates = exportTemplates;
         this.datashieldTemplates = datashieldTemplates;
         this.focusProjectManagerId = focusProjectManagerId;
-        this.focusWaitTime = focusWaitTime;
-        this.focusWaitCount = focusWaitCount;
+        this.beamWaitTime = beamWaitTime;
+        this.beamWaitCount = beamWaitCount;
         this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
         this.researchEnvironmentTemplates = researchEnvironmentTemplates;
+        this.coderBeamIdSuffix = coderBeamIdSuffix;
+        this.testCoderFileBeamId = testCoderFileBeamId;
         this.webClient = webClientFactory.createWebClient(focusUrl);
-        this.focusApiKey = focusApiKey;
+        this.exporterApiKey = exporterApiKey;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
 
@@ -110,20 +113,37 @@ public class ExporterService {
         return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
     }
 
-    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, FocusQuery focusQuery, TaskType taskType) {
+    public Mono<ExporterServiceResult> transferFileToCoder(ProjectBridgehead projectBridgehead, ProjectCoder projectCoder) {
+        log.info("Transfering file to Coder for project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead());
+        return postRequest(projectBridgehead, generateTransferFileBeamRequest(projectBridgehead, projectCoder), TaskType.FILE_TRANSFER);
+    }
+
+    private BeamRequest generateTransferFileBeamRequest(ProjectBridgehead projectBridgehead, ProjectCoder projectCoder) {
+        return beamService.generateExporterFileTransferBeamRequest(projectBridgehead.getBridgehead(),
+                projectBridgehead.getExporterExecutionId(), fetchCoderFileBeamId(projectCoder));
+    }
+
+    private String fetchCoderFileBeamId(ProjectCoder projectCoder) {
+        if (testCoderFileBeamId != null){
+            return testCoderFileBeamId;
+        }
+        return projectCoder.getAppId() + ((coderBeamIdSuffix.startsWith(".")) ? "" : ".") + coderBeamIdSuffix;
+    }
+
+    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, BeamRequest beamRequest, TaskType taskType) {
         return webClient.post()
-                .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.FOCUS_TASK_PATH).build())
+                .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.BEAM_TASK_PATH).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(focusQuery)
+                .bodyValue(beamRequest)
                 .exchangeToMono(clientResponse -> {
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
                         fetchBridgeheadOperationType(taskType).ifPresent(operationType ->
                                 createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), null, projectBridgehead, projectBridgehead.getExporterUser(), operationType));
                         resetProjectBridgeheadDataShield(projectBridgehead);
-                        return Mono.just(new ExporterServiceResult(projectBridgehead, focusService.serializeFocusQuery(focusQuery)));
+                        return Mono.just(new ExporterServiceResult(projectBridgehead, beamService.serializeFocusQuery(beamRequest)));
                     } else {
-                        log.error("Http Error " + clientResponse.statusCode() + " posting task " + focusQuery.getId() + " : " + focusQuery.getBody() +
+                        log.error("Http Error " + clientResponse.statusCode() + " posting task " + beamRequest.getId() + " : " + beamRequest.getBody() +
                                 " for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
                         return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
                             log.error("Error: {}", errorBody);
@@ -134,7 +154,7 @@ public class ExporterService {
     }
 
     private String fetchAuthorization() {
-        return ProjectManagerConst.API_KEY + ' ' + focusProjectManagerId + ' ' + focusApiKey;
+        return ProjectManagerConst.API_KEY + ' ' + focusProjectManagerId + ' ' + exporterApiKey;
     }
 
     private void createBridgeheadNotification(
@@ -147,6 +167,7 @@ public class ExporterService {
         return switch (taskType) {
             case CREATE -> Optional.of(OperationType.SEND_QUERY_TO_BRIDGEHEAD);
             case EXECUTE -> Optional.of(OperationType.SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE);
+            case FILE_TRANSFER -> Optional.of(OperationType.TRANSFER_FILE_TO_CODER);
             default -> Optional.empty();
         };
     }
@@ -201,21 +222,22 @@ public class ExporterService {
         return convertToBase64String(result);
     }
 
-    private FocusQuery generateFocusBody(ProjectBridgehead projectBridgehead, TaskType taskType) throws ExporterServiceException {
+    private BeamRequest generateFocusBody(ProjectBridgehead projectBridgehead, TaskType taskType) throws ExporterServiceException {
         try {
             return generateFocusQueryWithoutExceptionHandling(projectBridgehead, taskType);
-        } catch (FocusServiceException e) {
+        } catch (BeamServiceException e) {
             throw new ExporterServiceException(e);
         }
     }
 
-    private FocusQuery generateFocusQueryWithoutExceptionHandling(ProjectBridgehead projectBridgehead, TaskType taskType) throws FocusServiceException {
+    private BeamRequest generateFocusQueryWithoutExceptionHandling(ProjectBridgehead projectBridgehead, TaskType taskType) throws BeamServiceException {
         String exporterQueryInBase64 = switch (taskType) {
             case CREATE -> generateExporterQueryInBase64ForExporterCreateQuery(projectBridgehead.getProject());
             case EXECUTE -> generateExportQueryInBase64ForExporterRequest(projectBridgehead);
             case STATUS -> generateExportStatusInBase64ForExporterRequest(projectBridgehead);
+            default -> null;
         };
-        return focusService.generateFocusQuery(exporterQueryInBase64, taskType, projectBridgehead.getBridgehead());
+        return beamService.generateFocusBeamRequest(exporterQueryInBase64, taskType, projectBridgehead.getBridgehead());
     }
 
     private String convertToString(LocalDate date) {
@@ -254,15 +276,15 @@ public class ExporterService {
     }
 
     public Mono<ExporterServiceResult> checkIfQueryIsAlreadySentOrExecuted(ProjectBridgehead projectBridgehead) {
-        Optional<FocusQuery> focusQuery = extractFocusQuery(projectBridgehead);
+        Optional<BeamRequest> focusQuery = extractFocusQuery(projectBridgehead);
         if (focusQuery.isEmpty()) {
             throw new RuntimeException("Focus Query not found for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
         }
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(ProjectManagerConst.FOCUS_TASK_PATH + "/" + extractTaskId(focusQuery.get()) + ProjectManagerConst.FOCUS_TASK_RESULTS_PATH)
-                        .queryParam(ProjectManagerConst.FOCUS_TASK_WAIT_TIME_PARAM, focusWaitTime)
-                        .queryParam(ProjectManagerConst.FOCUS_TASK_WAIT_COUNT_PARAM, focusWaitCount).build())
+                        .path(ProjectManagerConst.BEAM_TASK_PATH + "/" + extractTaskId(focusQuery.get()) + ProjectManagerConst.BEAM_TASK_RESULTS_PATH)
+                        .queryParam(ProjectManagerConst.BEAM_TASK_WAIT_TIME_PARAM, beamWaitTime)
+                        .queryParam(ProjectManagerConst.BEAM_TASK_WAIT_COUNT_PARAM, beamWaitCount).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .exchangeToMono(clientResponse -> {
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
@@ -272,12 +294,12 @@ public class ExporterService {
                             default -> Optional.empty();
                         };
                         operationType.ifPresent(type -> createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), type));
-                        return clientResponse.bodyToMono(FocusQuery[].class).filter(focusQueries -> focusQueries != null && focusQueries.length > 0).flatMap(newFocusQuery -> {
+                        return clientResponse.bodyToMono(BeamRequest[].class).filter(focusQueries -> focusQueries != null && focusQueries.length > 0).flatMap(newBeamRequest -> {
                             if (projectBridgehead.getQueryState() == QueryState.EXPORT_RUNNING_2) {
-                                if (newFocusQuery[0].getBody() == null) {
+                                if (newBeamRequest[0].getBody() == null) {
                                     return Mono.empty();
                                 }
-                                String decodedBody = Base64Utils.decode(newFocusQuery[0].getBody());
+                                String decodedBody = Base64Utils.decode(newBeamRequest[0].getBody());
                                 if (!decodedBody.contains("OK")) {
                                     if (decodedBody.contains("ERROR")) {
                                         modifyProjectBridgeheadState(projectBridgehead, QueryState.ERROR);
@@ -287,7 +309,7 @@ public class ExporterService {
                                     return Mono.empty();
                                 }
                             }
-                            return Mono.just(new ExporterServiceResult(projectBridgehead, focusService.serializeFocusQuery(newFocusQuery[0])));
+                            return Mono.just(new ExporterServiceResult(projectBridgehead, beamService.serializeFocusQuery(newBeamRequest[0])));
                         });
                     } else {
                         log.error("Http Error " + clientResponse.statusCode() + " checking task " + extractTaskId(focusQuery.get()) +
@@ -309,13 +331,13 @@ public class ExporterService {
         projectBridgeheadRepository.save(projectBridgehead);
     }
 
-    private String extractTaskId(FocusQuery focusQuery) {
-        return (focusQuery.getId() != null) ? focusQuery.getId() : focusQuery.getTask();
+    private String extractTaskId(BeamRequest beamRequest) {
+        return (beamRequest.getId() != null) ? beamRequest.getId() : beamRequest.getTask();
     }
 
-    private Optional<FocusQuery> extractFocusQuery(ProjectBridgehead projectBridgehead) {
+    private Optional<BeamRequest> extractFocusQuery(ProjectBridgehead projectBridgehead) {
         if (projectBridgehead.getExporterResponse() != null) {
-            FocusQuery[] focusQueries = focusService.deserializeFocusResponse(projectBridgehead.getExporterResponse());
+            BeamRequest[] focusQueries = beamService.deserializeFocusResponse(projectBridgehead.getExporterResponse());
             if (focusQueries != null && focusQueries.length > 0) {
                 return Optional.of(focusQueries[0]);
             }
@@ -332,7 +354,7 @@ public class ExporterService {
 
     public Optional<String> fetchExporterExecutionIdFromExporterResponse(String exporterResponse) {
         if (exporterResponse != null) {
-            Optional<FocusQuery[]> focusQuery = deserializeFocusResponse(exporterResponse);
+            Optional<BeamRequest[]> focusQuery = deserializeFocusResponse(exporterResponse);
             if (focusQuery.isPresent() && focusQuery.get().length > 0 && focusQuery.get()[0].getBody() != null) {
                 return fetchQueryExecutionIdFromQueryExecutionIdUrl(Base64Utils.decode(focusQuery.get()[0].getBody()));
             }
@@ -340,10 +362,10 @@ public class ExporterService {
         return Optional.empty();
     }
 
-    private Optional<FocusQuery[]> deserializeFocusResponse(String exporterResponse) {
+    private Optional<BeamRequest[]> deserializeFocusResponse(String exporterResponse) {
         try {
-            return Optional.of(focusService.deserializeFocusResponse(exporterResponse));
-        } catch (FocusServiceException e) {
+            return Optional.of(beamService.deserializeFocusResponse(exporterResponse));
+        } catch (BeamServiceException e) {
             log.error(ExceptionUtils.getStackTrace(e));
             return Optional.empty();
         }

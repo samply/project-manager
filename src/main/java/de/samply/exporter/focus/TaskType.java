@@ -3,5 +3,6 @@ package de.samply.exporter.focus;
 public enum TaskType {
     CREATE,
     EXECUTE,
-    STATUS
+    STATUS,
+    FILE_TRANSFER
 }
