@@ -5,10 +5,10 @@ import de.samply.coder.request.CreateRequestBody;
 import de.samply.coder.request.CreateRequestParameter;
 import de.samply.coder.request.Response;
 import de.samply.coder.request.TransitionRequestBody;
-import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.ProjectCoder;
+import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectCoderRepository;
-import de.samply.db.repository.ProjectRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.utils.WebClientFactory;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CoderService {
 
     private final boolean coderEnabled;
-    private final ProjectRepository projectRepository;
+    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectCoderRepository projectCoderRepository;
     private final NotificationService notificationService;
     private final String coderTemplateVersionId;
@@ -51,7 +51,7 @@ public class CoderService {
     public CoderService(
             ProjectCoderRepository projectCoderRepository,
             NotificationService notificationService,
-            ProjectRepository projectRepository,
+            ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
             @Value(ProjectManagerConst.ENABLE_CODER_SV) boolean coderEnabled,
             @Value(ProjectManagerConst.CODER_BASE_URL_SV) String coderBaseUrl,
             @Value(ProjectManagerConst.CODER_ORGANISATION_ID_SV) String coderOrganizationId,
@@ -68,7 +68,7 @@ public class CoderService {
         this.coderEnabled = coderEnabled;
         this.projectCoderRepository = projectCoderRepository;
         this.notificationService = notificationService;
-        this.projectRepository = projectRepository;
+        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.enableJupyterLab = enableJupyterLab;
         this.enableRstudio = enableRstudio;
         this.enableVsCodeServer = enableVsCodeServer;
@@ -98,21 +98,23 @@ public class CoderService {
     }
 
     public void createWorkspace(String email, String projectCode) throws CoderServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new CoderServiceException("Project " + projectCode + " not found");
+        Optional<ProjectBridgeheadUser> user = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectCodeOrderByModifiedAtDesc(email, projectCode);
+        if (user.isEmpty()) {
+            throw new CoderServiceException("User " + email + " for project " + projectCode + " not found");
         }
-        createWorkspace(email, project.get());
+        createWorkspace(user.get());
     }
 
-    public void createWorkspace(@NotNull String email, @NotNull Project project) {
+    public void createWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         if (coderEnabled) {
-            ProjectCoder projectCoder = generateProjectCoder(email, project);
+            ProjectCoder projectCoder = generateProjectCoder(projectBridgeheadUser);
             CreateRequestBody createRequestBody = generateCreateRequestBody(projectCoder);
             Response response = createWorkspace(projectCoder, createRequestBody).block();
             projectCoder.setWorkspaceId(response.getLatestBuild().getWorkspaceId());
             projectCoderRepository.save(projectCoder);
-            notificationService.createNotification(project.getCode(), null, email, OperationType.CREATE_CODER_WORKSPACE,
+            notificationService.createNotification(projectBridgeheadUser.getProjectBridgehead().getProject().getCode(),
+                    projectBridgeheadUser.getProjectBridgehead().getBridgehead(), projectBridgeheadUser.getEmail(),
+                    OperationType.CREATE_CODER_WORKSPACE,
                     "Created workspace " + projectCoder.getWorkspaceId(), null, null);
 
         }
@@ -121,7 +123,8 @@ public class CoderService {
     private Mono<Response> createWorkspace(ProjectCoder projectCoder, CreateRequestBody createRequestBody) {
         return this.webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.CODER_API_PATH).path(
-                        replaceVariablesInPath(coderCreatePath, Map.of(ProjectManagerConst.CODER_MEMBER_ID, fetchCoderMemberId(projectCoder.getEmail())))).build())
+                        replaceVariablesInPath(coderCreatePath, Map.of(ProjectManagerConst.CODER_MEMBER_ID,
+                                fetchCoderMemberId(projectCoder.getProjectBridgeheadUser().getEmail())))).build())
                 .header(ProjectManagerConst.CODER_SESSION_TOKEN_HEADER, coderSessionToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(createRequestBody)
@@ -130,7 +133,8 @@ public class CoderService {
                         return clientResponse.bodyToMono(Response.class);
                     } else {
                         log.error("Http error " + clientResponse.statusCode() + " creating workspace in Coder for user "
-                                + projectCoder.getEmail() + " in project " + projectCoder.getProject().getCode());
+                                + projectCoder.getProjectBridgeheadUser().getEmail() + " in project " +
+                                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode());
                         return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
                             log.error("Error: {}", errorBody);
                             return Mono.error(new RuntimeException(errorBody));
@@ -139,31 +143,31 @@ public class CoderService {
                 });
     }
 
-    private ProjectCoder generateProjectCoder(String email, Project project) {
+    private ProjectCoder generateProjectCoder(ProjectBridgeheadUser projectBridgeheadUser) {
         ProjectCoder projectCoder = new ProjectCoder();
-        projectCoder.setProject(project);
-        projectCoder.setEmail(email);
-        projectCoder.setAppId(fetchCoderAppId(email, project));
+        projectCoder.setProjectBridgeheadUser(projectBridgeheadUser);
+        projectCoder.setAppId(fetchCoderAppId(projectBridgeheadUser));
         projectCoder.setAppSecret(generateAppSecret());
         return projectCoder;
     }
 
     public void deleteWorkspace(@NotNull String email, @NotNull String projectCode) throws CoderServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new CoderServiceException("Project " + projectCode + " not found");
+        Optional<ProjectBridgeheadUser> user = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectCodeOrderByModifiedAtDesc(email, projectCode);
+        if (user.isEmpty()) {
+            throw new CoderServiceException("User " + email + " for project " + projectCode + " not found");
         }
-        deleteWorkspace(email, project.get());
+        deleteWorkspace(user.get());
     }
 
-    public void deleteWorkspace(@NotNull String email, @NotNull Project project) {
+    public void deleteWorkspace(@NotNull ProjectBridgeheadUser user) {
         if (coderEnabled) {
-            projectCoderRepository.findByProjectAndEmail(project, email)
+            projectCoderRepository.findByProjectBridgeheadUser(user)
                     .filter(projectCoder -> projectCoder.getDeletedAt() == null).ifPresent(projectCoder -> {
                         deleteWorkspace(projectCoder).block();
                         projectCoder.setDeletedAt(Instant.now());
                         projectCoderRepository.save(projectCoder);
-                        notificationService.createNotification(project.getCode(), null, email, OperationType.DELETE_CODER_WORKSPACE,
+                        notificationService.createNotification(user.getProjectBridgehead().getProject().getCode(),
+                                user.getProjectBridgehead().getBridgehead(), user.getEmail(), OperationType.DELETE_CODER_WORKSPACE,
                                 "Deleted workspace " + projectCoder.getWorkspaceId(), null, null);
                     });
         }
@@ -181,7 +185,8 @@ public class CoderService {
                         return clientResponse.bodyToMono(Response.class);
                     } else {
                         log.error("Http error " + clientResponse.statusCode() + " deleting workspace in Coder for user "
-                                + projectCoder.getEmail() + " in project " + projectCoder.getProject().getCode());
+                                + projectCoder.getProjectBridgeheadUser().getEmail() + " in project " +
+                                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode());
                         return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
                             log.error("Error: {}", errorBody);
                             return Mono.error(new RuntimeException(errorBody));
@@ -211,8 +216,9 @@ public class CoderService {
         createRequestBody.setRichParameterValues(createRequestParameters.toArray(CreateRequestParameter[]::new));
     }
 
-    public String fetchCoderAppId(@NotNull String email, @NotNull Project project) {
-        return email.substring(0, email.indexOf("@")).replace(".", "-") + "-" + project.getCode();
+    public String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
+        return projectBridgeheadUser.getEmail().substring(0, projectBridgeheadUser.getEmail().indexOf("@"))
+                .replace(".", "-") + "-" + projectBridgeheadUser.getProjectBridgehead().getProject().getCode();
     }
 
     private String generateAppSecret() {

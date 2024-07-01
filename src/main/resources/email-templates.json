@@ -81,6 +81,24 @@
         "DEFAULT": "default-results-changes-requested.html"
       }
     },
+    "ANALYSIS_ACCEPTED": {
+      "subject": "Analysis accepted",
+      "files": {
+        "DEFAULT": "default-analysis-accepted.html"
+      }
+    },
+    "ANALYSIS_REJECTED": {
+      "subject": "Analysis rejected",
+      "files": {
+        "DEFAULT": "default-analysis-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_PROJECT_ANALYSIS": {
+      "subject": "Changes in project analysis requested",
+      "files": {
+        "DEFAULT": "default-analysis-changes-requested.html"
+      }
+    },
     "NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT": {
       "subject": "New Authentication Script for DataSHIELD",
       "files": {

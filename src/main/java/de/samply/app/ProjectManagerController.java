@@ -181,7 +181,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP})
-    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     //TODO: Send email to PM-ADMIN, that there was a problem with the operation
@@ -199,7 +199,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.PILOT})
-    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
@@ -431,7 +431,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.ACCEPTED})
-    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
@@ -443,7 +443,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP})
-    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
+    @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_PILOT_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_PILOT_STAGE)
@@ -600,6 +600,49 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
     public ResponseEntity<String> requestChangesInProject(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
+    ) {
+        return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @EmailSender(templateType = EmailTemplateType.ANALYSIS_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS_ACTION)
+    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS)
+    public ResponseEntity<String> acceptProjectAnalysis(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> userService.acceptProject(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @EmailSender(templateType = EmailTemplateType.ANALYSIS_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ANALYSIS_ACTION)
+    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_ANALYSIS)
+    public ResponseEntity<String> rejectProjectAnalysis(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            // Message is sent per email
+            @Message @RequestParam(name = ProjectManagerConst.MESSAGE, required = false) String message
+    ) {
+        return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_PROJECT_ANALYSIS, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION)
+    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS)
+    public ResponseEntity<String> requestChangesInProjectAnalysis(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
