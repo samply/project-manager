@@ -108,6 +108,8 @@ public class ProjectManagerConst {
     public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
     public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_PROJECT_BRIDGEHEADS";
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
+    public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
+    public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION = "ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT";
 
 
     // REST Services
@@ -176,6 +178,8 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String DOWNLOAD_AUTHENTICATION_SCRIPT = "/download-authentication-script";
+    public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT = "/send-export-files-to-research-environment";
+    public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT = "/export-files-transferred-to-research-environment";
     public final static String EXISTS_AUTHENTICATION_SCRIPT = "/exists-authentication-script";
     public final static String FETCH_DATASHIELD_STATUS = "/datashield-status";
     public final static String FETCH_PUBLICATIONS = "/publications";

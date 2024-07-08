@@ -14,4 +14,6 @@ public interface ProjectCoderRepository extends JpaRepository<ProjectCoder, Long
 
     Optional<ProjectCoder> findByProjectBridgeheadUserAndDeletedAtIsNull(ProjectBridgeheadUser projectBridgeheadUser);
 
+    Optional<ProjectCoder> findByProjectBridgeheadUser_ProjectBridgehead_BridgeheadAndProjectBridgeheadUser_ProjectBridgehead_Project_CodeAndProjectBridgeheadUser_Email(String bridgehead, String projectCode, String email);
+
 }

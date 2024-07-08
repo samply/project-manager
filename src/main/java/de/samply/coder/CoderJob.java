@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,10 +48,7 @@ public class CoderJob {
             if (projectCoder.isEmpty()) {
                 this.coderService.createWorkspace(user);
             } else if (!projectCoder.get().isExportTransferred()) {
-                exporterService.transferFileToCoder(user.getProjectBridgehead(), projectCoder.get()).subscribe(result -> {
-                    projectCoder.get().setExportTransferred(true);
-                    this.projectCoderRepository.save(projectCoder.get());
-                });
+                exporterService.transferFileToResearchEnvironment(projectCoder.get());
             }
         });
     }

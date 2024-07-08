@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-07-01]
+## [0.0.1 - 2024-07-08]
 ### Added
 - First version of the project
 - Spring Application
@@ -139,3 +139,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Research environment project type
 - Upload file to Coder
 - Delete Coder workspace job
+- Resend export files to research environment

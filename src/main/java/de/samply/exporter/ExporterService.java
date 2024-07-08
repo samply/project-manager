@@ -8,6 +8,7 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.*;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.exporter.focus.BeamRequest;
 import de.samply.exporter.focus.BeamService;
 import de.samply.exporter.focus.BeamServiceException;
@@ -16,6 +17,7 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
 import de.samply.query.QueryState;
+import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
@@ -41,11 +43,14 @@ import java.util.Set;
 @Service
 @Slf4j
 public class ExporterService {
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+
 
     private final BeamService beamService;
     private final WebClient webClient;
+    private final SessionUser sessionUser;
     private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
+    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+    private final ProjectCoderRepository projectCoderRepository;
     private final NotificationService notificationService;
     private final Set<String> exportTemplates;
     private final Set<String> datashieldTemplates;
@@ -73,11 +78,14 @@ public class ExporterService {
             @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
             @Value(ProjectManagerConst.CODER_BEAM_ID_SUFFIX_SV) String coderBeamIdSuffix,
             @Value(ProjectManagerConst.CODER_TEST_FILE_BEAM_ID_SV) String testCoderFileBeamId,
+            SessionUser sessionUser,
             BeamService beamService,
             ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
             NotificationService notificationService,
             WebClientFactory webClientFactory,
-            ProjectBridgeheadRepository projectBridgeheadRepository) {
+            ProjectBridgeheadRepository projectBridgeheadRepository,
+            ProjectCoderRepository projectCoderRepository) {
+        this.sessionUser = sessionUser;
         this.beamService = beamService;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.notificationService = notificationService;
@@ -90,6 +98,7 @@ public class ExporterService {
         this.researchEnvironmentTemplates = researchEnvironmentTemplates;
         this.coderBeamIdSuffix = coderBeamIdSuffix;
         this.testCoderFileBeamId = testCoderFileBeamId;
+        this.projectCoderRepository = projectCoderRepository;
         this.webClient = webClientFactory.createWebClient(focusUrl);
         this.exporterApiKey = exporterApiKey;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -113,18 +122,37 @@ public class ExporterService {
         return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
     }
 
-    public Mono<ExporterServiceResult> transferFileToCoder(ProjectBridgehead projectBridgehead, ProjectCoder projectCoder) {
-        log.info("Transfering file to Coder for project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead());
-        return postRequest(projectBridgehead, generateTransferFileBeamRequest(projectBridgehead, projectCoder), TaskType.FILE_TRANSFER);
+    public void transferFileToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
+        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findByProjectBridgeheadUser_ProjectBridgehead_BridgeheadAndProjectBridgeheadUser_ProjectBridgehead_Project_CodeAndProjectBridgeheadUser_Email(bridgehead, projectCode, sessionUser.getEmail());
+        if (projectCoder.isEmpty()) {
+            throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
+        }
+        transferFileToResearchEnvironment(projectCoder.get());
     }
 
-    private BeamRequest generateTransferFileBeamRequest(ProjectBridgehead projectBridgehead, ProjectCoder projectCoder) {
-        return beamService.generateExporterFileTransferBeamRequest(projectBridgehead.getBridgehead(),
-                projectBridgehead.getExporterExecutionId(), fetchCoderFileBeamId(projectCoder));
+    public boolean isExportFileTransferredToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
+        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findByProjectBridgeheadUser_ProjectBridgehead_BridgeheadAndProjectBridgeheadUser_ProjectBridgehead_Project_CodeAndProjectBridgeheadUser_Email(bridgehead, projectCode, sessionUser.getEmail());
+        if (projectCoder.isEmpty()) {
+            throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
+        }
+        return projectCoder.get().isExportTransferred();
+    }
+
+    public void transferFileToResearchEnvironment(ProjectCoder projectCoder) {
+        log.info("Transfering file to Coder for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead());
+        postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER).subscribe(result -> {
+            projectCoder.setExportTransferred(true);
+            this.projectCoderRepository.save(projectCoder);
+        });
+    }
+
+    private BeamRequest generateTransferFileBeamRequest(ProjectCoder projectCoder) {
+        return beamService.generateExporterFileTransferBeamRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
+                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getExporterExecutionId(), fetchCoderFileBeamId(projectCoder));
     }
 
     private String fetchCoderFileBeamId(ProjectCoder projectCoder) {
-        if (testCoderFileBeamId != null){
+        if (testCoderFileBeamId != null) {
             return testCoderFileBeamId;
         }
         return projectCoder.getAppId() + ((coderBeamIdSuffix.startsWith(".")) ? "" : ".") + coderBeamIdSuffix;
