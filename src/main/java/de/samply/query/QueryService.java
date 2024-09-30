@@ -10,6 +10,7 @@ import de.samply.db.repository.QueryRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
+import de.samply.utils.Base64Utils;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -56,7 +57,7 @@ public class QueryService {
         tempQuery.setDescription(description);
         tempQuery.setOutputFormat(outputFormat);
         tempQuery.setTemplateId(templateId);
-        tempQuery.setHumanReadable(humanReadable);
+        tempQuery.setHumanReadable(Base64Utils.decode(humanReadable));
         tempQuery.setExplorerUrl(decodeUrlIfNecessary(explorerUrl));
         tempQuery.setContext(queryContext);
         tempQuery = this.queryRepository.save(tempQuery);
@@ -114,7 +115,7 @@ public class QueryService {
                     changedKeyValueMap.put("template id", templateId);
                 }
                 if (humanReadable != null) {
-                    projectQuery.setHumanReadable(humanReadable);
+                    projectQuery.setHumanReadable(Base64Utils.decode(humanReadable));
                     changedKeyValueMap.put("human readable", humanReadable);
                 }
                 if (explorerUrl != null) {

@@ -141,3 +141,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Delete Coder workspace job
 - Resend export files to research environment
 - Query Code in Explorer URL
+- Decode human readable in base 64
