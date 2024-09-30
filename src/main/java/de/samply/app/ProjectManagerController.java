@@ -271,6 +271,7 @@ public class ProjectManagerController {
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
         String projectCode = this.projectEventService.draft(tempBridgeheads, queryCode, projectType);
+        this.queryService.addProjectCodeToExporterUrl(queryCode, projectCode);
         return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)

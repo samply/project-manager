@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -62,6 +63,20 @@ public class QueryService {
         return tempQuery.getCode();
     }
 
+    public void addProjectCodeToExporterUrl(@NotNull String queryCode, @NotNull String projectCode) {
+        queryRepository.findByCode(queryCode).ifPresent(query -> {
+            if (query.getExplorerUrl() != null) {
+                query.setExplorerUrl(addProjectCodeToUrl(query.getExplorerUrl(), projectCode));
+                this.queryRepository.save(query);
+            }
+        });
+    }
+
+    private String addProjectCodeToUrl(@NotNull String url, @NotNull String projectCode) {
+        return (url.contains(ProjectManagerConst.PROJECT_CODE)) ? url :
+                UriComponentsBuilder.fromHttpUrl(url).queryParam(ProjectManagerConst.PROJECT_CODE, projectCode).toUriString();
+    }
+
     private String generateQueryCode() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, ProjectManagerConst.QUERY_CODE_SIZE);
     }
@@ -103,7 +118,7 @@ public class QueryService {
                     changedKeyValueMap.put("human readable", humanReadable);
                 }
                 if (explorerUrl != null) {
-                    projectQuery.setExplorerUrl(decodeUrlIfNecessary(explorerUrl));
+                    projectQuery.setExplorerUrl(addProjectCodeToUrl(decodeUrlIfNecessary(explorerUrl), projectCode));
                     changedKeyValueMap.put("explorer url", explorerUrl);
                 }
                 if (queryContext != null) {
