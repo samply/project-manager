@@ -67,7 +67,7 @@ public class ExporterService {
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public ExporterService(
-            @Value(ProjectManagerConst.EXPORTER_API_KEY_SV) String exporterApiKey,
+            @Value(ProjectManagerConst.BEAM_API_KEY_SV) String exporterApiKey,
             @Value(ProjectManagerConst.BEAM_PROJECT_MANAGER_ID_SV) String focusProjectManagerId,
             @Value(ProjectManagerConst.BEAM_URL_SV) String focusUrl,
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,

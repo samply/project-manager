@@ -323,7 +323,7 @@ public class ProjectManagerConst {
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES = "BEAM_FAILURE_STRATEGY_MAX_TRIES";
     public final static String BEAM_URL = "BEAM_URL";
-    public final static String EXPORTER_API_KEY = "EXPORTER_API_KEY";
+    public final static String BEAM_API_KEY = "BEAM_API_KEY";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
@@ -411,7 +411,7 @@ public class ProjectManagerConst {
             HEAD_SV + BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + BEAM_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
     public final static String BEAM_URL_SV = HEAD_SV + BEAM_URL + BOTTOM_SV;
-    public final static String EXPORTER_API_KEY_SV = HEAD_SV + EXPORTER_API_KEY + BOTTOM_SV;
+    public final static String BEAM_API_KEY_SV = HEAD_SV + BEAM_API_KEY + BOTTOM_SV;
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String ENABLE_TOKEN_MANAGER_SV = HEAD_SV + ENABLE_TOKEN_MANAGER + ":true" + BOTTOM_SV;
     public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;
