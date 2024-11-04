@@ -57,7 +57,7 @@ public class QueryService {
         tempQuery.setDescription(description);
         tempQuery.setOutputFormat(outputFormat);
         tempQuery.setTemplateId(templateId);
-        tempQuery.setHumanReadable(Base64Utils.decode(humanReadable));
+        tempQuery.setHumanReadable(Base64Utils.decodeIfNecessary(humanReadable));
         tempQuery.setExplorerUrl(decodeUrlIfNecessary(explorerUrl));
         tempQuery.setContext(queryContext);
         tempQuery = this.queryRepository.save(tempQuery);
@@ -115,7 +115,7 @@ public class QueryService {
                     changedKeyValueMap.put("template id", templateId);
                 }
                 if (humanReadable != null) {
-                    projectQuery.setHumanReadable(Base64Utils.decode(humanReadable));
+                    projectQuery.setHumanReadable(Base64Utils.decodeIfNecessary(humanReadable));
                     changedKeyValueMap.put("human readable", humanReadable);
                 }
                 if (explorerUrl != null) {
