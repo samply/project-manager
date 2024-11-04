@@ -63,29 +63,31 @@ public class EmailService {
     }
 
     public void sendEmail(@NotNull String email, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, Map<String, String> keyValues) throws EmailServiceException {
-        Map<String, String> context = new HashMap<>();
-        project.ifPresent(p -> {
-            context.put(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CODE, p);
-            context.put(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_VIEW_URL,
-                    this.frontendService.fetchUrl(ProjectManagerConst.PROJECT_VIEW_SITE, Map.of(ProjectManagerConst.PROJECT_CODE, p)));
-        });
-        bridgehead.ifPresent(b -> context.put(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, b));
-        context.putAll(keyValues);
-        context.putAll(emailContext.getKeyValues());
-        Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
-        if (messageSubject.isPresent()) {
-            mailSender.send(createMimeMessage(email, emailFrom, messageSubject.get()));
-            if (project.isPresent()) {
-                String details = "Email to " + email + " ("+ role + ") of type " + type.toString();
-                String message = keyValues.get(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE);
-                if (message != null) {
-                    details += " : " + message;
+        if (enableEmails) {
+            Map<String, String> context = new HashMap<>();
+            project.ifPresent(p -> {
+                context.put(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CODE, p);
+                context.put(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_VIEW_URL,
+                        this.frontendService.fetchUrl(ProjectManagerConst.PROJECT_VIEW_SITE, Map.of(ProjectManagerConst.PROJECT_CODE, p)));
+            });
+            bridgehead.ifPresent(b -> context.put(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, b));
+            context.putAll(keyValues);
+            context.putAll(emailContext.getKeyValues());
+            Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
+            if (messageSubject.isPresent()) {
+                mailSender.send(createMimeMessage(email, emailFrom, messageSubject.get()));
+                if (project.isPresent()) {
+                    String details = "Email to " + email + " (" + role + ") of type " + type.toString();
+                    String message = keyValues.get(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE);
+                    if (message != null) {
+                        details += " : " + message;
+                    }
+                    notificationService.createNotification(project.get(), bridgehead.isPresent() ? bridgehead.get() : null,
+                            ProjectManagerConst.EMAIL_SERVICE, OperationType.SEND_EMAIL, details, null, null);
                 }
-                notificationService.createNotification(project.get(), bridgehead.isPresent() ? bridgehead.get() : null,
-                        ProjectManagerConst.EMAIL_SERVICE, OperationType.SEND_EMAIL, details, null, null);
+            } else {
+                throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
             }
-        } else {
-            throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
         }
     }
 
