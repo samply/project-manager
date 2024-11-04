@@ -3,6 +3,7 @@ package de.samply.bridgehead;
 import de.samply.app.ProjectManagerConst;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Configuration
 @ConfigurationProperties(prefix = ProjectManagerConst.REGISTERED_BRIDGEHEADS)
 @Data
@@ -33,10 +35,12 @@ public class BridgeheadConfiguration {
 
     @PostConstruct
     private void initIdBridgeheadMaps() {
+        log.info("Registered bridgeheads:");
         config.forEach((bridgehead, bridgeheadConfig) -> {
             addBridgeheadId(bridgehead, bridgeheadConfig.getExplorerId(), explorerIdBridgeheadMap);
             addBridgeheadId(bridgehead, bridgeheadConfig.getFocusBeamId(), focusIdBridgeheadMap);
             addBridgeheadId(bridgehead, bridgeheadConfig.getTokenManagerId(), tokenManagerIdBridgeheadMap);
+            log.info("\t- " + bridgehead + " (" + getHumanReadable(bridgehead) + ")");
         });
     }
 

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-09-30]
+## [0.0.1 - 2024-11-04]
 ### Added
 - First version of the project
 - Spring Application
@@ -142,3 +142,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Resend export files to research environment
 - Query Code in Explorer URL
 - Decode human readable in base 64
+- Log bridgeheads at start
