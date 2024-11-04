@@ -143,3 +143,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Query Code in Explorer URL
 - Decode human readable in base 64
 - Log bridgeheads at start
+- Replace hypen in bridgeheads

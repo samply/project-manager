@@ -460,6 +460,7 @@ public class ProjectManagerConst {
     public final static String OIDC_EMAIL_CLAIM = "email";
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
+    public final static String HYPHEN = "minus";
 
 
 }
