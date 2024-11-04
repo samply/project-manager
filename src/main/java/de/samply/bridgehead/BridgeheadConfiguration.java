@@ -36,19 +36,25 @@ public class BridgeheadConfiguration {
     @PostConstruct
     private void initIdBridgeheadMaps() {
         replaceHyphenInBridgeheads();
-        log.info("Registered bridgeheads:");
         config.forEach((bridgehead, bridgeheadConfig) -> {
             addBridgeheadId(bridgehead, bridgeheadConfig.getExplorerId(), explorerIdBridgeheadMap);
             addBridgeheadId(bridgehead, bridgeheadConfig.getFocusBeamId(), focusIdBridgeheadMap);
             addBridgeheadId(bridgehead, bridgeheadConfig.getTokenManagerId(), tokenManagerIdBridgeheadMap);
-            log.info("\t- " + bridgehead + " (" + getHumanReadable(bridgehead) + ")");
         });
+        logBridgeheads();
     }
 
     private void replaceHyphenInBridgeheads() {
         Map<String, BridgeheadConfig> tempConfig = new HashMap<>();
         config.forEach(((bridgehead, bridgeheadConfig) -> tempConfig.put(replaceHyphen(bridgehead), bridgeheadConfig)));
         config = tempConfig;
+    }
+
+    private void logBridgeheads() {
+        log.info("Registered bridgeheads:");
+        config.keySet().stream().sorted().forEach(bridgehead -> {
+            log.info("\t- " + bridgehead + " (" + getHumanReadable(bridgehead) + ")");
+        });
     }
 
     private String replaceHyphen(String var) {
