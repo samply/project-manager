@@ -145,3 +145,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Log bridgeheads at start
 - Replace hypen in bridgeheads
 - Log bridgeheads sorted
+- Replace hyphen in frontend sites
