@@ -51,7 +51,7 @@ public class BridgeheadConfiguration {
     }
 
     private void logBridgeheads() {
-        log.info("Registered bridgeheads:");
+        log.info("Registered bridgeheads: ("+ config.keySet().size()+")");
         config.keySet().stream().sorted().forEach(bridgehead -> {
             log.info("\t- " + bridgehead + " (" + getHumanReadable(bridgehead) + ")");
         });
