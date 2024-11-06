@@ -8,6 +8,7 @@ import java.time.Instant;
 public record ProjectBridgehead(
         String projectCode,
         String bridgehead,
+        String humanReadable,
         ProjectBridgeheadState state,
         Instant modifiedAt,
         QueryState queryState

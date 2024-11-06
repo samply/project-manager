@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-11-04]
+## [0.0.1 - 2024-11-06]
 ### Added
 - First version of the project
 - Spring Application
@@ -146,3 +146,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Replace hypen in bridgeheads
 - Log bridgeheads sorted
 - Replace hyphen in frontend sites
+- Human Readable Bridgehead for frontend dto

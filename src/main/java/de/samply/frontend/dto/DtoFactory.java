@@ -1,11 +1,20 @@
 package de.samply.frontend.dto;
 
+import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.NotificationUserAction;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
+@Component
 public class DtoFactory {
+
+    private BridgeheadConfiguration bridgeheadConfiguration;
+
+    public DtoFactory(BridgeheadConfiguration bridgeheadConfiguration) {
+        this.bridgeheadConfiguration = bridgeheadConfiguration;
+    }
 
     public static Project convert(@NotNull de.samply.db.model.Project project) {
         Project result = new Project();
@@ -86,14 +95,20 @@ public class DtoFactory {
         );
     }
 
-    public static ProjectBridgehead convert(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
+    public ProjectBridgehead convert(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
         return new ProjectBridgehead(
                 projectBridgehead.getProject().getCode(),
                 projectBridgehead.getBridgehead(),
+                fetchHumanReadableBridgehead(projectBridgehead),
                 projectBridgehead.getState(),
                 projectBridgehead.getModifiedAt(),
                 projectBridgehead.getQueryState()
         );
+    }
+
+    public String fetchHumanReadableBridgehead(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead){
+        String result = bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead());
+        return (result != null) ? result : projectBridgehead.getBridgehead();
     }
 
     public static User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {

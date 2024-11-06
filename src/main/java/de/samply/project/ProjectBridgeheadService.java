@@ -26,17 +26,20 @@ public class ProjectBridgeheadService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final SessionUser sessionUser;
+    private final DtoFactory dtoFactory;
 
     public ProjectBridgeheadService(NotificationService notificationService,
                                     ProjectRepository projectRepository,
                                     ProjectBridgeheadRepository projectBridgeheadRepository,
                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                                    SessionUser sessionUser) {
+                                    SessionUser sessionUser,
+                                    DtoFactory dtoFactory) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.sessionUser = sessionUser;
+        this.dtoFactory = dtoFactory;
     }
 
     public void acceptProject(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
@@ -69,7 +72,7 @@ public class ProjectBridgeheadService {
         }
         Set<ProjectBridgehead> projectBridgeheads = projectBridgeheadRepository.findByProject(project.get());
         if (isProjectManagerAdmin()) {
-            return new ArrayList<>(projectBridgeheads).stream().map(DtoFactory::convert).toList();
+            return new ArrayList<>(projectBridgeheads).stream().map(dtoFactory::convert).toList();
         }
         Set<ProjectBridgehead> tempProjectBridgeheads = new HashSet<>();
         projectBridgeheads.forEach(projectBridgehead -> {
@@ -77,7 +80,7 @@ public class ProjectBridgeheadService {
                 tempProjectBridgeheads.add(projectBridgehead);
             }
         });
-        return new ArrayList<>(tempProjectBridgeheads).stream().map(DtoFactory::convert).toList();
+        return new ArrayList<>(tempProjectBridgeheads).stream().map(dtoFactory::convert).toList();
     }
 
     public List<de.samply.frontend.dto.ProjectBridgehead> fetchProjectBridgeheads(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
@@ -85,7 +88,7 @@ public class ProjectBridgeheadService {
         if (project.isEmpty()) {
             throw new ProjectBridgeheadServiceException("Project " + projectCode + " not found");
         }
-        return projectBridgeheadRepository.findByProject(project.get()).stream().map(DtoFactory::convert).toList();
+        return projectBridgeheadRepository.findByProject(project.get()).stream().map(dtoFactory::convert).toList();
     }
 
     private boolean isProjectManagerAdmin() {
