@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -49,11 +50,11 @@ public class BeamService {
     }
 
     private String fetchFocusBeamId(String bridgehead) throws BeamServiceException {
-        String focusId = bridgeheadConfiguration.getFocusBeamId(bridgehead);
-        if (!StringUtils.hasText(focusId)) {
+        Optional<String> focusId = bridgeheadConfiguration.getFocusBeamId(bridgehead);
+        if (focusId.isEmpty()) {
             throw new BeamServiceException("Focus Beam ID for bridgehead " + bridgehead + " not found");
         }
-        return focusId;
+        return focusId.get();
     }
 
     private String fetchFileDispatcherId(String bridgehead) throws BeamServiceException {

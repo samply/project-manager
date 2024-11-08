@@ -2,15 +2,18 @@ package de.samply.bridgehead;
 
 import de.samply.app.ProjectManagerConst;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 @Slf4j
 @Configuration
@@ -51,7 +54,7 @@ public class BridgeheadConfiguration {
     }
 
     private void logBridgeheads() {
-        log.info("Registered bridgeheads: ("+ config.keySet().size()+")");
+        log.info("Registered bridgeheads: (" + config.keySet().size() + ")");
         config.keySet().stream().sorted().forEach(bridgehead -> {
             log.info("\t- " + bridgehead + " (" + getHumanReadable(bridgehead) + ")");
         });
@@ -79,17 +82,25 @@ public class BridgeheadConfiguration {
         return config.keySet().contains(bridgehead);
     }
 
-    public String getFocusBeamId(String bridgehead) {
-        return config.get(bridgehead).getFocusBeamId();
+    public Optional<String> getFocusBeamId(String bridgehead) {
+        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getFocusBeamId());
     }
 
-    public String getHumanReadable(String bridgehead) {
-        return config.get(bridgehead).getHumanReadable();
+    public Optional<String> getHumanReadable(String bridgehead) {
+        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getHumanReadable());
     }
 
     public Optional<String> getTokenManagerId(String bridgehead) {
+        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getTokenManagerId());
+    }
+
+    Optional<String> getProperty(@NotNull String bridgehead, Function<BridgeheadConfig, String> propertyGetter) {
         BridgeheadConfig bridgeheadConfig = config.get(bridgehead);
-        return Optional.ofNullable((bridgeheadConfig != null) ? bridgeheadConfig.getTokenManagerId() : null);
+        if (bridgeheadConfig == null) {
+            return Optional.empty();
+        }
+        String result = propertyGetter.apply(bridgeheadConfig);
+        return StringUtils.hasText(result) ? Optional.of(result) : Optional.empty();
     }
 
     public Optional<String> getBridgeheadForExplorerId(String explorerId) {

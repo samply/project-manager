@@ -5,6 +5,7 @@ import de.samply.db.model.NotificationUserAction;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Component
@@ -106,9 +107,9 @@ public class DtoFactory {
         );
     }
 
-    public String fetchHumanReadableBridgehead(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead){
-        String result = bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead());
-        return (result != null) ? result : projectBridgehead.getBridgehead();
+    public String fetchHumanReadableBridgehead(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
+        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead());
+        return (humanReadable.isPresent()) ? humanReadable.get() : projectBridgehead.getBridgehead();
     }
 
     public static User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
