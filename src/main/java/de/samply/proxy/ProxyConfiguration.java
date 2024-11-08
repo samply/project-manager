@@ -45,7 +45,7 @@ public class ProxyConfiguration {
         }
         if (isConfigured()) {
             String schema = (this.schema != null) ? this.schema : "";
-            log.info(schema + " Proxy configured:");
+            log.info(schema + " proxy configured:");
             log.info("\t-Host: " + this.host);
             log.info("\t-Port: " + this.port);
             if (username != null && password != null) {
