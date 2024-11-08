@@ -10,12 +10,14 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -101,11 +103,11 @@ public class EmailService {
 
     private MimeMessage createMimeMessageWithoutHandlingException(String emailTo, String emailFrom, MessageSubject messageSubject) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
+        MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
         messageHelper.setTo(emailTo);
         message.setFrom(emailFrom);
-        message.setSubject(messageSubject.subject());
-        message.setText(messageSubject.message());
+        message.setSubject(messageSubject.subject(), StandardCharsets.UTF_8.name());
+        message.setContent(messageSubject.message(), MediaType.TEXT_HTML_VALUE);
         return message;
     }
 

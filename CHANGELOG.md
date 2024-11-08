@@ -148,3 +148,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Replace hyphen in frontend sites
 - Human Readable Bridgehead for frontend dto
 - Http proxy configuration
+- Email as HTML
