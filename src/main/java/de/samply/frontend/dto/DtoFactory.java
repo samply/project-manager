@@ -68,13 +68,14 @@ public class DtoFactory {
         return project;
     }
 
-    public static Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
+    public Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
         return new Notification(
                 notification.getId(),
                 notification.getEmail(),
                 notification.getTimestamp(),
                 notification.getProject().getCode(),
                 notification.getBridgehead(),
+                fetchHumanReadableBridgehead(notification.getBridgehead()),
                 notification.getOperationType(),
                 notification.getDetails(),
                 notification.getError(),
@@ -83,13 +84,14 @@ public class DtoFactory {
         );
     }
 
-    public static ProjectDocument convert(@NotNull de.samply.db.model.ProjectDocument projectDocument) {
+    public ProjectDocument convert(@NotNull de.samply.db.model.ProjectDocument projectDocument) {
         return new ProjectDocument(
                 projectDocument.getProject().getCode(),
                 projectDocument.getOriginalFilename(),
                 projectDocument.getUrl(),
                 projectDocument.getCreatedAt(),
                 projectDocument.getBridgehead(),
+                fetchHumanReadableBridgehead(projectDocument.getBridgehead()),
                 projectDocument.getCreatorEmail(),
                 projectDocument.getLabel(),
                 projectDocument.getDocumentType()
@@ -108,23 +110,29 @@ public class DtoFactory {
     }
 
     public String fetchHumanReadableBridgehead(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
-        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead());
-        return (humanReadable.isPresent()) ? humanReadable.get() : projectBridgehead.getBridgehead();
+        return fetchHumanReadableBridgehead(projectBridgehead.getBridgehead());
     }
 
-    public static User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
+    public String fetchHumanReadableBridgehead(@NotNull String bridgehead) {
+        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
+        return (humanReadable.isPresent()) ? humanReadable.get() : bridgehead;
+    }
+
+    public User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
         return new User(
                 projectBridgeheadUser.getEmail(),
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
+                fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
                 projectBridgeheadUser.getProjectRole(),
                 projectBridgeheadUser.getProjectState()
         );
     }
 
-    public static User convertFilteringProjectRoleAndState(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
+    public User convertFilteringProjectRoleAndState(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
         return new User(
                 projectBridgeheadUser.getEmail(),
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
+                fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
                 null,
                 null
         );

@@ -37,6 +37,7 @@ public class DocumentService {
     private final String applicationFormFile;
     private final String timestampFormat;
     private final SessionUser sessionUser;
+    private final DtoFactory dtoFactory;
 
     public DocumentService(NotificationService notificationService,
                            ProjectDocumentRepository projectDocumentRepository,
@@ -45,7 +46,8 @@ public class DocumentService {
                            @Value(ProjectManagerConst.PUBLIC_DOCUMENTS_DIRECTORY_SV) String publicDocumentsDirectory,
                            @Value(ProjectManagerConst.APPLICATION_FORM_FILENAME_SV) String applicationFormFile,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV) String timestampFormat,
-                           SessionUser sessionUser) throws IOException {
+                           SessionUser sessionUser,
+                           DtoFactory dtoFactory) throws IOException {
         this.notificationService = notificationService;
         this.projectDocumentRepository = projectDocumentRepository;
         this.projectRepository = projectRepository;
@@ -54,6 +56,7 @@ public class DocumentService {
         this.applicationFormFile = applicationFormFile;
         this.timestampFormat = timestampFormat;
         this.sessionUser = sessionUser;
+        this.dtoFactory = dtoFactory;
     }
 
     public void uploadDocument(String projectCode, Optional<String> bridgeheadOptional, MultipartFile document, DocumentType documentType, Optional<String> labelOptional) throws DocumentServiceException {
@@ -206,7 +209,7 @@ public class DocumentService {
     }
 
     private List<de.samply.frontend.dto.ProjectDocument> convertToDto(List<ProjectDocument> projectDocumentList) {
-        return projectDocumentList.stream().map(DtoFactory::convert).toList();
+        return projectDocumentList.stream().map(dtoFactory::convert).toList();
     }
 
     public List<de.samply.frontend.dto.ProjectDocument> fetchOtherDocuments(String projectCode, Optional<String> bridgehead) {

@@ -33,6 +33,7 @@ public class UserService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
     private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
+    private final DtoFactory dtoFactory;
 
     public UserService(NotificationService notificationService,
                        BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
@@ -41,7 +42,8 @@ public class UserService {
                        ProjectRepository projectRepository,
                        ProjectBridgeheadRepository projectBridgeheadRepository,
                        SessionUser sessionUser,
-                       OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper) {
+                       OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
+                       DtoFactory dtoFactory) {
         this.notificationService = notificationService;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
@@ -50,6 +52,7 @@ public class UserService {
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
         this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
+        this.dtoFactory = dtoFactory;
     }
 
     public BridgeheadAdminUser createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
@@ -146,8 +149,8 @@ public class UserService {
     }
 
     public Set<User> fetchUsersForAutocomplete(@NotNull String projectCode, @NotNull String partialEmail, @NotNull String bridgehead) {
-        Set<User> allUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(DtoFactory::convertFilteringProjectRoleAndState).collect(Collectors.toSet());
-        Set<User> alreadySetUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_BridgeheadAndUserAlreadySetForThisProjectInThisRole(partialEmail, bridgehead, projectCode).stream().map(DtoFactory::convertFilteringProjectRoleAndState).collect(Collectors.toSet());
+        Set<User> allUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_Bridgehead(partialEmail, bridgehead).stream().map(dtoFactory::convertFilteringProjectRoleAndState).collect(Collectors.toSet());
+        Set<User> alreadySetUsers = projectBridgeheadUserRepository.getDistinctByEmailContainingAndProjectBridgehead_BridgeheadAndUserAlreadySetForThisProjectInThisRole(partialEmail, bridgehead, projectCode).stream().map(dtoFactory::convertFilteringProjectRoleAndState).collect(Collectors.toSet());
         allUsers.removeAll(alreadySetUsers);
         return allUsers;
     }
@@ -162,7 +165,7 @@ public class UserService {
             case FINAL ->
                     this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.FINAL, projectBridgehead);
             default -> new ArrayList<ProjectBridgeheadUser>();
-        }).stream().map(DtoFactory::convert).collect(Collectors.toSet());
+        }).stream().map(dtoFactory::convert).collect(Collectors.toSet());
     }
 
     public boolean existInvatedUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {

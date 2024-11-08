@@ -26,15 +26,18 @@ public class NotificationService {
     private final NotificationUserActionRepository notificationUserActionRepository;
     private final ProjectRepository projectRepository;
     private final SessionUser sessionUser;
+    private final DtoFactory dtoFactory;
 
     public NotificationService(NotificationRepository notificationRepository,
                                NotificationUserActionRepository notificationUserActionRepository,
                                ProjectRepository projectRepository,
-                               SessionUser sessionUser) {
+                               SessionUser sessionUser,
+                               DtoFactory dtoFactory) {
         this.notificationRepository = notificationRepository;
         this.notificationUserActionRepository = notificationUserActionRepository;
         this.projectRepository = projectRepository;
         this.sessionUser = sessionUser;
+        this.dtoFactory = dtoFactory;
     }
 
     public void createNotification(@NotNull String projectCode, String bridgehead, String email,
@@ -79,7 +82,7 @@ public class NotificationService {
             }
         });
         return result.stream().map(notification ->
-                DtoFactory.convert(notification, () -> fetchNotificationUserAction(notification))).toList();
+                dtoFactory.convert(notification, () -> fetchNotificationUserAction(notification))).toList();
     }
 
     private List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {

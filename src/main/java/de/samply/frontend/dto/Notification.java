@@ -11,6 +11,7 @@ public record Notification(
         Instant timestamp,
         String projectCode,
         String bridgehead,
+        String humanReadableBridgehead,
         OperationType operationType,
         String details,
         String error,

@@ -10,6 +10,7 @@ public record ProjectDocument(
         String url,
         Instant createdAt,
         String bridgehead,
+        String humanReadableBridgehead,
         String creatorEmail,
         String label,
         DocumentType type
