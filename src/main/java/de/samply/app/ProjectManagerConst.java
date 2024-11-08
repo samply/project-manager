@@ -233,6 +233,8 @@ public class ProjectManagerConst {
     public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
+    public final static String HTTP_PROXY_PREFIX = "http.proxy";
+    public final static String HTTPS_PROXY_PREFIX = "https.proxy";
 
     // Exporter
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
@@ -461,6 +463,8 @@ public class ProjectManagerConst {
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
     public final static String HYPHEN = "minus";
+    public final static String HTTP_PROTOCOL_SCHEMA = "http";
+    public final static String HTTPS_PROTOCOL_SCHEMA = "https";
 
 
 }
