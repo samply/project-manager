@@ -327,9 +327,9 @@ public class ExporterService {
                                 if (newBeamRequest[0].getBody() == null) {
                                     return Mono.empty();
                                 }
-                                String decodedBody = Base64Utils.decode(newBeamRequest[0].getBody());
-                                if (!decodedBody.contains("OK")) {
-                                    if (decodedBody.contains("ERROR")) {
+                                Optional<String> decodedBody = Base64Utils.decodeIfNecessary(newBeamRequest[0].getBody());
+                                if (decodedBody.isEmpty() || !decodedBody.get().contains("OK")) {
+                                    if (decodedBody.isEmpty() || decodedBody.get().contains("ERROR")) {
                                         modifyProjectBridgeheadState(projectBridgehead, QueryState.ERROR);
                                     } else {
                                         modifyProjectBridgeheadState(projectBridgehead, QueryState.EXPORT_RUNNING_1);
@@ -384,7 +384,8 @@ public class ExporterService {
         if (exporterResponse != null) {
             Optional<BeamRequest[]> focusQuery = deserializeFocusResponse(exporterResponse);
             if (focusQuery.isPresent() && focusQuery.get().length > 0 && focusQuery.get()[0].getBody() != null) {
-                return fetchQueryExecutionIdFromQueryExecutionIdUrl(Base64Utils.decode(focusQuery.get()[0].getBody()));
+                Optional<String> body = Base64Utils.decodeIfNecessary(focusQuery.get()[0].getBody());
+                return body.isPresent() ? fetchQueryExecutionIdFromQueryExecutionIdUrl(body.get()) : Optional.empty();
             }
         }
         return Optional.empty();

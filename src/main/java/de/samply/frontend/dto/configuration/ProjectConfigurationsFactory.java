@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class ProjectConfigurationsFactory {
 
@@ -15,7 +17,11 @@ public class ProjectConfigurationsFactory {
 
     @Bean
     public ProjectConfigurations createProjectConfigurations(@Value(ProjectManagerConst.FRONTEND_PROJECT_CONFIG_SV) String frontendProjectConfigurations) throws JsonProcessingException {
-        ProjectConfigurations projectConfigurations = objectMapper.readValue(Base64Utils.decodeIfNecessary(frontendProjectConfigurations), ProjectConfigurations.class);
+        Optional<String> decodedFrontendConfigurations = Base64Utils.decodeIfNecessary(frontendProjectConfigurations);
+        if (decodedFrontendConfigurations.isEmpty()) {
+            throw new RuntimeException("No frontend configurations found");
+        }
+        ProjectConfigurations projectConfigurations = objectMapper.readValue(decodedFrontendConfigurations.get(), ProjectConfigurations.class);
         projectConfigurations.initConfigurationNameProjectMap();
         return projectConfigurations;
     }

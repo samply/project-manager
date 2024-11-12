@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class EmailTemplatesFactory {
 
@@ -15,7 +17,11 @@ public class EmailTemplatesFactory {
 
     @Bean
     public EmailTemplates createEmailTemplates(@Value(ProjectManagerConst.EMAIL_TEMPLATES_CONFIG_SV) String templates) throws JsonProcessingException {
-        return objectMapper.readValue(Base64Utils.decodeIfNecessary(templates), EmailTemplates.class);
+        Optional<String> decodedTemplates = Base64Utils.decodeIfNecessary(templates);
+        if (decodedTemplates.isEmpty()) {
+            throw new RuntimeException("No template found");
+        }
+        return objectMapper.readValue(decodedTemplates.get(), EmailTemplates.class);
     }
 
 }
