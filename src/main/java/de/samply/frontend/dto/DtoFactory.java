@@ -138,4 +138,9 @@ public class DtoFactory {
         );
     }
 
+    public Bridgehead convertToBridgehead(@NotNull String bridgehead) {
+        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
+        return humanReadable.isPresent() ? new Bridgehead(bridgehead, humanReadable.get()) : new Bridgehead(bridgehead, null);
+    }
+
 }

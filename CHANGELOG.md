@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-11-08]
+## [0.0.1 - 2024-11-13]
 ### Added
 - First version of the project
 - Spring Application
@@ -149,3 +149,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Human Readable Bridgehead for frontend dto
 - Http proxy configuration
 - Email as HTML
+- Provide also human readable by fetch all registered bridgeheads

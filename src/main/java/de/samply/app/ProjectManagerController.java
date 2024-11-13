@@ -13,6 +13,7 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
+import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.project.ProjectBridgeheadService;
@@ -50,6 +51,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -70,6 +72,7 @@ public class ProjectManagerController {
     private final NotificationService notificationService;
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final ProjectConfigurations frontendProjectConfigurations;
+    private final DtoFactory dtoFactory;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -82,7 +85,8 @@ public class ProjectManagerController {
                                     ProjectBridgeheadService projectBridgeheadService,
                                     NotificationService notificationService,
                                     BridgeheadConfiguration bridgeheadConfiguration,
-                                    ProjectConfigurations frontendProjectConfigurations) {
+                                    ProjectConfigurations frontendProjectConfigurations,
+                                    DtoFactory dtoFactory) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -95,6 +99,7 @@ public class ProjectManagerController {
         this.notificationService = notificationService;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.frontendProjectConfigurations = frontendProjectConfigurations;
+        this.dtoFactory = dtoFactory;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -1138,12 +1143,12 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.notificationService.setNotificationAsRead(notificationId));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity<Resource> fetchAllRegisteredBridgeheads() {
-        return convertToResponseEntity(() -> bridgeheadConfiguration.getRegisteredBridgeheads());
+        return convertToResponseEntity(() -> bridgeheadConfiguration.getRegisteredBridgeheads().stream().map(dtoFactory::convertToBridgehead).collect(Collectors.toSet()));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
