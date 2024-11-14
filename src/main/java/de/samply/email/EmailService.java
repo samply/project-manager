@@ -9,10 +9,13 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -77,7 +80,7 @@ public class EmailService {
             context.putAll(emailContext.getKeyValues());
             Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
             if (messageSubject.isPresent()) {
-                mailSender.send(createMimeMessage(email, emailFrom, messageSubject.get()));
+                sendEmail(email, messageSubject.get());
                 if (project.isPresent()) {
                     String details = "Email to " + email + " (" + role + ") of type " + type.toString();
                     String message = keyValues.get(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE);
@@ -90,6 +93,17 @@ public class EmailService {
             } else {
                 throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
             }
+        }
+    }
+
+
+    @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
+    public void sendEmail(String email, MessageSubject messageSubject) {
+        try {
+            mailSender.send(createMimeMessage(email, emailFrom, messageSubject));
+        } catch (MailException | EmailServiceException e) {
+            log.error("Failed to send email");
+            log.error(ExceptionUtils.getStackTrace(e));
         }
     }
 

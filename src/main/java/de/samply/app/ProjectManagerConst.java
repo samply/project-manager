@@ -364,6 +364,10 @@ public class ProjectManagerConst {
     public final static String CODER_TEST_FILE_BEAM_ID = "CODER_TEST_FILE_BEAM_ID";
     public final static String ENABLE_CODER = "ENABLE_CODER";
 
+    public final static String EMAIL_SENDER_CORE_POOL_SIZE = "EMAIL_SENDER_CORE_POOL_SIZE";
+    public final static String EMAIL_SENDER_MAX_POOL_SIZE = "EMAIL_SENDER_MAX_POOL_SIZE";
+    public final static String EMAIL_SENDER_QUEUE_CAPACITY = "EMAIL_SENDER_QUEUE_CAPACITY";
+
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
@@ -450,6 +454,13 @@ public class ProjectManagerConst {
     public final static String CODER_DOTFILES_URL_PARAM_VALUE_SV = HEAD_SV + CODER_DOTFILES_URL_PARAM_VALUE + ":" + BOTTOM_SV;
     public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE + ":1" + BOTTOM_SV;
     public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
+
+    public final static String EMAIL_SENDER_CORE_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
+    public final static String EMAIL_SENDER_MAX_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
+    public final static String EMAIL_SENDER_QUEUE_CAPACITY_SV = HEAD_SV + EMAIL_SENDER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
+
+    // Async Configuration
+    public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";
