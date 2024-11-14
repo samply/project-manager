@@ -154,3 +154,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Catch token manager exceptions and return ERROR status
 - Send emails in async execution pool
 - Notification async execution pool
+- Exporter async execution pool

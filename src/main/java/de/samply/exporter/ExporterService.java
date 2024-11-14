@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -122,6 +123,7 @@ public class ExporterService {
         return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
     }
 
+    @Async()
     public void transferFileToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
         Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findByProjectBridgeheadUser_ProjectBridgehead_BridgeheadAndProjectBridgeheadUser_ProjectBridgehead_Project_CodeAndProjectBridgeheadUser_Email(bridgehead, projectCode, sessionUser.getEmail());
         if (projectCoder.isEmpty()) {
@@ -138,6 +140,7 @@ public class ExporterService {
         return projectCoder.get().isExportTransferred();
     }
 
+    @Async
     public void transferFileToResearchEnvironment(ProjectCoder projectCoder) {
         log.info("Transfering file to Coder for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead());
         postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER).subscribe(result -> {

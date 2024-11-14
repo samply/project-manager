@@ -18,6 +18,9 @@ public class ProjectManagerAsyncConfiguration {
     private final int notificationCorePoolSize;
     private final int notificationMaxPoolSize;
     private final int notificationQueueCapacity;
+    private final int exporterCorePoolSize;
+    private final int exporterMaxPoolSize;
+    private final int exporterQueueCapacity;
 
 
     public ProjectManagerAsyncConfiguration(
@@ -26,13 +29,19 @@ public class ProjectManagerAsyncConfiguration {
             @Value(ProjectManagerConst.EMAIL_SENDER_QUEUE_CAPACITY_SV) int emailSenderQueueCapacity,
             @Value(ProjectManagerConst.NOTIFICATION_CORE_POOL_SIZE_SV) int notificationCorePoolSize,
             @Value(ProjectManagerConst.NOTIFICATION_MAX_POOL_SIZE_SV) int notificationMaxPoolSize,
-            @Value(ProjectManagerConst.NOTIFICATION_QUEUE_CAPACITY_SV) int notificationQueueCapacity) {
+            @Value(ProjectManagerConst.NOTIFICATION_QUEUE_CAPACITY_SV) int notificationQueueCapacity,
+            @Value(ProjectManagerConst.EXPORTER_CORE_POOL_SIZE_SV) int exporterCorePoolSize,
+            @Value(ProjectManagerConst.EXPORTER_MAX_POOL_SIZE_SV) int exporterMaxPoolSize,
+            @Value(ProjectManagerConst.EXPORTER_QUEUE_CAPACITY_SV) int exporterQueueCapacity) {
         this.emailSenderCorePoolSize = emailSenderCorePoolSize;
         this.emailSenderMaxPoolSize = emailSenderMaxPoolSize;
         this.emailSenderQueueCapacity = emailSenderQueueCapacity;
         this.notificationCorePoolSize = notificationCorePoolSize;
         this.notificationMaxPoolSize = notificationMaxPoolSize;
         this.notificationQueueCapacity = notificationQueueCapacity;
+        this.exporterCorePoolSize = exporterCorePoolSize;
+        this.exporterMaxPoolSize = exporterMaxPoolSize;
+        this.exporterQueueCapacity = exporterQueueCapacity;
     }
 
     @Bean(name = ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
@@ -45,6 +54,12 @@ public class ProjectManagerAsyncConfiguration {
     public Executor notificationExecutor() {
         return createEmailSenderExecutor(notificationCorePoolSize, notificationMaxPoolSize,
                 notificationQueueCapacity, ProjectManagerConst.ASYNC_NOTIFICATION_EXECUTOR);
+    }
+
+    @Bean(name = ProjectManagerConst.ASYNC_EXPORTER_EXECUTOR)
+    public Executor exporterExecutor() {
+        return createEmailSenderExecutor(exporterCorePoolSize, exporterMaxPoolSize,
+                exporterQueueCapacity, ProjectManagerConst.ASYNC_EXPORTER_EXECUTOR);
     }
 
     private Executor createEmailSenderExecutor(int corePoolSize, int maxPoolSize, int queueCapacity, String prefix) {
