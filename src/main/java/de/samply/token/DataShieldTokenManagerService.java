@@ -31,6 +31,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -149,17 +150,16 @@ public class DataShieldTokenManagerService {
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
                     .toUriString();
-            try {
-                return replaceTokenManagerId(webClient.get()
-                        .uri(uri)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .retrieve()
-                        .bodyToMono(DataShieldTokenManagerTokenStatus.class)
-                        .block());
-            } catch (Exception e) {
-                log.debug(ExceptionUtils.getStackTrace(e));
-                return new DataShieldTokenManagerTokenStatus(projectCode, bridgehead, email, Instant.now().toString(), DataShieldProjectStatus.ERROR, DataShieldTokenStatus.ERROR);
-            }
+            return replaceTokenManagerId(webClient.get()
+                    .uri(uri)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(DataShieldTokenManagerTokenStatus.class)
+                    .onErrorResume(exception -> {
+                        log.debug(ExceptionUtils.getStackTrace(exception));
+                        return Mono.just(new DataShieldTokenManagerTokenStatus(projectCode, bridgehead, email, Instant.now().toString(), DataShieldProjectStatus.ERROR, DataShieldTokenStatus.ERROR));
+                    })
+                    .block());
         } else {
             throw new DataShieldTokenManagerServiceException("Bridgehead " + bridgehead + " not configured for token manager");
         }
@@ -175,17 +175,16 @@ public class DataShieldTokenManagerService {
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, tokenManagerId.get())
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                     .toUriString();
-            try {
-                return replaceTokenManagerId(webClient.get()
-                        .uri(uri)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .retrieve()
-                        .bodyToMono(DataShieldTokenManagerProjectStatus.class)
-                        .block());
-            } catch (Exception e) {
-                log.debug(ExceptionUtils.getStackTrace(e));
-                return new DataShieldTokenManagerProjectStatus(projectCode, bridgehead, DataShieldProjectStatus.ERROR);
-            }
+            return replaceTokenManagerId(webClient.get()
+                    .uri(uri)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(DataShieldTokenManagerProjectStatus.class)
+                    .onErrorResume(exception -> {
+                        log.debug(ExceptionUtils.getStackTrace(exception));
+                        return Mono.just(new DataShieldTokenManagerProjectStatus(projectCode, bridgehead, DataShieldProjectStatus.ERROR));
+                    })
+                    .block());
         } else {
             throw new DataShieldTokenManagerServiceException("Bridgehead " + bridgehead + " not configured for token manager");
         }
@@ -215,18 +214,20 @@ public class DataShieldTokenManagerService {
             return true;
         }
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
-        try {
-            return Boolean.valueOf(webClient.post()
-                    .uri(uriBuilder ->
-                            uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.AUTHENTICATION_SCRIPT_STATUS).build())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(new TokenParams(sessionUser.getEmail(), projectCode, tokenManagerIds))
-                    .retrieve().bodyToMono(String.class).block());
-        } catch (Exception e) {
-            log.debug(ExceptionUtils.getStackTrace(e));
-            return false;
-        }
+        return Boolean.valueOf(webClient.post()
+                .uri(uriBuilder ->
+                        uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.AUTHENTICATION_SCRIPT_STATUS).build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(new TokenParams(sessionUser.getEmail(), projectCode, tokenManagerIds))
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorResume(exception -> {
+                    log.debug(ExceptionUtils.getStackTrace(exception));
+                    return Mono.just("false");
+                })
+                .block());
     }
+
 
     public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) throws DataShieldTokenManagerServiceException {
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));
@@ -253,7 +254,6 @@ public class DataShieldTokenManagerService {
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
                     .toUriString();
-
             webClient.delete()
                     .uri(uri)
                     .retrieve()
