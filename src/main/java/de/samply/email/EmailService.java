@@ -58,6 +58,7 @@ public class EmailService {
         this.frontendService = frontendService;
     }
 
+    @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
     public void sendEmail(@NotNull String email, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
         if (enableEmails) {
             sendEmail(email, project, bridgehead, role, type, new HashMap<>());
@@ -67,6 +68,7 @@ public class EmailService {
         }
     }
 
+    @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
     public void sendEmail(@NotNull String email, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, Map<String, String> keyValues) throws EmailServiceException {
         if (enableEmails) {
             Map<String, String> context = new HashMap<>();
@@ -96,9 +98,7 @@ public class EmailService {
         }
     }
 
-
-    @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
-    public void sendEmail(String email, MessageSubject messageSubject) {
+    private void sendEmail(String email, MessageSubject messageSubject) {
         try {
             mailSender.send(createMimeMessage(email, emailFrom, messageSubject));
         } catch (MailException | EmailServiceException e) {
@@ -132,10 +132,6 @@ public class EmailService {
             return Optional.of(new MessageSubject(message, template.get().subject()));
         }
         return Optional.empty();
-    }
-
-    private String createEmailMessageAndSubject(String template, Map<String, String> keyValues) {
-        return templateEngine.process(template, createContext(keyValues));
     }
 
     private Context createContext(Map<String, String> keyValues) {

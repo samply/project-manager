@@ -368,6 +368,10 @@ public class ProjectManagerConst {
     public final static String EMAIL_SENDER_MAX_POOL_SIZE = "EMAIL_SENDER_MAX_POOL_SIZE";
     public final static String EMAIL_SENDER_QUEUE_CAPACITY = "EMAIL_SENDER_QUEUE_CAPACITY";
 
+    public final static String NOTIFICATION_CORE_POOL_SIZE = "NOTIFICATION_CORE_POOL_SIZE";
+    public final static String NOTIFICATION_MAX_POOL_SIZE = "NOTIFICATION_MAX_POOL_SIZE";
+    public final static String NOTIFICATION_QUEUE_CAPACITY = "NOTIFICATION_QUEUE_CAPACITY";
+
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
@@ -459,8 +463,13 @@ public class ProjectManagerConst {
     public final static String EMAIL_SENDER_MAX_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
     public final static String EMAIL_SENDER_QUEUE_CAPACITY_SV = HEAD_SV + EMAIL_SENDER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
 
+    public final static String NOTIFICATION_CORE_POOL_SIZE_SV = HEAD_SV + NOTIFICATION_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
+    public final static String NOTIFICATION_MAX_POOL_SIZE_SV = HEAD_SV + NOTIFICATION_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
+    public final static String NOTIFICATION_QUEUE_CAPACITY_SV = HEAD_SV + NOTIFICATION_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
+
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
+    public final static String ASYNC_NOTIFICATION_EXECUTOR = "notification";
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

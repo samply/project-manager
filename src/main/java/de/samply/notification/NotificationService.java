@@ -1,5 +1,6 @@
 package de.samply.notification;
 
+import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Notification;
 import de.samply.db.model.NotificationUserAction;
 import de.samply.db.model.Project;
@@ -11,6 +12,7 @@ import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -40,6 +42,7 @@ public class NotificationService {
         this.dtoFactory = dtoFactory;
     }
 
+    @Async(ProjectManagerConst.ASYNC_NOTIFICATION_EXECUTOR)
     public void createNotification(@NotNull String projectCode, String bridgehead, String email,
                                    @NotNull OperationType operationType,
                                    @NotNull String details, String error, HttpStatus httpStatus
@@ -99,6 +102,7 @@ public class NotificationService {
         }
     }
 
+    @Async(ProjectManagerConst.ASYNC_NOTIFICATION_EXECUTOR)
     public void setNotificationAsRead(@NotNull Long notificationId) {
         NotificationUserAction notificationUserAction = fetchNotificationUserAction(notificationId);
         notificationUserAction.setRead(true);
