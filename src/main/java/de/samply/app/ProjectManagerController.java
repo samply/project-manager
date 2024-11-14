@@ -616,6 +616,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @ProjectConstraints(projectTypes = {ProjectType.RESEARCH_ENVIRONMENT})
     @EmailSender(templateType = EmailTemplateType.ANALYSIS_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS_ACTION)
@@ -629,6 +630,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @ProjectConstraints(projectTypes = {ProjectType.RESEARCH_ENVIRONMENT})
     @EmailSender(templateType = EmailTemplateType.ANALYSIS_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ANALYSIS_ACTION)
@@ -644,6 +646,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT})
+    @ProjectConstraints(projectTypes = {ProjectType.RESEARCH_ENVIRONMENT})
     @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_PROJECT_ANALYSIS, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION)
