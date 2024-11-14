@@ -4,5 +4,6 @@ public enum DataShieldProjectStatus {
     CREATED,
     WITH_DATA,
     NOT_FOUND,
-    INACTIVE
+    INACTIVE,
+    ERROR
 }
