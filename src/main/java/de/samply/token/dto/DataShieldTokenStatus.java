@@ -4,5 +4,6 @@ public enum DataShieldTokenStatus {
     CREATED,
     EXPIRED,
     NOT_FOUND,
-    INACTIVE
+    INACTIVE,
+    ERROR
 }

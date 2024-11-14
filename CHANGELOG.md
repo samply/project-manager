@@ -151,3 +151,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email as HTML
 - Provide also human readable by fetch all registered bridgeheads
 - DataSHIELD Project Status Error
+- Catch token manager exceptions and return ERROR status
