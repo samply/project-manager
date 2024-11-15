@@ -13,15 +13,14 @@ import java.util.Optional;
 @Component
 public class EmailTemplatesFactory {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
     public EmailTemplates createEmailTemplates(@Value(ProjectManagerConst.EMAIL_TEMPLATES_CONFIG_SV) String templates) throws JsonProcessingException {
         Optional<String> decodedTemplates = Base64Utils.decodeIfNecessary(templates);
         if (decodedTemplates.isEmpty()) {
-            throw new RuntimeException("No template found");
+            throw new RuntimeException("No email templates configuration found");
         }
-        return objectMapper.readValue(decodedTemplates.get(), EmailTemplates.class);
+        return new ObjectMapper().readValue(decodedTemplates.get(), EmailTemplates.class);
     }
 
 }

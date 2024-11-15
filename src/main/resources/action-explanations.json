@@ -1,0 +1,11 @@
+{
+  "explanations": {
+    "CREATE_QUERY": [
+      {
+        "messages": {
+          "EN": "Please create the project"
+        }
+      }
+    ]
+  }
+}

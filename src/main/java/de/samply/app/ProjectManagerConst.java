@@ -110,6 +110,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
     public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION = "ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT";
+    public final static String FETCH_ACTION_EXPLANATIONS_ACTION = "FETCH_ACTION_EXPLANATIONS";
 
 
     // REST Services
@@ -190,6 +191,7 @@ public class ProjectManagerConst {
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE = "/autocomplete-users";
     public final static String FETCH_PROJECT_USERS = "/project-users";
     public final static String EXIST_INVITED_USERS = "/exist-invited-users";
+    public final static String FETCH_ACTION_EXPLANATIONS = "/action-explanations";
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
@@ -316,6 +318,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS = "PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS";
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG = "EMAIL_TEMPLATES_CONFIG";
+    public final static String ACTION_EXPLANATION_CONFIG = "ACTION_EXPLANATION_CONFIG";
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
     public final static String DATASHIELD_TEMPLATES = "DATASHIELD_TEMPLATES";
@@ -414,6 +417,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_MANAGER_EMAIL_FROM_SV =
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG + BOTTOM_SV;
+    public final static String ACTION_EXPLANATION_CONFIG_SV = HEAD_SV + ACTION_EXPLANATION_CONFIG + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
