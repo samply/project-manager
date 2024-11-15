@@ -2,6 +2,11 @@ package de.samply.frontend;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.security.SessionUser;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
@@ -17,6 +22,54 @@ public class ActionExplanations {
 
     public Optional<List<ActionExplanation>> getActionExplanation(String action) {
         return Optional.ofNullable(actionExplanationMap.get(action));
+    }
+
+    public String fetchExplanation(@NotNull String action, @NotNull String module, @NotNull String language,
+                                   Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
+                                   Optional<ProjectBridgeheadUser> projectBridgeheadUser, SessionUser sessionUser) {
+        Optional<List<ActionExplanation>> actionExplanations = getActionExplanation(action);
+        if (actionExplanations.isPresent()) {
+            for (ActionExplanation explanation : actionExplanations.get()) {
+                if (isRequiredExplanation(module, project, projectBridgehead, projectBridgeheadUser, sessionUser, explanation)) {
+                    return explanation.getLanguageMessageMap().get(language);
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isRequiredExplanation(String module, Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead, Optional<ProjectBridgeheadUser> projectBridgeheadUser, SessionUser sessionUser, ActionExplanation explanation) {
+        if (module != null && explanation.getModule() != null && !module.equalsIgnoreCase(explanation.getModule())) {
+            return false;
+        }
+        if (project.isPresent()) {
+            if (explanation.getProjectType() != null && project.get().getType() != explanation.getProjectType()) {
+                return false;
+            }
+            if (explanation.getProjectState() != null && project.get().getState() != explanation.getProjectState()) {
+                return false;
+            }
+        }
+        if (projectBridgehead.isPresent()) {
+            if (explanation.getQueryState() != null && projectBridgehead.get().getQueryState() != explanation.getQueryState()) {
+                return false;
+            }
+            if (explanation.getProjectBridgeheadState() != null && projectBridgehead.get().getState() != explanation.getProjectBridgeheadState()) {
+                return false;
+            }
+        }
+        if (projectBridgeheadUser.isPresent()) {
+            if (explanation.getProjectRole() != null && projectBridgeheadUser.get().getProjectRole() != explanation.getProjectRole()) {
+                return false;
+            }
+            if (explanation.getUserProjectState() != null && projectBridgeheadUser.get().getProjectState() != explanation.getUserProjectState()) {
+                return false;
+            }
+        }
+        if (explanation.getOrganisationRole() != null && !sessionUser.getUserOrganisationRoles().containsRole(explanation.getOrganisationRole())) {
+            return false;
+        }
+        return true;
     }
 
 }

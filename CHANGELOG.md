@@ -156,3 +156,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Notification async execution pool
 - Exporter async execution pool
 - Action explanations
+- Integration of action explanatios in fetch Actions

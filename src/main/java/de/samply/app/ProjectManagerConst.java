@@ -110,7 +110,6 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
     public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION = "ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT";
-    public final static String FETCH_ACTION_EXPLANATIONS_ACTION = "FETCH_ACTION_EXPLANATIONS";
 
 
     // REST Services
@@ -191,13 +190,14 @@ public class ProjectManagerConst {
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE = "/autocomplete-users";
     public final static String FETCH_PROJECT_USERS = "/project-users";
     public final static String EXIST_INVITED_USERS = "/exist-invited-users";
-    public final static String FETCH_ACTION_EXPLANATIONS = "/action-explanations";
+
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
     public final static String PROJECT_CONFIGURATION = "project-configuration";
     public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
+    public final static String LANGUAGE = "language";
     public final static String MESSAGE = "message";
     public final static String BRIDGEHEADS = "bridgeheads";
     public final static String EXPLORER_IDS = "explorer-ids";
@@ -347,6 +347,7 @@ public class ProjectManagerConst {
     public final static String OIDC_REALM = "OIDC_REALM";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
+    public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
 
     public final static String CODER_BASE_URL = "CODER_BASE_URL";
     public final static String CODER_ORGANISATION_ID = "CODER_ORGANISATION_ID";
@@ -478,6 +479,7 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE_SV = HEAD_SV + EXPORTER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
     public final static String EXPORTER_MAX_POOL_SIZE_SV = HEAD_SV + EXPORTER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
+    public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
