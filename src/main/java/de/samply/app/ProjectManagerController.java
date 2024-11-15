@@ -1042,6 +1042,8 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgehead(projectCode, bridgehead));
     }
 
+    // For the moment, due to data protection, this feature is disabled:
+    /*
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL},
             queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})
@@ -1054,6 +1056,7 @@ public class ProjectManagerController {
     ) {
         return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(projectCode, bridgehead));
     }
+    */
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL},
