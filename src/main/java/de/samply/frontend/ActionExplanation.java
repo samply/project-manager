@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryState;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
@@ -36,6 +37,8 @@ public class ActionExplanation {
     private ProjectBridgeheadState projectBridgeheadState;
     @JsonProperty(value = "query-state")
     private QueryState queryState;
+    @JsonProperty(value = "user-projectState")
+    private UserProjectState userProjectState;
 
     @JsonProperty(value = "messages", required = true)
     private Map<String, String> languageMessageMap;

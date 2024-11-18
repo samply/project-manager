@@ -116,20 +116,22 @@ public class ProjectManagerController {
     public ResponseEntity<String> fetchActions(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
             @RequestParam(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(() ->
-                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), true));
+                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), Optional.ofNullable(language), true));
     }
 
     @GetMapping(value = ProjectManagerConst.ALL_ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> fetchAllActions(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
             @RequestParam(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(() ->
-                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), false));
+                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), Optional.ofNullable(language), false));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
