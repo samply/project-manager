@@ -1,9 +1,328 @@
 {
   "explanations": {
-    "CREATE_QUERY": [
+    "CREATE_PROJECT": [
       {
         "messages": {
-          "EN": "Please create the project"
+          "EN": "Please complete the project details and click 'Create' to proceed."
+        }
+      }
+    ],
+    "UPLOAD_SCRIPT": [
+      {
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "Please upload script for the federated search"
+        }
+      }
+    ],
+    "DOWNLOAD_SCRIPT": [
+      {
+        "project-state": "DEVELOP",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "A development version of the script has been uploaded. You can download it, make any necessary edits, and then upload your updated version."
+        }
+      },
+      {
+        "project-state": "PILOT",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "The script is ready for testing on your side. Please download it and proceed with the tests (https://dev.samply.de)."
+        }
+      },
+      {
+        "project-state": "FINAL",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "The final script is now available. Please download it and execute it on your development workspace (https://dev.samply.de)."
+        }
+      }
+    ],
+    "UPLOAD_PUBLICATION": [
+      {
+        "project-state": "FINISHED",
+        "messages": {
+          "EN": "Please upload any publications related to this project or provide the URL to the publication."
+        }
+      }
+    ],
+    "UPLOAD_APPLICATION_FORM": [
+      {
+        "project-state": "DRAFT",
+        "project-role": "CREATOR",
+        "messages": {
+          "EN": "Please upload the application form. This field is mandatory and especially important for approval by the Data Science Group. You can download the template by clicking the edit button next to the 'Application Form' field."
+        }
+      }
+    ],
+    "START_PILOT_STAGE": [
+      {
+        "project-state": "DEVELOP",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "You can begin the pilot stage once all the developers have completed and accepted the script for the federated search."
+        }
+      }
+    ],
+    "ACCEPT_PROJECT_RESULTS": [
+      {
+        "project-state": "FINAL",
+        "project-role": "FINAL",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "Please accept the results generated after executing the script across all bridgeheads related to the project. If needed, you can request changes to the script by clicking 'Request Changes'."
+        }
+      },
+      {
+        "project-state": "FINAL",
+        "project-role": "FINAL",
+        "project-type": "EXPORT",
+        "messages": {
+          "EN": "Please accept the results after receiving all exports from the admins of the bridgeheads related to the project. If necessary, you can request changes to the query by clicking 'Request Changes'."
+        }
+      },
+      {
+        "project-state": "FINAL",
+        "project-role": "FINAL",
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "Please accept the results after receiving all exports from the admins of the bridgeheads related to the project in your Data Science Orchestrator workspace. If necessary, you can request changes to the query by clicking 'Request Changes'."
+        }
+      }
+    ],
+    "START_FINAL_STAGE": [
+      {
+        "project-state": "PILOT",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "You can start the final stage of the project once the script has been tested in all pilot bridgeheads and accepted by their bridgehead admins."
+        }
+      },
+      {
+        "project-state": "ACCEPTED",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "You can start the final stage of the project directly if you believe the script is mature enough to bypass the development and pilot stages."
+        }
+      },
+      {
+        "project-state": "PILOT",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "You can start the final stage of the project once the export has been executed in all pilot bridgeheads and accepted by their bridgehead admins."
+        }
+      },
+      {
+        "project-state": "ACCEPTED",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "You can start the final stage of the project directly if you believe the query is mature enough to bypass the development and pilot stages."
+        }
+      },
+      {
+        "project-state": "ACCEPTED",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "project-type": "EXPORT",
+        "messages": {
+          "EN": "Please start the final stage after reviewing the query and confirming that it is suitable to be executed across all bridgeheads related to the project."
+        }
+      }
+    ],
+    "ACCEPT_PROJECT": [
+      {
+        "project-state": "ACCEPTED",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "messages": {
+          "EN": "Please review the application form for this project. If any changes are necessary, contact the project creator directly. If everything is in order, accept the project for evaluation by the Data Science Group. Once the Data Science Group has given their final approval, you can begin the development or final stage."
+        }
+      },
+      {
+        "project-state": "ARCHIVED",
+        "project-role": "PROJECT_MANAGER_ADMIN",
+        "messages": {
+          "EN": "You can reopen this project for evaluation by the Data Science Group at any time."
+        }
+      }
+    ],
+    "ACCEPT_SCRIPT": [
+      {
+        "project-state": "DEVELOP",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "Please accept the script after reviewing it. If any changes are needed, you can request them. If you believe major changes are required or if the project should be temporarily blocked for significant revisions, please click 'Reject' and contact the project manager admin."
+        }
+      },
+      {
+        "project-state": "PILOT",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "Please test the script in your development workspace, as it is adapted specifically for your bridgehead. If everything is fine, accept the project. If changes are needed, click 'Request Changes' and contact the developer. If you believe major changes are required or if the project should be temporarily blocked for significant revisions, click 'Reject' and contact the project manager admin."
+        }
+      }
+    ],
+    "START_DEVELOP_STAGE": [
+      {
+        "messages": {
+          "EN": "You can start the development stage of the project by clicking 'Start Development Stage.' This can be done after receiving agreement from the Data Science Group or at least local approval from the bridgehead admins for development."
+        }
+      }
+    ],
+    "ACCEPT_PROJECT_ANALYSIS_ACTION": [
+      {
+        "project-state": "DEVELOP",
+        "messages": {
+          "EN": "Please accept the analysis test in the Data Science Orchestrator for your bridgehead after reviewing it. If changes are needed, you can request them. If you believe major changes are necessary or if the project should be temporarily blocked for significant revisions, click 'Reject' and contact the project manager admin."
+        }
+      },
+      {
+        "project-state": "PILOT",
+        "messages": {
+          "EN": "Please test the analysis in your development workspace, as it is adapted specifically for your bridgehead. If everything is fine, accept the project. If changes are needed, click 'Request Changes' and contact the developer. If you believe major changes are required or if the project should be temporarily blocked for significant revisions, click 'Reject' and contact the project manager admin."
+        }
+      }
+    ],
+    "ACCEPT_BRIDGEHEAD_PROJECT": [
+      {
+        "project-state": "DEVELOP",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "You have already sent your query to the bridgehead. Please execute it in the Teiler. Once the execution is complete, verify that the project has been uploaded to your local Opal instance of the bridgehead. If everything is in order, you can click 'Accept' to allow the developer to execute the script in the development workspace for your bridgehead. You can cancel your permission at any time by clicking 'Reject.' If necessary, you can also request changes to the script. The Opal token will remain active only during the 'DEVELOP' stage of the project."
+        }
+      },
+      {
+        "project-state": "PILOT",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "You have already sent your query to the bridgehead. Please execute it in the Teiler. Once the execution is complete, verify that the project has been uploaded to your local Opal instance of the bridgehead. If everything is in order, you can click 'Accept' to allow the pilot tester to execute the script in the development workspace for your bridgehead. You can cancel your permission at any time by clicking 'Reject.' If necessary, you can also request changes to the script. The Opal token will remain active only during the 'PILOT' stage of the project."
+        }
+      },
+      {
+        "project-state": "FINAL",
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "You have already sent your query to the bridgehead. Please execute it in the Teiler. Once the execution is complete, verify that the project has been uploaded to your local Opal instance of the bridgehead. If everything is in order, click 'Accept' to allow the final user to execute the script in the development workspace across all bridgeheads related to the project. You can cancel your permission at any time by clicking 'Reject.' If necessary, you can also request changes to the script. The Opal token will remain active only during the 'FINAL' stage of the project."
+        }
+      },
+      {
+        "project-state": "DEVELOP",
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "You have already sent your query to the bridgehead. Please execute it in the Teiler. Once the execution is complete, verify that the project has been executed properly. If everything is in order, click 'Accept' to automatically send the files to the development workspace, where the developer can proceed with the analysis. You can cancel your permission at any time by clicking 'Reject.' If necessary, you can also request changes to the query. The development workspace with the export will remain active only during the 'DEVELOP' stage of the project and only while you have accepted it in the project manager. After that, the workspace and the files will be automatically removed."
+        }
+      },
+      {
+        "project-state": "PILOT",
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "You have already sent your query to the bridgehead. Please execute it in the Teiler. Once the execution is complete, verify that the project has been executed properly. If everything is in order, click 'Accept' to automatically send the files to the development workspace, where the pilot tester can proceed with the analysis. You can cancel your permission at any time by clicking 'Reject.' If necessary, you can also request changes to the query. The development workspace with the export will remain active only during the 'PILOT' stage of the project and only while you have accepted it in the project manager. After that, the workspace and the files will be automatically removed."
+        }
+      },
+      {
+        "project-state": "FINAL",
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "You have already sent your query to the bridgehead. Please execute it in the Teiler. Once the execution is complete, verify that the project has been executed properly. If everything is in order, click 'Accept' to automatically send the files to the development workspace, where the final user can proceed with the analysis. You can cancel your permission at any time by clicking 'Reject.' If necessary, you can also request changes to the query. The development workspace with the export will remain active only during the 'FINAL' stage of the project and only while you have accepted it in the project manager. After that, the workspace and the files will be automatically removed."
+        }
+      },
+      {
+        "project-state": "FINAL",
+        "project-type": "EXPORT",
+        "messages": {
+          "EN": "You have already sent your query to the bridgehead. Please execute it in the Teiler. Once the execution is complete, verify that the project has been executed properly. If everything is in order, click 'Accept' so that the final user can contact you to receive the results through a secure channel. You can cancel your permission at any time by clicking 'Reject.' If necessary, you can also request changes to the query."
+        }
+      }
+    ],
+    "FINISH_PROJECT": [
+      {
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "You can finish the project once the final user has executed the script in the development workspace across all bridgeheads and accepted the results. After clicking 'Finish,' all development workspaces will be removed, and the project will be officially concluded. Please ensure that the request creator agrees with the results before finalizing the project."
+        }
+      },
+      {
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "You can finish the project once the final user has executed the analysis in the development workspace across all bridgeheads and accepted the results. After clicking 'Finish,' all development workspaces and their files will be permanently removed, and the project will be officially concluded. Please ensure that the request creator agrees with the results before finalizing the project."
+        }
+      },
+      {
+        "project-type": "EXPORT",
+        "messages": {
+          "EN": "You can finish the project once the final user has received the exports from all bridgeheads related to the project and accepted the results. After clicking 'Finish,' the project will be officially concluded. Please ensure that the request creator agrees with the results before finalizing the project."
+        }
+      }
+    ],
+    "SAVE_QUERY_IN_BRIDGEHEAD": [
+      {
+        "messages": {
+          "EN": "Please send the query to the Teiler by clicking 'Send query to bridgehead.' The query will be securely transmitted via the Beam infrastructure to your bridgehead. Once sent, you can find the query in the Teiler within the 'Exporter' app. For data protection reasons, the query will not be executed directly from the project manager. You will need to manually execute the query within the 'Exporter' app."
+        }
+      }
+    ],
+    "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT": [
+      {
+        "messages": {
+          "EN": "You can resend the export files to the development workspace to proceed with the analysis. This is particularly important after importing new data into Blaze or other data sources within the bridgehead that are used in your export template."
+        }
+      }
+    ],
+    "SET_PILOT_USER": [
+      {
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "Please assign a user as the pilot tester for the project. The pilot user must belong to the bridgehead they will test in to ensure access. They will test the script in the development workspace for their bridgehead after the bridgehead admin has sent the query, executed it, and accepted it."
+        }
+      },
+      {
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "Please assign a user as the pilot tester for the project. The pilot tester must belong to the bridgehead they will test in to ensure access. They will execute and validate the analysis in the development workspace for their bridgehead after the bridgehead admin has sent the query, executed it, and accepted it."
+        }
+      }
+    ],
+    "SET_DEVELOPER_USER": [
+      {
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "Please assign a user as the developer for the project. The developer must belong to the bridgehead they will test in to ensure access. They will test the script in the development workspace for their bridgehead after the bridgehead admin has sent the query, executed it, and accepted it."
+        }
+      },
+      {
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "Please assign a user as the developer for the project. The developer must belong to the bridgehead they will test in to ensure access. They will execute and validate the analysis in the development workspace for their bridgehead after the bridgehead admin has sent the query, executed it, and accepted it."
+        }
+      }
+    ],
+    "SET_FINAL_USER": [
+      {
+        "project-type": "DATASHIELD",
+        "messages": {
+          "EN": "Please assign a user as the final user for the project. The final user must belong to at least one of the bridgeheads they will test in to ensure access. They will validate the script in the development workspace across all bridgeheads after the bridgehead admins have sent the query, executed it, and accepted it."
+        }
+      },
+      {
+        "project-type": "RESEARCH_ENVIRONMENT",
+        "messages": {
+          "EN": "Please assign a user as the final user for the project. The final user must belong to at least one of the bridgeheads they will test in to ensure access. They will execute and validate the analysis in the development workspace across all bridgeheads after the bridgehead admins have sent the query, executed it, and accepted it."
+        }
+      },
+      {
+        "project-type": "EXPORT",
+        "messages": {
+          "EN": "Please assign a user as the final user for the project. The final user must belong to at least one of the bridgeheads they will test in to ensure access. They will receive all the exports across all bridgeheads and validate the results after the bridgehead admins have sent the query, executed it, and accepted it."
+        }
+      }
+    ],
+    "DOWNLOAD_AUTHENTICATION_SCRIPT": [
+      {
+        "messages": {
+          "EN": "Please download the authentication script and execute it before the code script in the development workspace in order to have access to the bridgeheads."
         }
       }
     ]
