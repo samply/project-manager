@@ -237,6 +237,7 @@ public class ProjectManagerConst {
     public final static String FRONTEND_CONFIG = "frontend";
     public final static String HTTP_PROXY_PREFIX = "http.proxy";
     public final static String HTTPS_PROXY_PREFIX = "https.proxy";
+    public final static String EMAIL_CONTEXT = "email";
 
     // Exporter
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";

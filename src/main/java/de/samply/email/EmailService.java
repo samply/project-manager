@@ -79,7 +79,7 @@ public class EmailService {
             });
             bridgehead.ifPresent(b -> context.put(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, b));
             context.putAll(keyValues);
-            context.putAll(emailContext.getKeyValues());
+            context.putAll(emailContext.getContext());
             Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
             if (messageSubject.isPresent()) {
                 sendEmail(email, messageSubject.get());
