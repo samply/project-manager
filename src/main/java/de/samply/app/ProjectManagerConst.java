@@ -223,21 +223,54 @@ public class ProjectManagerConst {
     public final static String REDIRECT_EXPLORER_URL = "explorer-url";
     public final static String QUERY_CONTEXT = "query-context";
 
-    // Email context properties
+    // Variables for Email Templates:
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
     public final static String EMAIL_CONTEXT_PROJECT_CODE = "projectCode";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL = "projectBridgeheadUserEmail";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME = "projectBridgeheadUserFirstName";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME = "projectBridgeheadUserLastName";
+    public final static String EMAIL_CONTEXT_PROJECT_ROLE = "projectRole";
+    public final static String EMAIL_CONTEXT_PROJECT_TYPE = "projectType";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL = "projectCreatorEmail";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME = "projectCreatorFirstName";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME = "projectCreatorLastName";
+    public final static String EMAIL_CONTEXT_QUERY = "query";
+    public final static String EMAIL_CONTEXT_QUERY_LABEL = "queryLabel";
+    public final static String EMAIL_CONTEXT_QUERY_DESCRIPTION = "queryDescription";
     public final static String EMAIL_CONTEXT_PROJECT_VIEW_URL = "projectViewUrl";
     public final static String EMAIL_CONTEXT_MESSAGE = "message";
+    public final static String EMAIL_CONTEXT_EMAIL_TO = "emailTo";
+    public final static String EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME = "emailToFirstName";
+    public final static String EMAIL_CONTEXT_EMAIL_TO_LAST_NAME = "emailToLastName";
 
+    public final static String[] EMAIL_CONTEXT_VARIABLES = {
+            EMAIL_CONTEXT_BRIDGEHEAD,
+            EMAIL_CONTEXT_PROJECT_CODE,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME,
+            EMAIL_CONTEXT_PROJECT_ROLE,
+            EMAIL_CONTEXT_PROJECT_TYPE,
+            EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL,
+            EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME,
+            EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME,
+            EMAIL_CONTEXT_QUERY,
+            EMAIL_CONTEXT_QUERY_LABEL,
+            EMAIL_CONTEXT_QUERY_DESCRIPTION,
+            EMAIL_CONTEXT_PROJECT_VIEW_URL,
+            EMAIL_CONTEXT_MESSAGE,
+            EMAIL_CONTEXT_EMAIL_TO,
+            EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME,
+            EMAIL_CONTEXT_EMAIL_TO_LAST_NAME
+    };
 
     // Application Properties
-    public final static String JWT_GROUPS_CLAIM_PROPERTY = "jwt.groups.claim";
     public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
     public final static String HTTP_PROXY_PREFIX = "http.proxy";
     public final static String HTTPS_PROXY_PREFIX = "https.proxy";
-    public final static String EMAIL_CONTEXT = "email";
+    public final static String EMAIL_CONTEXT_PREFIX = "email";
 
     // Exporter
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
@@ -350,6 +383,11 @@ public class ProjectManagerConst {
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
 
+    public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
+    public final static String JWT_EMAIL_CLAIM = "JWT_EMAIL_CLAIM";
+    public final static String JWT_FIRST_NAME_CLAIM = "JWT_FIRST_NAME_CLAIM";
+    public final static String JWT_LAST_NAME_CLAIM = "JWT_LAST_NAME_CLAIM";
+
     public final static String CODER_BASE_URL = "CODER_BASE_URL";
     public final static String CODER_ORGANISATION_ID = "CODER_ORGANISATION_ID";
     public final static String CODER_MEMBER_ID = "CODER_MEMBER_ID";
@@ -385,7 +423,10 @@ public class ProjectManagerConst {
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
     public final static String PM_ADMIN_GROUPS_SV = HEAD_SV + PM_ADMIN_GROUPS + BOTTOM_SV;
-    public final static String JWT_GROUPS_CLAIM_PROPERTY_SV = HEAD_SV + JWT_GROUPS_CLAIM_PROPERTY + BOTTOM_SV;
+    public final static String JWT_GROUPS_CLAIM_SV = HEAD_SV + JWT_GROUPS_CLAIM + ":groups" + BOTTOM_SV;
+    public final static String JWT_EMAIL_CLAIM_SV = HEAD_SV + JWT_EMAIL_CLAIM + ":email" + BOTTOM_SV;
+    public final static String JWT_FIRST_NAME_CLAIM_SV = HEAD_SV + JWT_FIRST_NAME_CLAIM + ":given_name" + BOTTOM_SV;
+    public final static String JWT_LAST_NAME_CLAIM_SV = HEAD_SV + JWT_LAST_NAME_CLAIM + ":family_name" + BOTTOM_SV;
     public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
@@ -487,6 +528,13 @@ public class ProjectManagerConst {
     public final static String ASYNC_NOTIFICATION_EXECUTOR = "notification";
     public final static String ASYNC_EXPORTER_EXECUTOR = "exporter";
 
+    // Thymeleaf
+    public final static int THYMELEAF_PROCESSOR_PRECEDENCE = 1000;
+    public final static int THYMELEAF_DIALECT_PRECEDENCE = 1000;
+    public final static String THYMELEAF_DIALECT_NAME = "Project Manager";
+    public final static String THYMELEAF_DIALECT_PREFIX = "pm";
+
+
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";
     public final static String TEST_BRIDGEHEAD = "bridgehead-test";
@@ -495,12 +543,12 @@ public class ProjectManagerConst {
     public final static int QUERY_CODE_SIZE = 20;
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
-    public final static String OIDC_EMAIL_CLAIM = "email";
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
     public final static String HYPHEN = "minus";
     public final static String HTTP_PROTOCOL_SCHEMA = "http";
     public final static String HTTPS_PROTOCOL_SCHEMA = "https";
+
 
 
 }

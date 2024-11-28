@@ -23,6 +23,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
@@ -41,6 +42,7 @@ public class EmailSenderAspect {
     private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectRepository projectRepository;
+    private final EmailKeyValuesFactory emailKeyValuesFactory;
 
     public EmailSenderAspect(EmailService emailService,
                              SessionUser sessionUser,
@@ -49,7 +51,8 @@ public class EmailSenderAspect {
                              ProjectManagerAdminUserRepository projectManagerAdminUserRepository,
                              OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
                              ProjectBridgeheadRepository projectBridgeheadRepository,
-                             ProjectRepository projectRepository) {
+                             ProjectRepository projectRepository,
+                             EmailKeyValuesFactory emailKeyValuesFactory) {
         this.emailService = emailService;
         this.sessionUser = sessionUser;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
@@ -58,6 +61,7 @@ public class EmailSenderAspect {
         this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectRepository = projectRepository;
+        this.emailKeyValuesFactory = emailKeyValuesFactory;
     }
 
     @Pointcut("@annotation(de.samply.annotations.EmailSender)")
@@ -148,10 +152,11 @@ public class EmailSenderAspect {
                 .forEach(emailRecipient -> sendEmail(emailRecipient, () -> emailSenderIfError.templateType())));
     }
 
-    private void sendEmail(EmailRecipient emailRecipient, Supplier<EmailTemplateType> emailTemplateTypeSupplier) {
+    @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
+    protected void sendEmail(EmailRecipient emailRecipient, Supplier<EmailTemplateType> emailTemplateTypeSupplier) {
         try {
-            Map<String, String> keyValues = (emailRecipient.getMessage().isPresent()) ? Map.of(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE, emailRecipient.getMessage().get()) : new HashMap<>();
-            emailService.sendEmail(emailRecipient.getEmail(), emailRecipient.getProjectCode(), emailRecipient.getBridgehead(), emailRecipient.getRole(), emailTemplateTypeSupplier.get(), keyValues);
+            emailService.sendEmail(emailRecipient.getEmail(), emailRecipient.getProjectCode(), emailRecipient.getBridgehead(),
+                    emailRecipient.getRole(), emailTemplateTypeSupplier.get(), emailKeyValuesFactory.newInstance().add(emailRecipient));
         } catch (EmailServiceException e) {
             throw new RuntimeException(e);
         }

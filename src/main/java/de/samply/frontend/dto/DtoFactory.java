@@ -2,6 +2,7 @@ package de.samply.frontend.dto;
 
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.NotificationUserAction;
+import de.samply.db.repository.UserRepository;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +12,13 @@ import java.util.function.Supplier;
 @Component
 public class DtoFactory {
 
-    private BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final UserRepository userRepository;
 
-    public DtoFactory(BridgeheadConfiguration bridgeheadConfiguration) {
+    public DtoFactory(BridgeheadConfiguration bridgeheadConfiguration,
+                      UserRepository userRepository) {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.userRepository = userRepository;
     }
 
     public static Project convert(@NotNull de.samply.db.model.Project project) {
@@ -119,8 +123,11 @@ public class DtoFactory {
     }
 
     public User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
+        Optional<de.samply.db.model.User> user = userRepository.findByEmail(projectBridgeheadUser.getEmail());
         return new User(
                 projectBridgeheadUser.getEmail(),
+                user.isPresent() ? user.get().getFirstName() : null,
+                user.isPresent() ? user.get().getLastName() : null,
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
                 projectBridgeheadUser.getProjectRole(),
@@ -129,8 +136,11 @@ public class DtoFactory {
     }
 
     public User convertFilteringProjectRoleAndState(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
+        Optional<de.samply.db.model.User> user = userRepository.findByEmail(projectBridgeheadUser.getEmail());
         return new User(
                 projectBridgeheadUser.getEmail(),
+                user.isPresent() ? user.get().getFirstName() : null,
+                user.isPresent() ? user.get().getLastName() : null,
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
                 null,

@@ -108,7 +108,7 @@ public class DataShieldTokenManagerJob {
 
     private void sendEmail(String email, String projectCode, EmailTemplateType type, ProjectRole projectRole) {
         try {
-            emailService.sendEmail(email, Optional.ofNullable(projectCode), Optional.empty(), projectRole, type); //TODO: Add project code
+            emailService.sendEmail(email, Optional.ofNullable(projectCode), Optional.empty(), projectRole, type);
         } catch (EmailServiceException e) {
             throw new RuntimeException(e);
         }
