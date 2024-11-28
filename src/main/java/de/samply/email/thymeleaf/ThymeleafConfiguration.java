@@ -1,4 +1,4 @@
-package de.samply.email;
+package de.samply.email.thymeleaf;
 
 import de.samply.app.ProjectManagerConst;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +46,7 @@ public class ThymeleafConfiguration {
     public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.addTemplateResolver(externalTemplateResolver());
+        engine.addDialect(new ProjectManagerDialect());
         return engine;
     }
 

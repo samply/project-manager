@@ -160,3 +160,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Action explanations templates
 - Email Context
 - Extend email context
+- Thymeleaf Dialect for email context variables

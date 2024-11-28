@@ -223,7 +223,7 @@ public class ProjectManagerConst {
     public final static String REDIRECT_EXPLORER_URL = "explorer-url";
     public final static String QUERY_CONTEXT = "query-context";
 
-    // Email context properties
+    // Variables for Email Templates:
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
     public final static String EMAIL_CONTEXT_PROJECT_CODE = "projectCode";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL = "projectBridgeheadUserEmail";
@@ -243,6 +243,26 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME = "emailToFirstName";
     public final static String EMAIL_CONTEXT_EMAIL_TO_LAST_NAME = "emailToLastName";
 
+    public final static String[] EMAIL_CONTEXT_VARIABLES = {
+            EMAIL_CONTEXT_BRIDGEHEAD,
+            EMAIL_CONTEXT_PROJECT_CODE,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME,
+            EMAIL_CONTEXT_PROJECT_ROLE,
+            EMAIL_CONTEXT_PROJECT_TYPE,
+            EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL,
+            EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME,
+            EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME,
+            EMAIL_CONTEXT_QUERY,
+            EMAIL_CONTEXT_QUERY_LABEL,
+            EMAIL_CONTEXT_QUERY_DESCRIPTION,
+            EMAIL_CONTEXT_PROJECT_VIEW_URL,
+            EMAIL_CONTEXT_MESSAGE,
+            EMAIL_CONTEXT_EMAIL_TO,
+            EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME,
+            EMAIL_CONTEXT_EMAIL_TO_LAST_NAME
+    };
 
     // Application Properties
     public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
@@ -508,6 +528,13 @@ public class ProjectManagerConst {
     public final static String ASYNC_NOTIFICATION_EXECUTOR = "notification";
     public final static String ASYNC_EXPORTER_EXECUTOR = "exporter";
 
+    // Thymeleaf
+    public final static int THYMELEAF_PROCESSOR_PRECEDENCE = 1000;
+    public final static int THYMELEAF_DIALECT_PRECEDENCE = 1000;
+    public final static String THYMELEAF_DIALECT_NAME = "Project Manager";
+    public final static String THYMELEAF_DIALECT_PREFIX = "pm";
+
+
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";
     public final static String TEST_BRIDGEHEAD = "bridgehead-test";
@@ -521,6 +548,7 @@ public class ProjectManagerConst {
     public final static String HYPHEN = "minus";
     public final static String HTTP_PROTOCOL_SCHEMA = "http";
     public final static String HTTPS_PROTOCOL_SCHEMA = "https";
+
 
 
 }
