@@ -1,5 +1,6 @@
 package de.samply.frontend.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
 import de.samply.query.OutputFormat;
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Map;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class Project {
 

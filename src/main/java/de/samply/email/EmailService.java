@@ -1,7 +1,6 @@
 package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.frontend.FrontendService;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.user.roles.ProjectRole;
@@ -21,7 +20,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,9 +32,8 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final EmailTemplates emailTemplates;
-    private final EmailContext emailContext;
     private final NotificationService notificationService;
-    private final FrontendService frontendService;
+    private final EmailKeyValuesFactory emailKeyValuesFactory;
 
 
     public EmailService(
@@ -45,47 +42,38 @@ public class EmailService {
             JavaMailSender mailSender,
             TemplateEngine templateEngine,
             EmailTemplates emailTemplates,
-            EmailContext emailContext,
             NotificationService notificationService,
-            FrontendService frontendService) {
+            EmailKeyValuesFactory emailKeyValuesFactory) {
         this.emailFrom = emailFrom;
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.emailTemplates = emailTemplates;
-        this.emailContext = emailContext;
         this.enableEmails = enableEmails;
         this.notificationService = notificationService;
-        this.frontendService = frontendService;
+        this.emailKeyValuesFactory = emailKeyValuesFactory;
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
-    public void sendEmail(@NotNull String email, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
+    public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
         if (enableEmails) {
-            sendEmail(email, project, bridgehead, role, type, new HashMap<>());
+            sendEmail(emailTo, project, bridgehead, role, type, this.emailKeyValuesFactory.newInstance());
         } else {
-            log.info("SMTP Server not enabled. Email to " + email + " with role " + role + " for bridgehead " +
+            log.info("SMTP Server not enabled. Email to " + emailTo + " with role " + role + " for bridgehead " +
                     (bridgehead.isPresent() ? bridgehead.get() : "NONE") + " and type " + type + " could not be sent");
         }
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
-    public void sendEmail(@NotNull String email, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, Map<String, String> keyValues) throws EmailServiceException {
+    public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, EmailKeyValues keyValues) throws EmailServiceException {
         if (enableEmails) {
-            Map<String, String> context = new HashMap<>();
-            project.ifPresent(p -> {
-                context.put(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CODE, p);
-                context.put(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_VIEW_URL,
-                        this.frontendService.fetchUrl(ProjectManagerConst.PROJECT_VIEW_SITE, Map.of(ProjectManagerConst.PROJECT_CODE, p)));
-            });
-            bridgehead.ifPresent(b -> context.put(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, b));
-            context.putAll(keyValues);
-            context.putAll(emailContext.getContext());
-            Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, context);
+            project.ifPresent(keyValues::addProjectCode);
+            bridgehead.ifPresent(keyValues::addBridgehead);
+            Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues.getKeyValues());
             if (messageSubject.isPresent()) {
-                sendEmail(email, messageSubject.get());
+                sendEmail(emailTo, messageSubject.get());
                 if (project.isPresent()) {
-                    String details = "Email to " + email + " (" + role + ") of type " + type.toString();
-                    String message = keyValues.get(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE);
+                    String details = "Email to " + emailTo + " (" + role + ") of type " + type.toString();
+                    String message = keyValues.getKeyValues().get(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE);
                     if (message != null) {
                         details += " : " + message;
                     }
@@ -95,12 +83,15 @@ public class EmailService {
             } else {
                 throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
             }
+        } else {
+            log.info("SMTP Server not enabled. Email to " + emailTo + " with role " + role + " for bridgehead " +
+                    (bridgehead.isPresent() ? bridgehead.get() : "NONE") + " and type " + type + " could not be sent");
         }
     }
 
-    private void sendEmail(String email, MessageSubject messageSubject) {
+    private void sendEmail(String emailTo, MessageSubject messageSubject) {
         try {
-            mailSender.send(createMimeMessage(email, emailFrom, messageSubject));
+            mailSender.send(createMimeMessage(emailTo, emailFrom, messageSubject));
         } catch (MailException | EmailServiceException e) {
             log.error("Failed to send email");
             log.error(ExceptionUtils.getStackTrace(e));

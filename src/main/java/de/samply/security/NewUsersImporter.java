@@ -24,6 +24,7 @@ public class NewUsersImporter {
                 userService.createBridgeheadAdminUserIfNotExists(sessionUser.getEmail(), bridgehead);
             }
         });
+        userService.addUserInformationIfNotExists(sessionUser.getEmail(), sessionUser.getFirstName(), sessionUser.getLastName());
     }
 
 }

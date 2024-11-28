@@ -28,7 +28,7 @@ public class OidcProjectUserService extends OidcUserService {
             SessionUser sessionUser,
             GrantedAuthoritiesExtractor grantedAuthoritiesExtractor,
             NewUsersImporter newUsersImporter,
-            @Value(ProjectManagerConst.JWT_GROUPS_CLAIM_PROPERTY_SV) String groupClaim) {
+            @Value(ProjectManagerConst.JWT_GROUPS_CLAIM_SV) String groupClaim) {
         this.sessionUser = sessionUser;
         this.grantedAuthoritiesExtractor = grantedAuthoritiesExtractor;
         this.newUsersImporter = newUsersImporter;

@@ -1,10 +1,12 @@
 package de.samply.frontend.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.notification.OperationType;
 import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record Notification(
         Long id,
         String email,

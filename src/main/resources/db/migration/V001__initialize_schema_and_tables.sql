@@ -126,6 +126,14 @@ CREATE TABLE samply.project_coder
     deleted_at                 TIMESTAMP
 );
 
+CREATE TABLE samply.user
+(
+    id         SERIAL PRIMARY KEY,
+    email      TEXT NOT NULL,
+    first_name TEXT NOT NULL,
+    last_name  TEXT NOT NULL
+);
+
 ALTER TABLE samply.project
     ADD CONSTRAINT fk_project_query
         FOREIGN KEY (query_id)
@@ -161,6 +169,9 @@ ALTER TABLE samply.project_bridgehead_datashield
 ALTER TABLE samply.project_coder
     ADD CONSTRAINT fk_project_bridgehead_user FOREIGN KEY (project_bridgehead_user_id)
         REFERENCES samply.project_bridgehead_user (id);
+
+ALTER TABLE samply.user
+    ADD CONSTRAINT unique_email UNIQUE (email);
 
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);

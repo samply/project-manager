@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@ConfigurationProperties(prefix = ProjectManagerConst.EMAIL_CONTEXT)
+@ConfigurationProperties(prefix = ProjectManagerConst.EMAIL_CONTEXT_PREFIX)
 @Data
 public class EmailContext {
 

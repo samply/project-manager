@@ -3,6 +3,7 @@ package de.samply.security;
 import de.samply.app.ProjectManagerConst;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.UserOrganisationRoles;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -13,9 +14,12 @@ import java.util.Set;
 
 @Component
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+@Data
 public class SessionUser {
 
     private String email;
+    private String firstName;
+    private String lastName;
     private UserOrganisationRoles userOrganisationRoles = new UserOrganisationRoles();
 
     public SessionUser(@Value(ProjectManagerConst.SECURITY_ENABLED_SV) boolean isSecurityEnabled) {
@@ -25,20 +29,6 @@ public class SessionUser {
             userOrganisationRoles.addBridgeheadRole(ProjectManagerConst.TEST_BRIDGEHEAD, OrganisationRole.RESEARCHER);
             userOrganisationRoles.addBridgeheadRole(ProjectManagerConst.TEST_BRIDGEHEAD, OrganisationRole.BRIDGEHEAD_ADMIN);
         }
-    }
-
-    public void setEmail(String email) {
-        if (email != null) {
-            this.email = email;
-        }
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public UserOrganisationRoles getUserOrganisationRoles() {
-        return userOrganisationRoles;
     }
 
     public Set<String> getBridgeheads() {
