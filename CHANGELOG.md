@@ -162,3 +162,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Extend email context
 - Thymeleaf Dialect for email context variables
 - Combine first and last name in name 
+- Replace email context variables in email subject

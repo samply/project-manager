@@ -68,7 +68,7 @@ public class EmailService {
         if (enableEmails) {
             project.ifPresent(keyValues::addProjectCode);
             bridgehead.ifPresent(keyValues::addBridgehead);
-            Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues.getKeyValues());
+            Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues);
             if (messageSubject.isPresent()) {
                 sendEmail(emailTo, messageSubject.get());
                 if (project.isPresent()) {
@@ -116,18 +116,18 @@ public class EmailService {
         return message;
     }
 
-    private Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type, Map<String, String> keyValues) {
+    private Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type, EmailKeyValues keyValues) {
         Optional<TemplateSubject> template = emailTemplates.getTemplateAndSubject(type, role);
         if (template.isPresent()) {
             String message = templateEngine.process(template.get().template(), createContext(keyValues));
-            return Optional.of(new MessageSubject(message, template.get().subject()));
+            return Optional.of(new MessageSubject(message, keyValues.replaceHtmlVariables(template.get().subject())));
         }
         return Optional.empty();
     }
 
-    private Context createContext(Map<String, String> keyValues) {
+    private Context createContext(EmailKeyValues keyValues) {
         Context context = new Context();
-        keyValues.forEach((key, value) -> context.setVariable(key, value));
+        keyValues.getKeyValues().forEach((key, value) -> context.setVariable(key, value));
         return context;
     }
 

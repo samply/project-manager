@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public class EmailKeyValues {
 
@@ -168,6 +169,41 @@ public class EmailKeyValues {
                 addKeyValue(emailNameKey, () -> user.getFirstName() + " " + user.getLastName());
             });
         }
+    }
+
+    public String replaceHtmlVariables(String htmlText) {
+        if (htmlText != null) {
+            // Regular expression to match the variable pattern
+            // e.g. <variable1/> It is like a HTML tag
+            String regex = "<\\s*(\\w+)\\s*/>";
+
+            // Use StringBuilder to build the result efficiently
+            StringBuilder result = new StringBuilder();
+
+            // Use Matcher to find all matches
+            var matcher = Pattern.compile(regex).matcher(htmlText);
+            int lastMatchEnd = 0; // Tracks the end of the last match
+
+            while (matcher.find()) {
+                // Append the part of the string before the match
+                result.append(htmlText, lastMatchEnd, matcher.start());
+
+                // Extract the variable name (group 1 in the regex)
+                String variableName = matcher.group(1);
+
+                // Replace the variable with its value, or keep it as-is if not found
+                result.append(keyValues.getOrDefault(variableName, matcher.group()));
+
+                // Update lastMatchEnd to the end of this match
+                lastMatchEnd = matcher.end();
+            }
+
+            // Append the rest of the string after the last match
+            result.append(htmlText, lastMatchEnd, htmlText.length());
+
+            htmlText = result.toString();
+        }
+        return htmlText;
     }
 
 }
