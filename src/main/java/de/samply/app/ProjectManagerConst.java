@@ -226,6 +226,7 @@ public class ProjectManagerConst {
     // Variables for Email Templates:
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
     public final static String EMAIL_CONTEXT_PROJECT_CODE = "project-code";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEADS = "project-bridgeheads";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL = "project-bridgehead-user-email";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME = "project-bridgehead-user-first-name";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME = "project-bridgehead-user-last-name";
@@ -250,6 +251,7 @@ public class ProjectManagerConst {
     public final static String[] EMAIL_CONTEXT_VARIABLES = {
             EMAIL_CONTEXT_BRIDGEHEAD,
             EMAIL_CONTEXT_PROJECT_CODE,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEADS,
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL,
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME,

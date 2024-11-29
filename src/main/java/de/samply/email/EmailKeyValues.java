@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class EmailKeyValues {
 
@@ -117,13 +118,13 @@ public class EmailKeyValues {
     }
 
     public EmailKeyValues addBridgehead(String bridgehead) {
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, fetchBridgeheadHumanReadable(bridgehead));
+        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, fetchHumanReadableBridgehead(bridgehead));
         return this;
     }
 
-    private String fetchBridgeheadHumanReadable(String bridgehead) {
+    private String fetchHumanReadableBridgehead(String bridgehead) {
         Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
-        return humanReadable.isPresent() ? humanReadable.get() : null;
+        return humanReadable.isPresent() ? humanReadable.get() : bridgehead;
     }
 
     public EmailKeyValues add(Project project) {
@@ -139,8 +140,16 @@ public class EmailKeyValues {
                             project.getQuery().getHumanReadable() : project.getQuery().getQuery());
             addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_TYPE, () -> project.getType().toString());
             add(project.getQuery());
+            addBridgeheads(project);
         }
         return this;
+    }
+
+    private void addBridgeheads(Project project) {
+        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEADS,
+                projectBridgeheadRepository.findByProject(project).stream()
+                        .map(projectBridgehead -> fetchHumanReadableBridgehead(projectBridgehead.getBridgehead()))
+                        .collect(Collectors.joining(",")));
     }
 
     public EmailKeyValues add(Query query) {
