@@ -163,3 +163,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Thymeleaf Dialect for email context variables
 - Combine first and last name in name 
 - Replace email context variables in email subject
+- Default and Default var in html tags

@@ -27,11 +27,31 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
                 ? tagName.substring(tagName.indexOf(':') + 1)
                 : tagName;
         if (supportedTagNames.contains(variableName)) {
-            // Retrieve the value of the variable from the context
+            // Retrieve the desired variable from the context
             Object variableValue = context.getVariable(variableName);
 
-            // Replace the tag with the variable's value or an empty string if the variable doesn't exist
-            structureHandler.replaceWith(variableValue != null ? variableValue.toString() : "", false);
+            // Retrieve the "default" and "defaultVar" attributes, if they exist
+            String defaultValue = tag.getAttributeValue(ProjectManagerConst.EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VALUE);
+            String defaultVarName = tag.getAttributeValue(ProjectManagerConst.EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VARIABLE);
+
+            // Retrieve the value of "defaultVar" from the context, if specified
+            Object defaultVarValue = defaultVarName != null ? context.getVariable(defaultVarName) : null;
+
+            // Determine the final value based on the priority:
+            // 1) Desired variable
+            // 2) Default variable
+            // 3) Default value
+            // 4) Empty string if none are available
+            String finalValue = variableValue != null
+                    ? variableValue.toString()
+                    : defaultVarValue != null
+                    ? defaultVarValue.toString()
+                    : defaultValue != null
+                    ? defaultValue
+                    : "";
+
+            // Replace the tag with the final value
+            structureHandler.replaceWith(finalValue, false);
         }
     }
 

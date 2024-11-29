@@ -225,26 +225,27 @@ public class ProjectManagerConst {
 
     // Variables for Email Templates:
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
-    public final static String EMAIL_CONTEXT_PROJECT_CODE = "projectCode";
-    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL = "projectBridgeheadUserEmail";
-    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME = "projectBridgeheadUserFirstName";
-    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME = "projectBridgeheadUserLastName";
-    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME = "projectBridgeheadUserName";
-    public final static String EMAIL_CONTEXT_PROJECT_ROLE = "projectRole";
-    public final static String EMAIL_CONTEXT_PROJECT_TYPE = "projectType";
-    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL = "projectCreatorEmail";
-    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME = "projectCreatorFirstName";
-    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME = "projectCreatorLastName";
-    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_NAME = "projectCreatorName";
+    public final static String EMAIL_CONTEXT_PROJECT_CODE = "project-code";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL = "project-bridgehead-user-email";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME = "project-bridgehead-user-first-name";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME = "project-bridgehead-user-last-name";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME = "project-bridgehead-user-name";
+    public final static String EMAIL_CONTEXT_PROJECT_ROLE = "project-role";
+    public final static String EMAIL_CONTEXT_PROJECT_TYPE = "project-type";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL = "project-creator-email";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME = "project-creator-first-name";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME = "project-creator-last-name";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_NAME = "project-creator-name";
     public final static String EMAIL_CONTEXT_QUERY = "query";
-    public final static String EMAIL_CONTEXT_QUERY_LABEL = "queryLabel";
-    public final static String EMAIL_CONTEXT_QUERY_DESCRIPTION = "queryDescription";
-    public final static String EMAIL_CONTEXT_PROJECT_VIEW_URL = "projectViewUrl";
+    public final static String EMAIL_CONTEXT_QUERY_LABEL = "query-label";
+    public final static String EMAIL_CONTEXT_QUERY_DESCRIPTION = "query-description";
+    public final static String EMAIL_CONTEXT_PROJECT_VIEW_URL = "project-view-url";
     public final static String EMAIL_CONTEXT_MESSAGE = "message";
-    public final static String EMAIL_CONTEXT_EMAIL_TO = "emailTo";
-    public final static String EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME = "emailToFirstName";
-    public final static String EMAIL_CONTEXT_EMAIL_TO_LAST_NAME = "emailToLastName";
-    public final static String EMAIL_CONTEXT_EMAIL_TO_NAME = "emailToName";
+    public final static String EMAIL_CONTEXT_EMAIL_TO = "email-to";
+    public final static String EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME = "email-to-first-name";
+    public final static String EMAIL_CONTEXT_EMAIL_TO_LAST_NAME = "email-to-last-name";
+    public final static String EMAIL_CONTEXT_EMAIL_TO_NAME = "email-to-name";
+
 
     public final static String[] EMAIL_CONTEXT_VARIABLES = {
             EMAIL_CONTEXT_BRIDGEHEAD,
@@ -269,6 +270,9 @@ public class ProjectManagerConst {
             EMAIL_CONTEXT_EMAIL_TO_LAST_NAME,
             EMAIL_CONTEXT_EMAIL_TO_NAME
     };
+
+    public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VALUE = "default";
+    public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VARIABLE = "default-var";
 
     // Application Properties
     public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
