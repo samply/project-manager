@@ -1,6 +1,7 @@
 package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -26,17 +27,20 @@ public class EmailKeyValues {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final BridgeheadConfiguration bridgeheadConfiguration;
 
 
     public EmailKeyValues(FrontendService frontendService,
                           EmailContext emailContext,
                           ProjectBridgeheadRepository projectBridgeheadRepository,
                           ProjectRepository projectRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          BridgeheadConfiguration bridgeheadConfiguration) {
         this.frontendService = frontendService;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.bridgeheadConfiguration = bridgeheadConfiguration;
         keyValues.putAll(emailContext.getContext());
     }
 
@@ -113,10 +117,14 @@ public class EmailKeyValues {
     }
 
     public EmailKeyValues addBridgehead(String bridgehead) {
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, bridgehead);
+        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, fetchBridgeheadHumanReadable(bridgehead));
         return this;
     }
 
+    private String fetchBridgeheadHumanReadable(String bridgehead) {
+        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
+        return humanReadable.isPresent() ? humanReadable.get() : null;
+    }
 
     public EmailKeyValues add(Project project) {
         if (project != null) {
