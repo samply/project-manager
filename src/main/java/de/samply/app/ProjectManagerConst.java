@@ -229,11 +229,13 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL = "projectBridgeheadUserEmail";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME = "projectBridgeheadUserFirstName";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME = "projectBridgeheadUserLastName";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME = "projectBridgeheadUserName";
     public final static String EMAIL_CONTEXT_PROJECT_ROLE = "projectRole";
     public final static String EMAIL_CONTEXT_PROJECT_TYPE = "projectType";
     public final static String EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL = "projectCreatorEmail";
     public final static String EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME = "projectCreatorFirstName";
     public final static String EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME = "projectCreatorLastName";
+    public final static String EMAIL_CONTEXT_PROJECT_CREATOR_NAME = "projectCreatorName";
     public final static String EMAIL_CONTEXT_QUERY = "query";
     public final static String EMAIL_CONTEXT_QUERY_LABEL = "queryLabel";
     public final static String EMAIL_CONTEXT_QUERY_DESCRIPTION = "queryDescription";
@@ -242,6 +244,7 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_EMAIL_TO = "emailTo";
     public final static String EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME = "emailToFirstName";
     public final static String EMAIL_CONTEXT_EMAIL_TO_LAST_NAME = "emailToLastName";
+    public final static String EMAIL_CONTEXT_EMAIL_TO_NAME = "emailToName";
 
     public final static String[] EMAIL_CONTEXT_VARIABLES = {
             EMAIL_CONTEXT_BRIDGEHEAD,
@@ -249,11 +252,13 @@ public class ProjectManagerConst {
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL,
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME,
             EMAIL_CONTEXT_PROJECT_ROLE,
             EMAIL_CONTEXT_PROJECT_TYPE,
             EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL,
             EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME,
             EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME,
+            EMAIL_CONTEXT_PROJECT_CREATOR_NAME,
             EMAIL_CONTEXT_QUERY,
             EMAIL_CONTEXT_QUERY_LABEL,
             EMAIL_CONTEXT_QUERY_DESCRIPTION,
@@ -261,7 +266,8 @@ public class ProjectManagerConst {
             EMAIL_CONTEXT_MESSAGE,
             EMAIL_CONTEXT_EMAIL_TO,
             EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME,
-            EMAIL_CONTEXT_EMAIL_TO_LAST_NAME
+            EMAIL_CONTEXT_EMAIL_TO_LAST_NAME,
+            EMAIL_CONTEXT_EMAIL_TO_NAME
     };
 
     // Application Properties

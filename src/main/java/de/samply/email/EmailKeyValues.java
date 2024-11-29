@@ -41,8 +41,11 @@ public class EmailKeyValues {
 
     public EmailKeyValues add(EmailRecipient emailRecipient) {
         if (emailRecipient != null) {
-            addEmailData(emailRecipient.getEmail(), ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO,
-                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME, ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_LAST_NAME);
+            addEmailData(emailRecipient.getEmail(),
+                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO,
+                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_LAST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_NAME);
             emailRecipient.getMessage().ifPresent(this::addMessage);
             add(emailRecipient.getRole());
             addProjectBridgeheadOrProject(emailRecipient);
@@ -71,8 +74,11 @@ public class EmailKeyValues {
 
     public EmailKeyValues add(ProjectBridgeheadUser projectBridgeheadUser) {
         if (projectBridgeheadUser != null) {
-            addEmailData(projectBridgeheadUser.getEmail(), ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME, ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME);
+            addEmailData(projectBridgeheadUser.getEmail(),
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL,
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME);
             add(projectBridgeheadUser.getProjectRole());
             add(projectBridgeheadUser.getProjectBridgehead());
         }
@@ -114,8 +120,11 @@ public class EmailKeyValues {
     public EmailKeyValues add(Project project) {
         if (project != null) {
             addProjectCode(project.getCode());
-            addEmailData(project.getCreatorEmail(), ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME, ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME);
+            addEmailData(project.getCreatorEmail(),
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL,
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_NAME);
             addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_QUERY,
                     (project.getQuery().getHumanReadable()) != null ?
                             project.getQuery().getHumanReadable() : project.getQuery().getQuery());
@@ -150,12 +159,13 @@ public class EmailKeyValues {
         return keyValues;
     }
 
-    private void addEmailData(String email, @NotNull String emailKey, @NotNull String emailFirstNameKey, @NotNull String emailLastNameKey) {
+    private void addEmailData(String email, @NotNull String emailKey, @NotNull String emailFirstNameKey, @NotNull String emailLastNameKey, @NotNull String emailNameKey) {
         if (email != null) {
             addKeyValue(emailKey, email);
             userRepository.findByEmail(email).ifPresent(user -> {
                 addKeyValue(emailFirstNameKey, user::getFirstName);
                 addKeyValue(emailLastNameKey, user::getLastName);
+                addKeyValue(emailNameKey, () -> user.getFirstName() + " " + user.getLastName());
             });
         }
     }
