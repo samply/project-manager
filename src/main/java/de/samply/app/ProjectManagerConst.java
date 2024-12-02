@@ -246,6 +246,13 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME = "email-to-first-name";
     public final static String EMAIL_CONTEXT_EMAIL_TO_LAST_NAME = "email-to-last-name";
     public final static String EMAIL_CONTEXT_EMAIL_TO_NAME = "email-to-name";
+    public final static String EMAIL_CONTEXT_LAST_DOCUMENT_LABEL = "last-document-label";
+    public final static String EMAIL_CONTEXT_LAST_DOCUMENT_FILENAME = "last-document-filename";
+    public final static String EMAIL_CONTEXT_LAST_DOCUMENT_URL = "last-document-url";
+    public final static String EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_NAME = "last-document-url-sender-name";
+    public final static String EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_FIRST_NAME = "last-document-url-sender-first-name";
+    public final static String EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_LAST_NAME = "last-document-url-sender-last-name";
+    public final static String EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_EMAIL = "last-document-url-sender-email";
 
 
     public final static String[] EMAIL_CONTEXT_VARIABLES = {

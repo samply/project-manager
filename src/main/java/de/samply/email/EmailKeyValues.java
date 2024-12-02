@@ -7,6 +7,7 @@ import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.db.repository.ProjectDocumentRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.UserRepository;
 import de.samply.frontend.FrontendService;
@@ -29,6 +30,7 @@ public class EmailKeyValues {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final ProjectDocumentRepository projectDocumentRepository;
 
 
     public EmailKeyValues(FrontendService frontendService,
@@ -36,12 +38,14 @@ public class EmailKeyValues {
                           ProjectBridgeheadRepository projectBridgeheadRepository,
                           ProjectRepository projectRepository,
                           UserRepository userRepository,
-                          BridgeheadConfiguration bridgeheadConfiguration) {
+                          BridgeheadConfiguration bridgeheadConfiguration,
+                          ProjectDocumentRepository projectDocumentRepository) {
         this.frontendService = frontendService;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.projectDocumentRepository = projectDocumentRepository;
         keyValues.putAll(emailContext.getContext());
     }
 
@@ -141,6 +145,7 @@ public class EmailKeyValues {
             addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_TYPE, () -> project.getType().toString());
             add(project.getQuery());
             addBridgeheads(project);
+            addLastDocument(project);
         }
         return this;
     }
@@ -150,6 +155,19 @@ public class EmailKeyValues {
                 projectBridgeheadRepository.findByProject(project).stream()
                         .map(projectBridgehead -> fetchHumanReadableBridgehead(projectBridgehead.getBridgehead()))
                         .collect(Collectors.joining(",")));
+    }
+
+    private void addLastDocument(Project project) {
+        projectDocumentRepository.findTopByProjectOrderByCreatedAtDesc(project).ifPresent(projectDocument -> {
+            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_LABEL, projectDocument::getLabel);
+            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_FILENAME, projectDocument::getOriginalFilename);
+            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_URL, projectDocument::getUrl);
+            addEmailData(projectDocument.getCreatorEmail(),
+                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_EMAIL,
+                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_FIRST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_LAST_NAME,
+                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_NAME);
+        });
     }
 
     public EmailKeyValues add(Query query) {

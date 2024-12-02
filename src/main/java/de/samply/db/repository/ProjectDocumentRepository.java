@@ -19,6 +19,8 @@ public interface ProjectDocumentRepository extends JpaRepository<ProjectDocument
 
     Optional<ProjectDocument> findFirstByProjectAndDocumentTypeAndBridgeheadOrderByCreatedAtDesc(Project project, DocumentType documentType, String bridgehead);
 
+    Optional<ProjectDocument> findTopByProjectOrderByCreatedAtDesc(Project project);
+
     List<ProjectDocument> findAllByProjectAndDocumentTypeOrderByLabelAsc(Project project, DocumentType documentType);
 
     @Query("SELECT pd FROM ProjectDocument pd WHERE (pd.bridgehead = :bridgehead OR pd.bridgehead = 'NONE') " +
