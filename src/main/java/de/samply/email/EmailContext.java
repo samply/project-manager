@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Component
@@ -20,15 +21,27 @@ public class EmailContext {
     private Map<String, String> context = new HashMap<>();
 
 
+    // Keys may contain the "-" character, which is represented as "MINUS" in environment variables.
+    // If a key is Base64-encoded, it should start with the prefix "B64" to indicate its encoding.
     @PostConstruct
     public void init() {
         log.info("Email Context initialized:");
-        Map<String, String> tempContext = Map.copyOf(context);
+        Map<String, String> tempContext = new HashMap<>(context);
         context.entrySet().stream().forEach(keyValue -> {
-            log.info("\t-\t{}: {}", keyValue.getKey(), keyValue.getValue());
-            Base64Utils.decodeIfNecessary(keyValue.getValue()).ifPresent(value -> tempContext.put(keyValue.getKey(), value));
+            String key = replaceHyphen(keyValue.getKey());
+            AtomicReference<String> value = new AtomicReference<>(keyValue.getValue());
+            if (key.startsWith(ProjectManagerConst.BASE_64)) {
+                key = key.replaceFirst(ProjectManagerConst.BASE_64, "");
+                Base64Utils.decodeIfNecessary(keyValue.getValue()).ifPresent(value::set);
+            }
+            log.info("\t-\t{}: {}", key, value.get());
+            tempContext.put(key, value.get());
         });
         context = tempContext;
+    }
+
+    private String replaceHyphen(String var) {
+        return var.replace(ProjectManagerConst.HYPHEN, "-");
     }
 
 

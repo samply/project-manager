@@ -558,6 +558,7 @@ public class ProjectManagerConst {
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
     public final static String HYPHEN = "minus";
+    public final static String BASE_64 = "b64";
     public final static String HTTP_PROTOCOL_SCHEMA = "http";
     public final static String HTTPS_PROTOCOL_SCHEMA = "https";
 
