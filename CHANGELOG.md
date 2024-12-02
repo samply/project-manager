@@ -166,3 +166,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Default and Default var in html tags
 - Fetch human readable bridgehead for emails
 - Email context project bridgeheads variable
+- Decode Base64 values of email context
