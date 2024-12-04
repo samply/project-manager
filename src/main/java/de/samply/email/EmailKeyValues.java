@@ -68,10 +68,11 @@ public class EmailKeyValues {
         AtomicReference<Optional<Project>> projectOptional = new AtomicReference<>(Optional.empty());
         emailRecipient.getProjectCode().ifPresent(projectCode ->
                 projectRepository.findByCode(projectCode).ifPresent(project ->
-                        emailRecipient.getBridgehead().ifPresent(bridgehead ->
-                                projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project).ifPresentOrElse(projectBridgehead ->
-                                                projectBridgeheadOptional.set(Optional.of(projectBridgehead)),
-                                        () -> projectOptional.set(Optional.of(project))))));
+                        emailRecipient.getBridgehead().ifPresentOrElse(bridgehead ->
+                                        projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project).ifPresentOrElse(projectBridgehead ->
+                                                        projectBridgeheadOptional.set(Optional.of(projectBridgehead)),
+                                                () -> projectOptional.set(Optional.of(project))),
+                                () -> projectOptional.set(Optional.of(project)))));
         if (projectBridgeheadOptional.get().isPresent()) {
             add(projectBridgeheadOptional.get().get());
         } else if (projectOptional.get().isPresent()) {
@@ -154,7 +155,7 @@ public class EmailKeyValues {
         addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEADS,
                 projectBridgeheadRepository.findByProject(project).stream()
                         .map(projectBridgehead -> fetchHumanReadableBridgehead(projectBridgehead.getBridgehead()))
-                        .collect(Collectors.joining(",")));
+                        .collect(Collectors.joining(", ")));
     }
 
     private void addLastDocument(Project project) {
@@ -207,10 +208,14 @@ public class EmailKeyValues {
     }
 
     public String replaceHtmlVariables(String htmlText) {
+        return replaceHtmlVariables(htmlText, keyValues);
+    }
+
+    public static String replaceHtmlVariables(String htmlText, Map<String,String> keyValues) {
         if (htmlText != null) {
             // Regular expression to match the variable pattern
             // e.g. <variable1/> It is like a HTML tag
-            String regex = "<\\s*(\\w+)\\s*/>";
+            String regex = "<\\s*([a-zA-Z0-9_-]+)\\s*/>";
 
             // Use StringBuilder to build the result efficiently
             StringBuilder result = new StringBuilder();

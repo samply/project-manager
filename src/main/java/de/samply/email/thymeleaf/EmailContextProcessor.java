@@ -26,7 +26,7 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
         String variableName = tagName.contains(":")
                 ? tagName.substring(tagName.indexOf(':') + 1)
                 : tagName;
-        if (supportedTagNames.contains(variableName)) {
+        if (supportedTagNames.contains(variableName) || context.getVariable(variableName) != null) {
             // Retrieve the desired variable from the context
             Object variableValue = context.getVariable(variableName);
 
