@@ -170,3 +170,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Enable minus in variables of email context
 - Last document variables in email context
 - Support for Thymeleaf standard processor by converting hyphenated variables to camel case
+- Process variables recursively in Thymeleaf
