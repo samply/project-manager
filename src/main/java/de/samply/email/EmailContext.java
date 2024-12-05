@@ -26,7 +26,7 @@ public class EmailContext {
     @PostConstruct
     public void init() {
         log.info("Email Context initialized: ({})", context.entrySet().size());
-        Map<String, String> tempContext = new HashMap<>(context);
+        Map<String, String> tempContext = new HashMap<>();
         context.entrySet().stream().forEach(keyValue -> {
             String key = replaceHyphen(keyValue.getKey());
             AtomicReference<String> value = new AtomicReference<>(keyValue.getValue());

@@ -4,6 +4,7 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.user.roles.ProjectRole;
+import de.samply.utils.KeyTransformer;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.constraints.NotNull;
@@ -128,6 +129,12 @@ public class EmailService {
     private Context createContext(EmailKeyValues keyValues) {
         Context context = new Context();
         keyValues.getKeyValues().forEach((key, value) -> context.setVariable(key, value));
+        // Remove hyphens ("-") and convert keys to camel case to ensure Thymeleaf can process variables correctly.
+        // For example: "my-variable" -> "myVariable".
+        // In Thymeleaf templates, we can use <my-variable/> to reference the variable directly.
+        // However, when using the standard Thymeleaf processor, we need to use <span th:text="${myVariable}">
+        // because Thymeleaf does not support hyphens ("-") in variable names (e.g., ${my-variable} is invalid).
+        KeyTransformer.transformMapKeys(keyValues.getKeyValues()).forEach((key, value) -> context.setVariable(key, value));
         return context;
     }
 
