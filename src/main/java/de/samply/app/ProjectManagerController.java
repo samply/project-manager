@@ -1,8 +1,6 @@
 package de.samply.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.ProjectDocument;
@@ -30,6 +28,7 @@ import de.samply.token.DataShieldTokenManagerService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
+import de.samply.utils.ObjectMapperFactory;
 import de.samply.utils.ProjectVersion;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -58,8 +57,7 @@ import java.util.stream.Collectors;
 public class ProjectManagerController {
 
     private final String projectVersion = ProjectVersion.getProjectVersion();
-    private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-            .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    private final ObjectMapper objectMapper;
     private final ProjectEventService projectEventService;
     private final FrontendService frontendService;
     private final UserService userService;
@@ -86,7 +84,9 @@ public class ProjectManagerController {
                                     NotificationService notificationService,
                                     BridgeheadConfiguration bridgeheadConfiguration,
                                     ProjectConfigurations frontendProjectConfigurations,
-                                    DtoFactory dtoFactory) {
+                                    DtoFactory dtoFactory,
+                                    ObjectMapperFactory objectMapperFactory) {
+        this.objectMapper = objectMapperFactory.newInstance();
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;

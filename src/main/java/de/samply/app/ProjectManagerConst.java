@@ -438,6 +438,10 @@ public class ProjectManagerConst {
     public final static String EXPORTER_MAX_POOL_SIZE = "EXPORTER_MAX_POOL_SIZE";
     public final static String EXPORTER_QUEUE_CAPACITY = "EXPORTER_QUEUE_CAPACITY";
 
+    public final static String FRONTEND_INSTANT_PATTERN = "INSTANT_PATTERN";
+    public final static String FRONTEND_LOCAL_DATE_PATTERN = "FRONTEND_LOCAL_DATE_PATTERN";
+
+
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
@@ -541,6 +545,10 @@ public class ProjectManagerConst {
     public final static String EXPORTER_MAX_POOL_SIZE_SV = HEAD_SV + EXPORTER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
     public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
+
+    public final static String FRONTEND_INSTANT_PATTERN_SV = HEAD_SV + FRONTEND_INSTANT_PATTERN + ":#{'yyyy-MM-dd HH:mm'}" + BOTTOM_SV;
+    public final static String FRONTEND_LOCAL_DATE_PATTERN_SV = HEAD_SV + FRONTEND_LOCAL_DATE_PATTERN + ":#{'yyyy-MM-dd'}" + BOTTOM_SV;
+
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
