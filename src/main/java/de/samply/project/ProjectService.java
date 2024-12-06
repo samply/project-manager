@@ -34,6 +34,7 @@ public class ProjectService {
     private final SessionUser sessionUser;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectConfigurations projectConfigurations;
+    private final DtoFactory dtoFactory;
 
     public ProjectService(NotificationService notificationService,
                           ProjectRepository projectRepository,
@@ -41,7 +42,8 @@ public class ProjectService {
                           ProjectBridgeheadRepository projectBridgeheadRepository,
                           SessionUser sessionUser,
                           ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                          ProjectConfigurations projectConfigurations) {
+                          ProjectConfigurations projectConfigurations,
+                          DtoFactory dtoFactory) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.queryRepository = queryRepository;
@@ -49,6 +51,7 @@ public class ProjectService {
         this.sessionUser = sessionUser;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectConfigurations = projectConfigurations;
+        this.dtoFactory = dtoFactory;
     }
 
     public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
@@ -56,7 +59,7 @@ public class ProjectService {
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
-        return DtoFactory.convert(projectOptional.get());
+        return dtoFactory.convert(projectOptional.get());
     }
 
     public void editProject(@NotNull String projectCode, ProjectType type, String[] bridgeheads) {
@@ -124,14 +127,14 @@ public class ProjectService {
             boolean modifiedDescendant) {
         PageRequest pageRequest = PageRequest.of(page, pageSize);
         if (isProjectManagerAdmin()) {
-            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
+            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
         }
         Set<String> bridgeheads = sessionUser.getBridgeheads();
         // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
         if (isBridgeheadAdmin()) {
-            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
+            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
         }
-        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(DtoFactory::convert);
+        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
     }
 
     private boolean isProjectManagerAdmin() {
@@ -318,7 +321,7 @@ public class ProjectService {
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
-        return this.projectConfigurations.fetchCurrentProjectConfiguration(DtoFactory.convert(projectOptional.get()));
+        return this.projectConfigurations.fetchCurrentProjectConfiguration(dtoFactory.convert(projectOptional.get()));
     }
 
     public void setProjectConfiguration(@NotNull String projectCode, @NotNull String projectConfigurationName) throws ProjectServiceException {

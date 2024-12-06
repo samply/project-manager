@@ -21,10 +21,12 @@ public class DtoFactory {
         this.userRepository = userRepository;
     }
 
-    public static Project convert(@NotNull de.samply.db.model.Project project) {
+    public Project convert(@NotNull de.samply.db.model.Project project) {
         Project result = new Project();
         result.setCode(project.getCode());
         result.setCreatorEmail(project.getCreatorEmail());
+        userRepository.findByEmail(project.getCreatorEmail()).ifPresent(
+                user -> result.setCreatorName(user.getFirstName() + " " + user.getLastName()));
         result.setCreatedAt(project.getCreatedAt());
         result.setExpiresAt(project.getExpiresAt());
         result.setArchivedAt(project.getArchivedAt());

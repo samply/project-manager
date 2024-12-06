@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-12-05]
+## [0.0.1 - 2024-12-06]
 ### Added
 - First version of the project
 - Spring Application
@@ -171,3 +171,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Last document variables in email context
 - Support for Thymeleaf standard processor by converting hyphenated variables to camel case
 - Process variables recursively in Thymeleaf
+- Creator name in Frontend Project

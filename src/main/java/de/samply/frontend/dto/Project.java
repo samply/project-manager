@@ -20,6 +20,7 @@ public class Project {
 
     private String code;
     private String creatorEmail;
+    private String creatorName;
     private Instant createdAt;
     private LocalDate expiresAt;
     private Instant archivedAt;
