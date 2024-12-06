@@ -28,7 +28,7 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
         String variableName = tagName.contains(":")
                 ? tagName.substring(tagName.indexOf(':') + 1)
                 : tagName;
-        if (supportedTagNames.contains(variableName) || context.getVariable(variableName) != null) {
+        if (isEmailContextVariable(context, variableName)) {
             // Retrieve the desired variable from the context
             Object variableValue = context.getVariable(variableName);
 
@@ -61,40 +61,16 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
         }
     }
 
+    private boolean isEmailContextVariable(ITemplateContext context, String variable){
+        return variable != null && (supportedTagNames.contains(variable) || context.getVariable(variable) != null);
+    }
+
     // TODO: Ideally, we should let Thymeleaf continue processing the replaced content
     // so that all applicable processors (e.g., variable resolution, additional dialects)
     // are automatically applied.
     // Currently, setting `processable` to true in `structureHandler.replaceWith`
     // only triggers the `StandardInliningTextProcessor`, which simply writes the content
     // to the output without further processing.
-
-    /**
-     * Resolves ${XXX} variables in the input string using the Thymeleaf context.
-     *
-     * @param content The content with placeholders.
-     * @param context The Thymeleaf context.
-     * @return The content with variables replaced by their resolved values.
-     */
-    /*
-    private String resolveVariables(String content, ITemplateContext context) {
-        // Regular expression to find ${XXX} placeholders
-        Pattern pattern = Pattern.compile("\\$\\{([^}]+)}");
-        Matcher matcher = pattern.matcher(content);
-
-        StringBuffer resolvedContent = new StringBuffer();
-
-        while (matcher.find()) {
-            String variableName = matcher.group(1); // Extract variable name inside ${}
-            Object variableValue = context.getVariable(variableName); // Resolve variable
-            String replacement = (variableValue != null) ? variableValue.toString() : ""; // Use empty string if not found
-            matcher.appendReplacement(resolvedContent, Matcher.quoteReplacement(replacement));
-        }
-        matcher.appendTail(resolvedContent);
-
-        return resolvedContent.toString();
-    }
-
-     */
     private String resolveVariables(String content, ITemplateContext context) {
         // Combined regular expression to match both ${variable} and <key /> patterns
         Pattern combinedPattern = Pattern.compile(
@@ -109,15 +85,19 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
             if (combinedMatcher.group(1) != null) {
                 // Match found for ${variable}
                 String variableName = combinedMatcher.group(2); // Extract variable name inside ${}
-                Object variableValue = context.getVariable(variableName); // Resolve variable
-                String replacement = (variableValue != null) ? variableValue.toString() : ""; // Use empty string if not found
-                combinedMatcher.appendReplacement(resolvedContent, Matcher.quoteReplacement(replacement));
+                if (isEmailContextVariable(context, variableName)){
+                    Object variableValue = context.getVariable(variableName); // Resolve variable
+                    String replacement = (variableValue != null) ? variableValue.toString() : ""; // Use empty string if not found
+                    combinedMatcher.appendReplacement(resolvedContent, Matcher.quoteReplacement(replacement));
+                }
             } else if (combinedMatcher.group(3) != null) {
                 // Match found for <key />
                 String tagName = combinedMatcher.group(4); // Extract the tag name
-                Object tagValue = context.getVariable(tagName); // Resolve the value from context
-                String replacement = (tagValue != null) ? tagValue.toString() : ""; // Use empty string if not found
-                combinedMatcher.appendReplacement(resolvedContent, Matcher.quoteReplacement(replacement));
+                if (isEmailContextVariable(context, tagName)){
+                    Object tagValue = context.getVariable(tagName); // Resolve the value from context
+                    String replacement = (tagValue != null) ? tagValue.toString() : ""; // Use empty string if not found
+                    combinedMatcher.appendReplacement(resolvedContent, Matcher.quoteReplacement(replacement));
+                }
             }
         }
 
