@@ -172,3 +172,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for Thymeleaf standard processor by converting hyphenated variables to camel case
 - Process variables recursively in Thymeleaf
 - Creator name in Frontend Project
+- File Description for Frontend

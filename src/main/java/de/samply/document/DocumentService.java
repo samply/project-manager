@@ -236,6 +236,12 @@ public class DocumentService {
         R apply(T t) throws DocumentServiceException;
     }
 
+    public Optional<de.samply.frontend.dto.ProjectDocument> fetchLastDocumentOfThisTypeForFrontend(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
+        Optional<ProjectDocument> projectDocument = fetchLastDocumentOfThisType(projectCode, bridgeheadOptional, type);
+        return (projectDocument.isEmpty()) ? Optional.empty() : Optional.of(dtoFactory.convert(projectDocument.get()));
+
+    }
+
     public Optional<ProjectDocument> fetchLastDocumentOfThisType(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
         Optional<Project> projectOptional = projectRepository.findByCode(projectCode);
         if (projectOptional.isPresent()) {
@@ -243,12 +249,6 @@ public class DocumentService {
                     projectOptional.get(), type, fetchBridgeheadForSearch(bridgeheadOptional));
         }
         return Optional.empty();
-    }
-
-    public String fetchLabelOfLastDocumentOfThisType(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
-        Optional<ProjectDocument> projectDocument = fetchLastDocumentOfThisType(projectCode, bridgeheadOptional, type);
-        return (projectDocument.isPresent()) ?
-                (projectDocument.get().getLabel() != null) ? projectDocument.get().getLabel() : "" : null;
     }
 
 }

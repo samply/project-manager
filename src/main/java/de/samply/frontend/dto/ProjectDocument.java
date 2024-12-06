@@ -14,6 +14,7 @@ public record ProjectDocument(
         String bridgehead,
         String humanReadableBridgehead,
         String creatorEmail,
+        String creatorName,
         String label,
         DocumentType type
 ) {
