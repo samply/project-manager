@@ -110,10 +110,11 @@ public class EmailService {
     private MimeMessage createMimeMessageWithoutHandlingException(String emailTo, String emailFrom, MessageSubject messageSubject) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+        message.setHeader("Content-Type", "text/html; charset=UTF-8");
         messageHelper.setTo(emailTo);
         message.setFrom(emailFrom);
         message.setSubject(messageSubject.subject(), StandardCharsets.UTF_8.name());
-        message.setContent(messageSubject.message(), MediaType.TEXT_HTML_VALUE);
+        message.setContent(messageSubject.message(), "text/html; charset=UTF-8");
         return message;
     }
 
