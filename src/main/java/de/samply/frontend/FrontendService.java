@@ -14,6 +14,7 @@ import de.samply.security.SessionUser;
 import de.samply.user.roles.RolesExtractor;
 import de.samply.utils.AspectUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -119,10 +120,12 @@ public class FrontendService {
             actionNameActionsMap = new HashMap<>();
             moduleActionsMap.put(frontendSiteModule.module(), actionNameActionsMap);
         }
+        Optional<Pair<String, Integer>> explanationPriority = actionExplanations.fetchExplanationAndPriority(frontendAction.action(), frontendSiteModule.module(),
+                language, project, projectBridgehead, projectBridgeheadUser, sessionUser);
+        String explanation = explanationPriority.isPresent() ? explanationPriority.get().getFirst() : null;
+        Integer priority = explanationPriority.isPresent() ? explanationPriority.get().getSecond() : null;
         actionNameActionsMap.put(frontendAction.action(),
-                new Action(rootPath + path.get(), fetchHttpMethod(method), fetchHttpParams(method),
-                        actionExplanations.fetchExplanation(frontendAction.action(), frontendSiteModule.module(),
-                                language, project, projectBridgehead, projectBridgeheadUser, sessionUser)));
+                new Action(rootPath + path.get(), fetchHttpMethod(method), fetchHttpParams(method), explanation, priority));
     }
 
     private String fetchHttpMethod(Method method) {

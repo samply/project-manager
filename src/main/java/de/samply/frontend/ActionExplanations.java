@@ -8,6 +8,7 @@ import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.security.SessionUser;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.data.util.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -24,18 +25,21 @@ public class ActionExplanations {
         return Optional.ofNullable(actionExplanationMap.get(action));
     }
 
-    public String fetchExplanation(@NotNull String action, @NotNull String module, @NotNull String language,
-                                   Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
-                                   Optional<ProjectBridgeheadUser> projectBridgeheadUser, SessionUser sessionUser) {
+    public Optional<Pair<String, Integer>> fetchExplanationAndPriority(@NotNull String action, @NotNull String module, @NotNull String language,
+                                                             Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
+                                                             Optional<ProjectBridgeheadUser> projectBridgeheadUser, SessionUser sessionUser) {
         Optional<List<ActionExplanation>> actionExplanations = getActionExplanation(action);
         if (actionExplanations.isPresent()) {
             for (ActionExplanation explanation : actionExplanations.get()) {
                 if (isRequiredExplanation(module, project, projectBridgehead, projectBridgeheadUser, sessionUser, explanation)) {
-                    return explanation.getLanguageMessageMap().get(language);
+                    String message = explanation.getLanguageMessageMap().get(language);
+                    if (message != null) {
+                        return Optional.of(Pair.of(message, explanation.getPriority() != null ? explanation.getPriority() : 0));
+                    }
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private boolean isRequiredExplanation(String module, Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead, Optional<ProjectBridgeheadUser> projectBridgeheadUser, SessionUser sessionUser, ActionExplanation explanation) {

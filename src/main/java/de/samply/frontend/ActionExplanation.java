@@ -37,9 +37,10 @@ public class ActionExplanation {
     private ProjectBridgeheadState projectBridgeheadState;
     @JsonProperty(value = "query-state")
     private QueryState queryState;
-    @JsonProperty(value = "user-projectState")
+    @JsonProperty(value = "user-project-state")
     private UserProjectState userProjectState;
-
+    @JsonProperty(value = "priority")
+    private Integer priority;
     @JsonProperty(value = "messages", required = true)
     private Map<String, String> languageMessageMap;
 
