@@ -164,14 +164,14 @@ public class ProjectManagerConst {
     public final static String ADD_PUBLICATION_URL = "/add-publication-url";
     public final static String ADD_OTHER_DOCUMENT_URL = "/add-other-document-url";
     public final static String DOWNLOAD_VOTUM = "/download-votum";
-    public final static String FETCH_VOTUM_DESCRIPTION = "/votum-label";
+    public final static String FETCH_VOTUM_DESCRIPTION = "/votum-description";
     public final static String EXISTS_VOTUM = "/exists-votum";
     public final static String DOWNLOAD_APPLICATION_FORM = "/download-application-form";
-    public final static String FETCH_APPLICATION_FORM_DESCRIPTION = "/application-form-label";
+    public final static String FETCH_APPLICATION_FORM_DESCRIPTION = "/application-form-description";
     public final static String EXISTS_APPLICATION_FORM = "/exists-application-form";
     public final static String DOWNLOAD_PUBLICATION = "/download-publication";
     public final static String DOWNLOAD_SCRIPT = "/download-script";
-    public final static String FETCH_SCRIPT_DESCRIPTION = "/script-label";
+    public final static String FETCH_SCRIPT_DESCRIPTION = "/script-description";
     public final static String EXISTS_SCRIPT = "/exists-script";
     public final static String DOWNLOAD_OTHER_DOCUMENT = "/download-other-document";
     public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE = "/download-application-form-template";
