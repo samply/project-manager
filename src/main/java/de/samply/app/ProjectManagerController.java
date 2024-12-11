@@ -377,7 +377,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> fetchProjectConfigurations(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> this.frontendProjectConfigurations.getConfigurationNameProjectMap().keySet());
+        return convertToResponseEntity(() -> this.frontendProjectConfigurations.getConfigurationNameProjectMap());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
