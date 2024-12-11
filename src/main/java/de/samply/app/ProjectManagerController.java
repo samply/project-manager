@@ -821,7 +821,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.SCRIPT));
+        return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.SCRIPT));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -861,7 +861,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.ofNullable(bridgehead), DocumentType.VOTUM));
+        return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.ofNullable(bridgehead), DocumentType.VOTUM));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -901,7 +901,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.APPLICATION_FORM));
+        return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.APPLICATION_FORM));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -1202,6 +1202,19 @@ public class ProjectManagerController {
         try {
             runnable.run();
             return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    private <T> ResponseEntity convertOptionalToResponseEntity(SupplierWithException<Optional<T>> supplier) {
+        try {
+            Optional<T> result = supplier.get();
+            if (result.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.ok(objectMapper.writeValueAsString(result.get()));
+            }
         } catch (Exception e) {
             return createInternalServerError(e);
         }
