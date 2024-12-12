@@ -211,7 +211,7 @@ public class DataShieldTokenManagerService {
 
     public Boolean existsAuthenticationScript(String projectCode, String bridgehead) {
         if (!isTokenManagerActive) {
-            return true;
+            return false;
         }
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, sessionUser.getEmail()));
         return Boolean.valueOf(webClient.post()
