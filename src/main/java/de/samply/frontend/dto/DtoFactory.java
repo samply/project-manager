@@ -25,8 +25,7 @@ public class DtoFactory {
         Project result = new Project();
         result.setCode(project.getCode());
         result.setCreatorEmail(project.getCreatorEmail());
-        userRepository.findByEmail(project.getCreatorEmail()).ifPresent(
-                user -> result.setCreatorName(user.getFirstName() + " " + user.getLastName()));
+        result.setCreatorName(fetchEmailUserName(project.getCreatorEmail()));
         result.setCreatedAt(project.getCreatedAt());
         result.setExpiresAt(project.getExpiresAt());
         result.setArchivedAt(project.getArchivedAt());
@@ -44,6 +43,13 @@ public class DtoFactory {
         result.setExplorerUrl(project.getQuery().getExplorerUrl());
         result.setQueryContext(project.getQuery().getContext());
         return result;
+    }
+
+    private String fetchEmailUserName(String email){
+        Optional<de.samply.db.model.User> user = userRepository.findByEmail(email);
+        return (user.isPresent()) ?
+                user.get().getFirstName() + " " + user.get().getLastName() :
+                null;
     }
 
     public static de.samply.db.model.Project convert(@NotNull Project projectConfiguration, @NotNull de.samply.db.model.Project project) {
@@ -99,6 +105,7 @@ public class DtoFactory {
                 projectDocument.getBridgehead(),
                 fetchHumanReadableBridgehead(projectDocument.getBridgehead()),
                 projectDocument.getCreatorEmail(),
+                fetchEmailUserName(projectDocument.getCreatorEmail()),
                 projectDocument.getLabel(),
                 projectDocument.getDocumentType()
         );
