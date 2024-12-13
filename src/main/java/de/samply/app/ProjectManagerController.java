@@ -186,7 +186,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectBridgeheadService.fetchProjectBridgeheads(projectCode));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP})
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
@@ -204,7 +204,7 @@ public class ProjectManagerController {
                 this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.PILOT})
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
@@ -353,7 +353,6 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
-        //TODO
         return convertToResponseEntity(() -> userService.fetchProjectRoles(projectCode, Optional.ofNullable(bridgehead)));
     }
 
@@ -1159,7 +1158,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> bridgeheadConfiguration.getRegisteredBridgeheads().stream().map(dtoFactory::convertToBridgehead).collect(Collectors.toSet()));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_ACTION)
@@ -1172,20 +1171,31 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.userService.fetchUsersForAutocomplete(projectCode, partialEmail, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_USERS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_USERS)
     public ResponseEntity<String> fetchProjectUsers(
-            // Project Code Required for state constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_CURRENT_USER_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_CURRENT_USER)
+    public ResponseEntity<String> fetchCurrentUser(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertOptionalToResponseEntity(() -> this.userService.fetchCurrentUser(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXIST_INVITED_USERS_ACTION)
@@ -1202,6 +1212,19 @@ public class ProjectManagerController {
         try {
             runnable.run();
             return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return createInternalServerError(e);
+        }
+    }
+
+    private <T> ResponseEntity convertOptionalToResponseEntity(SupplierWithException<Optional<T>> supplier) {
+        try {
+            Optional<T> result = supplier.get();
+            if (result.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.ok(objectMapper.writeValueAsString(result.get()));
+            }
         } catch (Exception e) {
             return createInternalServerError(e);
         }

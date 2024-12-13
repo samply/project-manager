@@ -1,6 +1,6 @@
 package de.samply.user;
 
-public class UserServiceException extends Exception{
+public class UserServiceException extends RuntimeException{
 
     public UserServiceException() {
     }

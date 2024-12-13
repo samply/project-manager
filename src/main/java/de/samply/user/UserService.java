@@ -8,6 +8,7 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
@@ -158,6 +159,11 @@ public class UserService {
         return allUsers;
     }
 
+    public Optional<User> fetchCurrentUser(@NotNull String projectCode, @NotNull String bridgehead){
+        Optional<ProjectBridgeheadUser> user = this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(sessionUser.getEmail(), fetchProjectBridgehead(projectCode, bridgehead));
+        return (user.isEmpty()) ? Optional.empty() : Optional.ofNullable(dtoFactory.convert(user.get()));
+    }
+
     public Set<User> fetchProjectUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
         ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
         return (switch (projectBridgehead.getProject().getState()) {
@@ -176,15 +182,19 @@ public class UserService {
     }
 
     private ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws UserServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new UserServiceException("Project " + projectCode + " not found");
-        }
-        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, fetchProject(projectCode));
         if (projectBridgehead.isEmpty()) {
             throw new UserServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " not found");
         }
         return projectBridgehead.get();
+    }
+
+    private Project fetchProject(@NotNull String projectCode) throws UserServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new UserServiceException("Project " + projectCode + " not found");
+        }
+        return project.get();
     }
 
     public Set<ProjectRole> fetchProjectRoles(@NotNull String projectCode, Optional<String> bridgehead) throws UserServiceException {
