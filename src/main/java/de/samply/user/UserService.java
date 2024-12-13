@@ -164,38 +164,21 @@ public class UserService {
         return (user.isEmpty()) ? Optional.empty() : Optional.ofNullable(dtoFactory.convert(user.get()));
     }
 
-    public Set<User> fetchProjectUsers(@NotNull String projectCode) throws UserServiceException {
-        if (sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)){
-            Project project = fetchProject(projectCode);
-            return (switch (project.getState()) {
-                case DEVELOP ->
-                        this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead_Project(ProjectRole.DEVELOPER, project);
-                case PILOT ->
-                        this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead_Project(ProjectRole.PILOT, project);
-                case FINAL ->
-                        this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead_Project(ProjectRole.FINAL, project);
-                default -> new ArrayList<ProjectBridgeheadUser>();
-            }).stream().map(dtoFactory::convert).collect(Collectors.toSet());
-        } else{
-            Set<User> result = new HashSet<>();
-            sessionUser.getBridgeheads().forEach(bridgehead -> {
-                ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
-                result.addAll((switch (projectBridgehead.getProject().getState()) {
-                    case DEVELOP ->
-                            this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.DEVELOPER, projectBridgehead);
-                    case PILOT ->
-                            this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.PILOT, projectBridgehead);
-                    case FINAL ->
-                            this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.FINAL, projectBridgehead);
-                    default -> new ArrayList<ProjectBridgeheadUser>();
-                }).stream().map(dtoFactory::convert).collect(Collectors.toSet()));
-            });
-            return result;
-        }
+    public Set<User> fetchProjectUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
+        ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
+        return (switch (projectBridgehead.getProject().getState()) {
+            case DEVELOP ->
+                    this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.DEVELOPER, projectBridgehead);
+            case PILOT ->
+                    this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.PILOT, projectBridgehead);
+            case FINAL ->
+                    this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.FINAL, projectBridgehead);
+            default -> new ArrayList<ProjectBridgeheadUser>();
+        }).stream().map(dtoFactory::convert).collect(Collectors.toSet());
     }
 
-    public boolean existInvatedUsers(@NotNull String projectCode) throws UserServiceException {
-        return !fetchProjectUsers(projectCode).isEmpty();
+    public boolean existInvatedUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
+        return !fetchProjectUsers(projectCode, bridgehead).isEmpty();
     }
 
     private ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws UserServiceException {

@@ -55,12 +55,6 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
             "ORDER BY pbu.id ASC")
     Optional<ProjectBridgeheadUser> getFirstValidByEmailAndProjectBridgehead(String email, ProjectBridgehead projectBridgehead);
 
-    @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead.project = :project AND pbu.projectRole = :role AND (" +
-            "(pbu.projectBridgehead.project.state = 'DEVELOP' AND pbu.projectRole = 'DEVELOPER') OR " +
-            "(pbu.projectBridgehead.project.state = 'PILOT' AND pbu.projectRole = 'PILOT') OR " +
-            "(pbu.projectBridgehead.project.state = 'FINAL' AND pbu.projectRole = 'FINAL'))")
-    List<ProjectBridgeheadUser> getDistinctByProjectRoleAndProjectBridgehead_Project(ProjectRole role, Project project);
-
     @Query("SELECT DISTINCT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead = :projectBridgehead AND pbu.projectRole = :role AND (" +
             "(pbu.projectBridgehead.project.state = 'DEVELOP' AND pbu.projectRole = 'DEVELOPER') OR " +
             "(pbu.projectBridgehead.project.state = 'PILOT' AND pbu.projectRole = 'PILOT') OR " +

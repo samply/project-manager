@@ -353,7 +353,6 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
-        //TODO
         return convertToResponseEntity(() -> userService.fetchProjectRoles(projectCode, Optional.ofNullable(bridgehead)));
     }
 
@@ -1178,11 +1177,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_USERS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_USERS)
     public ResponseEntity<String> fetchProjectUsers(
-            // Project Code and bridgehead Required for state constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode));
+        return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode, bridgehead));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
@@ -1203,11 +1201,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EXIST_INVITED_USERS_ACTION)
     @GetMapping(value = ProjectManagerConst.EXIST_INVITED_USERS)
     public ResponseEntity<String> existInvitedUsers(
-            // Bridgehead required for state constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.userService.existInvatedUsers(projectCode));
+        return convertToResponseEntity(() -> this.userService.existInvatedUsers(projectCode, bridgehead));
     }
 
 
