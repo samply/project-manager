@@ -10,8 +10,8 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -21,7 +21,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,27 +31,33 @@ public class EmailService {
     private final String emailFrom;
     private final boolean enableEmails;
     private final JavaMailSender mailSender;
+    private final Optional<JavaMailSender> testMailSender;
     private final TemplateEngine templateEngine;
     private final EmailTemplates emailTemplates;
     private final NotificationService notificationService;
     private final EmailKeyValuesFactory emailKeyValuesFactory;
+    private final List<String> testMailDomains;
 
 
     public EmailService(
             @Value(ProjectManagerConst.ENABLE_EMAILS_SV) Boolean enableEmails,
             @Value(ProjectManagerConst.PROJECT_MANAGER_EMAIL_FROM_SV) String emailFrom,
-            JavaMailSender mailSender,
+            @Qualifier(ProjectManagerConst.PRIMARY_MAIL_SENDER) JavaMailSender mailSender,
+            @Qualifier(ProjectManagerConst.TEST_MAIL_SENDER) Optional<JavaMailSender> testMailSender,
             TemplateEngine templateEngine,
             EmailTemplates emailTemplates,
             NotificationService notificationService,
-            EmailKeyValuesFactory emailKeyValuesFactory) {
+            EmailKeyValuesFactory emailKeyValuesFactory,
+            @Value(ProjectManagerConst.TEST_EMAIL_DOMAINS_SV) List<String> testMailDomains) {
         this.emailFrom = emailFrom;
         this.mailSender = mailSender;
+        this.testMailSender = testMailSender;
         this.templateEngine = templateEngine;
         this.emailTemplates = emailTemplates;
         this.enableEmails = enableEmails;
         this.notificationService = notificationService;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
+        this.testMailDomains = testMailDomains;
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
@@ -92,7 +98,7 @@ public class EmailService {
 
     private void sendEmail(String emailTo, MessageSubject messageSubject) {
         try {
-            mailSender.send(createMimeMessage(emailTo, emailFrom, messageSubject));
+            fetchMailSender(emailTo).send(createMimeMessage(emailTo, emailFrom, messageSubject));
         } catch (MailException | EmailServiceException e) {
             log.error("Failed to send email");
             log.error(ExceptionUtils.getStackTrace(e));
@@ -108,7 +114,7 @@ public class EmailService {
     }
 
     private MimeMessage createMimeMessageWithoutHandlingException(String emailTo, String emailFrom, MessageSubject messageSubject) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessage message = fetchMailSender(emailTo).createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
         message.setHeader("Content-Type", "text/html; charset=UTF-8");
         messageHelper.setTo(emailTo);
@@ -139,5 +145,17 @@ public class EmailService {
         return context;
     }
 
+    private JavaMailSender fetchMailSender(@NotNull String emailTo) {
+        return testMailSender.isPresent() && isTestMailDomain(emailTo) ? testMailSender.get() : mailSender;
+    }
+
+    private boolean isTestMailDomain(@NotNull String emailTo) {
+        for (String domain : testMailDomains) {
+            if (emailTo.contains(domain)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

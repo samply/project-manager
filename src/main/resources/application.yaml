@@ -74,11 +74,11 @@ spring:
       max-file-size: ${MAX_FILE_SIZE:10MB}
       max-request-size: ${MAX_REQEST_SIZE:10MB}
 
-  mail:
-    host: ${SMTP_HOST}
-    port: ${SMTP_PORT}
-    username: ${SMTP_USER}
-    password: ${SMTP_PASSWORD}
+#  mail:
+#    host: ${SMTP_HOST}
+#    port: ${SMTP_PORT}
+#    username: ${SMTP_USER}
+#    password: ${SMTP_PASSWORD}
   #    properties:
   #      mail:
   #        smtp:

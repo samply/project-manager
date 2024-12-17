@@ -292,6 +292,8 @@ public class ProjectManagerConst {
     public final static String HTTP_PROXY_PREFIX = "http.proxy";
     public final static String HTTPS_PROXY_PREFIX = "https.proxy";
     public final static String EMAIL_CONTEXT_PREFIX = "email";
+    public final static String PRIMARY_MAIL_SENDER_PREFIX = "spring.mail.primary";
+    public final static String TEST_MAIL_SENDER_PREFIX = "spring.mail.test";
 
     // Exporter
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
@@ -439,6 +441,7 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE = "EXPORTER_CORE_POOL_SIZE";
     public final static String EXPORTER_MAX_POOL_SIZE = "EXPORTER_MAX_POOL_SIZE";
     public final static String EXPORTER_QUEUE_CAPACITY = "EXPORTER_QUEUE_CAPACITY";
+    public final static String TEST_EMAIL_DOMAINS = "TEST_EMAIL_DOMAINS";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -544,6 +547,8 @@ public class ProjectManagerConst {
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
     public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
 
+    public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS  + ":" + BOTTOM_SV;
+
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
     public final static String ASYNC_NOTIFICATION_EXECUTOR = "notification";
@@ -570,6 +575,8 @@ public class ProjectManagerConst {
     public final static String BASE_64 = "b64";
     public final static String HTTP_PROTOCOL_SCHEMA = "http";
     public final static String HTTPS_PROTOCOL_SCHEMA = "https";
+    public final static String PRIMARY_MAIL_SENDER = "primaryJavaMailSender";
+    public final static String TEST_MAIL_SENDER = "testJavaMailSender";
 
 
 
