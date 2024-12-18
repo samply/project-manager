@@ -40,6 +40,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -214,18 +216,22 @@ public class ExporterService {
     private String generateExportQueryInBase64ForExporterRequest(ProjectBridgehead projectBridgehead)
             throws ExporterServiceException {
         Query query = projectBridgehead.getProject().getQuery();
-        Map<String, String> result = Map.of(
-                ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectBridgehead.getProject().getCode()),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, projectBridgehead.getProject().getCreatorEmail(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID, projectBridgehead.getExporterUser(),
-                ProjectManagerConst.EXPORTER_PARAM_OUTPUT_FORMAT, query.getOutputFormat().name(),
-                ProjectManagerConst.EXPORTER_PARAM_TEMPLATE_ID, query.getTemplateId(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(projectBridgehead.getProject().getExpiresAt()));
-        result.values().removeIf(value -> !StringUtils.hasText(value));
+        Map<String, String> result = Stream.of(
+                        new String[][]{
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectBridgehead.getProject().getCode())},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, projectBridgehead.getProject().getCreatorEmail()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID, projectBridgehead.getExporterUser()},
+                                {ProjectManagerConst.EXPORTER_PARAM_OUTPUT_FORMAT, query.getOutputFormat().name()},
+                                {ProjectManagerConst.EXPORTER_PARAM_TEMPLATE_ID, query.getTemplateId()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(projectBridgehead.getProject().getExpiresAt())}
+                        }
+                )
+                .filter(entry -> StringUtils.hasText(entry[1])) // Filter entries with non-null and non-empty values
+                .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1])); // Collect to a Map
         return convertToBase64String(result);
     }
 
@@ -239,17 +245,21 @@ public class ExporterService {
     private String generateExporterQueryInBase64ForExporterCreateQuery(Project project)
             throws ExporterServiceException {
         Query query = project.getQuery();
-        Map<String, String> result = Map.of(
-                ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), project.getCode()),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.getCreatorEmail(),
-                ProjectManagerConst.EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT, query.getOutputFormat().name(),
-                ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query.getTemplateId(),
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.getExpiresAt()));
-        result.values().removeIf(value -> !StringUtils.hasText(value));
+        Map<String, String> result = Stream.of(
+                        new String[][]{
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), project.getCode())},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.getCreatorEmail()},
+                                {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT, query.getOutputFormat().name()},
+                                {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query.getTemplateId()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.getExpiresAt())}
+                        }
+                )
+                .filter(entry -> StringUtils.hasText(entry[1])) // Filter entries with non-empty values
+                .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1])); // Collect to a Map
         return convertToBase64String(result);
     }
 
