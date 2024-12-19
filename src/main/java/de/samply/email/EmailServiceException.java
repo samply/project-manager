@@ -1,6 +1,6 @@
 package de.samply.email;
 
-public class EmailServiceException extends Exception {
+public class EmailServiceException extends RuntimeException {
 
     public EmailServiceException(String message) {
         super(message);

@@ -2,9 +2,15 @@ package de.samply.exporter;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.email.EmailKeyValues;
+import de.samply.email.EmailKeyValuesFactory;
+import de.samply.email.EmailService;
+import de.samply.email.EmailTemplateType;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryState;
+import de.samply.user.roles.ProjectRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -24,14 +30,23 @@ public class ExporterJob {
     private final ExporterService exporterService;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final Set<ProjectState> activeStates = Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL);
+    private final EmailService emailService;
+    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
+    private final EmailKeyValuesFactory emailKeyValuesFactory;
 
     public ExporterJob(
             @Value(ProjectManagerConst.ENABLE_EXPORTER_SV) boolean enabled,
             ExporterService exporterService,
-            ProjectBridgeheadRepository projectBridgeheadRepository) {
+            ProjectBridgeheadRepository projectBridgeheadRepository,
+            EmailService emailService,
+            BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
+            EmailKeyValuesFactory emailKeyValuesFactory) {
         this.enabled = enabled;
         this.exporterService = exporterService;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.emailService = emailService;
+        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
+        this.emailKeyValuesFactory = emailKeyValuesFactory;
     }
 
     @Scheduled(cron = ProjectManagerConst.EXPORTER_CRON_EXPRESSION_SV)
@@ -57,7 +72,7 @@ public class ExporterJob {
     }
 
     private Mono<Void> checkQueriesAlreadySent() {
-        return checkQueries(QueryState.SENDING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted);
+        return checkQueries(QueryState.SENDING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER);
     }
 
     private Mono<Void> checkQueriesAlreadyExecutingStep1() {
@@ -65,23 +80,30 @@ public class ExporterJob {
     }
 
     private Mono<Void> checkQueriesAlreadyExecutingStep2() {
-        return checkQueries(QueryState.EXPORT_RUNNING_2, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted);
+        return checkQueries(QueryState.EXPORT_RUNNING_2, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER_AND_EXECUTED);
     }
 
     private Mono<Void> checkQueriesAlreadySentToBeExecuted() {
         return checkQueries(QueryState.SENDING_AND_EXECUTING, QueryState.EXPORT_RUNNING_1, exporterService::checkIfQueryIsAlreadySentOrExecuted, Optional.of(
                 exporterServiceResult ->
                         exporterService.fetchExporterExecutionIdFromExporterResponse(exporterServiceResult.result()).ifPresent(exportExecutionId ->
-                                exporterServiceResult.projectBridgehead().setExporterExecutionId(exportExecutionId))));
+                                exporterServiceResult.projectBridgehead().setExporterExecutionId(exportExecutionId))), Optional.empty());
     }
 
     private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
                                     Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction) {
-        return checkQueries(initialQueryState, finalQueryState, exporterServiceFunction, Optional.empty());
+        return checkQueries(initialQueryState, finalQueryState, exporterServiceFunction, Optional.empty(), Optional.empty());
     }
 
     private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
-                                    Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction, Optional<Consumer<ExporterServiceResult>> exporterServiceResultConsumer) {
+                                    Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction, EmailTemplateType emailTemplateType) {
+        return checkQueries(initialQueryState, finalQueryState, exporterServiceFunction, Optional.empty(), Optional.of(emailTemplateType));
+    }
+
+
+    private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
+                                    Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction,
+                                    Optional<Consumer<ExporterServiceResult>> exporterServiceResultConsumer, Optional<EmailTemplateType> emailTemplateType) {
         return Flux.fromIterable(projectBridgeheadRepository.getByQueryStateAndProjectState(initialQueryState, activeStates))
                 .flatMap(exporterServiceFunction)
                 .flatMap(exporterServiceResult -> {
@@ -91,8 +113,15 @@ public class ExporterJob {
                     projectBridgehead.setExporterResponse(exporterServiceResult.result());
                     projectBridgehead.setModifiedAt(Instant.now());
                     projectBridgeheadRepository.save(projectBridgehead);
+                    emailTemplateType.ifPresent(type -> sendEmail(projectBridgehead, type));
                     return Mono.empty();
                 }).then();
+    }
+
+    private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {
+        bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdmin -> {
+            emailService.sendEmail(bridgeheadAdmin.getEmail(), Optional.of(projectBridgehead.getProject().getCode()), Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN, templateType, emailKeyValuesFactory.newInstance().add(projectBridgehead));
+        });
     }
 
 }
