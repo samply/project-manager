@@ -49,5 +49,8 @@ public class ProjectBridgehead {
     @Column(name = "exporter_execution_id")
     private String exporterExecutionId;
 
+    @Column(name = "exporter_dispatch_counter")
+    private int exporterDispatchCounter = 0;
+
 
 }

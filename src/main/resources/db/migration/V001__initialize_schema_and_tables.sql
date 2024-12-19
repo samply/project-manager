@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS samply;
 
 SET
-    search_path TO samply;
+search_path TO samply;
 
 CREATE TABLE samply.query
 (
@@ -37,15 +37,16 @@ CREATE TABLE samply.project
 
 CREATE TABLE samply.project_bridgehead
 (
-    id                    SERIAL    NOT NULL PRIMARY KEY,
-    project_id            BIGINT    NOT NULL,
-    bridgehead            TEXT      NOT NULL,
-    modified_at           TIMESTAMP NOT NULL,
-    state                 TEXT      NOT NULL,
-    query_state           TEXT      NOT NULL,
-    exporter_response     TEXT,
-    exporter_user         TEXT,
-    exporter_execution_id TEXT
+    id                        SERIAL    NOT NULL PRIMARY KEY,
+    project_id                BIGINT    NOT NULL,
+    bridgehead                TEXT      NOT NULL,
+    modified_at               TIMESTAMP NOT NULL,
+    state                     TEXT      NOT NULL,
+    query_state               TEXT      NOT NULL,
+    exporter_response         TEXT,
+    exporter_user             TEXT,
+    exporter_execution_id     TEXT,
+    exporter_dispatch_counter INT       NOT NULL
 );
 
 CREATE TABLE samply.project_bridgehead_user

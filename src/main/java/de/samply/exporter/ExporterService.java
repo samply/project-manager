@@ -224,7 +224,7 @@ public class ExporterService {
                         new String[][]{
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name()},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, fetchLabel(projectBridgehead)},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectBridgehead.getProject().getCode())},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, projectBridgehead.getProject().getCreatorEmail()},
@@ -246,25 +246,30 @@ public class ExporterService {
         return convertToBase64String(result);
     }
 
-    private String generateExporterQueryInBase64ForExporterCreateQuery(Project project)
+    private String generateExporterQueryInBase64ForExporterCreateQuery(ProjectBridgehead projectBridgehead)
             throws ExporterServiceException {
-        Query query = project.getQuery();
+        Query query = projectBridgehead.getProject().getQuery();
         Map<String, String> result = Stream.of(
                         new String[][]{
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name()},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, query.getLabel()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, fetchLabel(projectBridgehead)},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription()},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), project.getCode())},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, project.getCreatorEmail()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectBridgehead.getProject().getCode())},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, projectBridgehead.getProject().getCreatorEmail()},
                                 {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT, query.getOutputFormat().name()},
                                 {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query.getTemplateId()},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(project.getExpiresAt())}
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(projectBridgehead.getProject().getExpiresAt())}
                         }
                 )
                 .filter(entry -> StringUtils.hasText(entry[1])) // Filter entries with non-empty values
                 .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1])); // Collect to a Map
         return convertToBase64String(result);
+    }
+
+    private String fetchLabel(@NotNull ProjectBridgehead projectBridgehead){
+        String label = projectBridgehead.getProject().getQuery().getLabel();
+        return (projectBridgehead.getExporterDispatchCounter() == 0) ? label : label + " (Attempt: " + projectBridgehead.getExporterDispatchCounter() + 1 + ")";
     }
 
     private BeamRequest generateFocusBody(ProjectBridgehead projectBridgehead, TaskType taskType) throws ExporterServiceException {
@@ -277,7 +282,7 @@ public class ExporterService {
 
     private BeamRequest generateFocusQueryWithoutExceptionHandling(ProjectBridgehead projectBridgehead, TaskType taskType) throws BeamServiceException {
         String exporterQueryInBase64 = switch (taskType) {
-            case CREATE -> generateExporterQueryInBase64ForExporterCreateQuery(projectBridgehead.getProject());
+            case CREATE -> generateExporterQueryInBase64ForExporterCreateQuery(projectBridgehead);
             case EXECUTE -> generateExportQueryInBase64ForExporterRequest(projectBridgehead);
             case STATUS -> generateExportStatusInBase64ForExporterRequest(projectBridgehead);
             default -> null;

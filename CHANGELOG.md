@@ -179,3 +179,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Primary and Test Mail Server
 - Email if project rejected
 - Send email when the query has arrived to the exporter or it has been executed
+- Export dispatch counter
