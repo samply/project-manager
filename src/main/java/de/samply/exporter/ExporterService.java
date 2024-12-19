@@ -108,21 +108,24 @@ public class ExporterService {
     }
 
     public Mono<ExporterServiceResult> sendQueryToBridgehead(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
-        log.info("Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " ...");
+        String description = "Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " ...";
+        log.info(description);
         TaskType taskType = TaskType.CREATE;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description);
     }
 
     public Mono<ExporterServiceResult> sendQueryToBridgeheadAndExecute(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
-        log.info("Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " to be executed...");
+        String description = "Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " to be executed...";
+        log.info(description);
         TaskType taskType = TaskType.EXECUTE;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description);
     }
 
     public Mono<ExporterServiceResult> checkExecutionStatus(ProjectBridgehead projectBridgehead) {
-        log.info("Checking export execution status of project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead());
+        String description = "Checking export execution status of project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead();
+        log.info(description);
         TaskType taskType = TaskType.STATUS;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType);
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description);
     }
 
     @Async()
@@ -144,8 +147,9 @@ public class ExporterService {
 
     @Async
     public void transferFileToResearchEnvironment(ProjectCoder projectCoder) {
-        log.info("Transfering file to Coder for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead());
-        postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER).subscribe(result -> {
+        String description = "Transfering file to Research Environment for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead();
+        log.info(description);
+        postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER, description).subscribe(result -> {
             projectCoder.setExportTransferred(true);
             this.projectCoderRepository.save(projectCoder);
         });
@@ -163,7 +167,7 @@ public class ExporterService {
         return projectCoder.getAppId() + ((coderBeamIdSuffix.startsWith(".")) ? "" : ".") + coderBeamIdSuffix;
     }
 
-    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, BeamRequest beamRequest, TaskType taskType) {
+    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, BeamRequest beamRequest, TaskType taskType, String description) {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.BEAM_TASK_PATH).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
@@ -172,7 +176,7 @@ public class ExporterService {
                 .exchangeToMono(clientResponse -> {
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
                         fetchBridgeheadOperationType(taskType).ifPresent(operationType ->
-                                createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), null, projectBridgehead, projectBridgehead.getExporterUser(), operationType));
+                                createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), null, projectBridgehead, projectBridgehead.getExporterUser(), operationType, description));
                         resetProjectBridgeheadDataShield(projectBridgehead);
                         return Mono.just(new ExporterServiceResult(projectBridgehead, beamService.serializeFocusQuery(beamRequest)));
                     } else {
@@ -191,9 +195,9 @@ public class ExporterService {
     }
 
     private void createBridgeheadNotification(
-            HttpStatus status, String error, ProjectBridgehead projectBridgehead, String email, OperationType operationType) {
+            HttpStatus status, String error, ProjectBridgehead projectBridgehead, String email, OperationType operationType, String description) {
         notificationService.createNotification(
-                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, operationType, null, error, status);
+                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, operationType, description, error, status);
     }
 
     private Optional<OperationType> fetchBridgeheadOperationType(TaskType taskType) {
@@ -334,7 +338,9 @@ public class ExporterService {
                             case SENDING_AND_EXECUTING -> Optional.of(OperationType.CHECK_SEND_AND_EXECUTE_QUERY);
                             default -> Optional.empty();
                         };
-                        operationType.ifPresent(type -> createBridgeheadNotification(HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(), type));
+                        operationType.ifPresent(type -> createBridgeheadNotification(
+                                HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(),
+                                type, "Quecking if query is already sent or executed"));
                         return clientResponse.bodyToMono(BeamRequest[].class).filter(focusQueries -> focusQueries != null && focusQueries.length > 0).flatMap(newBeamRequest -> {
                             if (projectBridgehead.getQueryState() == QueryState.EXPORT_RUNNING_2) {
                                 if (newBeamRequest[0].getBody() == null) {
