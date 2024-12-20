@@ -8,4 +8,6 @@ import java.util.Map;
 @Data
 public class ProjectConfiguration {
     private Map<String, String> fieldValues = new HashMap<>();
+    private String title;
+    private String description;
 }

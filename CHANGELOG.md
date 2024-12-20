@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-12-19]
+## [0.0.1 - 2024-12-20]
 ### Added
 - First version of the project
 - Spring Application
@@ -180,3 +180,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email if project rejected
 - Send email when the query has arrived to the exporter or it has been executed
 - Export dispatch counter
+- Title and description in project configuration
