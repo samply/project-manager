@@ -330,7 +330,7 @@ public class ProjectService {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
         if (!projectConfigurationName.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
-            de.samply.frontend.dto.Project projectConfiguration = this.projectConfigurations.getConfigurationNameProjectMap().get(projectConfigurationName);
+            de.samply.frontend.dto.Project projectConfiguration = this.projectConfigurations.getConfig().get(projectConfigurationName);
             if (projectConfiguration == null) {
                 throw new ProjectServiceException("Project configuration " + projectConfigurationName + " not found");
             }

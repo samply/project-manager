@@ -20,7 +20,6 @@ public class ProjectConfigurationsFactory {
     public ProjectConfigurations createProjectConfigurations(@Value(ProjectManagerConst.FRONTEND_PROJECT_CONFIG_PATH_SV) String frontendProjectConfigurationPath) {
         try {
             ProjectConfigurations projectConfigurations = objectMapper.readValue(new File(frontendProjectConfigurationPath), ProjectConfigurations.class);
-            projectConfigurations.initConfigurationNameProjectMap();
             return projectConfigurations;
         } catch (IOException e) {
             log.error("Project configuration file not found: {}", frontendProjectConfigurationPath);

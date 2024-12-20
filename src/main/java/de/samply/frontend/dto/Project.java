@@ -5,14 +5,10 @@ import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
-
 import lombok.Data;
-import lombok.SneakyThrows;
 
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
@@ -37,30 +33,5 @@ public class Project {
     private String explorerUrl;
     private String queryContext;
     private boolean isCustomConfig;
-
-    @SneakyThrows
-    public void setFieldsFromMap(Map<String, String> fieldValues) {
-        for (Map.Entry<String, String> entry : fieldValues.entrySet()) {
-            Field field = getClass().getDeclaredField(entry.getKey());
-            field.setAccessible(true);
-            setField(field, entry.getValue());
-        }
-    }
-
-    @SneakyThrows
-    private void setField(Field field, String value) {
-        Class<?> fieldType = field.getType();
-        if (fieldType.equals(String.class)) {
-            field.set(this, value);
-        } else if (fieldType.equals(Instant.class)) {
-            field.set(this, Instant.parse(value));
-        } else if (fieldType.equals(LocalDate.class)) {
-            field.set(this, LocalDate.parse(value));
-        } else if (fieldType.isEnum()) {
-            field.set(this, Enum.valueOf((Class<Enum>) fieldType, value));
-        } else if (fieldType == boolean.class) {
-            field.set(this, Boolean.parseBoolean(value));
-        }
-    }
 
 }
