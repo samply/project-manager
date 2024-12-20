@@ -18,7 +18,6 @@ public class ProjectConfigurations {
     @JsonIgnore
     public void initConfigurationNameProjectMap() {
         config.forEach((configurationName, projectConfiguration) -> configurationNameProjectMap.put(configurationName, convert(projectConfiguration)));
-        configurationNameProjectMap.put(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project());
     }
 
     @JsonIgnore

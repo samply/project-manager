@@ -12,11 +12,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectConfigurationMatcher {
 
-    private static Map<String, Project> CUSTOM_CONFIGURATION = Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project());
+    private static Map<String, Project> CUSTOM_CONFIGURATION = Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project() {{setCustomConfig(true);}});
 
     public static Map<String, Project> fetchMatchProjectConfiguration(Project project, Map<String, Project> projectConfigurations) throws ProjectConfigurationMatcherException {
         if (project.isCustomConfig()) {
-            return CUSTOM_CONFIGURATION;
+            return fetchCustomConfiguration(projectConfigurations);
         }
         Map<Map.Entry<String, Project>, Integer> matchedFieldCounts = new HashMap<>();
         for (Map.Entry<String, Project> entry : projectConfigurations.entrySet()) {
@@ -30,7 +30,12 @@ public class ProjectConfigurationMatcher {
         Optional<Map.Entry<String, Project>> nameProjectConfig = matchedFieldCounts.entrySet().stream()
                 .max(Comparator.comparingInt(Map.Entry::getValue))
                 .map(Map.Entry::getKey);
-        return (nameProjectConfig.isPresent()) ? Map.ofEntries(nameProjectConfig.get()) : CUSTOM_CONFIGURATION;
+        return (nameProjectConfig.isPresent()) ? Map.ofEntries(nameProjectConfig.get()) : fetchCustomConfiguration(projectConfigurations);
+    }
+
+    private static Map<String,Project> fetchCustomConfiguration(Map<String, Project> projectConfigurations){
+        Project result = projectConfigurations.get(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION);
+        return (result != null) ? Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, result) : CUSTOM_CONFIGURATION;
     }
 
     private static int countMatchedFields(Project project, Project projectConfiguration) {

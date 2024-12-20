@@ -58,6 +58,8 @@ public class Project {
             field.set(this, LocalDate.parse(value));
         } else if (fieldType.isEnum()) {
             field.set(this, Enum.valueOf((Class<Enum>) fieldType, value));
+        } else if (fieldType == boolean.class) {
+            field.set(this, Boolean.parseBoolean(value));
         }
     }
 
