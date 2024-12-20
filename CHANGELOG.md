@@ -181,3 +181,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send email when the query has arrived to the exporter or it has been executed
 - Export dispatch counter
 - Title and description in project configuration
+- Annotation Ignore Project Configuration Match

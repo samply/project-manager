@@ -1,5 +1,6 @@
 package de.samply.frontend.dto.configuration;
 
+import de.samply.annotations.IgnoreProjectConfigurationMatch;
 import de.samply.app.ProjectManagerConst;
 import de.samply.frontend.dto.Project;
 
@@ -12,7 +13,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectConfigurationMatcher {
 
-    private static Map<String, Project> CUSTOM_CONFIGURATION = Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project() {{setCustomConfig(true);}});
+    private static Map<String, Project> CUSTOM_CONFIGURATION = Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project() {{
+        setCustomConfig(true);
+    }});
 
     public static Map<String, Project> fetchMatchProjectConfiguration(Project project, Map<String, Project> projectConfigurations) throws ProjectConfigurationMatcherException {
         if (project.isCustomConfig()) {
@@ -33,7 +36,7 @@ public class ProjectConfigurationMatcher {
         return (nameProjectConfig.isPresent()) ? Map.ofEntries(nameProjectConfig.get()) : fetchCustomConfiguration(projectConfigurations);
     }
 
-    private static Map<String,Project> fetchCustomConfiguration(Map<String, Project> projectConfigurations){
+    private static Map<String, Project> fetchCustomConfiguration(Map<String, Project> projectConfigurations) {
         Project result = projectConfigurations.get(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION);
         return (result != null) ? Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, result) : CUSTOM_CONFIGURATION;
     }
@@ -53,7 +56,7 @@ public class ProjectConfigurationMatcher {
             Object projectValue = field.get(project);
             Object templateValue = field.get(projectConfiguration);
             if (templateValue != null) {
-                if (templateValue.equals(projectValue)) {
+                if (field.isAnnotationPresent(IgnoreProjectConfigurationMatch.class) || templateValue.equals(projectValue)) {
                     matchedFields.getAndIncrement();
                 } else {
                     return -1;
