@@ -4,7 +4,6 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.email.EmailKeyValues;
 import de.samply.email.EmailKeyValuesFactory;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
@@ -112,7 +111,7 @@ public class ExporterJob {
                     projectBridgehead.setQueryState(finalQueryState);
                     projectBridgehead.setExporterResponse(exporterServiceResult.result());
                     projectBridgehead.setModifiedAt(Instant.now());
-                    if (finalQueryState == QueryState.FINISHED){
+                    if (finalQueryState == QueryState.FINISHED || finalQueryState == QueryState.ERROR) {
                         projectBridgehead.setExporterDispatchCounter(projectBridgehead.getExporterDispatchCounter() + 1);
                     }
                     projectBridgeheadRepository.save(projectBridgehead);

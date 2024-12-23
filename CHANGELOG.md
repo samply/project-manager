@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2024-12-20]
+## [0.0.1 - 2024-12-23]
 ### Added
 - First version of the project
 - Spring Application
@@ -182,3 +182,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Export dispatch counter
 - Title and description in project configuration
 - Annotation Ignore Project Configuration Match
+- Send error email if error while sending query to bridgehead

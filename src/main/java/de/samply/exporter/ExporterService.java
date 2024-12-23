@@ -6,9 +6,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.*;
+import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectCoderRepository;
+import de.samply.email.EmailKeyValuesFactory;
+import de.samply.email.EmailService;
+import de.samply.email.EmailTemplateType;
 import de.samply.exporter.focus.BeamRequest;
 import de.samply.exporter.focus.BeamService;
 import de.samply.exporter.focus.BeamServiceException;
@@ -18,6 +22,7 @@ import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
 import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
+import de.samply.user.roles.ProjectRole;
 import de.samply.utils.Base64Utils;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
@@ -66,6 +71,9 @@ public class ExporterService {
     private final String beamWaitTime;
     private final String beamWaitCount;
     private final int maxTimeToWaitFocusTaskInMinutes;
+    private final EmailService emailService;
+    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
+    private final EmailKeyValuesFactory emailKeyValuesFactory;
     private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
@@ -87,7 +95,10 @@ public class ExporterService {
             NotificationService notificationService,
             WebClientFactory webClientFactory,
             ProjectBridgeheadRepository projectBridgeheadRepository,
-            ProjectCoderRepository projectCoderRepository) {
+            ProjectCoderRepository projectCoderRepository,
+            EmailService emailService,
+            BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
+            EmailKeyValuesFactory emailKeyValuesFactory) {
         this.sessionUser = sessionUser;
         this.beamService = beamService;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
@@ -102,6 +113,9 @@ public class ExporterService {
         this.coderBeamIdSuffix = coderBeamIdSuffix;
         this.testCoderFileBeamId = testCoderFileBeamId;
         this.projectCoderRepository = projectCoderRepository;
+        this.emailService = emailService;
+        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
+        this.emailKeyValuesFactory = emailKeyValuesFactory;
         this.webClient = webClientFactory.createWebClient(focusUrl);
         this.exporterApiKey = exporterApiKey;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -381,6 +395,15 @@ public class ExporterService {
         projectBridgehead.setQueryState(newState);
         projectBridgehead.setModifiedAt(Instant.now());
         projectBridgeheadRepository.save(projectBridgehead);
+        if (newState == QueryState.ERROR){
+                sendEmail(projectBridgehead, EmailTemplateType.ERROR_WHILE_SAVING_QUERY_IN_EXPORTER);
+        }
+    }
+
+    private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {
+        bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdmin -> {
+            emailService.sendEmail(bridgeheadAdmin.getEmail(), Optional.of(projectBridgehead.getProject().getCode()), Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN, templateType, emailKeyValuesFactory.newInstance().add(projectBridgehead));
+        });
     }
 
     private String extractTaskId(BeamRequest beamRequest) {
