@@ -394,10 +394,11 @@ public class ExporterService {
     private void modifyProjectBridgeheadState(ProjectBridgehead projectBridgehead, QueryState newState) {
         projectBridgehead.setQueryState(newState);
         projectBridgehead.setModifiedAt(Instant.now());
-        projectBridgeheadRepository.save(projectBridgehead);
         if (newState == QueryState.ERROR){
-                sendEmail(projectBridgehead, EmailTemplateType.ERROR_WHILE_SAVING_QUERY_IN_EXPORTER);
+            projectBridgehead.setExporterDispatchCounter(projectBridgehead.getExporterDispatchCounter() + 1);
+            sendEmail(projectBridgehead, EmailTemplateType.ERROR_WHILE_SAVING_QUERY_IN_EXPORTER);
         }
+        projectBridgeheadRepository.save(projectBridgehead);
     }
 
     private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {

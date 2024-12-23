@@ -111,7 +111,7 @@ public class ExporterJob {
                     projectBridgehead.setQueryState(finalQueryState);
                     projectBridgehead.setExporterResponse(exporterServiceResult.result());
                     projectBridgehead.setModifiedAt(Instant.now());
-                    if (finalQueryState == QueryState.FINISHED || finalQueryState == QueryState.ERROR) {
+                    if (finalQueryState == QueryState.FINISHED) {
                         projectBridgehead.setExporterDispatchCounter(projectBridgehead.getExporterDispatchCounter() + 1);
                     }
                     projectBridgeheadRepository.save(projectBridgehead);
