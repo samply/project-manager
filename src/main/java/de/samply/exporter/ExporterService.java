@@ -359,7 +359,7 @@ public class ExporterService {
                         };
                         operationType.ifPresent(type -> createBridgeheadNotification(
                                 HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(),
-                                type, "Quecking if query is already sent or executed"));
+                                type, "Checking if query is already sent or executed"));
                         return clientResponse.bodyToMono(BeamRequest[].class).filter(focusQueries -> focusQueries != null && focusQueries.length > 0).flatMap(newBeamRequest -> {
                             if (projectBridgehead.getQueryState() == QueryState.EXPORT_RUNNING_2) {
                                 if (newBeamRequest[0].getBody() == null) {
