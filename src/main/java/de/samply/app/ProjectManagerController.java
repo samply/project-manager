@@ -500,6 +500,44 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectEventService.reject(projectCode));
     }
 
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST)
+    public ResponseEntity<String> addUserToMailingBlackList(
+            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, true));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION)
+    @PostMapping(value = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST)
+    public ResponseEntity<String> removeUserFromMailingBlackList(
+            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, false));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_MAILING_BLACK_LIST_ACTION)
+    @PostMapping(value = ProjectManagerConst.FETCH_MAILING_BLACK_LIST)
+    public ResponseEntity<String> fetchMailingBlackList() {
+        return convertToResponseEntity(() -> userService.fetchMailingBlackList());
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION)
+    @PostMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
+    public ResponseEntity<String> fetchUsersForAutocompleteInMailingBlackList(
+            @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String email
+    ) {
+        return convertToResponseEntity(() -> userService.fetchUsersForAutocompleteInMailingBlackList(email));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL}, queryStates = {QueryState.FINISHED, QueryState.ERROR})
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})

@@ -3,6 +3,7 @@ package de.samply.email;
 import de.samply.app.ProjectManagerConst;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.KeyTransformer;
 import jakarta.mail.MessagingException;
@@ -37,6 +38,7 @@ public class EmailService {
     private final NotificationService notificationService;
     private final EmailKeyValuesFactory emailKeyValuesFactory;
     private final List<String> testMailDomains;
+    private final UserService userService;
 
 
     public EmailService(
@@ -48,7 +50,8 @@ public class EmailService {
             EmailTemplates emailTemplates,
             NotificationService notificationService,
             EmailKeyValuesFactory emailKeyValuesFactory,
-            @Value(ProjectManagerConst.TEST_EMAIL_DOMAINS_SV) List<String> testMailDomains) {
+            @Value(ProjectManagerConst.TEST_EMAIL_DOMAINS_SV) List<String> testMailDomains,
+            UserService userService) {
         this.emailFrom = emailFrom;
         this.mailSender = mailSender;
         this.testMailSender = testMailSender;
@@ -58,21 +61,17 @@ public class EmailService {
         this.notificationService = notificationService;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
         this.testMailDomains = testMailDomains;
+        this.userService = userService;
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
     public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
-        if (enableEmails) {
-            sendEmail(emailTo, project, bridgehead, role, type, this.emailKeyValuesFactory.newInstance());
-        } else {
-            log.info("SMTP Server not enabled. Email to " + emailTo + " with role " + role + " for bridgehead " +
-                    (bridgehead.isPresent() ? bridgehead.get() : "NONE") + " and type " + type + " could not be sent");
-        }
+        sendEmail(emailTo, project, bridgehead, role, type, this.emailKeyValuesFactory.newInstance());
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
     public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, EmailKeyValues keyValues) throws EmailServiceException {
-        if (enableEmails) {
+        if (enableEmails && userService.isUserInMailingBlackList(emailTo)) {
             project.ifPresent(keyValues::addProjectCode);
             bridgehead.ifPresent(keyValues::addBridgehead);
             Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues);

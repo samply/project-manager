@@ -162,4 +162,8 @@ public class DtoFactory {
         return humanReadable.isPresent() ? new Bridgehead(bridgehead, humanReadable.get()) : new Bridgehead(bridgehead, null);
     }
 
+    public static User convert(de.samply.db.model.User user) {
+        return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null);
+    }
+
 }

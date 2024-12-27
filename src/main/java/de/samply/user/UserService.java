@@ -8,7 +8,6 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
-import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
@@ -17,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -220,6 +216,32 @@ public class UserService {
                 userRepository.save(user);
             }
         }
+    }
+
+    public void updateUserInMailingBlackList(@NotNull String email, @NotNull boolean addedToBlackList) throws UserServiceException {
+        if (StringUtils.hasText(email)) {
+            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
+            if (userOptional.isPresent()) {
+                userOptional.get().setInMailingBlackList(addedToBlackList);
+                userRepository.save(userOptional.get());
+            }
+        }
+    }
+
+    public boolean isUserInMailingBlackList(@NotNull String email) throws UserServiceException {
+        if (StringUtils.hasText(email)) {
+            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
+            return userOptional.isPresent() && userOptional.get().isInMailingBlackList();
+        }
+        return false;
+    }
+
+    public List<User> fetchMailingBlackList(){
+        return userRepository.findByIsInMailingBlackListIsTrue().stream().map(DtoFactory::convert).collect(Collectors.toList());
+    }
+
+    public List<User> fetchUsersForAutocompleteInMailingBlackList(String email){
+        return userRepository.findByEmailContainingIgnoreCaseAndIsInMailingBlackListIsFalse(email).stream().map(DtoFactory::convert).collect(Collectors.toList());
     }
 
 }

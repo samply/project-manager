@@ -111,6 +111,10 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
     public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION = "ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT";
+    public final static String ADD_USER_TO_MAILING_BLACK_LIST_ACTION = "ADD_USER_TO_MAILING_BLACK_LIST";
+    public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION = "REMOVE_USER_FROM_MAILING_BLACK_LIST";
+    public final static String FETCH_MAILING_BLACK_LIST_ACTION = "FETCH_MAILING_BLACK_LIST";
+    public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST";
 
 
     // REST Services
@@ -135,6 +139,10 @@ public class ProjectManagerConst {
     public final static String CREATE_PROJECT = "/create-project";
     public final static String ACCEPT_PROJECT = "/accept-project";
     public final static String REJECT_PROJECT = "/reject-project";
+    public final static String ADD_USER_TO_MAILING_BLACK_LIST = "/add-mailing-black-list";
+    public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST = "/remove-mailing-black-list";
+    public final static String FETCH_MAILING_BLACK_LIST = "/mailing-black-list";
+    public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST = "/mailing-black-list-autocomplete";
     public final static String ACCEPT_BRIDGEHEAD_PROJECT = "/accept-bridgehead-project";
     public final static String REJECT_BRIDGEHEAD_PROJECT = "/reject-bridgehead-project";
     public final static String ACCEPT_SCRIPT = "/accept-script";

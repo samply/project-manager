@@ -26,4 +26,7 @@ public class User {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Column(name = "mailing_black_list", nullable = false)
+    private boolean isInMailingBlackList = false;
+
 }

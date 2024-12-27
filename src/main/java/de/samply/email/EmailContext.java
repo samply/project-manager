@@ -25,7 +25,7 @@ public class EmailContext {
     // If a key is Base64-encoded, it should start with the prefix "B64" to indicate its encoding.
     @PostConstruct
     public void init() {
-        log.info("Email Context initialized: ({})", context.entrySet().size());
+        log.debug("Email Context initialized: ({})", context.entrySet().size());
         Map<String, String> tempContext = new HashMap<>();
         context.entrySet().stream().forEach(keyValue -> {
             String key = replaceHyphen(keyValue.getKey());
@@ -34,7 +34,7 @@ public class EmailContext {
                 key = key.replaceFirst(ProjectManagerConst.BASE_64, "");
                 Base64Utils.decodeIfNecessary(keyValue.getValue()).ifPresent(value::set);
             }
-            log.info("\t-\t{}: {}", key, value.get());
+            log.debug("\t-\t{}: {}", key, value.get());
             tempContext.put(key, value.get());
         });
         context = tempContext;
