@@ -499,7 +499,7 @@ public class ProjectManagerConst {
     public final static String RESEARCH_ENVIRONMENT_TEMPLATES_SV = HEAD_SV + RESEARCH_ENVIRONMENT_TEMPLATES + BOTTOM_SV;
     public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
     public final static String BEAM_PROJECT_MANAGER_ID_SV = HEAD_SV + BEAM_PROJECT_MANAGER_ID + BOTTOM_SV;
-    public final static String BEAM_TTL_SV = HEAD_SV + BEAM_TTL + ":60s" + BOTTOM_SV;
+    public final static String BEAM_TTL_SV = HEAD_SV + BEAM_TTL + ":180s" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
             HEAD_SV + BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + BEAM_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
