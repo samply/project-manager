@@ -71,7 +71,7 @@ public class EmailService {
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
     public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, EmailKeyValues keyValues) throws EmailServiceException {
-        if (enableEmails && userService.isUserInMailingBlackList(emailTo)) {
+        if (enableEmails && !userService.isUserInMailingBlackList(emailTo)) {
             project.ifPresent(keyValues::addProjectCode);
             bridgehead.ifPresent(keyValues::addBridgehead);
             Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues);
@@ -90,7 +90,8 @@ public class EmailService {
                 throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
             }
         } else {
-            log.info("SMTP Server not enabled. Email to " + emailTo + " with role " + role + " for bridgehead " +
+            log.info(enableEmails ? "SMTP Server not enabled." : "User Email in mailing blacklist");
+            log.info("Email to " + emailTo + " with role " + role + " for bridgehead " +
                     (bridgehead.isPresent() ? bridgehead.get() : "NONE") + " and type " + type + " could not be sent");
         }
     }
