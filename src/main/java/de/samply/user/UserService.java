@@ -237,7 +237,9 @@ public class UserService {
     }
 
     public List<User> fetchMailingBlackList(){
-        return userRepository.findByIsInMailingBlackListIsTrue().stream().map(DtoFactory::convert).collect(Collectors.toList());
+        return userRepository.findByIsInMailingBlackListIsTrue().stream().map(DtoFactory::convert)
+                .sorted(Comparator.comparing(User::firstName).thenComparing(User::lastName))
+                .collect(Collectors.toList());
     }
 
     public List<User> fetchUsersForAutocompleteInMailingBlackList(String email){
