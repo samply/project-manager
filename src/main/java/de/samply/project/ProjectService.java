@@ -8,11 +8,13 @@ import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.QueryRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Results;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -73,13 +75,17 @@ public class ProjectService {
                 hasChanged = true;
             }
             if (hasChanged) {
-                projectOptional.get().setModifiedAt(Instant.now());
-                projectRepository.save(projectOptional.get());
+                saveProject(projectOptional.get());
             }
             if (bridgeheads != null && bridgeheads.length > 0) {
                 updateBridgeheads(projectOptional.get(), bridgeheads);
             }
         }
+    }
+
+    private void saveProject(@NotNull Project project){
+        project.setModifiedAt(Instant.now());
+        projectRepository.save(project);
     }
 
     private void updateBridgeheads(Project project, String[] bridgeheads) {
@@ -336,12 +342,50 @@ public class ProjectService {
             }
             Project project = DtoFactory.convert(projectConfiguration, projectOptional.get());
             project.setCustomConfig(false);
-            this.projectRepository.save(project);
+            saveProject(project);
             this.queryRepository.save(project.getQuery());
         } else if (!projectOptional.get().isCustomConfig()) {
             projectOptional.get().setCustomConfig(true);
-            this.projectRepository.save(projectOptional.get());
+            saveProject(projectOptional.get());
         }
+    }
+
+    public void addProjectResultUrl(@NotNull String projectCode, @NotNull String resultUrl) throws ProjectServiceException {
+        Optional<Project> project = this.projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        project.get().setResultsUrl(resultUrl);
+        saveProject(project.get());
+    }
+
+    public void acceptResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
+        changeCreatorResultsState(projectCode, UserProjectState.ACCEPTED);
+    }
+
+    public void rejectResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
+        changeCreatorResultsState(projectCode, UserProjectState.REJECTED);
+    }
+
+    public void requestChangesInResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
+        changeCreatorResultsState(projectCode, UserProjectState.REQUEST_CHANGES);
+    }
+
+    private void changeCreatorResultsState(@NotNull String projectCode, UserProjectState state) throws ProjectServiceException {
+        Optional<Project> project = this.projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        project.get().setCreatorResultsState(state);
+        saveProject(project.get());
+    }
+
+    public Results fetchResults(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> project = this.projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        return dtoFactory.fetchResults(project.get());
     }
 
 }

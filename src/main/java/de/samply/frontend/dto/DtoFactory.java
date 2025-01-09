@@ -1,12 +1,21 @@
 package de.samply.frontend.dto;
 
 import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.db.model.BridgeheadAdminUser;
 import de.samply.db.model.NotificationUserAction;
+import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.db.repository.BridgeheadAdminUserRepository;
+import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.UserRepository;
+import de.samply.project.state.UserProjectState;
+import de.samply.user.roles.ProjectRole;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Component
@@ -14,11 +23,17 @@ public class DtoFactory {
 
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final UserRepository userRepository;
+    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
 
     public DtoFactory(BridgeheadConfiguration bridgeheadConfiguration,
-                      UserRepository userRepository) {
+                      UserRepository userRepository,
+                      ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
+                      BridgeheadAdminUserRepository bridgeheadAdminUserRepository) {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.userRepository = userRepository;
+        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
     }
 
     public Project convert(@NotNull de.samply.db.model.Project project) {
@@ -45,7 +60,7 @@ public class DtoFactory {
         return result;
     }
 
-    private String fetchEmailUserName(String email){
+    private String fetchEmailUserName(String email) {
         Optional<de.samply.db.model.User> user = userRepository.findByEmail(email);
         return (user.isPresent()) ?
                 user.get().getFirstName() + " " + user.get().getLastName() :
@@ -164,6 +179,49 @@ public class DtoFactory {
 
     public static User convert(de.samply.db.model.User user) {
         return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null);
+    }
+
+    public Results fetchResults(@NotNull de.samply.db.model.Project project) {
+        Set<ProjectBridgeheadUser> finalUsers = projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectCode(ProjectRole.FINAL, project.getCode());
+        Optional<ProjectBridgeheadUser> finalUser = finalUsers.stream().filter(user -> user.getProjectState() == UserProjectState.ACCEPTED).findAny();
+        AtomicReference<Optional<String>> email = new AtomicReference<>(Optional.empty());
+        AtomicReference<Optional<String>> firstName = new AtomicReference<>(Optional.empty());
+        AtomicReference<Optional<String>> lastName = new AtomicReference<>(Optional.empty());
+        if (finalUser.isEmpty()) {
+            finalUser = finalUsers.stream().findAny();
+        }
+        finalUser.ifPresent(user -> email.set(Optional.of(user.getEmail())));
+        email.get().ifPresent(tempEmail -> {
+            userRepository.findByEmail(tempEmail).ifPresent(tempUser -> {
+                firstName.set(Optional.of(tempUser.getFirstName()));
+                lastName.set(Optional.of(tempUser.getLastName()));
+            });
+        });
+        return new Results(null, null, fetchValue(email), fetchValue(firstName), fetchValue(lastName), project.getResultsUrl(), project.getCreatorResultsState(), null);
+    }
+
+    public Results fetchResults(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
+        Optional<BridgeheadAdminUser> bridgeheadAdmin = bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).stream().findAny();
+        AtomicReference<Optional<de.samply.db.model.User>> user = new AtomicReference<>(Optional.empty());
+        bridgeheadAdmin.ifPresent(tempUser -> user.set(userRepository.findByEmail(tempUser.getEmail())));
+        AtomicReference<Optional<String>> humanReadableBridghead = new AtomicReference<>(bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead()));
+        return new Results(projectBridgehead.getBridgehead(),
+                fetchValue(humanReadableBridghead),
+                fetchValue(user, u -> u.getEmail()),
+                fetchValue(user, u -> u.getFirstName()),
+                fetchValue(user, u -> u.getLastName()),
+                projectBridgehead.getResultsUrl(),
+                projectBridgehead.getCreatorResultsState(),
+                projectBridgehead.getState()
+        );
+    }
+
+    private String fetchValue(AtomicReference<Optional<String>> value) {
+        return value.get().isPresent() ? value.get().get() : null;
+    }
+
+    private <T> String fetchValue(AtomicReference<Optional<T>> value, Function<T, String> function) {
+        return value.get().isPresent() ? function.apply(value.get().get()) : null;
     }
 
 }

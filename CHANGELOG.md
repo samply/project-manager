@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2025-01-07]
+## [0.0.1 - 2025-01-09]
 ### Added
 - First version of the project
 - Spring Application
@@ -185,3 +185,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send error email if error while sending query to bridgehead
 - Mailing Black List
 - Sort Mailing Black List by first and last name
+- Results

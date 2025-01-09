@@ -81,7 +81,7 @@ public class ProjectEventService implements ProjectEventActions {
                             @Override
                             public void postStateChange(State<ProjectState, ProjectEvent> state, Message<ProjectEvent> message, Transition<ProjectState, ProjectEvent> transition, StateMachine<ProjectState, ProjectEvent> stateMachine, StateMachine<ProjectState, ProjectEvent> rootStateMachine) {
                                 project.get().setState(state.getId());
-                                projectRepository.save(project.get());
+                                saveProject(project.get());
                             }
                         });
                         stateMachineAccess.resetStateMachineReactively(new DefaultStateMachineContext<>(project.get().getState(), null, null, null))
@@ -90,6 +90,12 @@ public class ProjectEventService implements ProjectEventActions {
                                                 () -> stateMachineConsumer.accept(stateMachine)));
                     }));
         }
+    }
+
+    private Project saveProject(@NotNull Project project){
+        project.setModifiedAt(Instant.now());
+        projectRepository.save(project);
+        return project;
     }
 
     private void changeEvent(String projectCode, ProjectEvent projectEvent) throws ProjectEventActionsException {
@@ -112,7 +118,7 @@ public class ProjectEventService implements ProjectEventActions {
                 if (project.isPresent()) {
                     project.get().setState(stateMachine.getState().getId());
                     project.get().setModifiedAt(Instant.now());
-                    this.projectRepository.save(project.get());
+                    saveProject(project.get());
                     this.notificationService.createNotification(projectCode, null, fetchSessionUserEmailIfSessionIsActive(),
                             OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
                     if (consumerAfterSuccesfulChangeEvent.isPresent()) {
@@ -173,7 +179,7 @@ public class ProjectEventService implements ProjectEventActions {
                 this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
         stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
             project.setState(stateMachine.getState().getId());
-            projectConsumer.accept(this.projectRepository.save(project));
+            projectConsumer.accept(saveProject(project));
             this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
                     OperationType.CHANGE_PROJECT_STATE, "Design project", null, null);
         });
@@ -230,7 +236,7 @@ public class ProjectEventService implements ProjectEventActions {
     public void archive(String projectCode) throws ProjectEventActionsException {
         changeEvent(projectCode, ProjectEvent.ARCHIVE, Optional.of(project -> {
             project.setArchivedAt(project.getModifiedAt());
-            this.projectRepository.save(project);
+            saveProject(project);
         }));
     }
 

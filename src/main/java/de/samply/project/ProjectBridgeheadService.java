@@ -6,9 +6,11 @@ import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Results;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -135,5 +137,61 @@ public class ProjectBridgeheadService {
         projectBridgeheadRepository.save(projectBridgehead.get());
     }
 
+    public void addResultsUrl(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String resultsUrl) throws ProjectBridgeheadServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
+        }
+        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+        if (projectBridgehead.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Bridghead " + bridgehead + " in project " + projectCode + " not found");
+        }
+        projectBridgehead.get().setResultsUrl(resultsUrl);
+        projectBridgeheadRepository.save(projectBridgehead.get());
+    }
+
+    public void acceptResultsForCreator(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
+        changeCreatorResultsState(projectCode, bridgehead, UserProjectState.ACCEPTED);
+    }
+
+    public void rejectResultsForCreator(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
+        changeCreatorResultsState(projectCode, bridgehead, UserProjectState.REJECTED);
+    }
+
+    public void requestChangesInResultsForCreator(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
+        changeCreatorResultsState(projectCode, bridgehead, UserProjectState.REQUEST_CHANGES);
+    }
+
+    private void changeCreatorResultsState(@NotNull String projectCode, @NotNull String bridgehead, @NotNull UserProjectState state) throws ProjectBridgeheadServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
+        }
+        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get());
+        if (projectBridgehead.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Bridghead " + bridgehead + " in project " + projectCode + " not found");
+        }
+        projectBridgehead.get().setCreatorResultsState(state);
+        projectBridgeheadRepository.save(projectBridgehead.get());
+    }
+
+    public List<Results> fetchResults(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
+        }
+        return projectBridgeheadRepository.findByProject(project.orElseThrow())
+                .stream()
+                .map(dtoFactory::fetchResults)
+                .toList(); // Uses the modern `toList()` instead of `Collectors.toList()`
+    }
+
+    public Optional<Results> fetchResultsOfOwnBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
+        }
+        return projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get()).map(dtoFactory::fetchResults);
+    }
 
 }

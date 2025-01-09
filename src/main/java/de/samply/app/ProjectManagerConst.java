@@ -31,6 +31,7 @@ public class ProjectManagerConst {
     public final static String PROJECTS_MODULE = "PROJECTS";
     public final static String USER_MODULE = "USER";
     public final static String PROJECT_STATE_MODULE = "PROJECT_STATE";
+    public final static String PROJECT_RESULTS_MODULE = "PROJECT_RESULTS";
     public final static String PROJECT_BRIDGEHEAD_MODULE = "PROJECT_BRIDGEHEAD";
     public final static String PROJECT_EDITION_MODULE = "PROJECT_EDITION";
     public final static String PROJECT_DOCUMENTS_MODULE = "PROJECT_DOCUMENTS";
@@ -115,6 +116,17 @@ public class ProjectManagerConst {
     public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION = "REMOVE_USER_FROM_MAILING_BLACK_LIST";
     public final static String FETCH_MAILING_BLACK_LIST_ACTION = "FETCH_MAILING_BLACK_LIST";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST";
+    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGHEAD_RESULTS_URL";
+    public final static String ADD_PROJECT_RESULTS_URL_ACTION = "ADD_PROJECT_RESULTS_URL";
+    public final static String ACCEPT_PROJECT_RESULTS_URL_ACTION = "ACCEPT_PROJECT_RESULTS_URL";
+    public final static String REJECT_PROJECT_RESULTS_URL_ACTION = "REJECT_PROJECT_RESULTS_URL";
+    public final static String REQUEST_CHANGES_IN_PROJECT_RESULTS_URL_ACTION = "REQUEST_CHANGES_IN_PROJECT_RESULTS_URL";
+    public final static String ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION = "ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL";
+    public final static String REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION = "REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL";
+    public final static String REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION = "REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL";
+    public final static String FETCH_PROJECT_RESULTS_ACTION = "FETCH_PROJECT_RESULTS";
+    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_ACTION = "FETCH_PROJECT_BRIDGEHEAD_RESULTS";
+    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD_ACTION = "FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD";
 
 
     // REST Services
@@ -200,6 +212,17 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_USERS = "/project-users";
     public final static String FETCH_CURRENT_USER = "/current-user";
     public final static String EXIST_INVITED_USERS = "/exist-invited-users";
+    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL = "/project-bridgehead-results-url";
+    public final static String ADD_PROJECT_RESULTS_URL = "/project-results-url";
+    public final static String ACCEPT_PROJECT_RESULTS_URL = "/accept-project-results-url";
+    public final static String REJECT_PROJECT_RESULTS_URL = "/reject-project-results-url";
+    public final static String FETCH_PROJECT_RESULTS = "/project-results";
+    public final static String REQUEST_CHANGES_IN_PROJECT_RESULTS_URL = "/request-changes-project-results-url";
+    public final static String ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL = "/accept-project-bridgehead-results-url";
+    public final static String REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL = "/reject-project-bridgehead-results-url";
+    public final static String REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL = "/request-changes-project-bridgehead-results-url";
+    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS = "/project-bridgehead-results";
+    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD = "/own-project-bridgehead-results";
 
 
     // REST Parameters
@@ -232,6 +255,7 @@ public class ProjectManagerConst {
     public final static String HUMAN_READABLE = "human-readable";
     public final static String REDIRECT_EXPLORER_URL = "explorer-url";
     public final static String QUERY_CONTEXT = "query-context";
+    public final static String RESULTS_URL = "results-url";
 
     // Variables for Email Templates:
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";
@@ -241,12 +265,14 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME = "project-bridgehead-user-first-name";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME = "project-bridgehead-user-last-name";
     public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME = "project-bridgehead-user-name";
+    public final static String EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_RESULTS_URL = "project-bridgehead-results-url";
     public final static String EMAIL_CONTEXT_PROJECT_ROLE = "project-role";
     public final static String EMAIL_CONTEXT_PROJECT_TYPE = "project-type";
     public final static String EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL = "project-creator-email";
     public final static String EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME = "project-creator-first-name";
     public final static String EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME = "project-creator-last-name";
     public final static String EMAIL_CONTEXT_PROJECT_CREATOR_NAME = "project-creator-name";
+    public final static String EMAIL_CONTEXT_PROJECT_RESULTS_URL = "project-results-url";
     public final static String EMAIL_CONTEXT_QUERY = "query";
     public final static String EMAIL_CONTEXT_QUERY_LABEL = "query-label";
     public final static String EMAIL_CONTEXT_QUERY_DESCRIPTION = "query-description";
@@ -273,12 +299,14 @@ public class ProjectManagerConst {
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME,
             EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME,
+            EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_RESULTS_URL,
             EMAIL_CONTEXT_PROJECT_ROLE,
             EMAIL_CONTEXT_PROJECT_TYPE,
             EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL,
             EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME,
             EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME,
             EMAIL_CONTEXT_PROJECT_CREATOR_NAME,
+            EMAIL_CONTEXT_PROJECT_RESULTS_URL,
             EMAIL_CONTEXT_QUERY,
             EMAIL_CONTEXT_QUERY_LABEL,
             EMAIL_CONTEXT_QUERY_DESCRIPTION,
