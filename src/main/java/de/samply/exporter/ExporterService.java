@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
-import de.samply.db.model.*;
+import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadDataShield;
+import de.samply.db.model.ProjectCoder;
+import de.samply.db.model.Query;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
@@ -281,8 +284,8 @@ public class ExporterService {
         return convertToBase64String(result);
     }
 
-    private String fetchLabel(@NotNull ProjectBridgehead projectBridgehead){
-        String label = projectBridgehead.getProject().getQuery().getLabel();
+    private String fetchLabel(@NotNull ProjectBridgehead projectBridgehead) {
+        String label = "[DRN: " + projectBridgehead.getProject().getCode() + "] " + projectBridgehead.getProject().getQuery().getLabel();
         return (projectBridgehead.getExporterDispatchCounter() == 0) ? label : label + " (Attempt: " + projectBridgehead.getExporterDispatchCounter() + 1 + ")";
     }
 
@@ -394,7 +397,7 @@ public class ExporterService {
     private void modifyProjectBridgeheadState(ProjectBridgehead projectBridgehead, QueryState newState) {
         projectBridgehead.setQueryState(newState);
         projectBridgehead.setModifiedAt(Instant.now());
-        if (newState == QueryState.ERROR){
+        if (newState == QueryState.ERROR) {
             projectBridgehead.setExporterDispatchCounter(projectBridgehead.getExporterDispatchCounter() + 1);
             sendEmail(projectBridgehead, EmailTemplateType.ERROR_WHILE_SAVING_QUERY_IN_EXPORTER);
         }
