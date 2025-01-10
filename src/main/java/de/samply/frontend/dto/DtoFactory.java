@@ -1,5 +1,6 @@
 package de.samply.frontend.dto;
 
+import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.BridgeheadAdminUser;
 import de.samply.db.model.NotificationUserAction;
@@ -7,6 +8,7 @@ import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.UserRepository;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
 import de.samply.user.roles.ProjectRole;
 import jakarta.validation.constraints.NotNull;
@@ -197,7 +199,15 @@ public class DtoFactory {
                 lastName.set(Optional.of(tempUser.getLastName()));
             });
         });
-        return new Results(null, null, fetchValue(email), fetchValue(firstName), fetchValue(lastName), project.getResultsUrl(), project.getCreatorResultsState(), null);
+        return new Results(null, null, fetchValue(email), fetchValue(firstName), fetchValue(lastName),
+                fetchProjectResultsUrl(project, finalUser),
+                project.getCreatorResultsState(),
+                null,
+                fetchValue(new AtomicReference<>(finalUser), user -> user.getProjectState()));
+    }
+
+    private String fetchProjectResultsUrl(@NotNull de.samply.db.model.Project project, Optional<ProjectBridgeheadUser> finalUser) {
+        return (finalUser.isPresent() && finalUser.get().getProjectState() == UserProjectState.ACCEPTED) ? project.getResultsUrl() : ProjectManagerConst.NOT_AUTHORIZED;
     }
 
     public Results fetchResults(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
@@ -210,17 +220,22 @@ public class DtoFactory {
                 fetchValue(user, u -> u.getEmail()),
                 fetchValue(user, u -> u.getFirstName()),
                 fetchValue(user, u -> u.getLastName()),
-                projectBridgehead.getResultsUrl(),
+                fetchProjectBridgeheadResults(projectBridgehead),
                 projectBridgehead.getCreatorResultsState(),
-                projectBridgehead.getState()
+                projectBridgehead.getState(),
+                null
         );
     }
 
-    private String fetchValue(AtomicReference<Optional<String>> value) {
+    private String fetchProjectBridgeheadResults(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
+        return (projectBridgehead.getState() == ProjectBridgeheadState.ACCEPTED) ? projectBridgehead.getResultsUrl() : ProjectManagerConst.NOT_AUTHORIZED;
+    }
+
+    private <O> O fetchValue(AtomicReference<Optional<O>> value) {
         return value.get().isPresent() ? value.get().get() : null;
     }
 
-    private <T> String fetchValue(AtomicReference<Optional<T>> value, Function<T, String> function) {
+    private <I,O> O fetchValue(AtomicReference<Optional<I>> value, Function<I, O> function) {
         return value.get().isPresent() ? function.apply(value.get().get()) : null;
     }
 

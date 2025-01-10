@@ -13,6 +13,7 @@ public record Results(
         String lastName,
         String url,
         UserProjectState creatorState,
-        ProjectBridgeheadState bridgeheadState
+        ProjectBridgeheadState bridgeheadAdminState,
+        UserProjectState finalUserState
 ) {
 }

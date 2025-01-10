@@ -613,6 +613,7 @@ public class ProjectManagerConst {
     public final static String HTTPS_PROTOCOL_SCHEMA = "https";
     public final static String PRIMARY_MAIL_SENDER = "primaryJavaMailSender";
     public final static String TEST_MAIL_SENDER = "testJavaMailSender";
+    public final static String NOT_AUTHORIZED = "Not authorized yet";
 
 
 
