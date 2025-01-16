@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2025-01-10]
+## [0.0.1 - 2025-01-16]
 ### Added
 - First version of the project
 - Spring Application
@@ -188,3 +188,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Results
 - DRN in exporter label
 - Final User State in results
+- Create State in Frontend DTO's (for project and project bridgehead)

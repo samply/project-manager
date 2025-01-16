@@ -59,6 +59,7 @@ public class DtoFactory {
         result.setDescription(project.getQuery().getDescription());
         result.setExplorerUrl(project.getQuery().getExplorerUrl());
         result.setQueryContext(project.getQuery().getContext());
+        result.setCreatorState(project.getCreatorResultsState());
         return result;
     }
 
@@ -135,7 +136,8 @@ public class DtoFactory {
                 fetchHumanReadableBridgehead(projectBridgehead),
                 projectBridgehead.getState(),
                 projectBridgehead.getModifiedAt(),
-                projectBridgehead.getQueryState()
+                projectBridgehead.getQueryState(),
+                projectBridgehead.getCreatorResultsState()
         );
     }
 

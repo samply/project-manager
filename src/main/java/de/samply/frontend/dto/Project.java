@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.annotations.IgnoreProjectConfigurationMatch;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import lombok.Data;
@@ -43,5 +44,6 @@ public class Project {
     private String explorerUrl;
     private String queryContext;
     private boolean isCustomConfig;
+    private UserProjectState creatorState;
 
 }

@@ -2,6 +2,7 @@ package de.samply.frontend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryState;
 
 import java.time.Instant;
@@ -13,6 +14,7 @@ public record ProjectBridgehead(
         String humanReadable,
         ProjectBridgeheadState state,
         Instant modifiedAt,
-        QueryState queryState
+        QueryState queryState,
+        UserProjectState creatorState
 ) {
 }
