@@ -57,6 +57,7 @@ public class ProjectBridgehead {
     private String resultsUrl;
 
     @Column(name = "creator_results_state", nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserProjectState creatorResultsState = UserProjectState.CREATED;
 
 }
