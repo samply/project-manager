@@ -160,8 +160,11 @@ public class UserService {
         return (user.isEmpty()) ? Optional.empty() : Optional.ofNullable(dtoFactory.convert(user.get()));
     }
 
-    public Set<User> fetchProjectUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
-        ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
+    public Set<User> fetchProjectUsers(@NotNull String projectCode) throws UserServiceException {
+        return projectBridgeheadRepository.findByProject(fetchProject(projectCode)).stream().flatMap(projectBridgehead -> fetchProjectUsers(projectBridgehead).stream()).collect(Collectors.toSet());
+    }
+
+    public Set<User> fetchProjectUsers(ProjectBridgehead projectBridgehead) throws UserServiceException {
         return (switch (projectBridgehead.getProject().getState()) {
             case DEVELOP ->
                     this.projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectBridgehead(ProjectRole.DEVELOPER, projectBridgehead);
@@ -173,8 +176,8 @@ public class UserService {
         }).stream().map(dtoFactory::convert).collect(Collectors.toSet());
     }
 
-    public boolean existInvatedUsers(@NotNull String projectCode, @NotNull String bridgehead) throws UserServiceException {
-        return !fetchProjectUsers(projectCode, bridgehead).isEmpty();
+    public boolean existInvitedUsers(@NotNull String projectCode) throws UserServiceException {
+        return !fetchProjectUsers(projectCode).isEmpty();
     }
 
     private ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws UserServiceException {

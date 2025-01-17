@@ -10,6 +10,7 @@ import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
 import de.samply.document.DocumentType;
 import de.samply.email.EmailRecipientType;
+import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
@@ -73,6 +74,7 @@ public class ProjectManagerController {
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final ProjectConfigurations frontendProjectConfigurations;
     private final DtoFactory dtoFactory;
+    private final EmailService emailService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -86,7 +88,8 @@ public class ProjectManagerController {
                                     NotificationService notificationService,
                                     BridgeheadConfiguration bridgeheadConfiguration,
                                     ProjectConfigurations frontendProjectConfigurations,
-                                    DtoFactory dtoFactory) {
+                                    DtoFactory dtoFactory,
+                                    EmailService emailService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -100,6 +103,7 @@ public class ProjectManagerController {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.frontendProjectConfigurations = frontendProjectConfigurations;
         this.dtoFactory = dtoFactory;
+        this.emailService = emailService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -678,6 +682,20 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.requestChangesInResultsForCreator(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT)
+    public ResponseEntity<String> fetchEmailMessageAndSubject(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.EMAIL) String email,
+            @RequestParam(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
+            @RequestParam(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
+    ) {
+        return convertOptionalToResponseEntity(() -> emailService.createEmailMessageAndSubject(email, Optional.of(projectCode), Optional.of(bridgehead), projectRole, emailTemplateType));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
@@ -1362,7 +1380,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
@@ -1386,7 +1404,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.userService.existInvatedUsers(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.userService.existInvitedUsers(projectCode));
     }
 
 

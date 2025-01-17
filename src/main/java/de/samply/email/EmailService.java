@@ -124,13 +124,17 @@ public class EmailService {
         return message;
     }
 
-    private Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type, EmailKeyValues keyValues) {
+    public Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type, EmailKeyValues keyValues) {
         Optional<TemplateSubject> template = emailTemplates.getTemplateAndSubject(type, role);
         if (template.isPresent()) {
             String message = templateEngine.process(template.get().template(), createContext(keyValues));
             return Optional.of(new MessageSubject(message, keyValues.replaceHtmlVariables(template.get().subject())));
         }
         return Optional.empty();
+    }
+
+    public Optional<MessageSubject> createEmailMessageAndSubject(String emailTo, Optional<String> projectCode, Optional<String> bridgehead, ProjectRole projectRole, EmailTemplateType emailTemplateType) {
+        return createEmailMessageAndSubject(projectRole, emailTemplateType, emailKeyValuesFactory.newInstance().add(new EmailRecipient(emailTo, projectCode, bridgehead, projectRole)));
     }
 
     private Context createContext(EmailKeyValues keyValues) {

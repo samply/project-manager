@@ -127,6 +127,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_RESULTS_ACTION = "FETCH_PROJECT_RESULTS";
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_ACTION = "FETCH_PROJECT_BRIDGEHEAD_RESULTS";
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD_ACTION = "FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD";
+    public final static String FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION = "FETCH_EMAIL_MESSAGE_AND_SUBJECT";
 
 
     // REST Services
@@ -223,6 +224,7 @@ public class ProjectManagerConst {
     public final static String REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL = "/request-changes-project-bridgehead-results-url";
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS = "/project-bridgehead-results";
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD = "/own-project-bridgehead-results";
+    public final static String FETCH_EMAIL_MESSAGE_AND_SUBJECT = "/email-message-and-subject";
 
 
     // REST Parameters
@@ -256,6 +258,8 @@ public class ProjectManagerConst {
     public final static String REDIRECT_EXPLORER_URL = "explorer-url";
     public final static String QUERY_CONTEXT = "query-context";
     public final static String RESULTS_URL = "results-url";
+    public final static String PROJECT_ROLE = "project-role";
+    public final static String EMAIL_TEMPLATE_TYPE = "email-template-type";
 
     // Variables for Email Templates:
     public final static String EMAIL_CONTEXT_BRIDGEHEAD = "bridgehead";

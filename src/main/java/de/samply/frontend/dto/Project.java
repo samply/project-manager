@@ -44,6 +44,7 @@ public class Project {
     private String explorerUrl;
     private String queryContext;
     private boolean isCustomConfig;
+    @IgnoreProjectConfigurationMatch
     private UserProjectState creatorState;
 
 }
