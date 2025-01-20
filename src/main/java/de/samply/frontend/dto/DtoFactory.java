@@ -185,13 +185,16 @@ public class DtoFactory {
         return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null);
     }
 
-    public Results fetchResults(@NotNull de.samply.db.model.Project project) {
+    public Optional<Results> fetchResults(@NotNull de.samply.db.model.Project project) {
         Set<ProjectBridgeheadUser> finalUsers = projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectCode(ProjectRole.FINAL, project.getCode());
         Optional<ProjectBridgeheadUser> finalUser = finalUsers.stream().filter(user -> user.getProjectState() == UserProjectState.ACCEPTED).findAny();
         AtomicReference<Optional<String>> email = new AtomicReference<>(Optional.empty());
         AtomicReference<Optional<String>> firstName = new AtomicReference<>(Optional.empty());
         AtomicReference<Optional<String>> lastName = new AtomicReference<>(Optional.empty());
         if (finalUser.isEmpty()) {
+            if (finalUsers.isEmpty()){
+                return Optional.empty();
+            }
             finalUser = finalUsers.stream().findAny();
         }
         finalUser.ifPresent(user -> email.set(Optional.of(user.getEmail())));
@@ -201,11 +204,11 @@ public class DtoFactory {
                 lastName.set(Optional.of(tempUser.getLastName()));
             });
         });
-        return new Results(null, null, fetchValue(email), fetchValue(firstName), fetchValue(lastName),
+        return Optional.of(new Results(null, null, fetchValue(email), fetchValue(firstName), fetchValue(lastName),
                 fetchProjectResultsUrl(project, finalUser),
                 project.getCreatorResultsState(),
                 null,
-                fetchValue(new AtomicReference<>(finalUser), user -> user.getProjectState()));
+                fetchValue(new AtomicReference<>(finalUser), user -> user.getProjectState())));
     }
 
     private String fetchProjectResultsUrl(@NotNull de.samply.db.model.Project project, Optional<ProjectBridgeheadUser> finalUser) {

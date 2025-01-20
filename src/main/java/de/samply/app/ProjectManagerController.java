@@ -565,7 +565,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-            return convertToResponseEntity(() -> projectService.fetchResults(projectCode));
+            return convertOptionalToResponseEntity(() -> projectService.fetchResults(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.FINAL})

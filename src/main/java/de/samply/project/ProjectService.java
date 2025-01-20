@@ -380,7 +380,7 @@ public class ProjectService {
         saveProject(project.get());
     }
 
-    public Results fetchResults(@NotNull String projectCode) throws ProjectServiceException {
+    public Optional<Results> fetchResults(@NotNull String projectCode) throws ProjectServiceException {
         Optional<Project> project = this.projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");

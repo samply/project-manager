@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2025-01-17]
+## [0.0.1 - 2025-01-20]
 ### Added
 - First version of the project
 - Spring Application
@@ -190,3 +190,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Final User State in results
 - Create State in Frontend DTO's (for project and project bridgehead)
 - Fetch email message and subject HTTP endpoint
+- Send project results only if there are final users
