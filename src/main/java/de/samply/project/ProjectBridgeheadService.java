@@ -147,6 +147,7 @@ public class ProjectBridgeheadService {
             throw new ProjectBridgeheadServiceException("Bridghead " + bridgehead + " in project " + projectCode + " not found");
         }
         projectBridgehead.get().setResultsUrl(resultsUrl);
+        projectBridgehead.get().setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the results again
         projectBridgeheadRepository.save(projectBridgehead.get());
     }
 

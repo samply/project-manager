@@ -356,10 +356,11 @@ public class ProjectService {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
         project.get().setResultsUrl(resultUrl);
+        project.get().setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the new results again
         saveProject(project.get());
     }
 
-    public void acceptResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
+    public void acceptResultsByCreator(@NotNull String projectCode) throws ProjectServiceException {
         changeCreatorResultsState(projectCode, UserProjectState.ACCEPTED);
     }
 

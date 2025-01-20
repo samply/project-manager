@@ -22,7 +22,9 @@ import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
@@ -543,7 +545,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGHEAD_RESULTS_URL_ADDED, recipients = {EmailRecipientType.ALL_FINALS, EmailRecipientType.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_BRIDGHEAD_RESULTS_URL_ACTION)
@@ -593,7 +595,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.FINAL})
-    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL}, userProjectStates = {UserProjectState.ACCEPTED})
     @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_URL_ADDED, recipients = {EmailRecipientType.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_RESULTS_URL_ACTION)
@@ -616,7 +618,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> projectService.acceptResultsForCreator(projectCode));
+        return convertToResponseEntity(() -> projectService.acceptResultsByCreator(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})

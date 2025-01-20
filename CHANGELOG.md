@@ -191,3 +191,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Create State in Frontend DTO's (for project and project bridgehead)
 - Fetch email message and subject HTTP endpoint
 - Send project results only if there are final users
+- User Project State in State Constraints
