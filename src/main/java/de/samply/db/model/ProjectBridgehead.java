@@ -2,6 +2,7 @@ package de.samply.db.model;
 
 
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -52,5 +53,11 @@ public class ProjectBridgehead {
     @Column(name = "exporter_dispatch_counter")
     private int exporterDispatchCounter = 0;
 
+    @Column(name = "results_url")
+    private String resultsUrl;
+
+    @Column(name = "creator_results_state", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserProjectState creatorResultsState = UserProjectState.CREATED;
 
 }

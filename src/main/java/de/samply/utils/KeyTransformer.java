@@ -7,9 +7,10 @@ public class KeyTransformer {
 
     public static Map<String, String> transformMapKeys(Map<String, String> inputMap) {
         return inputMap.entrySet().stream()
+                .filter(entry -> entry.getKey() != null && entry.getValue() != null) // Filter out null keys or values
                 .collect(Collectors.toMap(
-                        entry -> transformKey(entry.getKey()),  // transform the key
-                        Map.Entry::getValue  // keep the value unchanged
+                        entry -> transformKey(entry.getKey()), // Transform the key
+                        Map.Entry::getValue // Keep the value unchanged
                 ));
     }
 

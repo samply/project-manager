@@ -10,6 +10,7 @@ import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
 import de.samply.document.DocumentType;
 import de.samply.email.EmailRecipientType;
+import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.frontend.FrontendService;
@@ -21,7 +22,9 @@ import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
@@ -73,6 +76,7 @@ public class ProjectManagerController {
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final ProjectConfigurations frontendProjectConfigurations;
     private final DtoFactory dtoFactory;
+    private final EmailService emailService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -86,7 +90,8 @@ public class ProjectManagerController {
                                     NotificationService notificationService,
                                     BridgeheadConfiguration bridgeheadConfiguration,
                                     ProjectConfigurations frontendProjectConfigurations,
-                                    DtoFactory dtoFactory) {
+                                    DtoFactory dtoFactory,
+                                    EmailService emailService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -100,6 +105,7 @@ public class ProjectManagerController {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.frontendProjectConfigurations = frontendProjectConfigurations;
         this.dtoFactory = dtoFactory;
+        this.emailService = emailService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -536,6 +542,162 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String email
     ) {
         return convertToResponseEntity(() -> userService.fetchUsersForAutocompleteInMailingBlackList(email));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINAL}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGHEAD_RESULTS_URL_ADDED, recipients = {EmailRecipientType.ALL_FINALS, EmailRecipientType.CREATOR})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_BRIDGHEAD_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_PROJECT_BRIDGHEAD_RESULTS_URL)
+    public ResponseEntity<String> addProjectBridgeheadResultsUrl(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.RESULTS_URL) String resultsUrl
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.addResultsUrl(projectCode, bridgehead, resultsUrl));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_RESULTS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_RESULTS)
+    public ResponseEntity<String> fetchProjectResults(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+            return convertOptionalToResponseEntity(() -> projectService.fetchResults(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS)
+    public ResponseEntity<String> fetchProjectBridgeheadResults(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.fetchResults(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD)
+    public ResponseEntity<String> fetchProjectBridgeheadResultsForOwnBridgehead(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertOptionalToResponseEntity(() -> projectBridgeheadService.fetchResultsOfOwnBridgehead(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.FINAL}, userProjectStates = {UserProjectState.ACCEPTED})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_URL_ADDED, recipients = {EmailRecipientType.CREATOR})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_PROJECT_RESULTS_URL)
+    public ResponseEntity<String> addProjectResultsUrl(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.RESULTS_URL) String resultsUrl
+    ) {
+        return convertToResponseEntity(() -> projectService.addProjectResultUrl(projectCode, resultsUrl));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_ACCEPTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL)
+    public ResponseEntity<String> acceptProjectResultsUrlByCreator(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectService.acceptResultsByCreator(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_REJECTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL)
+    public ResponseEntity<String> rejectProjectResultsUrlByCreator(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectService.rejectResultsForCreator(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_REQUESTED_CHANGES_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL)
+    public ResponseEntity<String> requestChangesInProjectResultsUrlByCreator(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectService.requestChangesInResultsForCreator(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_RESULTS_ACCEPTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.BRIDGEHEAD_ADMIN, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL)
+    public ResponseEntity<String> acceptProjectBridgeheadResultsUrlByCreator(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.acceptResultsForCreator(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_RESULTS_REJECTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.BRIDGEHEAD_ADMIN, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL)
+    public ResponseEntity<String> rejectProjectBridgeheadResultsUrlByCreator(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.rejectResultsForCreator(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_RESULTS_REQUESTED_CHANGES_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.BRIDGEHEAD_ADMIN, EmailRecipientType.ALL_FINALS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL)
+    public ResponseEntity<String> requestChangesProjectBridgeheadResultsUrlByCreator(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> projectBridgeheadService.requestChangesInResultsForCreator(projectCode, bridgehead));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION)
+    @PostMapping(value = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT)
+    public ResponseEntity<String> fetchEmailMessageAndSubject(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.EMAIL) String email,
+            @RequestParam(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
+            @RequestParam(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
+    ) {
+        return convertOptionalToResponseEntity(() -> emailService.createEmailMessageAndSubject(email, Optional.of(projectCode), Optional.of(bridgehead), projectRole, emailTemplateType));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
@@ -1220,7 +1382,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
@@ -1244,7 +1406,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.userService.existInvatedUsers(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.userService.existInvitedUsers(projectCode));
     }
 
 

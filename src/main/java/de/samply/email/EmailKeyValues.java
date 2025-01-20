@@ -118,6 +118,7 @@ public class EmailKeyValues {
         if (projectBridgehead != null) {
             addBridgehead(projectBridgehead.getBridgehead());
             add(projectBridgehead.getProject());
+            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_RESULTS_URL, projectBridgehead.getResultsUrl());
         }
         return this;
     }
@@ -144,6 +145,7 @@ public class EmailKeyValues {
                     (project.getQuery().getHumanReadable()) != null ?
                             project.getQuery().getHumanReadable() : project.getQuery().getQuery());
             addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_TYPE, () -> project.getType().toString());
+            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_RESULTS_URL, project.getResultsUrl());
             add(project.getQuery());
             addBridgeheads(project);
             addLastDocument(project);

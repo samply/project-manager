@@ -2,6 +2,7 @@ package de.samply.db.model;
 
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -57,5 +58,12 @@ public class Project {
 
     @Column(name = "is_custom_config", nullable = false)
     private boolean isCustomConfig = true;
+
+    @Column(name = "results_url")
+    private String resultsUrl;
+
+    @Column(name = "creator_results_state", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserProjectState creatorResultsState = UserProjectState.CREATED;
 
 }

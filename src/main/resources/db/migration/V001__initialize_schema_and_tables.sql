@@ -21,18 +21,20 @@ CREATE TABLE samply.query
 
 CREATE TABLE samply.project
 (
-    id                SERIAL    NOT NULL PRIMARY KEY,
-    state_machine_key TEXT      NOT NULL,
-    code              TEXT      NOT NULL,
-    state             TEXT      NOT NULL,
-    creator_email     TEXT      NOT NULL,
-    created_at        TIMESTAMP NOT NULL,
-    expires_at        DATE,
-    archived_at       TIMESTAMP,
-    modified_at       TIMESTAMP NOT NULL,
-    query_id          BIGINT,
-    type              TEXT,
-    is_custom_config  BOOLEAN
+    id                    SERIAL    NOT NULL PRIMARY KEY,
+    state_machine_key     TEXT      NOT NULL,
+    code                  TEXT      NOT NULL,
+    state                 TEXT      NOT NULL,
+    creator_email         TEXT      NOT NULL,
+    created_at            TIMESTAMP NOT NULL,
+    expires_at            DATE,
+    archived_at           TIMESTAMP,
+    modified_at           TIMESTAMP NOT NULL,
+    query_id              BIGINT,
+    type                  TEXT,
+    is_custom_config      BOOLEAN,
+    results_url           TEXT,
+    creator_results_state TEXT      NOT NULL
 );
 
 CREATE TABLE samply.project_bridgehead
@@ -46,7 +48,9 @@ CREATE TABLE samply.project_bridgehead
     exporter_response         TEXT,
     exporter_user             TEXT,
     exporter_execution_id     TEXT,
-    exporter_dispatch_counter INT       NOT NULL
+    exporter_dispatch_counter INT       NOT NULL,
+    results_url               TEXT,
+    creator_results_state     TEXT      NOT NULL
 );
 
 CREATE TABLE samply.project_bridgehead_user
@@ -129,10 +133,10 @@ CREATE TABLE samply.project_coder
 
 CREATE TABLE samply.user
 (
-    id               SERIAL PRIMARY KEY,
-    email            TEXT    NOT NULL,
-    first_name       TEXT    NOT NULL,
-    last_name        TEXT    NOT NULL,
+    id                 SERIAL PRIMARY KEY,
+    email              TEXT    NOT NULL,
+    first_name         TEXT    NOT NULL,
+    last_name          TEXT    NOT NULL,
     mailing_black_list BOOLEAN NOT NULL
 );
 

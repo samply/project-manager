@@ -5,11 +5,14 @@ import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -21,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,15 +33,18 @@ public class ConstraintsService {
     private final ProjectRepository projectRepository;
     private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
+    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final SessionUser sessionUser;
 
     public ConstraintsService(ProjectRepository projectRepository,
                               OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
                               ProjectBridgeheadRepository projectBridgeheadRepository,
+                              ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                               SessionUser sessionUser) {
         this.projectRepository = projectRepository;
         this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.sessionUser = sessionUser;
     }
 
@@ -111,7 +118,7 @@ public class ConstraintsService {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
                 }
             }
-            if (stateConstraints.get().projectBridgeheadStates().length > 0 || stateConstraints.get().queryStates().length > 0) {
+            if (stateConstraints.get().projectBridgeheadStates().length > 0 || stateConstraints.get().queryStates().length > 0 || stateConstraints.get().userProjectStates().length > 0) {
                 Optional<ProjectBridgehead> projectBridgehead = fetchProjectBridgehead(project.get(), bridgehead);
                 if (projectBridgehead.isEmpty()) {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
@@ -132,6 +139,29 @@ public class ConstraintsService {
                         if (projectBridgehead.get().getQueryState() == queryState) {
                             hasAnyProjectBridgeheadStateConstraint = true;
                             break;
+                        }
+                    }
+                }
+                if (hasAnyProjectBridgeheadStateConstraint && stateConstraints.get().userProjectStates().length > 0) {
+                    hasAnyProjectBridgeheadStateConstraint = false;
+                    Optional<ProjectBridgeheadUser> projectBridgeheadUser = fetchProjectBridgeheadUser(projectBridgehead.get());
+                    if (projectBridgeheadUser.isPresent()) {
+                        for (UserProjectState userProjectState : stateConstraints.get().userProjectStates()) {
+                            if (projectBridgeheadUser.get().getProjectState() == userProjectState) {
+                                hasAnyProjectBridgeheadStateConstraint = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hasAnyProjectBridgeheadStateConstraint) {
+                        Optional<UserProjectRoles> userRoles = organisationRoleToProjectRoleMapper.map(project.get());
+                        if (userRoles.isPresent() && userRoles.get().containsRole(ProjectRole.CREATOR)) {
+                            for (UserProjectState userProjectState : stateConstraints.get().userProjectStates()) {
+                                if (project.get().getCreatorResultsState() == userProjectState) {
+                                    hasAnyProjectBridgeheadStateConstraint = true;
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -171,6 +201,10 @@ public class ConstraintsService {
 
     private Optional<ProjectBridgehead> fetchProjectBridgehead(Project project, Optional<String> bridgehead) {
         return (bridgehead.isEmpty()) ? Optional.empty() : this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead.get(), project);
+    }
+
+    private Optional<ProjectBridgeheadUser> fetchProjectBridgeheadUser(ProjectBridgehead projectBridgehead) {
+        return this.projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(sessionUser.getEmail(), projectBridgehead);
     }
 
 }
