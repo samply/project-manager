@@ -1,10 +1,7 @@
 package de.samply.email;
 
 import de.samply.bridgehead.BridgeheadConfiguration;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectDocumentRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.db.repository.UserRepository;
+import de.samply.db.repository.*;
 import de.samply.frontend.FrontendService;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +15,7 @@ public class EmailKeyValuesFactory {
     private final UserRepository userRepository;
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final ProjectDocumentRepository projectDocumentRepository;
+    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
 
     public EmailKeyValuesFactory(FrontendService frontendService,
                                  EmailContext emailContext,
@@ -25,7 +23,8 @@ public class EmailKeyValuesFactory {
                                  ProjectRepository projectRepository,
                                  UserRepository userRepository,
                                  BridgeheadConfiguration bridgeheadConfiguration,
-                                 ProjectDocumentRepository projectDocumentRepository) {
+                                 ProjectDocumentRepository projectDocumentRepository,
+                                 BridgeheadAdminUserRepository bridgeheadAdminUserRepository) {
         this.frontendService = frontendService;
         this.emailContext = emailContext;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
@@ -33,11 +32,12 @@ public class EmailKeyValuesFactory {
         this.userRepository = userRepository;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.projectDocumentRepository = projectDocumentRepository;
+        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
     }
 
     public EmailKeyValues newInstance() {
         return new EmailKeyValues(frontendService, emailContext, projectBridgeheadRepository, projectRepository,
-                userRepository, bridgeheadConfiguration, projectDocumentRepository);
+                userRepository, bridgeheadConfiguration, projectDocumentRepository, bridgeheadAdminUserRepository);
     }
 
 }

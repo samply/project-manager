@@ -6,10 +6,7 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.Query;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectDocumentRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.db.repository.UserRepository;
+import de.samply.db.repository.*;
 import de.samply.frontend.FrontendService;
 import de.samply.user.roles.ProjectRole;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +28,7 @@ public class EmailKeyValues {
     private final UserRepository userRepository;
     private final BridgeheadConfiguration bridgeheadConfiguration;
     private final ProjectDocumentRepository projectDocumentRepository;
+    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
 
 
     public EmailKeyValues(FrontendService frontendService,
@@ -39,13 +37,15 @@ public class EmailKeyValues {
                           ProjectRepository projectRepository,
                           UserRepository userRepository,
                           BridgeheadConfiguration bridgeheadConfiguration,
-                          ProjectDocumentRepository projectDocumentRepository) {
+                          ProjectDocumentRepository projectDocumentRepository,
+                          BridgeheadAdminUserRepository bridgeheadAdminUserRepository) {
         this.frontendService = frontendService;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.projectDocumentRepository = projectDocumentRepository;
+        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         keyValues.putAll(emailContext.getContext());
     }
 
@@ -119,12 +119,26 @@ public class EmailKeyValues {
             addBridgehead(projectBridgehead.getBridgehead());
             add(projectBridgehead.getProject());
             addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_RESULTS_URL, projectBridgehead.getResultsUrl());
+            addBridgeheadAdmin(projectBridgehead.getBridgehead());
+        }
+        return this;
+    }
+
+    public EmailKeyValues addBridgeheadAdmin(String bridgehead) {
+        if (bridgehead != null) {
+            this.bridgeheadAdminUserRepository.findFirstByBridgehead(bridgehead).ifPresent(bridgeheadAdminUser ->
+                    addEmailData(bridgeheadAdminUser.getEmail(),
+                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_EMAIL,
+                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_FIRST_NAME,
+                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_LAST_NAME,
+                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_NAME));
         }
         return this;
     }
 
     public EmailKeyValues addBridgehead(String bridgehead) {
         addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, fetchHumanReadableBridgehead(bridgehead));
+        addBridgeheadAdmin(bridgehead);
         return this;
     }
 
@@ -213,7 +227,7 @@ public class EmailKeyValues {
         return replaceHtmlVariables(htmlText, keyValues);
     }
 
-    public static String replaceHtmlVariables(String htmlText, Map<String,String> keyValues) {
+    public static String replaceHtmlVariables(String htmlText, Map<String, String> keyValues) {
         if (htmlText != null) {
             // Regular expression to match the variable pattern
             // e.g. <variable1/> It is like a HTML tag

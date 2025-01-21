@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2025-01-20]
+## [0.0.1 - 2025-01-21]
 ### Added
 - First version of the project
 - Spring Application
@@ -192,3 +192,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch email message and subject HTTP endpoint
 - Send project results only if there are final users
 - User Project State in State Constraints
+- Bridgehead Admin info in the variables for the email templates

@@ -12,4 +12,5 @@ public interface BridgeheadAdminUserRepository extends JpaRepository<BridgeheadA
 
     Optional<BridgeheadAdminUser> findFirstByEmailAndBridgehead(String email, String bridgehead);
     Set<BridgeheadAdminUser> findByBridgehead(String bridgehead);
+    Optional<BridgeheadAdminUser> findFirstByBridgehead(String bridgehead);
 }

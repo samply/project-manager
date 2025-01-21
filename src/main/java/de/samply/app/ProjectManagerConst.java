@@ -293,6 +293,11 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_FIRST_NAME = "last-document-url-sender-first-name";
     public final static String EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_LAST_NAME = "last-document-url-sender-last-name";
     public final static String EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_EMAIL = "last-document-url-sender-email";
+    public final static String EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_FIRST_NAME = "bridgehead-admin-first-name";
+    public final static String EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_LAST_NAME = "bridgehead-admin-last-name";
+    public final static String EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_NAME = "bridgehead-admin-name";
+    public final static String EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_EMAIL = "bridgehead-admin-email";
+
 
 
     public final static String[] EMAIL_CONTEXT_VARIABLES = {
