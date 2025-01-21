@@ -193,3 +193,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send project results only if there are final users
 - User Project State in State Constraints
 - Bridgehead Admin info in the variables for the email templates
+- Results URL in frontend dto

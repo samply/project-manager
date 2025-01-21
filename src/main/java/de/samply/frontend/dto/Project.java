@@ -46,5 +46,7 @@ public class Project {
     private boolean isCustomConfig;
     @IgnoreProjectConfigurationMatch
     private UserProjectState creatorState;
+    @IgnoreProjectConfigurationMatch
+    private String resultsUrl;
 
 }

@@ -60,6 +60,7 @@ public class DtoFactory {
         result.setExplorerUrl(project.getQuery().getExplorerUrl());
         result.setQueryContext(project.getQuery().getContext());
         result.setCreatorState(project.getCreatorResultsState());
+        result.setResultsUrl(project.getResultsUrl());
         return result;
     }
 
