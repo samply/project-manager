@@ -354,6 +354,8 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ROLES_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_ROLES)
     public ResponseEntity<String> fetchProjectRoles(
@@ -507,7 +509,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE) // TODO: Remove this line
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST)
     public ResponseEntity<String> addUserToMailingBlackList(
@@ -517,7 +520,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE) // TODO: Remove this line
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST)
     public ResponseEntity<String> removeUserFromMailingBlackList(
@@ -527,7 +531,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE) // TODO: Remove this line
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.FETCH_MAILING_BLACK_LIST)
     public ResponseEntity<String> fetchMailingBlackList() {
@@ -535,7 +540,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE) // TODO: Remove this line
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
     public ResponseEntity<String> fetchUsersForAutocompleteInMailingBlackList(

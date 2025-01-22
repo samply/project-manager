@@ -196,3 +196,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Results URL in frontend dto
 - EmailContextKey enum
 - Votum for all
+- Configuration Site

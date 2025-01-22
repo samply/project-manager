@@ -26,6 +26,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
     public final static String PROJECT_VIEW_SITE = "project-view";
     public final static String VOTUM_VIEW_SITE = "votum-view";
+    public final static String CONFIGURATION_SITE = "config";
 
     //Modules
     public final static String PROJECTS_MODULE = "PROJECTS";
