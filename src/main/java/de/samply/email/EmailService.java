@@ -79,7 +79,7 @@ public class EmailService {
                 sendEmail(emailTo, messageSubject.get());
                 if (project.isPresent()) {
                     String details = "Email to " + emailTo + " (" + role + ") of type " + type.toString();
-                    String message = keyValues.getKeyValues().get(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE);
+                    String message = keyValues.getKeyValues().get(EmailContextKey.MESSAGE.getValue());
                     if (message != null) {
                         details += " : " + message;
                     }

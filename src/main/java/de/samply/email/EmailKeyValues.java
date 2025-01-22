@@ -52,10 +52,10 @@ public class EmailKeyValues {
     public EmailKeyValues add(EmailRecipient emailRecipient) {
         if (emailRecipient != null) {
             addEmailData(emailRecipient.getEmail(),
-                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO,
-                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_FIRST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_LAST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_EMAIL_TO_NAME);
+                    EmailContextKey.EMAIL_TO,
+                    EmailContextKey.EMAIL_TO_FIRST_NAME,
+                    EmailContextKey.EMAIL_TO_LAST_NAME,
+                    EmailContextKey.EMAIL_TO_NAME);
             emailRecipient.getMessage().ifPresent(this::addMessage);
             add(emailRecipient.getRole());
             addProjectBridgeheadOrProject(emailRecipient);
@@ -86,10 +86,10 @@ public class EmailKeyValues {
     public EmailKeyValues add(ProjectBridgeheadUser projectBridgeheadUser) {
         if (projectBridgeheadUser != null) {
             addEmailData(projectBridgeheadUser.getEmail(),
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_EMAIL,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_LAST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_USER_NAME);
+                    EmailContextKey.PROJECT_BRIDGEHEAD_USER_EMAIL,
+                    EmailContextKey.PROJECT_BRIDGEHEAD_USER_FIRST_NAME,
+                    EmailContextKey.PROJECT_BRIDGEHEAD_USER_LAST_NAME,
+                    EmailContextKey.PROJECT_BRIDGEHEAD_USER_NAME);
             add(projectBridgeheadUser.getProjectRole());
             add(projectBridgeheadUser.getProjectBridgehead());
         }
@@ -97,18 +97,18 @@ public class EmailKeyValues {
     }
 
     public EmailKeyValues add(ProjectRole projectRole) {
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_ROLE, projectRole.toString());
+        addKeyValue(EmailContextKey.PROJECT_ROLE, projectRole.toString());
         return this;
     }
 
     public EmailKeyValues addMessage(String message) {
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_MESSAGE, message);
+        addKeyValue(EmailContextKey.MESSAGE, message);
         return this;
     }
 
     public EmailKeyValues addProjectCode(String projectCode) {
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CODE, projectCode);
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_VIEW_URL,
+        addKeyValue(EmailContextKey.PROJECT_CODE, projectCode);
+        addKeyValue(EmailContextKey.PROJECT_VIEW_URL,
                 this.frontendService.fetchUrl(ProjectManagerConst.PROJECT_VIEW_SITE,
                         Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)));
         return this;
@@ -118,7 +118,7 @@ public class EmailKeyValues {
         if (projectBridgehead != null) {
             addBridgehead(projectBridgehead.getBridgehead());
             add(projectBridgehead.getProject());
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEAD_RESULTS_URL, projectBridgehead.getResultsUrl());
+            addKeyValue(EmailContextKey.PROJECT_BRIDGEHEAD_RESULTS_URL, projectBridgehead.getResultsUrl());
             addBridgeheadAdmin(projectBridgehead.getBridgehead());
         }
         return this;
@@ -128,16 +128,16 @@ public class EmailKeyValues {
         if (bridgehead != null) {
             this.bridgeheadAdminUserRepository.findFirstByBridgehead(bridgehead).ifPresent(bridgeheadAdminUser ->
                     addEmailData(bridgeheadAdminUser.getEmail(),
-                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_EMAIL,
-                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_FIRST_NAME,
-                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_LAST_NAME,
-                            ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD_ADMIN_NAME));
+                            EmailContextKey.BRIDGEHEAD_ADMIN_EMAIL,
+                            EmailContextKey.BRIDGEHEAD_ADMIN_FIRST_NAME,
+                            EmailContextKey.BRIDGEHEAD_ADMIN_LAST_NAME,
+                            EmailContextKey.BRIDGEHEAD_ADMIN_NAME));
         }
         return this;
     }
 
     public EmailKeyValues addBridgehead(String bridgehead) {
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_BRIDGEHEAD, fetchHumanReadableBridgehead(bridgehead));
+        addKeyValue(EmailContextKey.BRIDGEHEAD, fetchHumanReadableBridgehead(bridgehead));
         addBridgeheadAdmin(bridgehead);
         return this;
     }
@@ -151,15 +151,15 @@ public class EmailKeyValues {
         if (project != null) {
             addProjectCode(project.getCode());
             addEmailData(project.getCreatorEmail(),
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_EMAIL,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_FIRST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_LAST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_PROJECT_CREATOR_NAME);
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_QUERY,
+                    EmailContextKey.PROJECT_CREATOR_EMAIL,
+                    EmailContextKey.PROJECT_CREATOR_FIRST_NAME,
+                    EmailContextKey.PROJECT_CREATOR_LAST_NAME,
+                    EmailContextKey.PROJECT_CREATOR_NAME);
+            addKeyValue(EmailContextKey.QUERY,
                     (project.getQuery().getHumanReadable()) != null ?
                             project.getQuery().getHumanReadable() : project.getQuery().getQuery());
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_TYPE, () -> project.getType().toString());
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_RESULTS_URL, project.getResultsUrl());
+            addKeyValue(EmailContextKey.PROJECT_TYPE, () -> project.getType().toString());
+            addKeyValue(EmailContextKey.PROJECT_RESULTS_URL, project.getResultsUrl());
             add(project.getQuery());
             addBridgeheads(project);
             addLastDocument(project);
@@ -168,7 +168,7 @@ public class EmailKeyValues {
     }
 
     private void addBridgeheads(Project project) {
-        addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_PROJECT_BRIDGEHEADS,
+        addKeyValue(EmailContextKey.PROJECT_BRIDGEHEADS,
                 projectBridgeheadRepository.findByProject(project).stream()
                         .map(projectBridgehead -> fetchHumanReadableBridgehead(projectBridgehead.getBridgehead()))
                         .collect(Collectors.joining(", ")));
@@ -176,25 +176,29 @@ public class EmailKeyValues {
 
     private void addLastDocument(Project project) {
         projectDocumentRepository.findTopByProjectOrderByCreatedAtDesc(project).ifPresent(projectDocument -> {
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_LABEL, projectDocument::getLabel);
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_FILENAME, projectDocument::getOriginalFilename);
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_URL, projectDocument::getUrl);
+            addKeyValue(EmailContextKey.LAST_DOCUMENT_LABEL, projectDocument::getLabel);
+            addKeyValue(EmailContextKey.LAST_DOCUMENT_FILENAME, projectDocument::getOriginalFilename);
+            addKeyValue(EmailContextKey.LAST_DOCUMENT_URL, projectDocument::getUrl);
             addEmailData(projectDocument.getCreatorEmail(),
-                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_EMAIL,
-                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_FIRST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_LAST_NAME,
-                    ProjectManagerConst.EMAIL_CONTEXT_LAST_DOCUMENT_SENDER_NAME);
+                    EmailContextKey.LAST_DOCUMENT_SENDER_EMAIL,
+                    EmailContextKey.LAST_DOCUMENT_SENDER_FIRST_NAME,
+                    EmailContextKey.LAST_DOCUMENT_SENDER_LAST_NAME,
+                    EmailContextKey.LAST_DOCUMENT_SENDER_NAME);
         });
     }
 
     public EmailKeyValues add(Query query) {
         if (query != null) {
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_QUERY,
+            addKeyValue(EmailContextKey.QUERY,
                     (query.getHumanReadable()) != null ? query.getHumanReadable() : query.getQuery());
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_QUERY_LABEL, query::getLabel);
-            addKeyValue(ProjectManagerConst.EMAIL_CONTEXT_QUERY_DESCRIPTION, query::getDescription);
+            addKeyValue(EmailContextKey.QUERY_LABEL, query::getLabel);
+            addKeyValue(EmailContextKey.QUERY_DESCRIPTION, query::getDescription);
         }
         return this;
+    }
+
+    private void addKeyValue(@NotNull EmailContextKey key, Supplier<String> valueGetter) {
+        addKeyValue(key, valueGetter);
     }
 
     private void addKeyValue(@NotNull String key, Supplier<String> valueGetter) {
@@ -202,6 +206,10 @@ public class EmailKeyValues {
         if (value != null) {
             keyValues.put(key, value);
         }
+    }
+
+    public void addKeyValue(@NotNull EmailContextKey key, @NotNull String value) {
+        addKeyValue(key.getValue(), value);
     }
 
     public void addKeyValue(@NotNull String key, @NotNull String value) {
@@ -212,7 +220,7 @@ public class EmailKeyValues {
         return keyValues;
     }
 
-    private void addEmailData(String email, @NotNull String emailKey, @NotNull String emailFirstNameKey, @NotNull String emailLastNameKey, @NotNull String emailNameKey) {
+    private void addEmailData(String email, @NotNull EmailContextKey emailKey, @NotNull EmailContextKey emailFirstNameKey, @NotNull EmailContextKey emailLastNameKey, @NotNull EmailContextKey emailNameKey) {
         if (email != null) {
             addKeyValue(emailKey, email);
             userRepository.findByEmail(email).ifPresent(user -> {

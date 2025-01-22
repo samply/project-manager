@@ -1,19 +1,18 @@
 package de.samply.email.thymeleaf;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.email.EmailContextKey;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.model.IProcessableElementTag;
 import org.thymeleaf.processor.element.AbstractElementTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
 import org.thymeleaf.templatemode.TemplateMode;
 
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EmailContextProcessor extends AbstractElementTagProcessor {
 
-    private final Set<String> supportedTagNames = Set.of(ProjectManagerConst.EMAIL_CONTEXT_VARIABLES);
 
     public EmailContextProcessor(String dialectPrefix) {
         super(TemplateMode.HTML, dialectPrefix, null, false, null, true, ProjectManagerConst.THYMELEAF_PROCESSOR_PRECEDENCE);
@@ -62,7 +61,7 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
     }
 
     private boolean isEmailContextVariable(ITemplateContext context, String variable){
-        return variable != null && (supportedTagNames.contains(variable) || context.getVariable(variable) != null);
+        return variable != null && (EmailContextKey.getAllValues().contains(variable) || context.getVariable(variable) != null);
     }
 
     // TODO: Ideally, we should let Thymeleaf continue processing the replaced content
