@@ -197,3 +197,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - EmailContextKey enum
 - Votum for all
 - Configuration Site
+- REST Service: is project manager admin 

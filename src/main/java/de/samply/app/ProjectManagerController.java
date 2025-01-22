@@ -352,10 +352,17 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> QueryFormat.values());
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.NAVIGATION_BAR_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.IS_PROJECT_MANAGER_ADMIN_ACTION)
+    @GetMapping(value = ProjectManagerConst.IS_PROJECT_MANAGER_ADMIN)
+    public ResponseEntity<String> isProjectManagerAdmin(
+    ) {
+        return convertToResponseEntity(() -> userService.isProjectManagerAdmin());
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
-    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ROLES_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_ROLES)
     public ResponseEntity<String> fetchProjectRoles(

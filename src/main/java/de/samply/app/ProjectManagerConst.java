@@ -27,6 +27,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_VIEW_SITE = "project-view";
     public final static String VOTUM_VIEW_SITE = "votum-view";
     public final static String CONFIGURATION_SITE = "config";
+    public final static String NAVIGATION_BAR_SITE = "nav-bar";
 
     //Modules
     public final static String PROJECTS_MODULE = "PROJECTS";
@@ -133,6 +134,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_ACTION = "FETCH_PROJECT_BRIDGEHEAD_RESULTS";
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD_ACTION = "FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD";
     public final static String FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION = "FETCH_EMAIL_MESSAGE_AND_SUBJECT";
+    public final static String IS_PROJECT_MANAGER_ADMIN_ACTION = "IS_PROJECT_MANAGER_ADMIN";
 
 
     // REST Services
@@ -234,6 +236,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS = "/project-bridgehead-results";
     public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD = "/own-project-bridgehead-results";
     public final static String FETCH_EMAIL_MESSAGE_AND_SUBJECT = "/email-message-and-subject";
+    public final static String IS_PROJECT_MANAGER_ADMIN = "/is-project-manager-admin";
 
 
     // REST Parameters

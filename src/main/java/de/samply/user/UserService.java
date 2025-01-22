@@ -8,6 +8,7 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
@@ -206,6 +207,10 @@ public class UserService {
             result.addAll(userProjectRoles.get().getBridgeheadRoles(bridgehead.get()));
         }
         return result;
+    }
+
+    public Boolean isProjectManagerAdmin(){
+        return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
 
     public void addUserInformationIfNotExists(String email, String firstName, String lastName) {
