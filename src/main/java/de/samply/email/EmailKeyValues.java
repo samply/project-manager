@@ -198,7 +198,7 @@ public class EmailKeyValues {
     }
 
     private void addKeyValue(@NotNull EmailContextKey key, Supplier<String> valueGetter) {
-        addKeyValue(key, valueGetter);
+        addKeyValue(key.getValue(), valueGetter);
     }
 
     private void addKeyValue(@NotNull String key, Supplier<String> valueGetter) {
