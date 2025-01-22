@@ -357,6 +357,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.IS_PROJECT_MANAGER_ADMIN_ACTION)
     @GetMapping(value = ProjectManagerConst.IS_PROJECT_MANAGER_ADMIN)
     public ResponseEntity<String> isProjectManagerAdmin(
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.isProjectManagerAdmin());
     }
