@@ -966,6 +966,23 @@ public class ProjectManagerController {
                 projectCode, Optional.ofNullable(bridgehead), document, DocumentType.VOTUM, Optional.ofNullable(label)));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.NEW_VOTUM_FOR_ALL_BRIDGEHEADS, recipients = {EmailRecipientType.ALL_BRIDGEHEAD_ADMINS, EmailRecipientType.CREATOR, EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
+    public ResponseEntity<String> uploadVotumForAllBridgheads(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                projectCode, Optional.empty(), document, DocumentType.VOTUM, Optional.ofNullable(label)));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.FINISHED})
     @EmailSender(templateType = EmailTemplateType.NEW_PUBLICATION, recipients = {EmailRecipientType.PROJECT_ALL})
@@ -1008,7 +1025,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(projectCode, null, DocumentType.SCRIPT);
+        return downloadProjectDocument(projectCode, Optional.empty(), DocumentType.SCRIPT);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -1036,7 +1053,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
-        return existsProjectDocument(projectCode, null, DocumentType.SCRIPT);
+        return existsProjectDocument(projectCode, Optional.empty(), DocumentType.SCRIPT);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -1049,7 +1066,20 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(projectCode, bridgehead, DocumentType.VOTUM);
+        return downloadProjectDocument(projectCode, Optional.of(bridgehead), DocumentType.VOTUM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
+    public ResponseEntity<Resource> downloadVotumForAllBridgeheads(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(projectCode, Optional.empty(), DocumentType.VOTUM);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -1066,6 +1096,19 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION)
+    public ResponseEntity<String> fetchVotumDescriptionForAllBridgeheads(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.VOTUM));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
@@ -1075,7 +1118,20 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) throws DocumentServiceException {
-        return existsProjectDocument(projectCode, bridgehead, DocumentType.VOTUM);
+        return existsProjectDocument(projectCode, Optional.of(bridgehead), DocumentType.VOTUM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS)
+    public ResponseEntity<Boolean> existsVotumForAllBridgeheads(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) throws DocumentServiceException {
+        return existsProjectDocument(projectCode, Optional.empty(), DocumentType.VOTUM);
     }
 
 
@@ -1089,7 +1145,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(projectCode, null, DocumentType.APPLICATION_FORM);
+        return downloadProjectDocument(projectCode, Optional.empty(), DocumentType.APPLICATION_FORM);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -1115,7 +1171,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
-        return existsProjectDocument(projectCode, null, DocumentType.APPLICATION_FORM);
+        return existsProjectDocument(projectCode, Optional.empty(), DocumentType.APPLICATION_FORM);
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -1176,12 +1232,12 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> documentService.fetchOtherDocuments(projectCode, Optional.ofNullable(bridgehead)));
     }
 
-    private ResponseEntity<Resource> downloadProjectDocument(String projectCode, String bridgehead, DocumentType documentType) throws DocumentServiceException {
-        return downloadProjectDocument(this.documentService.fetchLastDocumentOfThisType(projectCode, Optional.ofNullable(bridgehead), documentType));
+    private ResponseEntity<Resource> downloadProjectDocument(String projectCode, Optional<String> bridgehead, DocumentType documentType) throws DocumentServiceException {
+        return downloadProjectDocument(this.documentService.fetchLastDocumentOfThisType(projectCode, bridgehead, documentType));
     }
 
-    private ResponseEntity<Boolean> existsProjectDocument(String projectCode, String bridgehead, DocumentType documentType) throws DocumentServiceException {
-        return convertToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisType(projectCode, Optional.ofNullable(bridgehead), documentType).isPresent());
+    private ResponseEntity<Boolean> existsProjectDocument(String projectCode, Optional<String> bridgehead, DocumentType documentType) throws DocumentServiceException {
+        return convertToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisType(projectCode, bridgehead, documentType).isPresent());
     }
 
 

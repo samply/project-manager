@@ -61,6 +61,7 @@ public class ProjectManagerConst {
     public final static String FETCH_QUERY_FORMATS_ACTION = "FETCH_QUERY_FORMATS";
     public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
     public final static String UPLOAD_VOTUM_ACTION = "UPLOAD_VOTUM";
+    public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String UPLOAD_APPLICATION_FORM_ACTION = "UPLOAD_APPLICATION_FORM";
     public final static String UPLOAD_PUBLICATION_ACTION = "UPLOAD_PUBLICATION";
     public final static String UPLOAD_SCRIPT_ACTION = "UPLOAD_SCRIPT";
@@ -68,8 +69,11 @@ public class ProjectManagerConst {
     public final static String ADD_PUBLICATION_URL_ACTION = "ADD_PUBLICATION_URL";
     public final static String ADD_OTHER_DOCUMENT_URL_ACTION = "ADD_OTHER_DOCUMENT_URL";
     public final static String DOWNLOAD_VOTUM_ACTION = "DOWNLOAD_VOTUM";
+    public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String FETCH_VOTUM_DESCRIPTION_ACTION = "FETCH_VOTUM_DESCRIPTION";
+    public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION = "FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION";
     public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
+    public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
     public final static String FETCH_APPLICATION_FORM_DESCRIPTION_ACTION = "FETCH_APPLICATION_FORM_DESCRIPTION";
     public final static String EXISTS_APPLICATION_FORM_ACTION = "EXISTS_APPLICATION_FORM";
@@ -179,6 +183,7 @@ public class ProjectManagerConst {
     public final static String CREATE_QUERY = "/create-query";
     public final static String FETCH_PROJECT_TYPES = "/project-types";
     public final static String UPLOAD_VOTUM = "/upload-votum";
+    public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/upload-votum-for-all-bridgeheads";
     public final static String UPLOAD_APPLICATION_FORM = "/upload-application-form";
     public final static String UPLOAD_PUBLICATION = "/upload-publication";
     public final static String UPLOAD_SCRIPT = "/upload-script";
@@ -186,8 +191,11 @@ public class ProjectManagerConst {
     public final static String ADD_PUBLICATION_URL = "/add-publication-url";
     public final static String ADD_OTHER_DOCUMENT_URL = "/add-other-document-url";
     public final static String DOWNLOAD_VOTUM = "/download-votum";
+    public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/download-votum-for-all-bridgeheads";
     public final static String FETCH_VOTUM_DESCRIPTION = "/votum-description";
+    public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION = "/votum-description-for-all-bridgeheads";
     public final static String EXISTS_VOTUM = "/exists-votum";
+    public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS = "/exists-votum-for-all-bridgeheads";
     public final static String DOWNLOAD_APPLICATION_FORM = "/download-application-form";
     public final static String FETCH_APPLICATION_FORM_DESCRIPTION = "/application-form-description";
     public final static String EXISTS_APPLICATION_FORM = "/exists-application-form";

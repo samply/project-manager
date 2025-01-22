@@ -195,3 +195,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Bridgehead Admin info in the variables for the email templates
 - Results URL in frontend dto
 - EmailContextKey enum
+- Votum for all
