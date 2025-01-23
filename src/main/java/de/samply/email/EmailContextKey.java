@@ -40,7 +40,8 @@ public enum EmailContextKey {
     BRIDGEHEAD_ADMIN_FIRST_NAME("bridgehead-admin-first-name"),
     BRIDGEHEAD_ADMIN_LAST_NAME("bridgehead-admin-last-name"),
     BRIDGEHEAD_ADMIN_NAME("bridgehead-admin-name"),
-    BRIDGEHEAD_ADMIN_EMAIL("bridgehead-admin-email");
+    BRIDGEHEAD_ADMIN_EMAIL("bridgehead-admin-email"),
+    RESEARCH_ENVIRONMENT_URL("research-environment-url");
 
     private String value;
     private static Set<String> allValues = Stream.of(values()).map(EmailContextKey::getValue).collect(Collectors.toSet());

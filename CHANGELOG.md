@@ -198,3 +198,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Votum for all
 - Configuration Site
 - REST Service: is project manager admin 
+- Research Environment URL key for Email Context

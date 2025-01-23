@@ -38,7 +38,9 @@ public class EmailKeyValues {
                           UserRepository userRepository,
                           BridgeheadConfiguration bridgeheadConfiguration,
                           ProjectDocumentRepository projectDocumentRepository,
-                          BridgeheadAdminUserRepository bridgeheadAdminUserRepository) {
+                          BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
+                          String researchEnvironmentUrl
+    ) {
         this.frontendService = frontendService;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectRepository = projectRepository;
@@ -47,6 +49,7 @@ public class EmailKeyValues {
         this.projectDocumentRepository = projectDocumentRepository;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         keyValues.putAll(emailContext.getContext());
+        addKeyValue(EmailContextKey.RESEARCH_ENVIRONMENT_URL, researchEnvironmentUrl);
     }
 
     public EmailKeyValues add(EmailRecipient emailRecipient) {
