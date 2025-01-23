@@ -45,6 +45,7 @@ public class CoderService {
     private final String dotFilesUrl;
     private final String enableFileReceiver;
     private final String coderSessionToken;
+    private final String researchEnvironmentUrl;
 
     private final WebClient webClient;
 
@@ -81,6 +82,7 @@ public class CoderService {
 
         this.coderTemplateVersionId = coderTemplateVersionId;
         this.webClient = webClientFactory.createWebClient(coderBaseUrl);
+        this.researchEnvironmentUrl = coderBaseUrl;
     }
 
     private String replaceVariablesInPath(String path, Map<String, String> pathVariables) {
@@ -228,4 +230,9 @@ public class CoderService {
     private String fetchCoderMemberId(@NotNull String email) {
         return email.substring(0, email.indexOf("@")).replace(".", "");
     }
+
+    public String getResearchEnvironmentUrl() {
+        return researchEnvironmentUrl;
+    }
+
 }

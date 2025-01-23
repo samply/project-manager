@@ -199,3 +199,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Configuration Site
 - REST Service: is project manager admin 
 - Research Environment URL key for Email Context
+- REST Service: Fetch research environment URL

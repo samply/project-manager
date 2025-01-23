@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
 import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.coder.CoderService;
 import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
@@ -77,6 +78,7 @@ public class ProjectManagerController {
     private final ProjectConfigurations frontendProjectConfigurations;
     private final DtoFactory dtoFactory;
     private final EmailService emailService;
+    private final CoderService coderService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -91,7 +93,8 @@ public class ProjectManagerController {
                                     BridgeheadConfiguration bridgeheadConfiguration,
                                     ProjectConfigurations frontendProjectConfigurations,
                                     DtoFactory dtoFactory,
-                                    EmailService emailService) {
+                                    EmailService emailService,
+                                    CoderService coderService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -106,6 +109,7 @@ public class ProjectManagerController {
         this.frontendProjectConfigurations = frontendProjectConfigurations;
         this.dtoFactory = dtoFactory;
         this.emailService = emailService;
+        this.coderService = coderService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -382,6 +386,18 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectService.fetchOutputFormats(projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL)
+    public ResponseEntity<String> fetchResearchEnvironmentUrl(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> coderService.getResearchEnvironmentUrl());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
