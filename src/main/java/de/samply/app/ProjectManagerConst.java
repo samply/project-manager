@@ -136,6 +136,7 @@ public class ProjectManagerConst {
     public final static String FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION = "FETCH_EMAIL_MESSAGE_AND_SUBJECT";
     public final static String IS_PROJECT_MANAGER_ADMIN_ACTION = "IS_PROJECT_MANAGER_ADMIN";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL_ACTION = "FETCH_RESEARCH_ENVIRONMENT_URL";
+    public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION = "EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE";
 
 
     // REST Services
@@ -239,6 +240,7 @@ public class ProjectManagerConst {
     public final static String FETCH_EMAIL_MESSAGE_AND_SUBJECT = "/email-message-and-subject";
     public final static String IS_PROJECT_MANAGER_ADMIN = "/is-project-manager-admin";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL = "/research-environment-url";
+    public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/exists-research-environment-workspace";
 
 
     // REST Parameters

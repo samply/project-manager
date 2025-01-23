@@ -11,6 +11,7 @@ import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.security.SessionUser;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class CoderService {
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectCoderRepository projectCoderRepository;
     private final NotificationService notificationService;
+    private final SessionUser sessionUser;
     private final String coderTemplateVersionId;
     private final String coderCreatePath;
     private final String coderDeletePath;
@@ -53,6 +55,7 @@ public class CoderService {
             ProjectCoderRepository projectCoderRepository,
             NotificationService notificationService,
             ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
+            SessionUser sessionUser,
             @Value(ProjectManagerConst.ENABLE_CODER_SV) boolean coderEnabled,
             @Value(ProjectManagerConst.CODER_BASE_URL_SV) String coderBaseUrl,
             @Value(ProjectManagerConst.CODER_ORGANISATION_ID_SV) String coderOrganizationId,
@@ -70,6 +73,7 @@ public class CoderService {
         this.projectCoderRepository = projectCoderRepository;
         this.notificationService = notificationService;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.sessionUser = sessionUser;
         this.enableJupyterLab = enableJupyterLab;
         this.enableRstudio = enableRstudio;
         this.enableVsCodeServer = enableVsCodeServer;
@@ -233,6 +237,11 @@ public class CoderService {
 
     public String getResearchEnvironmentUrl() {
         return researchEnvironmentUrl;
+    }
+
+    public boolean existsUserResearchEnvironmentWorkspace(@NotNull String projectCode, @NotNull String bridgehead) {
+        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findByProjectBridgeheadUser_ProjectBridgehead_BridgeheadAndProjectBridgeheadUser_ProjectBridgehead_Project_CodeAndProjectBridgeheadUser_Email(bridgehead, projectCode, sessionUser.getEmail());
+        return projectCoder.isPresent() && projectCoder.get().getDeletedAt() != null;
     }
 
 }

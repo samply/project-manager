@@ -400,6 +400,18 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> coderService.getResearchEnvironmentUrl());
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE)
+    public ResponseEntity<String> existsUserResearchEnvironmentWorkspace(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> coderService.existsUserResearchEnvironmentWorkspace(projectCode, bridgehead));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
