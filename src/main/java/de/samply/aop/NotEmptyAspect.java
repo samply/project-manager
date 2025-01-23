@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 @Aspect
 public class NotEmptyAspect {
 
-    @Pointcut("@annotation(de.samply.annotations.NotEmpty)")
+    @Pointcut("execution(* *(.., @de.samply.annotations.NotEmpty (*), ..))")
     public void notEmptyPointcut() {
     }
 

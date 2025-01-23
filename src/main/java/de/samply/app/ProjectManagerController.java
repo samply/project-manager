@@ -549,7 +549,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST)
     public ResponseEntity<String> addUserToMailingBlackList(
-            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, true));
     }
@@ -560,7 +560,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST)
     public ResponseEntity<String> removeUserFromMailingBlackList(
-            @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, false));
     }
@@ -580,7 +580,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
     public ResponseEntity<String> fetchUsersForAutocompleteInMailingBlackList(
-            @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String email
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String email
     ) {
         return convertToResponseEntity(() -> userService.fetchUsersForAutocompleteInMailingBlackList(email));
     }
@@ -734,7 +734,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> fetchEmailMessageAndSubject(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.EMAIL) String email,
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email,
             @RequestParam(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
             @RequestParam(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
     ) {
