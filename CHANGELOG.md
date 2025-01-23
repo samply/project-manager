@@ -201,3 +201,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Research Environment URL key for Email Context
 - REST Service: Fetch research environment URL
 - REST Service: Exists research environment workspace for user
+- View only last reseach environment workspace for a project

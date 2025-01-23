@@ -240,7 +240,7 @@ public class CoderService {
     }
 
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull String projectCode, @NotNull String bridgehead) {
-        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findByProjectBridgeheadUser_ProjectBridgehead_BridgeheadAndProjectBridgeheadUser_ProjectBridgehead_Project_CodeAndProjectBridgeheadUser_Email(bridgehead, projectCode, sessionUser.getEmail());
+        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findFirstByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAt(bridgehead, projectCode, sessionUser.getEmail());
         return projectCoder.isPresent() && projectCoder.get().getDeletedAt() != null;
     }
 

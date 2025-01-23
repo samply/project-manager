@@ -3,6 +3,8 @@ package de.samply.db.repository;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.ProjectCoder;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -14,6 +16,18 @@ public interface ProjectCoderRepository extends JpaRepository<ProjectCoder, Long
 
     Optional<ProjectCoder> findByProjectBridgeheadUserAndDeletedAtIsNull(ProjectBridgeheadUser projectBridgeheadUser);
 
-    Optional<ProjectCoder> findByProjectBridgeheadUser_ProjectBridgehead_BridgeheadAndProjectBridgeheadUser_ProjectBridgehead_Project_CodeAndProjectBridgeheadUser_Email(String bridgehead, String projectCode, String email);
+    @Query("""
+        SELECT pc
+        FROM ProjectCoder pc
+        WHERE pc.projectBridgeheadUser.projectBridgehead.bridgehead = :bridgehead
+          AND pc.projectBridgeheadUser.projectBridgehead.project.code = :projectCode
+          AND pc.projectBridgeheadUser.email = :email
+        ORDER BY pc.createdAt DESC
+    """)
+    Optional<ProjectCoder> findFirstByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAt(
+            @Param("bridgehead") String bridgehead,
+            @Param("projectCode") String projectCode,
+            @Param("email") String email
+    );
 
 }
