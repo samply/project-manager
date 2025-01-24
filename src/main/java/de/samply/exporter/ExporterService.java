@@ -45,6 +45,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -147,19 +148,19 @@ public class ExporterService {
 
     @Async()
     public void transferFileToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
-        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findFirstByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAt(bridgehead, projectCode, sessionUser.getEmail());
+        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, sessionUser.getEmail());
         if (projectCoder.isEmpty()) {
             throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
         }
-        transferFileToResearchEnvironment(projectCoder.get());
+        transferFileToResearchEnvironment(projectCoder.get(0));
     }
 
     public boolean isExportFileTransferredToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
-        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findFirstByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAt(bridgehead, projectCode, sessionUser.getEmail());
+        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, sessionUser.getEmail());
         if (projectCoder.isEmpty()) {
             throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
         }
-        return projectCoder.get().isExportTransferred();
+        return projectCoder.get(0).isExportTransferred();
     }
 
     @Async

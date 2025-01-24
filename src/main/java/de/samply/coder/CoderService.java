@@ -113,16 +113,18 @@ public class CoderService {
 
     public void createWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         if (coderEnabled) {
-            ProjectCoder projectCoder = generateProjectCoder(projectBridgeheadUser);
-            CreateRequestBody createRequestBody = generateCreateRequestBody(projectCoder);
-            Response response = createWorkspace(projectCoder, createRequestBody).block();
-            projectCoder.setWorkspaceId(response.getLatestBuild().getWorkspaceId());
-            projectCoderRepository.save(projectCoder);
-            notificationService.createNotification(projectBridgeheadUser.getProjectBridgehead().getProject().getCode(),
-                    projectBridgeheadUser.getProjectBridgehead().getBridgehead(), projectBridgeheadUser.getEmail(),
-                    OperationType.CREATE_CODER_WORKSPACE,
-                    "Created workspace " + projectCoder.getWorkspaceId(), null, null);
+            if (projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(projectBridgeheadUser).isEmpty()) {
+                ProjectCoder projectCoder = generateProjectCoder(projectBridgeheadUser);
+                CreateRequestBody createRequestBody = generateCreateRequestBody(projectCoder);
+                Response response = createWorkspace(projectCoder, createRequestBody).block();
+                projectCoder.setWorkspaceId(response.getLatestBuild().getWorkspaceId());
+                projectCoderRepository.save(projectCoder);
+                notificationService.createNotification(projectBridgeheadUser.getProjectBridgehead().getProject().getCode(),
+                        projectBridgeheadUser.getProjectBridgehead().getBridgehead(), projectBridgeheadUser.getEmail(),
+                        OperationType.CREATE_CODER_WORKSPACE,
+                        "Created workspace " + projectCoder.getWorkspaceId(), null, null);
 
+            }
         }
     }
 
@@ -167,8 +169,8 @@ public class CoderService {
 
     public void deleteWorkspace(@NotNull ProjectBridgeheadUser user) {
         if (coderEnabled) {
-            projectCoderRepository.findByProjectBridgeheadUser(user)
-                    .filter(projectCoder -> projectCoder.getDeletedAt() == null).ifPresent(projectCoder -> {
+            projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user)
+                    .ifPresent(projectCoder -> {
                         deleteWorkspace(projectCoder).block();
                         projectCoder.setDeletedAt(Instant.now());
                         projectCoderRepository.save(projectCoder);
@@ -240,8 +242,8 @@ public class CoderService {
     }
 
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull String projectCode, @NotNull String bridgehead) {
-        Optional<ProjectCoder> projectCoder = this.projectCoderRepository.findFirstByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAt(bridgehead, projectCode, sessionUser.getEmail());
-        return projectCoder.isPresent() && projectCoder.get().getDeletedAt() != null;
+        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, sessionUser.getEmail());
+        return !projectCoder.isEmpty() && projectCoder.get(0).getDeletedAt() == null;
     }
 
 }

@@ -44,7 +44,7 @@ public class CoderJob {
 
     public void manageCoderActiveUsers() {
         fetchActiveUsers().stream().forEach(user -> {
-            Optional<ProjectCoder> projectCoder = projectCoderRepository.findByProjectBridgeheadUserAndDeletedAtIsNull(user);
+            Optional<ProjectCoder> projectCoder = projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
             if (projectCoder.isEmpty()) {
                 this.coderService.createWorkspace(user);
             } else if (!projectCoder.get().isExportTransferred()) {
@@ -59,7 +59,7 @@ public class CoderJob {
 
     public void manageCoderInactiveUsers() {
         fetchInactiveUsers().stream().forEach(user -> {
-            Optional<ProjectCoder> projectCoder = projectCoderRepository.findByProjectBridgeheadUserAndDeletedAtIsNull(user);
+            Optional<ProjectCoder> projectCoder = projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
             if (projectCoder.isPresent()) {
                 this.coderService.deleteWorkspace(user);
                 projectCoder.get().setDeletedAt(Instant.now());

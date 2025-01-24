@@ -7,14 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ProjectCoderRepository extends JpaRepository<ProjectCoder, Long> {
 
-    Optional<ProjectCoder> findByProjectBridgeheadUser(ProjectBridgeheadUser projectBridgeheadUser);
-
-    Optional<ProjectCoder> findByProjectBridgeheadUserAndDeletedAtIsNull(ProjectBridgeheadUser projectBridgeheadUser);
+    Optional<ProjectCoder> findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(ProjectBridgeheadUser projectBridgeheadUser);
 
     @Query("""
         SELECT pc
@@ -24,7 +23,7 @@ public interface ProjectCoderRepository extends JpaRepository<ProjectCoder, Long
           AND pc.projectBridgeheadUser.email = :email
         ORDER BY pc.createdAt DESC
     """)
-    Optional<ProjectCoder> findFirstByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAt(
+    List<ProjectCoder> findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(
             @Param("bridgehead") String bridgehead,
             @Param("projectCode") String projectCode,
             @Param("email") String email
