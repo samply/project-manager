@@ -580,9 +580,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION)
     @PostMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
     public ResponseEntity<String> fetchUsersForAutocompleteInMailingBlackList(
-            @Email @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String email
+            @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String partialEmail
     ) {
-        return convertToResponseEntity(() -> userService.fetchUsersForAutocompleteInMailingBlackList(email));
+        return convertToResponseEntity(() -> userService.fetchUsersForAutocompleteInMailingBlackList(partialEmail));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
