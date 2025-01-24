@@ -438,6 +438,9 @@ public class ProjectManagerConst {
     public final static String EXPORTER_QUEUE_CAPACITY = "EXPORTER_QUEUE_CAPACITY";
     public final static String TEST_EMAIL_DOMAINS = "TEST_EMAIL_DOMAINS";
 
+    public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 = "DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64";
+    public final static String DB_ENCRYPTION_ALGORITHM = "DB_ENCRYPTION_ALGORITHM";
+
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
@@ -543,6 +546,9 @@ public class ProjectManagerConst {
     public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
 
     public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS  + ":" + BOTTOM_SV;
+
+    public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64_SV = HEAD_SV + DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 + BOTTOM_SV;
+    public final static String DB_ENCRYPTION_ALGORITHM_SV = HEAD_SV + DB_ENCRYPTION_ALGORITHM  + ":AES" + BOTTOM_SV;
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";

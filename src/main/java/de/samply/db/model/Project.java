@@ -60,6 +60,7 @@ public class Project {
     private boolean isCustomConfig = true;
 
     @Column(name = "results_url")
+    @Convert(converter = EncryptionConverter.class)
     private String resultsUrl;
 
     @Column(name = "creator_results_state", nullable = false)

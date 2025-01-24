@@ -54,6 +54,7 @@ public class ProjectBridgehead {
     private int exporterDispatchCounter = 0;
 
     @Column(name = "results_url")
+    @Convert(converter = EncryptionConverter.class)
     private String resultsUrl;
 
     @Column(name = "creator_results_state", nullable = false)
