@@ -1371,7 +1371,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL},
             queryStates = {QueryState.FINISHED})
-    @ProjectConstraints(projectTypes = {ProjectType.RESEARCH_ENVIRONMENT, ProjectType.DATASHIELD})
+    @ProjectConstraints(projectTypes = {ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT)
