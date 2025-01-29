@@ -147,7 +147,7 @@ public class DataShieldTokenManagerJob {
         // Check user status
         DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
         // If user token created or expired: Remove token
-        if (dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.NOT_FOUND) {
+        if (dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.NOT_FOUND && dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.INACTIVE) {
             Runnable ifSuccessRunnable = () -> sendEmailAndDeleteWorkspace(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getProjectRole(), usersToSendAnEmail);
             return tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessRunnable);
         }
