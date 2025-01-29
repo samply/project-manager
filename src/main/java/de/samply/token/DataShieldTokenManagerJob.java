@@ -28,6 +28,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 @Component
 public class DataShieldTokenManagerJob {
@@ -83,11 +84,11 @@ public class DataShieldTokenManagerJob {
                     // Check user status
                     DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
                     if (dataShieldTokenManagerTokenStatus.projectStatus() == DataShieldProjectStatus.WITH_DATA) {
-                        Runnable ifSuccessRunnable = () -> sendNewTokenEmailAndCreateWorkspaceIfNotExists(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getProjectRole(), usersToSendAnEmail);
+                        Supplier<Mono> ifSuccessMonoSupplier = () -> sendNewTokenEmailAndCreateWorkspaceIfNotExists(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getProjectRole(), usersToSendAnEmail);
                         if (dataShieldTokenManagerTokenStatus.tokenStatus() == DataShieldTokenStatus.NOT_FOUND) { // If user token not found: Create token
-                            tokenGenerations.add(tokenManagerService.generateTokensInOpal(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessRunnable));
+                            tokenGenerations.add(tokenManagerService.generateTokensInOpal(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessMonoSupplier));
                         } else if (dataShieldTokenManagerTokenStatus.tokenStatus() == DataShieldTokenStatus.EXPIRED) { // If user token expired: Refresh Token
-                            tokenGenerations.add(tokenManagerService.refreshToken(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessRunnable));
+                            tokenGenerations.add(tokenManagerService.refreshToken(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessMonoSupplier));
                         }
                     }
                 }));
@@ -99,16 +100,17 @@ public class DataShieldTokenManagerJob {
         Mono.when(operations).subscribeOn(Schedulers.boundedElastic()).block();
     }
 
-    private void sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
+    private Mono<Object> sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
         ProjectEmail projectEmail = new ProjectEmail(projectCode, bridgehead);
         if (!usersToSendAnEmail.contains(projectEmail)) {
             usersToSendAnEmail.add(projectEmail);
             sendEmail(email, projectCode, bridgehead, EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, projectRole);
             this.rstudioGroupService.addUserToRstudioGroup(email);
             if (!this.coderService.existsUserResearchEnvironmentWorkspace(projectCode, bridgehead, email)) {
-                this.coderService.createWorkspace(email, projectCode);
+                return this.coderService.createWorkspace(email, projectCode);
             }
         }
+        return Mono.empty();
     }
 
     private Set<ProjectBridgeheadUser> fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState() {
@@ -154,22 +156,23 @@ public class DataShieldTokenManagerJob {
         DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
         // If user token created or expired: Remove token
         if (dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.NOT_FOUND && dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.INACTIVE) {
-            Runnable ifSuccessRunnable = () -> sendEmailAndDeleteWorkspace(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getProjectRole(), usersToSendAnEmail);
-            return tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessRunnable);
+            Supplier<Mono> ifSuccessMonoSupplier = () -> sendEmailAndDeleteWorkspace(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getProjectRole(), usersToSendAnEmail);
+            return tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessMonoSupplier);
         }
         return Mono.empty();
     }
 
-    private void sendEmailAndDeleteWorkspace(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
+    private Mono<Object> sendEmailAndDeleteWorkspace(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
         ProjectEmail projectEmail = new ProjectEmail(email, projectCode);
         if (!usersToSendAnEmail.contains(projectEmail)) {
             usersToSendAnEmail.add(projectEmail);
             sendEmail(email, projectCode, bridgehead, EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, projectRole);
             if (projectRole != ProjectRole.FINAL || this.projectBridgeheadRepository.findByProjectCodeAndState(projectCode, ProjectBridgeheadState.ACCEPTED).isEmpty()) {
                 this.rstudioGroupService.removeUserFromRstudioGroup(email);
-                this.coderService.deleteWorkspace(email, projectCode);
+                return this.coderService.deleteWorkspace(email, projectCode);
             }
         }
+        return Mono.empty();
     }
 
 
