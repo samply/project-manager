@@ -13,6 +13,7 @@ import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -156,7 +158,7 @@ public class UserService {
         return allUsers;
     }
 
-    public Optional<User> fetchCurrentUser(@NotNull String projectCode, @NotNull String bridgehead){
+    public Optional<User> fetchCurrentUser(@NotNull String projectCode, @NotNull String bridgehead) {
         Optional<ProjectBridgeheadUser> user = this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(sessionUser.getEmail(), fetchProjectBridgehead(projectCode, bridgehead));
         return (user.isEmpty()) ? Optional.empty() : Optional.ofNullable(dtoFactory.convert(user.get()));
     }
@@ -209,11 +211,11 @@ public class UserService {
         return result;
     }
 
-    public Boolean isProjectManagerAdmin(){
+    public Boolean isProjectManagerAdmin() {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
 
-    public void addUserInformationIfNotExists(String email, String firstName, String lastName) {
+    public synchronized void addUserInformationIfNotExists(String email, String firstName, String lastName) {
         if (StringUtils.hasText(email) && StringUtils.hasText(firstName) && StringUtils.hasText(lastName)) {
             Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
             if (userOptional.isEmpty()) {
@@ -222,6 +224,7 @@ public class UserService {
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
                 userRepository.save(user);
+                log.info("Added user information for " + email);
             }
         }
     }
@@ -244,13 +247,13 @@ public class UserService {
         return false;
     }
 
-    public List<User> fetchMailingBlackList(){
+    public List<User> fetchMailingBlackList() {
         return userRepository.findByIsInMailingBlackListIsTrue().stream().map(DtoFactory::convert)
                 .sorted(Comparator.comparing(User::firstName).thenComparing(User::lastName))
                 .collect(Collectors.toList());
     }
 
-    public List<User> fetchUsersForAutocompleteInMailingBlackList(String email){
+    public List<User> fetchUsersForAutocompleteInMailingBlackList(String email) {
         return userRepository.findByEmailContainingIgnoreCaseAndIsInMailingBlackListIsFalse(email).stream().map(DtoFactory::convert).collect(Collectors.toList());
     }
 
