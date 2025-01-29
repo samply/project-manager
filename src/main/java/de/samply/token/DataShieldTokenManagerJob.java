@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -97,7 +96,7 @@ public class DataShieldTokenManagerJob {
 
     private void waitUntilAllOperationsAreFinished(List<Mono<Object>> operations) {
         // Assure that the whole processes are executed.
-        Mono.when(operations).subscribeOn(Schedulers.boundedElastic()).block();
+        Mono.when(operations).block();
     }
 
     private Mono<Object> sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
