@@ -1,9 +1,9 @@
 package de.samply.token.dto;
 
 public enum DataShieldProjectStatus {
-    CREATED,
-    WITH_DATA,
-    NOT_FOUND,
-    INACTIVE,
-    ERROR
+    CREATED, // The project exists in the bridgehead opal
+    WITH_DATA, // The project has already data in the bridgehead opal
+    NOT_FOUND, // The project wasn't found in the bridghead opal
+    INACTIVE, // The token manager is not enabled in project manager
+    ERROR // There was an error while fetching the status
 }

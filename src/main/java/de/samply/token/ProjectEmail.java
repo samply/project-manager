@@ -10,12 +10,10 @@ import lombok.Getter;
 public class ProjectEmail {
     private String email;
     private String projectCode;
-    private ProjectRole projectRole;
 
-    public ProjectEmail(String email, String projectCode, ProjectRole projectRole) {
+    public ProjectEmail(String email, String projectCode) {
         this.email = email;
         this.projectCode = projectCode;
-        this.projectRole = projectRole;
     }
 
 }
