@@ -287,7 +287,7 @@ public class ExporterService {
 
     private String fetchLabel(@NotNull ProjectBridgehead projectBridgehead) {
         String label = "[DRN: " + projectBridgehead.getProject().getCode() + "] " + projectBridgehead.getProject().getQuery().getLabel();
-        return (projectBridgehead.getExporterDispatchCounter() == 0) ? label : label + " (Attempt: " + projectBridgehead.getExporterDispatchCounter() + 1 + ")";
+        return (projectBridgehead.getExporterDispatchCounter() == 0) ? label : label + " (Attempt: " + (projectBridgehead.getExporterDispatchCounter() + 1) + ")";
     }
 
     private BeamRequest generateFocusBody(ProjectBridgehead projectBridgehead, TaskType taskType) throws ExporterServiceException {
