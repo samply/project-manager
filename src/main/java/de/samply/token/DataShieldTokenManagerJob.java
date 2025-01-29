@@ -21,6 +21,7 @@ import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
 import de.samply.token.dto.DataShieldTokenStatus;
 import de.samply.user.roles.ProjectRole;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,7 @@ import reactor.core.publisher.Mono;
 import java.util.*;
 import java.util.function.Supplier;
 
+@Slf4j
 @Component
 public class DataShieldTokenManagerJob {
 
@@ -72,7 +74,7 @@ public class DataShieldTokenManagerJob {
     }
 
     private void manageActiveUsers() {
-        List<Mono<Object>> tokenGenerations = new ArrayList<>();
+        List<Mono<Void>> tokenGenerations = new ArrayList<>();
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
         // Get active users of active DataSHIELD projects
         fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().forEach(user ->
@@ -94,12 +96,12 @@ public class DataShieldTokenManagerJob {
         waitUntilAllOperationsAreFinished(tokenGenerations);
     }
 
-    private void waitUntilAllOperationsAreFinished(List<Mono<Object>> operations) {
+    private void waitUntilAllOperationsAreFinished(List<Mono<Void>> operations) {
         // Assure that the whole processes are executed.
         Mono.when(operations).block();
     }
 
-    private Mono<Object> sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
+    private Mono<Void> sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
         ProjectEmail projectEmail = new ProjectEmail(projectCode, bridgehead);
         if (!usersToSendAnEmail.contains(projectEmail)) {
             usersToSendAnEmail.add(projectEmail);
@@ -129,7 +131,7 @@ public class DataShieldTokenManagerJob {
 
     private void manageInactiveUsers() {
         // Manage users that are not developers in develop, pilot in pilot or final in final
-        List<Mono<Object>> inactiveUsersManagement = new ArrayList<>();
+        List<Mono<Void>> inactiveUsersManagement = new ArrayList<>();
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
         Set<ProjectBridgeheadUser> inactiveUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER);
         inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT));
@@ -150,7 +152,7 @@ public class DataShieldTokenManagerJob {
         waitUntilAllOperationsAreFinished(inactiveUsersManagement);
     }
 
-    private Mono<Object> manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead, Set<ProjectEmail> usersToSendAnEmail) {
+    private Mono<Void> manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead, Set<ProjectEmail> usersToSendAnEmail) {
         // Check user status
         DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
         // If user token created or expired: Remove token
@@ -161,7 +163,7 @@ public class DataShieldTokenManagerJob {
         return Mono.empty();
     }
 
-    private Mono<Object> sendEmailAndDeleteWorkspace(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
+    private Mono<Void> sendEmailAndDeleteWorkspace(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
         ProjectEmail projectEmail = new ProjectEmail(email, projectCode);
         if (!usersToSendAnEmail.contains(projectEmail)) {
             usersToSendAnEmail.add(projectEmail);
@@ -177,7 +179,7 @@ public class DataShieldTokenManagerJob {
 
     private void manageInactiveProjects() {
         // Get users of DataSHIELD inactive states projects
-        List<Mono<Object>> inactiveProjectsManagement = new ArrayList<>();
+        List<Mono<Void>> inactiveProjectsManagement = new ArrayList<>();
         List<ProjectBridgehead> inactiveProjects = this.projectBridgeheadRepository.getByProjectTypeAndNotProjectState(ProjectType.DATASHIELD, Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL));
         Set<String> removedProjects = new HashSet<>();
         inactiveProjects.stream().filter(this::isBridgeheadConfiguredForTokenManager).forEach(projectBridgehead -> {
