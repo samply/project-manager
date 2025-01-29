@@ -75,15 +75,16 @@ public class DataShieldTokenManagerService {
         this.webClient = webClientFactory.createWebClient(tokenManagerUrl);
     }
 
-    public void generateTokensInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable ifSuccessRunnable) throws DataShieldTokenManagerServiceException {
+    public Mono<Object> generateTokensInOpal(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable ifSuccessRunnable) throws DataShieldTokenManagerServiceException {
         if (!isTokenManagerActive) {
             log.error("Token manager is not active. It couldn't generate token in opal for project " + projectCode + " and bridgehead " + bridgehead + " and user " + email);
+            return Mono.empty();
         }
         List<String> bridgeheads = List.of(bridgehead);
         List<String> tokenManagerIds = fetchTokenManagerIds(bridgeheads);
         if (tokenManagerIds.size() > 0) {
             AtomicInteger retryCount = new AtomicInteger(0);
-            webClient.post().uri(uriBuilder ->
+            return webClient.post().uri(uriBuilder ->
                             uriBuilder.path(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS).build())
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(new TokenParams(email, projectCode, tokenManagerIds))
@@ -111,15 +112,16 @@ public class DataShieldTokenManagerService {
                                             OperationType.CREATE_DATASHIELD_TOKEN, "Error generating token", error, (HttpStatus) statusCode));
                         }
                     })
-                    .subscribe(result -> {
+                    .then(Mono.fromRunnable(() -> {
                         bridgeheads.forEach(tempBridgehead ->
                                 notificationService.createNotification(projectCode, tempBridgehead, email,
                                         OperationType.CREATE_DATASHIELD_TOKEN, "Token generated successfully in Token Manager", null, null));
                         if (ifSuccessRunnable != null) {
                             ifSuccessRunnable.run();
                         }
-                    });
+                    }));
         }
+        return Mono.empty();
     }
 
     public List<String> fetchProjectBridgeheads(String projectCode, String bridgehead, String email) throws DataShieldTokenManagerServiceException {
@@ -240,34 +242,37 @@ public class DataShieldTokenManagerService {
     }
 
 
-    public void refreshToken(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable ifSuccessRunnable) throws DataShieldTokenManagerServiceException {
-        if (!isTokenManagerActive){
-            log.error("Token Manager inactive in project manager. It coudn#t refresh token for project "+ projectCode + " and bridgehead " + bridgehead + " and user "+ email);
+    public Mono<Object> refreshToken(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable ifSuccessRunnable) throws DataShieldTokenManagerServiceException {
+        if (!isTokenManagerActive) {
+            log.error("Token Manager inactive in project manager. It coudn#t refresh token for project " + projectCode + " and bridgehead " + bridgehead + " and user " + email);
+            return Mono.empty();
         }
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(projectCode, bridgehead, email));
         if (tokenManagerIds.size() > 0) {
             TokenParams tokenParams = new TokenParams(email, projectCode, tokenManagerIds);
             String uri = ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_REFRESH_TOKEN;
 
-            webClient.put()
+            return webClient.put()
                     .uri(uri)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .body(BodyInserters.fromValue(tokenParams))
                     .retrieve()
                     .bodyToMono(String.class)
-                    .subscribe(s -> {
+                    .then(Mono.fromRunnable(() -> {
                         notificationService.createNotification(projectCode, bridgehead, email,
                                 OperationType.REFRESH_DATASHIELD_TOKEN, "Token refreshed", null, null);
                         if (ifSuccessRunnable != null) {
                             ifSuccessRunnable.run();
                         }
-                    });
+                    }));
         }
+        return Mono.empty();
     }
 
-    public void removeTokens(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable ifSuccessRunnable) {
-        if (!isTokenManagerActive){
-            log.error("Token Manager inactive in project manager. It couln't remove tokens for project "+ projectCode + " and bridgehead " + bridgehead + " and user "+ email);
+    public Mono<Object> removeTokens(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email, Runnable ifSuccessRunnable) {
+        if (!isTokenManagerActive) {
+            log.error("Token Manager inactive in project manager. It couln't remove tokens for project " + projectCode + " and bridgehead " + bridgehead + " and user " + email);
+            return Mono.empty();
         }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
@@ -276,25 +281,27 @@ public class DataShieldTokenManagerService {
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
                     .toUriString();
-            webClient.delete()
+            return webClient.delete()
                     .uri(uri)
                     .retrieve()
                     .bodyToMono(Void.class)
-                    .subscribe(s -> {
+                    .then(Mono.fromRunnable(() -> {
                         notificationService.createNotification(projectCode, bridgehead, email,
                                 OperationType.REMOVE_DATASHIELD_TOKEN, "Token removed", null, null);
                         if (ifSuccessRunnable != null) {
                             ifSuccessRunnable.run();
                         }
-                    });
+                    }));
         } else {
-            throw new DataShieldTokenManagerServiceException("Bridgehead " + bridgehead + " not configured for token manager");
+            log.error("Bridgehead " + bridgehead + " not configured for token manager");
+            return Mono.empty();
         }
     }
 
-    public void removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
-        if (!isTokenManagerActive){
-            log.error("Token Manager inactive in project manager. It cannot remove tokens for project "+ projectCode + " and bridgehead " + bridgehead);
+    public Mono<Object> removeProjectAndTokens(@NotNull String projectCode, @NotNull String bridgehead) {
+        if (!isTokenManagerActive) {
+            log.error("Token Manager inactive in project manager. It cannot remove tokens for project " + projectCode + " and bridgehead " + bridgehead);
+            return Mono.empty();
         }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
@@ -302,14 +309,15 @@ public class DataShieldTokenManagerService {
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, tokenManagerId.get())
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                     .toUriString();
-            webClient.delete()
+            return webClient.delete()
                     .uri(uri)
                     .retrieve()
                     .bodyToMono(Void.class)
-                    .subscribe(s -> notificationService.createNotification(projectCode, bridgehead, null,
-                            OperationType.REMOVE_DATASHIELD_TOKEN, "Token removed", null, null));
+                    .then(Mono.fromRunnable(() -> notificationService.createNotification(projectCode, bridgehead, null,
+                            OperationType.REMOVE_DATASHIELD_TOKEN, "Token removed", null, null)));
         } else {
-            throw new DataShieldTokenManagerServiceException("Bridgehead " + bridgehead + " not configured for token manager");
+            log.error("Bridgehead " + bridgehead + " not configured for token manager");
+            return Mono.empty();
         }
     }
 
