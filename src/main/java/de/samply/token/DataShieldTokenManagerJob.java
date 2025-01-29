@@ -99,7 +99,7 @@ public class DataShieldTokenManagerJob {
             usersToSendAnEmail.add(projectEmail);
             sendEmail(email, projectCode, bridgehead, EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, projectRole);
             this.rstudioGroupService.addUserToRstudioGroup(email);
-            if (!this.coderService.existsUserResearchEnvironmentWorkspace(projectCode, email)) {
+            if (!this.coderService.existsUserResearchEnvironmentWorkspace(projectCode, bridgehead, email)) {
                 this.coderService.createWorkspace(email, projectCode);
             }
         }
