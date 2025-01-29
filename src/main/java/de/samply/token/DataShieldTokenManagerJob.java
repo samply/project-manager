@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
 
@@ -90,7 +91,12 @@ public class DataShieldTokenManagerJob {
                         }
                     }
                 }));
-        Mono.when(tokenGenerations).block(); // Assure that the whole processes are executed.
+        waitUntilAllOperationsAreFinished(tokenGenerations);
+    }
+
+    private void waitUntilAllOperationsAreFinished(List<Mono<Object>> operations) {
+        // Assure that the whole processes are executed.
+        Mono.when(operations).subscribeOn(Schedulers.boundedElastic()).block();
     }
 
     private void sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
@@ -140,7 +146,7 @@ public class DataShieldTokenManagerJob {
                         user.getEmail(),
                         projectBridgehead -> projectBridgehead.getState() != ProjectBridgeheadState.ACCEPTED).forEach(bridgehead ->
                         inactiveUsersManagement.add(manageInactiveUsers(user, bridgehead, usersToSendAnEmail))));
-        Mono.when(inactiveUsersManagement).block();
+        waitUntilAllOperationsAreFinished(inactiveUsersManagement);
     }
 
     private Mono<Object> manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead, Set<ProjectEmail> usersToSendAnEmail) {
@@ -184,7 +190,7 @@ public class DataShieldTokenManagerJob {
             }
             setAsRemoved(projectBridgeheadInDataShield, projectBridgehead);
         });
-        Mono.when(inactiveProjectsManagement).block();
+        waitUntilAllOperationsAreFinished(inactiveProjectsManagement);
     }
 
     private boolean isBridgeheadConfiguredForTokenManager(ProjectBridgehead projectBridgehead) {
