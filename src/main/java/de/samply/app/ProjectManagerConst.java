@@ -289,6 +289,7 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_PREFIX = "email";
     public final static String PRIMARY_MAIL_SENDER_PREFIX = "spring.mail.primary";
     public final static String TEST_MAIL_SENDER_PREFIX = "spring.mail.test";
+    public final static String CODER_PREFIX = "coder";
 
     // Exporter
     public final static String SECURITY_ENABLED = "SECURITY_ENABLED";
@@ -340,11 +341,6 @@ public class ProjectManagerConst {
     public final static String CODER_API_PATH = "/api/v2";
     public final static String CODER_SESSION_TOKEN_HEADER = "Coder-Session-Token";
 
-    public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_KEY = "Enable Jupyter Lab?";
-    public final static String CODER_ENABLE_RSTUDIO_PARAM_KEY = "Enable RStudio?";
-    public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_KEY = "Enable VS Code Server?";
-    public final static String CODER_DOTFILES_URL_PARAM_KEY = "Your Dotfiles URL";
-    public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_KEY = "Samply.Beam: Enable file receiver";
     public final static String CODER_SAMPLY_BEAM_APP_ID_PARAM_KEY = "Samply.Beam: App ID (short)";
     public final static String CODER_SAMPLY_BEAM_APP_SECRET_PARAM_KEY = "Samply.Beam: App Secret";
     public final static String CODER_DELETE_TRANSITION = "delete";
@@ -408,19 +404,13 @@ public class ProjectManagerConst {
 
     public final static String CODER_BASE_URL = "CODER_BASE_URL";
     public final static String CODER_ORGANISATION_ID = "CODER_ORGANISATION_ID";
-    public final static String CODER_MEMBER_ID = "CODER_MEMBER_ID";
+    public final static String CODER_MEMBER_ID = "CODER_MEMBER_ID"; // Used in coder http request paths
     public final static String CODER_WORKSPACE_ID = "CODER_WORKSPACE_ID";
-    public final static String CODER_TEMPLATE_VERSION_ID = "CODER_TEMPLATE_VERSION_ID";
     public final static String CODER_CREATE_PATH = "CODER_CREATE_PATH";
     public final static String CODER_DELETE_PATH = "CODER_DELETE_PATH";
     public final static String CODER_SESSION_TOKEN = "CODER_SESSION_TOKEN";
     public final static String CODER_CRON_EXPRESSION = "CODER_CRON_EXPRESSION";
 
-    public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE = "CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE";
-    public final static String CODER_ENABLE_RSTUDIO_PARAM_VALUE = "CODER_ENABLE_RSTUDIO_PARAM_VALUE";
-    public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE = "CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE";
-    public final static String CODER_DOTFILES_URL_PARAM_VALUE = "CODER_DOTFILES_URL_PARAM_VALUE";
-    public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE = "CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE";
     public final static String CODER_BEAM_ID_SUFFIX = "CODER_BEAM_ID_SUFFIX";
     public final static String CODER_TEST_FILE_BEAM_ID = "CODER_TEST_FILE_BEAM_ID";
     public final static String ENABLE_CODER = "ENABLE_CODER";
@@ -517,7 +507,6 @@ public class ProjectManagerConst {
     public final static String CODER_BASE_URL_SV = HEAD_SV + CODER_BASE_URL + BOTTOM_SV;
     public final static String CODER_ORGANISATION_ID_SV = HEAD_SV + CODER_ORGANISATION_ID + BOTTOM_SV;
     public final static String CODER_MEMBER_ID_SV = HEAD_SV + CODER_MEMBER_ID + BOTTOM_SV;
-    public final static String CODER_TEMPLATE_VERSION_ID_SV = HEAD_SV + CODER_TEMPLATE_VERSION_ID + BOTTOM_SV;
     public final static String CODER_CREATE_PATH_SV = HEAD_SV + CODER_CREATE_PATH + BOTTOM_SV;
     public final static String CODER_DELETE_PATH_SV = HEAD_SV + CODER_DELETE_PATH + BOTTOM_SV;
     public final static String CODER_SESSION_TOKEN_SV = HEAD_SV + CODER_SESSION_TOKEN + BOTTOM_SV;
@@ -525,11 +514,6 @@ public class ProjectManagerConst {
     public final static String CODER_TEST_FILE_BEAM_ID_SV = HEAD_SV + CODER_TEST_FILE_BEAM_ID + BOTTOM_SV;
     public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
 
-    public final static String CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_JUPYTER_LAB_PARAM_VALUE + ":1" + BOTTOM_SV;
-    public final static String CODER_ENABLE_RSTUDIO_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_RSTUDIO_PARAM_VALUE + ":1" + BOTTOM_SV;
-    public final static String CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_VS_CODE_SERVER_PARAM_VALUE + ":0" + BOTTOM_SV;
-    public final static String CODER_DOTFILES_URL_PARAM_VALUE_SV = HEAD_SV + CODER_DOTFILES_URL_PARAM_VALUE + ":" + BOTTOM_SV;
-    public final static String CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE_SV = HEAD_SV + CODER_ENABLE_FILE_RECEIVER_PARAM_VALUE + ":1" + BOTTOM_SV;
     public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
 
     public final static String EMAIL_SENDER_CORE_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
@@ -545,10 +529,10 @@ public class ProjectManagerConst {
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
     public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
 
-    public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS  + ":" + BOTTOM_SV;
+    public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS + ":" + BOTTOM_SV;
 
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64_SV = HEAD_SV + DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 + BOTTOM_SV;
-    public final static String DB_ENCRYPTION_ALGORITHM_SV = HEAD_SV + DB_ENCRYPTION_ALGORITHM  + ":AES" + BOTTOM_SV;
+    public final static String DB_ENCRYPTION_ALGORITHM_SV = HEAD_SV + DB_ENCRYPTION_ALGORITHM + ":AES" + BOTTOM_SV;
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
@@ -561,6 +545,9 @@ public class ProjectManagerConst {
     public final static String THYMELEAF_DIALECT_NAME = "Project Manager";
     public final static String THYMELEAF_DIALECT_PREFIX = "pm";
 
+    // Variable name placeholders
+    public final static String HYPHEN = "minus";
+    public final static String UNDERSCORE = "underscore";
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";
@@ -572,14 +559,12 @@ public class ProjectManagerConst {
     public final static String THIS_IS_A_TEST = "This is a test";
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
-    public final static String HYPHEN = "minus";
     public final static String BASE_64 = "b64";
     public final static String HTTP_PROTOCOL_SCHEMA = "http";
     public final static String HTTPS_PROTOCOL_SCHEMA = "https";
     public final static String PRIMARY_MAIL_SENDER = "primaryJavaMailSender";
     public final static String TEST_MAIL_SENDER = "testJavaMailSender";
     public final static String NOT_AUTHORIZED = "Not authorized yet";
-
 
 
 }

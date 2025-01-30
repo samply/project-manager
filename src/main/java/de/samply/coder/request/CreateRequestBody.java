@@ -1,9 +1,15 @@
 package de.samply.coder.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor // Generate no-arg constructor
+@AllArgsConstructor // Generate all-args constructor
+@Builder(toBuilder = true)
 public class CreateRequestBody {
 
     @JsonProperty("name")
