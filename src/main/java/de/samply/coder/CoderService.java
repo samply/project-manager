@@ -215,7 +215,7 @@ public class CoderService {
 
     public String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         return projectBridgeheadUser.getEmail().substring(0, projectBridgeheadUser.getEmail().indexOf("@"))
-                .replace(".", "-") + "-" + projectBridgeheadUser.getProjectBridgehead().getProject().getCode();
+                .replaceAll("[^a-zA-Z0-9]", "") + projectBridgeheadUser.getProjectBridgehead().getProject().getCode();
     }
 
     private String generateAppSecret() {
