@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS samply;
 
 SET
-    search_path TO samply;
+search_path TO samply;
 
 CREATE TABLE samply.query
 (
@@ -128,7 +128,8 @@ CREATE TABLE samply.project_coder
     export_transferred         BOOLEAN   NOT NULL,
     workspace_id               TEXT,
     created_at                 TIMESTAMP NOT NULL,
-    deleted_at                 TIMESTAMP
+    deleted_at                 TIMESTAMP,
+    in_app_register            BOOLEAN   NOT NULL
 );
 
 CREATE TABLE samply.user
