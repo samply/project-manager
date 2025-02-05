@@ -431,6 +431,11 @@ public class ProjectManagerConst {
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 = "DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64";
     public final static String DB_ENCRYPTION_ALGORITHM = "DB_ENCRYPTION_ALGORITHM";
 
+    public final static String APP_REGISTER_BASE_URL = "APP_REGISTER_BASE_URL";
+    public final static String APP_REGISTER_API_KEY = "APP_REGISTER_API_KEY";
+    public final static String APP_REGISTER_AUTHORIZATION_FORMAT = "APP_REGISTER_AUTHORIZATION_FORMAT";
+    public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
+
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
@@ -534,6 +539,11 @@ public class ProjectManagerConst {
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64_SV = HEAD_SV + DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 + BOTTOM_SV;
     public final static String DB_ENCRYPTION_ALGORITHM_SV = HEAD_SV + DB_ENCRYPTION_ALGORITHM + ":AES" + BOTTOM_SV;
 
+    public final static String APP_REGISTER_BASE_URL_SV = HEAD_SV + APP_REGISTER_BASE_URL + BOTTOM_SV;
+    public final static String APP_REGISTER_API_KEY_SV = HEAD_SV + APP_REGISTER_API_KEY + BOTTOM_SV;
+    public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":'ApiKey {}'" + BOTTOM_SV;
+    public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
+
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
     public final static String ASYNC_NOTIFICATION_EXECUTOR = "notification";
@@ -548,6 +558,11 @@ public class ProjectManagerConst {
     // Variable name placeholders
     public final static String HYPHEN = "minus";
     public final static String UNDERSCORE = "underscore";
+
+    // App Register
+    public final static String REGISTER_PATH = "/beam-app";
+    public final static String UNREGISTER_PATH = "/beam-app";
+
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";

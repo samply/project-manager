@@ -15,6 +15,7 @@ import de.samply.email.EmailTemplateType;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.register.AppRegisterService;
 import de.samply.rstudio.group.RstudioGroupService;
 import de.samply.token.dto.DataShieldProjectStatus;
 import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
@@ -42,6 +43,7 @@ public class DataShieldTokenManagerJob {
     private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
     private final EmailService emailService;
     private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final AppRegisterService appRegisterService;
     private final boolean isTokenManagerActive;
 
     public DataShieldTokenManagerJob(RstudioGroupService rstudioGroupService,
@@ -51,6 +53,7 @@ public class DataShieldTokenManagerJob {
                                      ProjectBridgeheadRepository projectBridgeheadRepository,
                                      ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
                                      EmailService emailService, BridgeheadConfiguration bridgeheadConfiguration,
+                                     AppRegisterService appRegisterService,
                                      @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive
     ) {
         this.rstudioGroupService = rstudioGroupService;
@@ -61,6 +64,7 @@ public class DataShieldTokenManagerJob {
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.emailService = emailService;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.appRegisterService = appRegisterService;
         this.isTokenManagerActive = isTokenManagerActive;
     }
 
@@ -108,7 +112,7 @@ public class DataShieldTokenManagerJob {
             sendEmail(email, projectCode, bridgehead, EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, projectRole);
             this.rstudioGroupService.addUserToRstudioGroup(email);
             if (!this.coderService.existsUserResearchEnvironmentWorkspace(projectCode, bridgehead, email)) {
-                return this.coderService.createWorkspace(email, projectCode);
+                return this.coderService.createWorkspace(email, projectCode).flatMap(appRegisterService::register).then();
             }
         }
         return Mono.empty();
@@ -170,7 +174,7 @@ public class DataShieldTokenManagerJob {
             sendEmail(email, projectCode, bridgehead, EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, projectRole);
             if (projectRole != ProjectRole.FINAL || this.projectBridgeheadRepository.findByProjectCodeAndState(projectCode, ProjectBridgeheadState.ACCEPTED).isEmpty()) {
                 this.rstudioGroupService.removeUserFromRstudioGroup(email);
-                return this.coderService.deleteWorkspace(email, projectCode);
+                return this.coderService.deleteWorkspace(email, projectCode).flatMap(appRegisterService::unregister).then();
             }
         }
         return Mono.empty();

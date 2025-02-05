@@ -41,5 +41,8 @@ public class ProjectCoder {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Column(name = "in_app_register")
+    private boolean isInAppRegister = false;
+
 
 }

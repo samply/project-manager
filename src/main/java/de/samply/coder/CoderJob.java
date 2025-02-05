@@ -9,6 +9,7 @@ import de.samply.exporter.ExporterService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.query.QueryState;
+import de.samply.register.AppRegisterService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -23,18 +24,22 @@ public class CoderJob {
     private final ProjectCoderRepository projectCoderRepository;
     private final CoderService coderService;
     private final ExporterService exporterService;
+    private final AppRegisterService appRegisterService;
 
     public CoderJob(ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                     ProjectCoderRepository projectCoderRepository,
                     CoderService coderService,
-                    ExporterService exporterService
+                    ExporterService exporterService,
+                    AppRegisterService appRegisterService
     ) {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectCoderRepository = projectCoderRepository;
         this.coderService = coderService;
         this.exporterService = exporterService;
+        this.appRegisterService = appRegisterService;
     }
 
+    // TODO: Assure that asynchronous processes finish !!!!!!!!!!!!!!!!!!!!!!!!!!
 
     @Scheduled(cron = ProjectManagerConst.CODER_CRON_EXPRESSION_SV)
     public void manageCoderWorkspaces() {
@@ -47,6 +52,7 @@ public class CoderJob {
             Optional<ProjectCoder> projectCoder = projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
             if (projectCoder.isEmpty()) {
                 this.coderService.createWorkspace(user);
+                this.appRegisterService.register(projectCoder.get());
             } else if (!projectCoder.get().isExportTransferred()) {
                 exporterService.transferFileToResearchEnvironment(projectCoder.get());
             }
@@ -62,6 +68,7 @@ public class CoderJob {
             Optional<ProjectCoder> projectCoder = projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
             if (projectCoder.isPresent()) {
                 this.coderService.deleteWorkspace(user);
+                this.appRegisterService.unregister(projectCoder.get());
                 projectCoder.get().setDeletedAt(Instant.now());
                 projectCoderRepository.save(projectCoder.get());
             }
