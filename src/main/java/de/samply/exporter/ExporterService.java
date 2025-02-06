@@ -27,6 +27,7 @@ import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.Base64Utils;
+import de.samply.utils.MessageStatus;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -152,7 +153,7 @@ public class ExporterService {
         if (projectCoder.isEmpty()) {
             throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
         }
-        transferFileToResearchEnvironment(projectCoder.get(0));
+        transferFileToResearchEnvironment(projectCoder.get(0)).block();
     }
 
     public boolean isExportFileTransferredToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
@@ -164,13 +165,36 @@ public class ExporterService {
     }
 
     @Async
-    public void transferFileToResearchEnvironment(ProjectCoder projectCoder) {
+    public Mono<Void> transferFileToResearchEnvironment(ProjectCoder projectCoder) {
         String description = "Transfering file to Research Environment for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead();
         log.info(description);
-        postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER, description).subscribe(result -> {
-            projectCoder.setExportTransferred(true);
-            this.projectCoderRepository.save(projectCoder);
-        });
+        return postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER, description)
+                .doOnError(throwable -> {
+                    MessageStatus messageStatus = MessageStatus.newInstance(throwable, "Error transferring file to Research Environment");
+                    notificationService.createNotification(
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
+                            projectCoder.getProjectBridgeheadUser().getEmail(),
+                            OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
+                            messageStatus.message(),
+                            ExceptionUtils.getStackTrace(throwable),
+                            messageStatus.status()
+                    );
+                    log.error(ExceptionUtils.getStackTrace(throwable));
+                })
+                .doOnSuccess(result -> {
+                    projectCoder.setExportTransferred(true);
+                    this.projectCoderRepository.save(projectCoder);
+                    notificationService.createNotification(
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
+                            projectCoder.getProjectBridgeheadUser().getEmail(),
+                            OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
+                            "File transferred to Research Environment",
+                            null,
+                            HttpStatus.OK
+                    );
+                }).then();
     }
 
     private BeamRequest generateTransferFileBeamRequest(ProjectCoder projectCoder) {

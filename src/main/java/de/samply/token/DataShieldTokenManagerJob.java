@@ -112,7 +112,7 @@ public class DataShieldTokenManagerJob {
             sendEmail(email, projectCode, bridgehead, EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, projectRole);
             this.rstudioGroupService.addUserToRstudioGroup(email);
             if (!this.coderService.existsUserResearchEnvironmentWorkspace(projectCode, bridgehead, email)) {
-                return this.coderService.createWorkspace(email, projectCode).flatMap(appRegisterService::register).then();
+                return this.coderService.createWorkspace(email, projectCode).flatMap(appRegisterService::register);
             }
         }
         return Mono.empty();
@@ -174,7 +174,7 @@ public class DataShieldTokenManagerJob {
             sendEmail(email, projectCode, bridgehead, EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, projectRole);
             if (projectRole != ProjectRole.FINAL || this.projectBridgeheadRepository.findByProjectCodeAndState(projectCode, ProjectBridgeheadState.ACCEPTED).isEmpty()) {
                 this.rstudioGroupService.removeUserFromRstudioGroup(email);
-                return this.coderService.deleteWorkspace(email, projectCode).flatMap(appRegisterService::unregister).then();
+                return this.coderService.deleteWorkspace(email, projectCode).flatMap(appRegisterService::unregister);
             }
         }
         return Mono.empty();

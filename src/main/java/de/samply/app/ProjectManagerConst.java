@@ -542,7 +542,7 @@ public class ProjectManagerConst {
 
     public final static String APP_REGISTER_BASE_URL_SV = HEAD_SV + APP_REGISTER_BASE_URL + BOTTOM_SV;
     public final static String APP_REGISTER_API_KEY_SV = HEAD_SV + APP_REGISTER_API_KEY + BOTTOM_SV;
-    public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":'ApiKey {}'" + BOTTOM_SV;
+    public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":ApiKey {}" + BOTTOM_SV;
     public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
 
     // Async Configuration
