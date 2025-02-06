@@ -105,7 +105,7 @@ public class ExporterJob {
                                     Optional<Consumer<ExporterServiceResult>> exporterServiceResultConsumer, Optional<EmailTemplateType> emailTemplateType) {
         return Flux.fromIterable(projectBridgeheadRepository.getByQueryStateAndProjectState(initialQueryState, activeStates))
                 .flatMap(exporterServiceFunction)
-                .flatMap(exporterServiceResult -> {
+                .doOnNext(exporterServiceResult -> {
                     exporterServiceResultConsumer.ifPresent(consumer -> consumer.accept(exporterServiceResult));
                     ProjectBridgehead projectBridgehead = exporterServiceResult.projectBridgehead();
                     projectBridgehead.setQueryState(finalQueryState);
@@ -116,7 +116,6 @@ public class ExporterJob {
                     }
                     projectBridgeheadRepository.save(projectBridgehead);
                     emailTemplateType.ifPresent(type -> sendEmail(projectBridgehead, type));
-                    return Mono.empty();
                 }).then();
     }
 
