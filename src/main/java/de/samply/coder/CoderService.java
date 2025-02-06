@@ -23,10 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
@@ -40,13 +37,14 @@ public class CoderService {
     private final NotificationService notificationService;
     private final SessionUser sessionUser;
     private final CoderConfiguration coderConfiguration;
+    private final WebClient webClient;
 
     private final String coderCreatePath;
     private final String coderDeletePath;
     private final String coderSessionToken;
     private final String researchEnvironmentUrl;
 
-    private final WebClient webClient;
+    private final int coderWorkspaceMaxLength;
 
 
     public CoderService(
@@ -55,13 +53,14 @@ public class CoderService {
             ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
             SessionUser sessionUser,
             CoderConfiguration coderConfiguration,
+            WebClientFactory webClientFactory,
             @Value(ProjectManagerConst.ENABLE_CODER_SV) boolean coderEnabled,
             @Value(ProjectManagerConst.CODER_BASE_URL_SV) String coderBaseUrl,
             @Value(ProjectManagerConst.CODER_ORGANISATION_ID_SV) String coderOrganizationId,
             @Value(ProjectManagerConst.CODER_CREATE_PATH_SV) String coderCreatePath,
             @Value(ProjectManagerConst.CODER_DELETE_PATH_SV) String coderDeletePath,
             @Value(ProjectManagerConst.CODER_SESSION_TOKEN_SV) String coderSessionToken,
-            WebClientFactory webClientFactory) {
+            @Value(ProjectManagerConst.CODER_WORKSPACE_NAME_MAX_LENGTH_SV) int coderWorkspaceMaxLength) {
         this.coderEnabled = coderEnabled;
         this.projectCoderRepository = projectCoderRepository;
         this.notificationService = notificationService;
@@ -69,6 +68,7 @@ public class CoderService {
         this.sessionUser = sessionUser;
         this.coderConfiguration = coderConfiguration;
         this.coderSessionToken = coderSessionToken;
+        this.coderWorkspaceMaxLength = coderWorkspaceMaxLength;
         Map<String, String> pathVariables = Map.of(ProjectManagerConst.CODER_ORGANISATION_ID, coderOrganizationId);
         this.coderCreatePath = replaceVariablesInPath(coderCreatePath, pathVariables);
         this.coderDeletePath = replaceVariablesInPath(coderDeletePath, pathVariables);
@@ -200,23 +200,44 @@ public class CoderService {
     private CreateRequestBody generateCreateRequestBody(ProjectCoder projectCoder) {
         CreateRequestBody createRequestBody = coderConfiguration.cloneCreateRequestBody(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getType());
         createRequestBody.setName(projectCoder.getAppId());
-        addRichParameterValues(createRequestBody, projectCoder);
+        replaceParameterValues(createRequestBody, projectCoder);
         return createRequestBody;
     }
 
-    private void addRichParameterValues(CreateRequestBody createRequestBody, ProjectCoder projectCoder) {
-        List<CreateRequestParameter> createRequestParameters = List.of(
-                new CreateRequestParameter(ProjectManagerConst.CODER_SAMPLY_BEAM_APP_ID_PARAM_KEY, projectCoder.getAppId()),
-                new CreateRequestParameter(ProjectManagerConst.CODER_SAMPLY_BEAM_APP_SECRET_PARAM_KEY, projectCoder.getAppSecret())
-        );
-        createRequestBody.setRichParameterValues(createRequestParameters.toArray(CreateRequestParameter[]::new));
+    private void replaceParameterValues(CreateRequestBody createRequestBody, ProjectCoder projectCoder) {
+        Arrays.stream(createRequestBody.getRichParameterValues()).forEach(parameter -> CoderParam.replaceParameters(parameter, projectCoder));
     }
 
     public String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
-        return projectBridgeheadUser.getEmail().substring(0, projectBridgeheadUser.getEmail().indexOf("@"))
-                .replaceAll("[^a-zA-Z0-9]", "") +
-                projectBridgeheadUser.getProjectBridgehead().getProject().getCode() +
-                projectBridgeheadUser.getProjectBridgehead().getProject().getState().toString().toLowerCase();
+        String email = projectBridgeheadUser.getEmail().substring(0, projectBridgeheadUser.getEmail().indexOf("@")).replaceAll("[^a-zA-Z0-9]", "");
+        String projectCode = projectBridgeheadUser.getProjectBridgehead().getProject().getCode();
+        String state = projectBridgeheadUser.getProjectBridgehead().getProject().getState().toString().toLowerCase().substring(0,3); // Only three first characters
+
+        String coderAppId = email + projectCode + state;
+        // Check if the coderAppId exceeds the maximum allowed length
+        if (coderAppId.length() > coderWorkspaceMaxLength) {
+            // Calculate the surplus length that needs to be trimmed
+            int surplus = coderAppId.length() - coderWorkspaceMaxLength;
+            // Reduce the projectCode length if necessary, prioritizing keeping at least half of it
+            int maxProjectCodeLength = (projectCode.length() / 2 > surplus)
+                    ? projectCode.length() / 2
+                    : projectCode.length() - surplus;
+            // Trim the projectCode to the calculated length
+            projectCode = projectCode.substring(0, maxProjectCodeLength);
+            // Rebuild the coderAppId with the reduced projectCode
+            coderAppId = email + projectCode + state;
+            // If the coderAppId is still too long, reduce the email length
+            if (coderAppId.length() > coderWorkspaceMaxLength) {
+                // Recalculate the surplus length after trimming projectCode
+                surplus = coderAppId.length() - coderWorkspaceMaxLength;
+                // Reduce the email length from the right, ensuring at least 1 character remains
+                int newEmailLength = Math.max(1, email.length() - surplus);
+                email = email.substring(0, newEmailLength);
+                // Final rebuild of the coderAppId
+                coderAppId = email + projectCode + state;
+            }
+        }
+        return coderAppId;
     }
 
     private String generateAppSecret() {

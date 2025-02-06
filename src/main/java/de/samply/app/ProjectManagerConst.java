@@ -341,8 +341,6 @@ public class ProjectManagerConst {
     public final static String CODER_API_PATH = "/api/v2";
     public final static String CODER_SESSION_TOKEN_HEADER = "Coder-Session-Token";
 
-    public final static String CODER_SAMPLY_BEAM_APP_ID_PARAM_KEY = "Samply.Beam: App ID (short)";
-    public final static String CODER_SAMPLY_BEAM_APP_SECRET_PARAM_KEY = "Samply.Beam: App Secret";
     public final static String CODER_DELETE_TRANSITION = "delete";
 
     // Environment Variables
@@ -410,6 +408,7 @@ public class ProjectManagerConst {
     public final static String CODER_DELETE_PATH = "CODER_DELETE_PATH";
     public final static String CODER_SESSION_TOKEN = "CODER_SESSION_TOKEN";
     public final static String CODER_CRON_EXPRESSION = "CODER_CRON_EXPRESSION";
+    public final static String CODER_WORKSPACE_NAME_MAX_LENGTH = "CODER_WORKSPACE_NAME_MAX_LENGTH";
 
     public final static String CODER_BEAM_ID_SUFFIX = "CODER_BEAM_ID_SUFFIX";
     public final static String CODER_TEST_FILE_BEAM_ID = "CODER_TEST_FILE_BEAM_ID";
@@ -518,6 +517,8 @@ public class ProjectManagerConst {
     public final static String CODER_BEAM_ID_SUFFIX_SV = HEAD_SV + CODER_BEAM_ID_SUFFIX + BOTTOM_SV;
     public final static String CODER_TEST_FILE_BEAM_ID_SV = HEAD_SV + CODER_TEST_FILE_BEAM_ID + BOTTOM_SV;
     public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
+    public final static String CODER_WORKSPACE_NAME_MAX_LENGTH_SV = HEAD_SV + CODER_WORKSPACE_NAME_MAX_LENGTH + ":32" + BOTTOM_SV;
+
 
     public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
 
