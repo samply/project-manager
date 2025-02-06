@@ -207,3 +207,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Coder Configuration
 - App Register Service
 - Coder Param (APP_ID and APP_SECRET)
+- Relate project constraints with project state constraints for DEVELOPER, PILOT and FINAL users

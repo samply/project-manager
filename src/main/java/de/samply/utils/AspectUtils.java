@@ -56,7 +56,7 @@ public class AspectUtils {
     }
 
     public static <T extends Annotation> Optional<T> fetchT(JoinPoint joinPoint, Class<T> clazz) {
-        return Optional.of(fetchMethod(joinPoint).getAnnotation(clazz));
+        return Optional.ofNullable(fetchMethod(joinPoint).getAnnotation(clazz));
     }
 
     public static Optional<Project> fetchProject(ProjectRepository projectRepository, Optional<String> projectCode) {

@@ -24,7 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -35,6 +36,11 @@ public class ConstraintsService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final SessionUser sessionUser;
+
+    private final Map<ProjectRole, ProjectState> temporalProjectRoleProjectStateMap = Map.of(
+            ProjectRole.DEVELOPER, ProjectState.DEVELOP,
+            ProjectRole.PILOT, ProjectState.PILOT,
+            ProjectRole.FINAL, ProjectState.FINAL);
 
     public ConstraintsService(ProjectRepository projectRepository,
                               OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
@@ -48,9 +54,9 @@ public class ConstraintsService {
         this.sessionUser = sessionUser;
     }
 
-    public Optional<ResponseEntity> checkRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
+    public Optional<ResponseEntity> checkRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<StateConstraints> stateConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
         Optional<ResponseEntity> result = checkOrganisationRoleConstraints(roleConstraints, bridgehead);
-        return (result.isPresent()) ? result : checkProjectRoleConstraints(roleConstraints, projectCode, bridgehead);
+        return (result.isPresent()) ? result : checkProjectRoleConstraints(roleConstraints, stateConstraints, projectCode, bridgehead);
     }
 
     public Optional<ResponseEntity> checkOrganisationRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> bridgehead) {
@@ -69,7 +75,7 @@ public class ConstraintsService {
         return Optional.empty();
     }
 
-    public Optional<ResponseEntity> checkProjectRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
+    public Optional<ResponseEntity> checkProjectRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<StateConstraints> stateConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
         if (roleConstraints.isPresent() && roleConstraints.get().projectRoles().length > 0) {
             if (projectCode.isEmpty() || projectCode.get().length() == 0) {
                 return Optional.of(ResponseEntity.badRequest().body("Project code not provided"));
@@ -78,9 +84,11 @@ public class ConstraintsService {
             if (project.isEmpty()) {
                 return Optional.of(ResponseEntity.notFound().build());
             }
+            Optional<UserProjectRoles> userProjectRoles = organisationRoleToProjectRoleMapper.map(project.get());
             boolean userHasProjectRoleInProject = false;
             for (ProjectRole projectRole : roleConstraints.get().projectRoles()) {
-                if (userHasProjectRoleInProject(project.get(), projectRole, bridgehead)) {
+                if (userHasProjectRoleInProject(userProjectRoles, project.get(), projectRole, bridgehead) &&
+                        isProjectRoleInAuthorizedProjectState(projectRole, project.get(), stateConstraints)) {
                     userHasProjectRoleInProject = true;
                     break;
                 }
@@ -92,9 +100,16 @@ public class ConstraintsService {
         return Optional.empty();
     }
 
-    private boolean userHasProjectRoleInProject(Project project, ProjectRole projectRole, Optional<String> bridgehead) {
-        Optional<UserProjectRoles> projectRoles = organisationRoleToProjectRoleMapper.map(project);
-        return (projectRoles.isPresent()) ? projectRoles.get().containsRole(projectRole, bridgehead) : false;
+    private boolean isProjectRoleInAuthorizedProjectState(ProjectRole projectRole, Project project, Optional<StateConstraints> stateConstraints) {
+        ProjectState projectState = temporalProjectRoleProjectStateMap.get(projectRole);
+        if (projectState == null || stateConstraints.isEmpty() || stateConstraints.get().projectStates().length == 0) {
+            return true;
+        }
+        return project.getState() == projectState && Arrays.asList(stateConstraints.get().projectStates()).contains(projectState);
+    }
+
+    private boolean userHasProjectRoleInProject(Optional<UserProjectRoles> userProjectRoles, Project project, ProjectRole projectRole, Optional<String> bridgehead) {
+        return (userProjectRoles.isPresent()) ? userProjectRoles.get().containsRole(projectRole, bridgehead) : false;
     }
 
     public Optional<ResponseEntity> checkStateConstraints(Optional<StateConstraints> stateConstraints, Optional<String> projectCode, Optional<String> bridgehead) {

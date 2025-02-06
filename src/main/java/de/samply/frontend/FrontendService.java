@@ -94,9 +94,9 @@ public class FrontendService {
                                             boolean withConstraints) {
         if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
             Optional<RoleConstraints> roleConstraints = Optional.ofNullable(method.getAnnotation(RoleConstraints.class));
-            Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, projectCode, bridgehead);
+            Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
+            Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, stateConstraints, projectCode, bridgehead);
             if (responseEntity.isEmpty()) {
-                Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
                 responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridgehead);
             }
             if (responseEntity.isEmpty()) {
