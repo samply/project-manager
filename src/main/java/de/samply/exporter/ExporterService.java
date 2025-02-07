@@ -216,7 +216,9 @@ public class ExporterService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(beamRequest)
                 .exchangeToMono(clientResponse -> {
+                    log.debug("Received HTTP POST response with status {}", clientResponse.statusCode());
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
+
                         fetchBridgeheadOperationType(taskType).ifPresent(operationType ->
                                 createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), null, projectBridgehead, projectBridgehead.getExporterUser(), operationType, description));
                         resetProjectBridgeheadDataShield(projectBridgehead);
@@ -372,6 +374,7 @@ public class ExporterService {
         if (focusQuery.isEmpty()) {
             throw new RuntimeException("Focus Query not found for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
         }
+        log.info("Checking if query is already sent or executed for project {} and bridgehead {}", projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(ProjectManagerConst.BEAM_TASK_PATH + "/" + extractTaskId(focusQuery.get()) + ProjectManagerConst.BEAM_TASK_RESULTS_PATH)
@@ -379,6 +382,7 @@ public class ExporterService {
                         .queryParam(ProjectManagerConst.BEAM_TASK_WAIT_COUNT_PARAM, beamWaitCount).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
                 .exchangeToMono(clientResponse -> {
+                    log.debug("Received HTTP GET response with status {}", clientResponse.statusCode());
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
                         Optional<OperationType> operationType = switch (projectBridgehead.getQueryState()) {
                             case SENDING -> Optional.of(OperationType.CHECK_SEND_QUERY);
