@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -80,6 +81,16 @@ public class DataShieldTokenManagerJob {
     private void manageActiveUsers() {
         List<Mono<Void>> tokenGenerations = new ArrayList<>();
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
+        Flux.fromIterable(fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState())
+                .flatMap(user -> {
+                    return Flux.fromIterable(tokenManagerService.fetchProjectBridgeheads(
+                            user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail(),
+                            projectBridgehead -> projectBridgehead.getState() == ProjectBridgeheadState.ACCEPTED));
+                })
+                .filter(this::isBridgeheadConfiguredForTokenManager)
+                .flatMap(bridgehead -> {
+                    return tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
+                });
         // Get active users of active DataSHIELD projects
         fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().forEach(user ->
                 tokenManagerService.fetchProjectBridgeheads(
