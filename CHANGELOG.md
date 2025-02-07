@@ -211,3 +211,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - ROOT_LOG_LEVEL for ROOT and LOG_LEVEL only for de.samply packages
 - Exporter Job and Exporter Service debug messages
 - Performant HTTP Client configuration
+- Beam Wait Count environment variable
