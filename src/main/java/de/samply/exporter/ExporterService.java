@@ -374,6 +374,7 @@ public class ExporterService {
         if (focusQuery.isEmpty()) {
             throw new RuntimeException("Focus Query not found for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
         }
+        log.info("Checking if query is already sent or executed for project {} and bridgehead {}", projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(ProjectManagerConst.BEAM_TASK_PATH + "/" + extractTaskId(focusQuery.get()) + ProjectManagerConst.BEAM_TASK_RESULTS_PATH)
