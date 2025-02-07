@@ -18,7 +18,8 @@ server:
 
 logging:
   level:
-    root: ${LOG_LEVEL:INFO}
+    root: ${ROOT_LOG_LEVEL:INFO}
+    de.samply: ${LOG_LEVEL:INFO}
 
 spring:
 
