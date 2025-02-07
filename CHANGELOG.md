@@ -209,3 +209,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Coder Param (APP_ID and APP_SECRET)
 - Relate project constraints with project state constraints for DEVELOPER, PILOT and FINAL users
 - ROOT_LOG_LEVEL for ROOT and LOG_LEVEL only for de.samply packages
+- Exporter Job and Exporter Service debug messages

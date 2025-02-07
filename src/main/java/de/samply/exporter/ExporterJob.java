@@ -10,6 +10,7 @@ import de.samply.email.EmailTemplateType;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryState;
 import de.samply.user.roles.ProjectRole;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+@Slf4j
 @Component
 public class ExporterJob {
 
@@ -51,6 +53,7 @@ public class ExporterJob {
     @Scheduled(cron = ProjectManagerConst.EXPORTER_CRON_EXPRESSION_SV)
     public void checkExports() {
         if (enabled) {
+            log.debug("Exporter Job started");
             Mono.when(
                     checkQueriesToSend(),
                     checkQueriesToSendAndExecute(),
@@ -58,31 +61,37 @@ public class ExporterJob {
                     checkQueriesAlreadySentToBeExecuted(),
                     checkQueriesAlreadyExecutingStep1(),
                     checkQueriesAlreadyExecutingStep2()).block();
-
+            log.debug("Exporter Job finished");
         }
     }
 
     private Mono<Void> checkQueriesToSend() {
+        log.debug("Checking queries to send...");
         return checkQueries(QueryState.TO_BE_SENT, QueryState.SENDING, exporterService::sendQueryToBridgehead);
     }
 
     private Mono<Void> checkQueriesToSendAndExecute() {
+        log.debug("Checking queries to send and execute...");
         return checkQueries(QueryState.TO_BE_SENT_AND_EXECUTED, QueryState.SENDING_AND_EXECUTING, exporterService::sendQueryToBridgeheadAndExecute);
     }
 
     private Mono<Void> checkQueriesAlreadySent() {
+        log.debug("Checking queries already sent...");
         return checkQueries(QueryState.SENDING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER);
     }
 
     private Mono<Void> checkQueriesAlreadyExecutingStep1() {
+        log.debug("Checking queries already executing (step 1)...");
         return checkQueries(QueryState.EXPORT_RUNNING_1, QueryState.EXPORT_RUNNING_2, exporterService::checkExecutionStatus);
     }
 
     private Mono<Void> checkQueriesAlreadyExecutingStep2() {
+        log.debug("Checking queries already executing (step 2)...");
         return checkQueries(QueryState.EXPORT_RUNNING_2, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER_AND_EXECUTED);
     }
 
     private Mono<Void> checkQueriesAlreadySentToBeExecuted() {
+        log.debug("Checking queries already sent to be executed...");
         return checkQueries(QueryState.SENDING_AND_EXECUTING, QueryState.EXPORT_RUNNING_1, exporterService::checkIfQueryIsAlreadySentOrExecuted, Optional.of(
                 exporterServiceResult ->
                         exporterService.fetchExporterExecutionIdFromExporterResponse(exporterServiceResult.result()).ifPresent(exportExecutionId ->
@@ -108,6 +117,7 @@ public class ExporterJob {
                 .doOnNext(exporterServiceResult -> {
                     exporterServiceResultConsumer.ifPresent(consumer -> consumer.accept(exporterServiceResult));
                     ProjectBridgehead projectBridgehead = exporterServiceResult.projectBridgehead();
+                    log.debug("Setting final query state and updating exporter response for project {} and bridgehead {}", projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
                     projectBridgehead.setQueryState(finalQueryState);
                     projectBridgehead.setExporterResponse(exporterServiceResult.result());
                     projectBridgehead.setModifiedAt(Instant.now());
