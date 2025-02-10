@@ -112,6 +112,8 @@ public class DataShieldTokenManagerJob {
                                                 userBridgehead.user().getProjectBridgehead().getProject().getCode(),
                                                 userBridgehead.bridgehead(),
                                                 userBridgehead.user().getEmail(), ifSuccessMonoSupplier);
+                                    } else if (status.tokenStatus() == DataShieldTokenStatus.CREATED) {
+                                        return createWorkspaceIfNotExists(userBridgehead.user());
                                     } else {
                                         return Mono.empty();
                                     }
@@ -128,11 +130,14 @@ public class DataShieldTokenManagerJob {
             usersToSendAnEmail.add(projectEmail);
             sendEmail(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, user.getProjectRole());
             this.rstudioGroupService.addUserToRstudioGroup(user.getEmail());
-            if (!this.coderService.existsUserResearchEnvironmentWorkspace(user)) {
-                return this.coderService.createWorkspace(user).flatMap(appRegisterService::register);
-            }
+            return createWorkspaceIfNotExists(user);
         }
         return Mono.empty();
+    }
+
+    private Mono<Void> createWorkspaceIfNotExists(ProjectBridgeheadUser user) {
+        return !this.coderService.existsUserResearchEnvironmentWorkspace(user) ?
+                this.coderService.createWorkspace(user).flatMap(appRegisterService::register) : Mono.empty();
     }
 
     private Set<ProjectBridgeheadUser> fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState() {
