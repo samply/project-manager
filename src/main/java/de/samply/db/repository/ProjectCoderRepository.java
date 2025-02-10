@@ -31,4 +31,11 @@ public interface ProjectCoderRepository extends JpaRepository<ProjectCoder, Long
 
     List<ProjectCoder> findByProjectBridgeheadUserOrderByCreatedAtDesc(ProjectBridgeheadUser projectBridgeheadUser);
 
+    @Query("SELECT DISTINCT pc FROM ProjectCoder pc " +
+            "JOIN pc.projectBridgeheadUser pbu " +
+            "JOIN pbu.projectBridgehead pb " +
+            "JOIN pb.project p " +
+            "WHERE pc.deletedAt IS NULL AND p.code = :projectCode AND pb.bridgehead = :bridgehead")
+    List<ProjectCoder> findDistinctByProjectCodeAndBridgeheadIfNotDeleted(@Param("projectCode") String projectCode, @Param("bridgehead") String bridgehead);
+
 }

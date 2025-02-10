@@ -2,7 +2,6 @@ package de.samply.coder;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.coder.request.CreateRequestBody;
-import de.samply.coder.request.CreateRequestParameter;
 import de.samply.coder.request.Response;
 import de.samply.coder.request.TransitionRequestBody;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -20,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -152,32 +152,35 @@ public class CoderService {
         return projectCoder;
     }
 
-    public Mono<ProjectCoder> deleteWorkspace(@NotNull String email, @NotNull String projectCode) throws CoderServiceException {
-        Optional<ProjectBridgeheadUser> user = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectCodeOrderByModifiedAtDesc(email, projectCode);
-        if (user.isEmpty()) {
-            log.error("User " + email + " for project " + projectCode + " not found");
-            return Mono.empty();
-        }
-        return deleteWorkspace(user.get());
+    public Flux<ProjectCoder> deleteAllWorkspaces(@NotNull String projectCode, @NotNull String bridgehead) {
+        return Flux.fromIterable(projectCoderRepository.findDistinctByProjectCodeAndBridgeheadIfNotDeleted(projectCode, bridgehead))
+                .flatMap(projectCoder -> deleteWorkspace(projectCoder));
     }
 
     public Mono<ProjectCoder> deleteWorkspace(@NotNull ProjectBridgeheadUser user) {
         if (coderEnabled) {
             Optional<ProjectCoder> projectCoder = projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
             if (projectCoder.isPresent()) {
-                return deleteWorkspace(projectCoder.get()).doOnSuccess(response -> {
-                    projectCoder.get().setDeletedAt(Instant.now());
-                    projectCoderRepository.save(projectCoder.get());
-                    notificationService.createNotification(user.getProjectBridgehead().getProject().getCode(),
-                            user.getProjectBridgehead().getBridgehead(), user.getEmail(), OperationType.DELETE_CODER_WORKSPACE,
-                            "Deleted workspace " + projectCoder.get().getWorkspaceId(), null, null);
-                }).flatMap(response -> Mono.just(projectCoder.get()));
+                return deleteWorkspace(projectCoder.get());
             }
         }
         return Mono.empty();
     }
 
-    private Mono<Response> deleteWorkspace(ProjectCoder projectCoder) {
+    public Mono<ProjectCoder> deleteWorkspace(@NotNull ProjectCoder projectCoder) {
+        if (coderEnabled) {
+            return deleteWorkspaceInCoder(projectCoder).doOnSuccess(response -> {
+                projectCoder.setDeletedAt(Instant.now());
+                projectCoderRepository.save(projectCoder);
+                notificationService.createNotification(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                        projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(), projectCoder.getProjectBridgeheadUser().getEmail(), OperationType.DELETE_CODER_WORKSPACE,
+                        "Deleted workspace " + projectCoder.getWorkspaceId(), null, null);
+            }).flatMap(response -> Mono.just(projectCoder));
+        }
+        return Mono.empty();
+    }
+
+    private Mono<Response> deleteWorkspaceInCoder(ProjectCoder projectCoder) {
         log.info("Deleting coder workspace for project {} and user {}...", projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(), projectCoder.getProjectBridgeheadUser().getEmail());
         return this.webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.CODER_API_PATH)
@@ -215,7 +218,7 @@ public class CoderService {
     public String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         String email = projectBridgeheadUser.getEmail().substring(0, projectBridgeheadUser.getEmail().indexOf("@")).replaceAll("[^a-zA-Z0-9]", "");
         String projectCode = projectBridgeheadUser.getProjectBridgehead().getProject().getCode();
-        String state = projectBridgeheadUser.getProjectBridgehead().getProject().getState().toString().toLowerCase().substring(0,3); // Only three first characters
+        String state = projectBridgeheadUser.getProjectBridgehead().getProject().getState().toString().toLowerCase().substring(0, 3); // Only three first characters
 
         String coderAppId = email + projectCode + state;
         // Check if the coderAppId exceeds the maximum allowed length
@@ -265,7 +268,7 @@ public class CoderService {
         return !projectCoder.isEmpty() && projectCoder.get(0).getDeletedAt() == null;
     }
 
-    public boolean existsUserResearchEnvironmentWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser){
+    public boolean existsUserResearchEnvironmentWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         List<ProjectCoder> projectCoders = this.projectCoderRepository.findByProjectBridgeheadUserOrderByCreatedAtDesc(projectBridgeheadUser);
         return !projectCoders.isEmpty() && projectCoders.get(0).getDeletedAt() == null;
     }

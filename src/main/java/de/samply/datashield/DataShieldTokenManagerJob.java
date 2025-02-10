@@ -4,6 +4,7 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.coder.CoderService;
 import de.samply.datashield.dto.DataShieldProjectStatus;
+import de.samply.datashield.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.datashield.dto.DataShieldTokenStatus;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadDataShield;
@@ -20,6 +21,7 @@ import de.samply.project.state.ProjectState;
 import de.samply.register.AppRegisterService;
 import de.samply.rstudio.group.RstudioGroupService;
 import de.samply.user.roles.ProjectRole;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -232,20 +234,42 @@ public class DataShieldTokenManagerJob {
         // Get users of DataSHIELD inactive states projects
         return Flux.fromIterable(this.projectBridgeheadRepository.getByProjectTypeAndNotProjectState(ProjectType.DATASHIELD, Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL)).stream()
                         .filter(this::isBridgeheadConfiguredForTokenManager)
-                        .filter(projectBridgehead -> {
-                            Optional<ProjectBridgeheadDataShield> projectBridgeheadDataShield = projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead);
-                            setAsRemoved(projectBridgeheadDataShield, projectBridgehead);
-                            return projectBridgeheadDataShield.isEmpty() || !projectBridgeheadDataShield.get().isRemoved();
-                        }).toList())
-                .flatMap(projectBridgeheadDataShield -> tokenManagerService.fetchProjectStatus(projectBridgeheadDataShield.getProject().getCode(), projectBridgeheadDataShield.getBridgehead()))
-                .filter(dataShieldTokenManagerProjectStatus ->
-                        dataShieldTokenManagerProjectStatus.projectStatus() != DataShieldProjectStatus.NOT_FOUND &&
-                                dataShieldTokenManagerProjectStatus.projectStatus() != DataShieldProjectStatus.INACTIVE)
-                .flatMap(dataShieldTokenManagerProjectStatus ->
-                        tokenManagerService.removeProjectAndTokens(dataShieldTokenManagerProjectStatus.projectCode(), dataShieldTokenManagerProjectStatus.bridgehead()))
+                        .map(projectBridgehead -> new InactiveProject(projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead), projectBridgehead))
+                        .filter(inactiveProject -> inactiveProject.getProjectBridgeheadDataShield().isEmpty() || !inactiveProject.getProjectBridgeheadDataShield().get().isRemoved())
+                        .toList())
+                .flatMap(inactiveProject ->
+                        tokenManagerService.fetchProjectStatus(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())
+                                .flatMap(status -> {
+                                    inactiveProject.setStatus(status);
+                                    return Mono.just(inactiveProject);
+                                })
+                )
+                .flatMap(inactiveProject ->
+                        Mono.when(
+                                        Mono.just(inactiveProject)
+                                                .filter(unused ->
+                                                        inactiveProject.getStatus().projectStatus() != DataShieldProjectStatus.NOT_FOUND &&
+                                                                inactiveProject.getStatus().projectStatus() != DataShieldProjectStatus.INACTIVE)
+                                                .flatMap(unused -> tokenManagerService.removeProjectAndTokens(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())),
+                                        coderService.deleteAllWorkspaces(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())
+                                                .flatMap(appRegisterService::unregister).then())
+                                .doOnSuccess(unused -> setAsRemoved(inactiveProject.getProjectBridgeheadDataShield(), inactiveProject.getProjectBridgehead()))
+                )
                 .then();
     }
 
+    @Data
+    private class InactiveProject {
+        private Optional<ProjectBridgeheadDataShield> projectBridgeheadDataShield = Optional.empty();
+        private ProjectBridgehead projectBridgehead;
+        private DataShieldTokenManagerProjectStatus status;
+
+        public InactiveProject(Optional<ProjectBridgeheadDataShield> projectBridgeheadDataShield, ProjectBridgehead projectBridgehead) {
+            this.projectBridgeheadDataShield = projectBridgeheadDataShield;
+            this.projectBridgehead = projectBridgehead;
+        }
+
+    }
 
     private void setAsRemoved(Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataShield, ProjectBridgehead projectBridgehead) {
         ProjectBridgeheadDataShield result = null;
