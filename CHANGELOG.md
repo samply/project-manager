@@ -212,3 +212,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Exporter Job and Exporter Service debug messages
 - Performant HTTP Client configuration
 - Beam Wait Count environment variable
+- Log DataSHIELD Token Manager Job and Service

@@ -73,14 +73,17 @@ public class DataShieldTokenManagerJob {
     @Scheduled(cron = ProjectManagerConst.MANAGE_TOKENS_CRON_EXPRESSION_SV)
     public void manageTokens() {
         if (isTokenManagerActive) {
+            log.debug("Starting DataSHIELD Job...");
             Mono.when(
                     manageActiveUsers(),
                     manageInactiveUsers(),
                     manageInactiveProjects()).block();
+            log.debug("DataSHIELD Job finished");
         }
     }
 
     private Mono<Void> manageActiveUsers() {
+        log.debug("Manage DataSHIELD active users...");
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
         return Flux.fromIterable(
                         fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().stream()
@@ -151,6 +154,7 @@ public class DataShieldTokenManagerJob {
     }
 
     private Mono<Void> manageInactiveUsers() {
+        log.debug("Manage DataSHIELD inactive users...");
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
         return Flux.fromIterable(Stream.concat(
                         // Manage users that are not developers in develop, pilot in pilot or final in final
@@ -213,6 +217,7 @@ public class DataShieldTokenManagerJob {
     }
 
     private Mono<Void> manageInactiveProjects() {
+        log.debug("Manage DataSHIELD active projects...");
         // Get users of DataSHIELD inactive states projects
         return Flux.fromIterable(this.projectBridgeheadRepository.getByProjectTypeAndNotProjectState(ProjectType.DATASHIELD, Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL)).stream()
                         .filter(this::isBridgeheadConfiguredForTokenManager)
