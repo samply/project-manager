@@ -166,7 +166,7 @@ public class ExporterService {
 
     @Async
     public Mono<Void> transferFileToResearchEnvironment(ProjectCoder projectCoder) {
-        String description = "Transfering file to Research Environment for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead();
+        String description = "Transferring file to Research Environment for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead();
         log.info(description);
         return postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER, description)
                 .doOnError(throwable -> {
@@ -183,6 +183,7 @@ public class ExporterService {
                     log.error(ExceptionUtils.getStackTrace(throwable));
                 })
                 .doOnSuccess(result -> {
+                    log.info("Files transferred correctly");
                     projectCoder.setExportTransferred(true);
                     this.projectCoderRepository.save(projectCoder);
                     notificationService.createNotification(

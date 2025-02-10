@@ -120,6 +120,7 @@ public class CoderService {
     }
 
     private Mono<Response> createWorkspace(ProjectCoder projectCoder, CreateRequestBody createRequestBody) {
+        log.info("Creating workspace in Coder for project {} and user {}...", projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(), projectCoder.getProjectBridgeheadUser().getEmail());
         return this.webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.CODER_API_PATH).path(
                         replaceVariablesInPath(coderCreatePath, Map.of(ProjectManagerConst.CODER_MEMBER_ID,
@@ -129,6 +130,7 @@ public class CoderService {
                 .bodyValue(createRequestBody)
                 .exchangeToMono(clientResponse -> {
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
+                        log.info("Coder workspace created");
                         return clientResponse.bodyToMono(Response.class);
                     } else {
                         log.error("Http error " + clientResponse.statusCode() + " creating workspace in Coder for user "
@@ -176,6 +178,7 @@ public class CoderService {
     }
 
     private Mono<Response> deleteWorkspace(ProjectCoder projectCoder) {
+        log.info("Deleting coder workspace for project {} and user {}...", projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(), projectCoder.getProjectBridgeheadUser().getEmail());
         return this.webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.CODER_API_PATH)
                         .path(replaceVariablesInPath(coderDeletePath, Map.of(ProjectManagerConst.CODER_WORKSPACE_ID, projectCoder.getWorkspaceId()))).build())
@@ -184,6 +187,7 @@ public class CoderService {
                 .bodyValue(new TransitionRequestBody(ProjectManagerConst.CODER_DELETE_TRANSITION))
                 .exchangeToMono(clientResponse -> {
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
+                        log.info("Coder workspace deleted");
                         return clientResponse.bodyToMono(Response.class);
                     } else {
                         log.error("Http error " + clientResponse.statusCode() + " deleting workspace in Coder for user "
