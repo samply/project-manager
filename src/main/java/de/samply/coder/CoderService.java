@@ -265,4 +265,9 @@ public class CoderService {
         return !projectCoder.isEmpty() && projectCoder.get(0).getDeletedAt() == null;
     }
 
+    public boolean existsUserResearchEnvironmentWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser){
+        List<ProjectCoder> projectCoders = this.projectCoderRepository.findByProjectBridgeheadUserOrderByCreatedAtDesc(projectBridgeheadUser);
+        return !projectCoders.isEmpty() && projectCoders.get(0).getDeletedAt() == null;
+    }
+
 }

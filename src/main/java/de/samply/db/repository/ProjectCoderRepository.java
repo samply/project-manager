@@ -29,4 +29,6 @@ public interface ProjectCoderRepository extends JpaRepository<ProjectCoder, Long
             @Param("email") String email
     );
 
+    List<ProjectCoder> findByProjectBridgeheadUserOrderByCreatedAtDesc(ProjectBridgeheadUser projectBridgeheadUser);
+
 }

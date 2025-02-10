@@ -102,10 +102,7 @@ public class DataShieldTokenManagerJob {
                                 .filter(status -> status.projectStatus() == DataShieldProjectStatus.WITH_DATA)
                                 .flatMap(status -> {
                                     Supplier<Mono> ifSuccessMonoSupplier = () ->
-                                            sendNewTokenEmailAndCreateWorkspaceIfNotExists(userBridgehead.user().getEmail(),
-                                                    userBridgehead.user().getProjectBridgehead().getProject().getCode(),
-                                                    userBridgehead.bridgehead(),
-                                                    userBridgehead.user().getProjectRole(), usersToSendAnEmail);
+                                            sendNewTokenEmailAndCreateWorkspaceIfNotExists(userBridgehead.user(), usersToSendAnEmail);
                                     if (status.tokenStatus() == DataShieldTokenStatus.NOT_FOUND) { // If user token not found: Create token
                                         return tokenManagerService.generateTokensInOpal(
                                                 userBridgehead.user().getProjectBridgehead().getProject().getCode(),
@@ -125,14 +122,14 @@ public class DataShieldTokenManagerJob {
     private record UserBridgehead(ProjectBridgeheadUser user, String bridgehead) {
     }
 
-    private Mono<Void> sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
-        ProjectEmail projectEmail = new ProjectEmail(projectCode, bridgehead);
+    private Mono<Void> sendNewTokenEmailAndCreateWorkspaceIfNotExists(ProjectBridgeheadUser user, Set<ProjectEmail> usersToSendAnEmail) {
+        ProjectEmail projectEmail = new ProjectEmail(user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead());
         if (!usersToSendAnEmail.contains(projectEmail)) {
             usersToSendAnEmail.add(projectEmail);
-            sendEmail(email, projectCode, bridgehead, EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, projectRole);
-            this.rstudioGroupService.addUserToRstudioGroup(email);
-            if (!this.coderService.existsUserResearchEnvironmentWorkspace(projectCode, bridgehead, email)) {
-                return this.coderService.createWorkspace(email, projectCode).flatMap(appRegisterService::register);
+            sendEmail(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, user.getProjectRole());
+            this.rstudioGroupService.addUserToRstudioGroup(user.getEmail());
+            if (!this.coderService.existsUserResearchEnvironmentWorkspace(user)) {
+                return this.coderService.createWorkspace(user).flatMap(appRegisterService::register);
             }
         }
         return Mono.empty();
@@ -164,7 +161,6 @@ public class DataShieldTokenManagerJob {
                                         this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL))
                                 .flatMap(Set::stream)
                                 .filter(user -> user.getProjectRole() != ProjectRole.CREATOR)
-                                .filter(user -> this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(user.getEmail(), user.getProjectBridgehead()).isEmpty()) // Check that it is not valid again (e.g. develop and final)
                                 .flatMap(user ->
                                         this.tokenManagerService.fetchProjectBridgeheads(
                                                         user.getProjectBridgehead().getProject().getCode(),
@@ -189,23 +185,32 @@ public class DataShieldTokenManagerJob {
     private Mono<Void> manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead, Set<ProjectEmail> usersToSendAnEmail) {
         return tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail()) // Check user status
                 .filter(status -> status.tokenStatus() != DataShieldTokenStatus.NOT_FOUND && status.tokenStatus() != DataShieldTokenStatus.INACTIVE)
-                .flatMap(status ->
-                        // If user token created or expired: Remove token
-                        tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(),
-                                () -> sendEmailAndDeleteWorkspace(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getProjectRole(), usersToSendAnEmail)));
+                .flatMap(status -> {
+                    // If user token created or expired: Remove token
+                    if (this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(user.getEmail(), user.getProjectBridgehead()).isEmpty()) { // Check that is not valid again (e.g. user that is developer and final user in final state
+                        return tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(),
+                                () -> sendEmailAndDeleteWorkspace(user, usersToSendAnEmail));
+                    } else {
+                        return deleteWorkspace(user);
+                    }
+                });
     }
 
-    private Mono<Void> sendEmailAndDeleteWorkspace(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
-        ProjectEmail projectEmail = new ProjectEmail(email, projectCode);
+    private Mono<Void> sendEmailAndDeleteWorkspace(ProjectBridgeheadUser user, Set<ProjectEmail> usersToSendAnEmail) {
+        ProjectEmail projectEmail = new ProjectEmail(user.getEmail(), user.getProjectBridgehead().getProject().getCode());
         if (!usersToSendAnEmail.contains(projectEmail)) {
             usersToSendAnEmail.add(projectEmail);
-            sendEmail(email, projectCode, bridgehead, EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, projectRole);
-            if (projectRole != ProjectRole.FINAL || this.projectBridgeheadRepository.findByProjectCodeAndState(projectCode, ProjectBridgeheadState.ACCEPTED).isEmpty()) {
-                this.rstudioGroupService.removeUserFromRstudioGroup(email);
-                return this.coderService.deleteWorkspace(email, projectCode).flatMap(appRegisterService::unregister);
+            sendEmail(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, user.getProjectRole());
+            if (user.getProjectRole() != ProjectRole.FINAL || this.projectBridgeheadRepository.findByProjectAndState(user.getProjectBridgehead().getProject(), ProjectBridgeheadState.ACCEPTED).isEmpty()) {
+                this.rstudioGroupService.removeUserFromRstudioGroup(user.getEmail());
+                return deleteWorkspace(user);
             }
         }
         return Mono.empty();
+    }
+
+    private Mono<Void> deleteWorkspace(ProjectBridgeheadUser user) {
+        return this.coderService.deleteWorkspace(user).flatMap(appRegisterService::unregister);
     }
 
 
