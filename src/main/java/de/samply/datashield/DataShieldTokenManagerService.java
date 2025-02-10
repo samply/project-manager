@@ -149,9 +149,9 @@ public class DataShieldTokenManagerService {
         return project.get();
     }
 
-    public DataShieldTokenManagerTokenStatus fetchTokenStatus(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
+    public Mono<DataShieldTokenManagerTokenStatus> fetchTokenStatus(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String email) {
         if (!isTokenManagerActive) {
-            return new DataShieldTokenManagerTokenStatus(projectCode, bridgehead, email, null, DataShieldProjectStatus.INACTIVE, DataShieldTokenStatus.INACTIVE);
+            return Mono.just(new DataShieldTokenManagerTokenStatus(projectCode, bridgehead, email, null, DataShieldProjectStatus.INACTIVE, DataShieldTokenStatus.INACTIVE));
         }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
@@ -160,7 +160,7 @@ public class DataShieldTokenManagerService {
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_EMAIL, email)
                     .toUriString();
-            return replaceTokenManagerId(webClient.get()
+            return webClient.get()
                     .uri(uri)
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
@@ -169,15 +169,17 @@ public class DataShieldTokenManagerService {
                         log.debug(ExceptionUtils.getStackTrace(exception));
                         return Mono.just(new DataShieldTokenManagerTokenStatus(projectCode, bridgehead, email, Instant.now().toString(), DataShieldProjectStatus.ERROR, DataShieldTokenStatus.ERROR));
                     })
-                    .block());
+                    .map(this::replaceTokenManagerId);
+
+
         } else {
             throw new DataShieldTokenManagerServiceException("Bridgehead " + bridgehead + " not configured for token manager");
         }
     }
 
-    public DataShieldTokenManagerProjectStatus fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
+    public Mono<DataShieldTokenManagerProjectStatus> fetchProjectStatus(@NotNull String projectCode, @NotNull String bridgehead) {
         if (!isTokenManagerActive) {
-            return new DataShieldTokenManagerProjectStatus(projectCode, bridgehead, DataShieldProjectStatus.INACTIVE);
+            return Mono.just(new DataShieldTokenManagerProjectStatus(projectCode, bridgehead, DataShieldProjectStatus.INACTIVE));
         }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
@@ -185,7 +187,7 @@ public class DataShieldTokenManagerService {
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_BRIDGEHEAD, tokenManagerId.get())
                     .queryParam(ProjectManagerConst.TOKEN_MANAGER_PARAMETER_PROJECT_CODE, projectCode)
                     .toUriString();
-            return replaceTokenManagerId(webClient.get()
+            return webClient.get()
                     .uri(uri)
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
@@ -194,7 +196,7 @@ public class DataShieldTokenManagerService {
                         log.debug(ExceptionUtils.getStackTrace(exception));
                         return Mono.just(new DataShieldTokenManagerProjectStatus(projectCode, bridgehead, DataShieldProjectStatus.ERROR));
                     })
-                    .block());
+                    .map(this::replaceTokenManagerId);
         } else {
             throw new DataShieldTokenManagerServiceException("Bridgehead " + bridgehead + " not configured for token manager");
         }

@@ -1408,7 +1408,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> this.dataShieldTokenManagerService.fetchProjectStatus(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.dataShieldTokenManagerService.fetchProjectStatus(projectCode, bridgehead).block());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
