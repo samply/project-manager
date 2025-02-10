@@ -54,6 +54,11 @@ public class AppRegisterService {
                     projectCoder.getProjectBridgeheadUser().getEmail());
             return Mono.empty();
         }
+        log.info("Registering app for user {}, project {} and bridgehead {}",
+                projectCoder.getProjectBridgeheadUser().getEmail(),
+                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead()
+                );
         return webClient.post()
                 .uri(ProjectManagerConst.REGISTER_PATH)
                 .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
@@ -74,6 +79,7 @@ public class AppRegisterService {
                     log.error(ExceptionUtils.getStackTrace(throwable));
                 })
                 .doOnSuccess(response -> {
+                    log.info("App registered");
                     projectCoder.setInAppRegister(true);
                     projectCoderRepository.save(projectCoder);
                     notificationService.createNotification(
@@ -96,6 +102,11 @@ public class AppRegisterService {
                     projectCoder.getProjectBridgeheadUser().getEmail());
             return Mono.empty();
         }
+        log.info("Unregistering app for user {}, project {} and bridgehead {}",
+                projectCoder.getProjectBridgeheadUser().getEmail(),
+                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead()
+        );
         return webClient.method(HttpMethod.DELETE)
                 .uri(ProjectManagerConst.REGISTER_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -116,6 +127,7 @@ public class AppRegisterService {
                     log.error(ExceptionUtils.getStackTrace(throwable));
                 })
                 .doOnSuccess(response -> {
+                    log.info("App unregistered");
                     projectCoder.setInAppRegister(false);
                     projectCoderRepository.save(projectCoder);
                     notificationService.createNotification(

@@ -214,3 +214,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Beam Wait Count environment variable
 - Log DataSHIELD Token Manager Job and Service
 - Log Coder Service and Job
+- Log App Register Service
