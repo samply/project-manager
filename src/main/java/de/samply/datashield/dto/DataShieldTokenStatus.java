@@ -1,4 +1,4 @@
-package de.samply.token.dto;
+package de.samply.datashield.dto;
 
 public enum DataShieldTokenStatus {
     CREATED,

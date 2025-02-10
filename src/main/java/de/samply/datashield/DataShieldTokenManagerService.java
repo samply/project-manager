@@ -1,4 +1,4 @@
-package de.samply.token;
+package de.samply.datashield;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
@@ -11,7 +11,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
-import de.samply.token.dto.*;
+import de.samply.datashield.dto.*;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;

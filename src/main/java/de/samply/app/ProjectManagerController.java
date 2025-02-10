@@ -30,7 +30,7 @@ import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
 import de.samply.query.QueryState;
-import de.samply.token.DataShieldTokenManagerService;
+import de.samply.datashield.DataShieldTokenManagerService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;

@@ -1,4 +1,4 @@
-package de.samply.token;
+package de.samply.datashield;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
@@ -17,10 +17,10 @@ import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.register.AppRegisterService;
 import de.samply.rstudio.group.RstudioGroupService;
-import de.samply.token.dto.DataShieldProjectStatus;
-import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
-import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
-import de.samply.token.dto.DataShieldTokenStatus;
+import de.samply.datashield.dto.DataShieldProjectStatus;
+import de.samply.datashield.dto.DataShieldTokenManagerProjectStatus;
+import de.samply.datashield.dto.DataShieldTokenManagerTokenStatus;
+import de.samply.datashield.dto.DataShieldTokenStatus;
 import de.samply.user.roles.ProjectRole;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
