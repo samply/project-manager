@@ -18,8 +18,6 @@ import de.samply.project.state.ProjectState;
 import de.samply.register.AppRegisterService;
 import de.samply.rstudio.group.RstudioGroupService;
 import de.samply.token.dto.DataShieldProjectStatus;
-import de.samply.token.dto.DataShieldTokenManagerProjectStatus;
-import de.samply.token.dto.DataShieldTokenManagerTokenStatus;
 import de.samply.token.dto.DataShieldTokenStatus;
 import de.samply.user.roles.ProjectRole;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +27,11 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -72,48 +73,53 @@ public class DataShieldTokenManagerJob {
     @Scheduled(cron = ProjectManagerConst.MANAGE_TOKENS_CRON_EXPRESSION_SV)
     public void manageTokens() {
         if (isTokenManagerActive) {
-            manageActiveUsers();
-            manageInactiveUsers();
-            manageInactiveProjects();
+            Mono.when(
+                    manageActiveUsers(),
+                    manageInactiveUsers(),
+                    manageInactiveProjects()).block();
         }
     }
 
-    private void manageActiveUsers() {
-        List<Mono<Void>> tokenGenerations = new ArrayList<>();
+    private Mono<Void> manageActiveUsers() {
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
-        Flux.fromIterable(fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState())
-                .flatMap(user -> {
-                    return Flux.fromIterable(tokenManagerService.fetchProjectBridgeheads(
-                            user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail(),
-                            projectBridgehead -> projectBridgehead.getState() == ProjectBridgeheadState.ACCEPTED));
-                })
-                .filter(this::isBridgeheadConfiguredForTokenManager)
-                .flatMap(bridgehead -> {
-                    return tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
-                });
-        // Get active users of active DataSHIELD projects
-        fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().forEach(user ->
-                tokenManagerService.fetchProjectBridgeheads(
-                        user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getEmail(),
-                        projectBridgehead -> projectBridgehead.getState() == ProjectBridgeheadState.ACCEPTED
-                ).stream().filter(this::isBridgeheadConfiguredForTokenManager).forEach(bridgehead -> {
-                    // Check user status
-                    DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
-                    if (dataShieldTokenManagerTokenStatus.projectStatus() == DataShieldProjectStatus.WITH_DATA) {
-                        Supplier<Mono> ifSuccessMonoSupplier = () -> sendNewTokenEmailAndCreateWorkspaceIfNotExists(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getProjectRole(), usersToSendAnEmail);
-                        if (dataShieldTokenManagerTokenStatus.tokenStatus() == DataShieldTokenStatus.NOT_FOUND) { // If user token not found: Create token
-                            tokenGenerations.add(tokenManagerService.generateTokensInOpal(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessMonoSupplier));
-                        } else if (dataShieldTokenManagerTokenStatus.tokenStatus() == DataShieldTokenStatus.EXPIRED) { // If user token expired: Refresh Token
-                            tokenGenerations.add(tokenManagerService.refreshToken(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessMonoSupplier));
-                        }
-                    }
-                }));
-        waitUntilAllOperationsAreFinished(tokenGenerations);
+        return Flux.fromIterable(
+                        fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().stream()
+                                .flatMap(user ->
+                                        tokenManagerService.fetchProjectBridgeheads(
+                                                        user.getProjectBridgehead().getProject().getCode(),
+                                                        user.getProjectBridgehead().getBridgehead(),
+                                                        user.getEmail(),
+                                                        projectBridgehead -> projectBridgehead.getState() == ProjectBridgeheadState.ACCEPTED).stream()
+                                                .filter(this::isBridgeheadConfiguredForTokenManager)
+                                                .map(bridgehead -> new UserBridgehead(user, bridgehead)))
+                                .toList())
+                .flatMap(userBridgehead ->
+                        tokenManagerService.fetchTokenStatus(userBridgehead.user().getProjectBridgehead().getProject().getCode(),
+                                        userBridgehead.bridgehead, userBridgehead.user().getEmail())
+                                .filter(status -> status.projectStatus() == DataShieldProjectStatus.WITH_DATA)
+                                .flatMap(status -> {
+                                    Supplier<Mono> ifSuccessMonoSupplier = () ->
+                                            sendNewTokenEmailAndCreateWorkspaceIfNotExists(userBridgehead.user().getEmail(),
+                                                    userBridgehead.user().getProjectBridgehead().getProject().getCode(),
+                                                    userBridgehead.bridgehead(),
+                                                    userBridgehead.user().getProjectRole(), usersToSendAnEmail);
+                                    if (status.tokenStatus() == DataShieldTokenStatus.NOT_FOUND) { // If user token not found: Create token
+                                        return tokenManagerService.generateTokensInOpal(
+                                                userBridgehead.user().getProjectBridgehead().getProject().getCode(),
+                                                userBridgehead.bridgehead(), userBridgehead.user().getEmail(), ifSuccessMonoSupplier);
+                                    } else if (status.tokenStatus() == DataShieldTokenStatus.EXPIRED) { // If user token expired: Refresh Token
+                                        return tokenManagerService.refreshToken(
+                                                userBridgehead.user().getProjectBridgehead().getProject().getCode(),
+                                                userBridgehead.bridgehead(),
+                                                userBridgehead.user().getEmail(), ifSuccessMonoSupplier);
+                                    } else {
+                                        return Mono.empty();
+                                    }
+                                }))
+                .then();
     }
 
-    private void waitUntilAllOperationsAreFinished(List<Mono<Void>> operations) {
-        // Assure that the whole processes are executed.
-        Mono.when(operations).block();
+    private record UserBridgehead(ProjectBridgeheadUser user, String bridgehead) {
     }
 
     private Mono<Void> sendNewTokenEmailAndCreateWorkspaceIfNotExists(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
@@ -144,38 +150,44 @@ public class DataShieldTokenManagerJob {
         }
     }
 
-    private void manageInactiveUsers() {
-        // Manage users that are not developers in develop, pilot in pilot or final in final
-        List<Mono<Void>> inactiveUsersManagement = new ArrayList<>();
+    private Mono<Void> manageInactiveUsers() {
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
-        Set<ProjectBridgeheadUser> inactiveUsers = this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER);
-        inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT));
-        inactiveUsers.addAll(this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL));
-        inactiveUsers.stream().filter(projectBridgeheadUser -> projectBridgeheadUser.getProjectRole() != ProjectRole.CREATOR).forEach(user -> this.tokenManagerService.fetchProjectBridgeheads(
-                user.getProjectBridgehead().getProject().getCode(),
-                user.getProjectBridgehead().getBridgehead(),
-                user.getEmail()).stream().filter(this::isBridgeheadConfiguredForTokenManager).forEach(bridgehead ->
-                inactiveUsersManagement.add(manageInactiveUsers(user, bridgehead, usersToSendAnEmail))));
-        // Manage active users that are not accepted in any of the bridgeheads
-        fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().forEach(user ->
-                this.tokenManagerService.fetchProjectBridgeheads(
-                        user.getProjectBridgehead().getProject().getCode(),
-                        user.getProjectBridgehead().getBridgehead(),
-                        user.getEmail(),
-                        projectBridgehead -> projectBridgehead.getState() != ProjectBridgeheadState.ACCEPTED).forEach(bridgehead ->
-                        inactiveUsersManagement.add(manageInactiveUsers(user, bridgehead, usersToSendAnEmail))));
-        waitUntilAllOperationsAreFinished(inactiveUsersManagement);
+        return Flux.fromIterable(Stream.concat(
+                        // Manage users that are not developers in develop, pilot in pilot or final in final
+                        Stream.of(
+                                        this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER),
+                                        this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT),
+                                        this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL))
+                                .flatMap(Set::stream)
+                                .filter(user -> user.getProjectRole() != ProjectRole.CREATOR)
+                                .flatMap(user ->
+                                        this.tokenManagerService.fetchProjectBridgeheads(
+                                                        user.getProjectBridgehead().getProject().getCode(),
+                                                        user.getProjectBridgehead().getBridgehead(),
+                                                        user.getEmail()).stream()
+                                                .filter(this::isBridgeheadConfiguredForTokenManager)
+                                                .map(bridgehead -> new UserBridgehead(user, bridgehead))),
+
+                        // Manage active users that are not accepted in any of the bridgeheads
+                        fetchActiveUsersOfDataShieldProjectsInDevelopPilotAndFinalState().stream()
+                                .flatMap(user -> this.tokenManagerService.fetchProjectBridgeheads(
+                                                user.getProjectBridgehead().getProject().getCode(),
+                                                user.getProjectBridgehead().getBridgehead(),
+                                                user.getEmail(),
+                                                projectBridgehead -> projectBridgehead.getState() != ProjectBridgeheadState.ACCEPTED).stream()
+                                        .filter(this::isBridgeheadConfiguredForTokenManager)
+                                        .map(bridgehead -> new UserBridgehead(user, bridgehead)))).toList())
+                .flatMap(userBridgehead -> manageInactiveUsers(userBridgehead.user(), userBridgehead.bridgehead(), usersToSendAnEmail))
+                .then();
     }
 
     private Mono<Void> manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead, Set<ProjectEmail> usersToSendAnEmail) {
-        // Check user status
-        DataShieldTokenManagerTokenStatus dataShieldTokenManagerTokenStatus = tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail());
-        // If user token created or expired: Remove token
-        if (dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.NOT_FOUND && dataShieldTokenManagerTokenStatus.tokenStatus() != DataShieldTokenStatus.INACTIVE) {
-            Supplier<Mono> ifSuccessMonoSupplier = () -> sendEmailAndDeleteWorkspace(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getProjectRole(), usersToSendAnEmail);
-            return tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(), ifSuccessMonoSupplier);
-        }
-        return Mono.empty();
+        return tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail()) // Check user status
+                .filter(status -> status.tokenStatus() != DataShieldTokenStatus.NOT_FOUND && status.tokenStatus() != DataShieldTokenStatus.INACTIVE)
+                .flatMap(status ->
+                        // If user token created or expired: Remove token
+                        tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(),
+                                () -> sendEmailAndDeleteWorkspace(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), user.getProjectRole(), usersToSendAnEmail)));
     }
 
     private Mono<Void> sendEmailAndDeleteWorkspace(String email, String projectCode, String bridgehead, ProjectRole projectRole, Set<ProjectEmail> usersToSendAnEmail) {
@@ -192,26 +204,6 @@ public class DataShieldTokenManagerJob {
     }
 
 
-    private void manageInactiveProjects() {
-        // Get users of DataSHIELD inactive states projects
-        List<Mono<Void>> inactiveProjectsManagement = new ArrayList<>();
-        List<ProjectBridgehead> inactiveProjects = this.projectBridgeheadRepository.getByProjectTypeAndNotProjectState(ProjectType.DATASHIELD, Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL));
-        Set<String> removedProjects = new HashSet<>();
-        inactiveProjects.stream().filter(this::isBridgeheadConfiguredForTokenManager).forEach(projectBridgehead -> {
-            Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataShield = projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead);
-            if (projectBridgeheadInDataShield.isEmpty() || !projectBridgeheadInDataShield.get().isRemoved()) {
-                // Check user status
-                DataShieldTokenManagerProjectStatus dataShieldTokenManagerProjectStatus = tokenManagerService.fetchProjectStatus(projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
-                // if project not found: Remove Token and project
-                if (dataShieldTokenManagerProjectStatus.projectStatus() != DataShieldProjectStatus.NOT_FOUND && dataShieldTokenManagerProjectStatus.projectStatus() != DataShieldProjectStatus.INACTIVE) {
-                    inactiveProjectsManagement.add(tokenManagerService.removeProjectAndTokens(projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead()));
-                }
-            }
-            setAsRemoved(projectBridgeheadInDataShield, projectBridgehead);
-        });
-        waitUntilAllOperationsAreFinished(inactiveProjectsManagement);
-    }
-
     private boolean isBridgeheadConfiguredForTokenManager(ProjectBridgehead projectBridgehead) {
         return isBridgeheadConfiguredForTokenManager(projectBridgehead.getBridgehead());
     }
@@ -219,6 +211,25 @@ public class DataShieldTokenManagerJob {
     private boolean isBridgeheadConfiguredForTokenManager(String bridgehead) {
         return this.bridgeheadConfiguration.getTokenManagerId(bridgehead).isPresent();
     }
+
+    private Mono<Void> manageInactiveProjects() {
+        // Get users of DataSHIELD inactive states projects
+        return Flux.fromIterable(this.projectBridgeheadRepository.getByProjectTypeAndNotProjectState(ProjectType.DATASHIELD, Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL)).stream()
+                        .filter(this::isBridgeheadConfiguredForTokenManager)
+                        .filter(projectBridgehead -> {
+                            Optional<ProjectBridgeheadDataShield> projectBridgeheadDataShield = projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead);
+                            setAsRemoved(projectBridgeheadDataShield, projectBridgehead);
+                            return projectBridgeheadDataShield.isEmpty() || !projectBridgeheadDataShield.get().isRemoved();
+                        }).toList())
+                .flatMap(projectBridgeheadDataShield -> tokenManagerService.fetchProjectStatus(projectBridgeheadDataShield.getProject().getCode(), projectBridgeheadDataShield.getBridgehead()))
+                .filter(dataShieldTokenManagerProjectStatus ->
+                        dataShieldTokenManagerProjectStatus.projectStatus() != DataShieldProjectStatus.NOT_FOUND &&
+                                dataShieldTokenManagerProjectStatus.projectStatus() != DataShieldProjectStatus.INACTIVE)
+                .flatMap(dataShieldTokenManagerProjectStatus ->
+                        tokenManagerService.removeProjectAndTokens(dataShieldTokenManagerProjectStatus.projectCode(), dataShieldTokenManagerProjectStatus.bridgehead()))
+                .then();
+    }
+
 
     private void setAsRemoved(Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataShield, ProjectBridgehead projectBridgehead) {
         ProjectBridgeheadDataShield result = null;
