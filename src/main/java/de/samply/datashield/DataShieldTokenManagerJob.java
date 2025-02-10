@@ -164,6 +164,7 @@ public class DataShieldTokenManagerJob {
                                         this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL))
                                 .flatMap(Set::stream)
                                 .filter(user -> user.getProjectRole() != ProjectRole.CREATOR)
+                                .filter(user -> this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(user.getEmail(), user.getProjectBridgehead()).isEmpty()) // Check that it is not valid again (e.g. develop and final)
                                 .flatMap(user ->
                                         this.tokenManagerService.fetchProjectBridgeheads(
                                                         user.getProjectBridgehead().getProject().getCode(),
