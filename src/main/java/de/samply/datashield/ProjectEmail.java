@@ -1,6 +1,5 @@
-package de.samply.token;
+package de.samply.datashield;
 
-import de.samply.user.roles.ProjectRole;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 

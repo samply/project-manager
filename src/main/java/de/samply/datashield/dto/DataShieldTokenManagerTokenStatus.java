@@ -1,4 +1,4 @@
-package de.samply.token.dto;
+package de.samply.datashield.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.samply.app.ProjectManagerConst;

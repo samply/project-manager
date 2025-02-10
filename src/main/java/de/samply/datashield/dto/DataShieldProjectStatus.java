@@ -1,4 +1,4 @@
-package de.samply.token.dto;
+package de.samply.datashield.dto;
 
 public enum DataShieldProjectStatus {
     CREATED, // The project exists in the bridgehead opal

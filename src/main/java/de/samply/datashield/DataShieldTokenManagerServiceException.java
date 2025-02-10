@@ -1,4 +1,4 @@
-package de.samply.token;
+package de.samply.datashield;
 
 public class DataShieldTokenManagerServiceException extends RuntimeException {
     public DataShieldTokenManagerServiceException(Throwable cause) {

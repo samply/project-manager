@@ -90,7 +90,7 @@ public class ExporterService {
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
             @Value(ProjectManagerConst.RESEARCH_ENVIRONMENT_TEMPLATES_SV) Set<String> researchEnvironmentTemplates,
             @Value(ProjectManagerConst.BEAM_TTL_SV) String beamWaitTime,
-            @Value(ProjectManagerConst.BEAM_FAILURE_STRATEGY_MAX_TRIES_SV) String beamWaitCount,
+            @Value(ProjectManagerConst.BEAM_WAIT_COUNT_SV) String beamWaitCount,
             @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
             @Value(ProjectManagerConst.CODER_BEAM_ID_SUFFIX_SV) String coderBeamIdSuffix,
             @Value(ProjectManagerConst.CODER_TEST_FILE_BEAM_ID_SV) String testCoderFileBeamId,

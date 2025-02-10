@@ -371,6 +371,7 @@ public class ProjectManagerConst {
     public final static String RESEARCH_ENVIRONMENT_TEMPLATES = "RESEARCH_ENVIRONMENT_TEMPLATES";
     public final static String BEAM_PROJECT_MANAGER_ID = "BEAM_PROJECT_MANAGER_ID";
     public final static String BEAM_TTL = "BEAM_TTL";
+    public final static String BEAM_WAIT_COUNT = "BEAM_WAIT_COUNT";
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES = "BEAM_FAILURE_STRATEGY_MAX_TRIES";
     public final static String BEAM_URL = "BEAM_URL";
@@ -483,7 +484,8 @@ public class ProjectManagerConst {
     public final static String RESEARCH_ENVIRONMENT_TEMPLATES_SV = HEAD_SV + RESEARCH_ENVIRONMENT_TEMPLATES + BOTTOM_SV;
     public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
     public final static String BEAM_PROJECT_MANAGER_ID_SV = HEAD_SV + BEAM_PROJECT_MANAGER_ID + BOTTOM_SV;
-    public final static String BEAM_TTL_SV = HEAD_SV + BEAM_TTL + ":180s" + BOTTOM_SV;
+    public final static String BEAM_TTL_SV = HEAD_SV + BEAM_TTL + ":30s" + BOTTOM_SV;
+    public final static String BEAM_WAIT_COUNT_SV = HEAD_SV + BEAM_WAIT_COUNT + ":1" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
             HEAD_SV + BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + BEAM_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
