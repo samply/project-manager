@@ -260,13 +260,10 @@ public class CoderService {
     }
 
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull String projectCode, @NotNull String bridgehead) {
-        return existsUserResearchEnvironmentWorkspace(projectCode, bridgehead, sessionUser.getEmail());
-    }
-
-    public boolean existsUserResearchEnvironmentWorkspace(@NotNull String projectCode, @NotNull String bridgehead, String email) {
-        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, email);
+        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeOrderedByCreatedAtDesc(bridgehead, projectCode);
         return !projectCoder.isEmpty() && projectCoder.get(0).getDeletedAt() == null;
     }
+
 
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         List<ProjectCoder> projectCoders = this.projectCoderRepository.findByProjectBridgeheadUserOrderByCreatedAtDesc(projectBridgeheadUser);

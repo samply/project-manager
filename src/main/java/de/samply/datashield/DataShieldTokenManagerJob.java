@@ -253,7 +253,7 @@ public class DataShieldTokenManagerJob {
                                                 .flatMap(unused -> tokenManagerService.removeProjectAndTokens(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())),
                                         coderService.deleteAllWorkspaces(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())
                                                 .flatMap(appRegisterService::unregister).then())
-                                .doOnSuccess(unused -> setAsRemoved(inactiveProject.getProjectBridgeheadDataShield(), inactiveProject.getProjectBridgehead()))
+                                .doOnSuccess(unused -> setAsRemovedIfConditions(inactiveProject))
                 )
                 .then();
     }
@@ -271,16 +271,21 @@ public class DataShieldTokenManagerJob {
 
     }
 
-    private void setAsRemoved(Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataShield, ProjectBridgehead projectBridgehead) {
+    private void setAsRemovedIfConditions(InactiveProject inactiveProject) {
         ProjectBridgeheadDataShield result = null;
-        if (projectBridgeheadInDataShield.isPresent()) {
-            if (!projectBridgeheadInDataShield.get().isRemoved()) {
-                result = projectBridgeheadInDataShield.get();
+        if (inactiveProject.getProjectBridgeheadDataShield().isPresent()) {
+            if ((inactiveProject.getStatus().projectStatus() == DataShieldProjectStatus.NOT_FOUND ||
+                    inactiveProject.getStatus().projectStatus() == DataShieldProjectStatus.INACTIVE) &&
+                    coderService.existsUserResearchEnvironmentWorkspace(
+                            inactiveProject.getProjectBridgehead().getProject().getCode(),
+                            inactiveProject.getProjectBridgehead().getBridgehead())
+            ) {
+                result = inactiveProject.getProjectBridgeheadDataShield().get();
                 result.setRemoved(true);
             }
         } else {
             result = new ProjectBridgeheadDataShield();
-            result.setProjectBridgehead(projectBridgehead);
+            result.setProjectBridgehead(inactiveProject.getProjectBridgehead());
         }
         if (result != null) {
             projectBridgeheadDataShieldRepository.save(result);

@@ -16,6 +16,18 @@ public interface ProjectCoderRepository extends JpaRepository<ProjectCoder, Long
     Optional<ProjectCoder> findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(ProjectBridgeheadUser projectBridgeheadUser);
 
     @Query("""
+                SELECT pc
+                FROM ProjectCoder pc
+                WHERE pc.projectBridgeheadUser.projectBridgehead.bridgehead = :bridgehead
+                  AND pc.projectBridgeheadUser.projectBridgehead.project.code = :projectCode
+                ORDER BY pc.createdAt DESC
+            """)
+    List<ProjectCoder> findByBridgeheadAndProjectCodeOrderedByCreatedAtDesc(
+            @Param("bridgehead") String bridgehead,
+            @Param("projectCode") String projectCode
+    );
+
+    @Query("""
         SELECT pc
         FROM ProjectCoder pc
         WHERE pc.projectBridgeheadUser.projectBridgehead.bridgehead = :bridgehead
