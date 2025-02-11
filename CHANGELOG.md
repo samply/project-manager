@@ -216,3 +216,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Log Coder Service and Job
 - Log App Register Service
 - Removal conditions for ProjectBridgeheadDataShield
+- Check message for HTTP requests to exporter

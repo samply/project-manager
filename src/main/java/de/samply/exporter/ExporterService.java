@@ -130,21 +130,24 @@ public class ExporterService {
         String description = "Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " ...";
         log.info(description);
         TaskType taskType = TaskType.CREATE;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description);
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
+                .doOnSuccess(exporterServiceResult -> log.info("Query sent"));
     }
 
     public Mono<ExporterServiceResult> sendQueryToBridgeheadAndExecute(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
         String description = "Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " to be executed...";
         log.info(description);
         TaskType taskType = TaskType.EXECUTE;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description);
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
+                .doOnSuccess(exporterServiceResult -> log.info("Query sent"));
     }
 
     public Mono<ExporterServiceResult> checkExecutionStatus(ProjectBridgehead projectBridgehead) {
-        String description = "Checking export execution status of project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead();
+        String description = "Checking export execution status of project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead() + "...";
         log.info(description);
         TaskType taskType = TaskType.STATUS;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description);
+        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
+                .doOnSuccess(exporterServiceResult -> log.info("Status checked"));
     }
 
     @Async()
