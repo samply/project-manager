@@ -35,3 +35,8 @@ build/
 .mvn
 mvnw
 mvnw.cmd
+
+documents
+templates
+public-documents
+certs

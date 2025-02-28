@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>de.samply</groupId>
@@ -17,6 +17,10 @@
         <java.version>21</java.version>
         <openapi.version>2.2.0</openapi.version>
         <spring-statemachine-core.version>3.2.1</spring-statemachine-core.version>
+        <lombok.version>1.18.30</lombok.version>
+        <maven-model.version>3.9.6</maven-model.version>
+        <spring-aop.version>6.1.1</spring-aop.version>
+        <byte-buddy.version>1.14.11</byte-buddy.version>
     </properties>
     <dependencies>
         <dependency>
@@ -29,11 +33,27 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -48,6 +68,17 @@
             <groupId>org.springframework.statemachine</groupId>
             <artifactId>spring-statemachine-core</artifactId>
             <version>${spring-statemachine-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+            <version>${maven-model.version}</version>
         </dependency>
 
         <dependency>
@@ -68,6 +99,7 @@
     </dependencies>
 
     <build>
+        <finalName>project-manager</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

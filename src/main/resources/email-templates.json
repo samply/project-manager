@@ -1,0 +1,127 @@
+{
+  "templates": {
+    "NEW_PROJECT": {
+      "subject": "New project",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-new-project.html"
+      }
+    },
+    "NEW_PROJECT_ACCEPTED": {
+      "subject": "Project accepted",
+      "files": {
+        "CREATOR": "creator-new-project-accepted.html",
+        "BRIDGEHEAD_ADMIN": "bridgehead-admin-new-project-accepted.html"
+      }
+    },
+    "NEW_VOTUM": {
+      "subject": "New votum for project",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-new-votum.html"
+      }
+    },
+    "INVITATION": {
+      "subject": "Access to DataSHIELD",
+      "files": {
+        "DEVELOPER": "developer-invitation.html",
+        "PILOT": "pilot-invitation.html",
+        "FINAL": "final-execution-user-invitation.html"
+      }
+    },
+    "PROJECT_BRIDGEHEAD_ACCEPTED": {
+      "subject": "Project accepted in bridgehead",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-project-bridgehead-accepted.html"
+      }
+    },
+    "PROJECT_BRIDGEHEAD_REJECTED": {
+      "subject": "Project rejected in bridgehead",
+      "files": {
+        "PROJECT_MANAGER_ADMIN": "project-manager-admin-project-bridgehead-rejected.html"
+      }
+    },
+    "REQUEST_TECHNICAL_APPROVAL": {
+      "subject": "Technical approval requested",
+      "files": {
+        "BRIDGEHEAD_ADMIN": "bridgehead-admin-request-technical-approval.html"
+      }
+    },
+    "SCRIPT_ACCEPTED": {
+      "subject": "Script accepted",
+      "files": {
+        "DEFAULT": "default-script-accepted.html"
+      }
+    },
+    "SCRIPT_REJECTED": {
+      "subject": "Script rejected",
+      "files": {
+        "DEFAULT": "default-script-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_SCRIPT": {
+      "subject": "Changes in script requested",
+      "files": {
+        "DEFAULT": "default-script-changes-requested.html"
+      }
+    },
+    "RESULTS_ACCEPTED": {
+      "subject": "Results accepted",
+      "files": {
+        "DEFAULT": "default-results-accepted.html"
+      }
+    },
+    "RESULTS_REJECTED": {
+      "subject": "Results rejected",
+      "files": {
+        "DEFAULT": "default-results-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_PROJECT": {
+      "subject": "Changes in project requested",
+      "files": {
+        "DEFAULT": "default-results-changes-requested.html"
+      }
+    },
+    "ANALYSIS_ACCEPTED": {
+      "subject": "Analysis accepted",
+      "files": {
+        "DEFAULT": "default-analysis-accepted.html"
+      }
+    },
+    "ANALYSIS_REJECTED": {
+      "subject": "Analysis rejected",
+      "files": {
+        "DEFAULT": "default-analysis-rejected.html"
+      }
+    },
+    "REQUEST_CHANGES_IN_PROJECT_ANALYSIS": {
+      "subject": "Changes in project analysis requested",
+      "files": {
+        "DEFAULT": "default-analysis-changes-requested.html"
+      }
+    },
+    "NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT": {
+      "subject": "New Authentication Script for DataSHIELD",
+      "files": {
+        "DEFAULT": "default-new-authentication-script.html"
+      }
+    },
+    "INVALID_AUTHENTICATION_SCRIPT": {
+      "subject": "Some tokens of Authentication Script no longer valid for DataSHIELD",
+      "files": {
+        "DEFAULT": "default-invalid-authentication-script.html"
+      }
+    },
+    "FINISHED_PROJECT": {
+      "subject": "Project finished",
+      "files": {
+        "DEFAULT": "default-project-finished.html"
+      }
+    },
+    "NEW_PUBLICATION": {
+      "subject": "New publication",
+      "files": {
+        "DEFAULT": "default-new-publication.html"
+      }
+    }
+  }
+}

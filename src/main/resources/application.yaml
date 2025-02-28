@@ -1,0 +1,110 @@
+server:
+  port: ${APPLICATION_PORT:8097}
+#  ssl:
+#    key-store: ${KEYSTORE}
+#    key-store-password: ${KEYSTORE_PASSWORD}
+#    key-store-type: PKCS12
+#    key-alias: tomcat
+#    trust-all: true
+#    trust-store-type: JKS
+#    trust-store: ${TRUST_STORE}
+#    trust-store-password: ${TRUST_STORE_PASSWORD}
+
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: none
+
+logging:
+  level:
+    root: ${ROOT_LOG_LEVEL:INFO}
+    de.samply: ${LOG_LEVEL:INFO}
+
+spring:
+
+  flyway:
+    locations: classpath:db/migration
+    enabled: ${PROJECT_MANAGER_DB_FLYWAY_MIGRATION_ENABLED:true}
+    url: ${PROJECT_MANAGER_DB_URL:jdbc:postgresql://localhost:5432/project_manager}
+    user: ${PROJECT_MANAGER_DB_USER:project_manager}
+    password: ${PROJECT_MANAGER_DB_PASSWORD:project_manager}
+    default-schema: samply
+
+  datasource:
+    url: ${PROJECT_MANAGER_DB_URL:jdbc:postgresql://localhost:5432/project_manager}
+    username: ${PROJECT_MANAGER_DB_USER:project_manager}
+    password: ${PROJECT_MANAGER_DB_PASSWORD:project_manager}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    show-sql: ${HIBERNATE_LOG:false}
+
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc:
+            issuer-uri: ${OIDC_URL}/realms/${OIDC_REALM}
+            authorization-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/auth
+            token-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/token
+            user-info-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/certs
+            user-name-attribute: email
+        registration:
+          oidc:
+            client-id: ${OIDC_CLIENT_ID}
+            client-secret: ${OIDC_CLIENT_SECRET:}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
+
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:10MB}
+      max-request-size: ${MAX_REQEST_SIZE:10MB}
+
+#  mail:
+#    host: ${SMTP_HOST}
+#    port: ${SMTP_PORT}
+#    username: ${SMTP_USER}
+#    password: ${SMTP_PASSWORD}
+  #    properties:
+  #      mail:
+  #        smtp:
+  #          auth: true
+  #          starttls:
+  #            enable: true
+  #          smtp:
+  #            proxy:
+  #              host: ${PROXY_HOST}
+  #              port: ${PROXY_PORT}
+
+
+#bridgeheads:
+#  config:
+#    frankfurt:
+#      explorer-code: frankfurt123
+#      exporter-url: http://frankfurt-bridgehead.com/ccp-exporter
+#      exporter-api-key: asdfkjalsdkjasfldkj
+#    berlin:
+#      explorer-code: berlin456
+#      exporter-url: http://berlin-bridgehead.com/ccp-exporter
+#      exporter-api-key: erewrtwwenbmtvwnbvetnbvter
+
+#frontend:
+#  base-url: "http://localhost:8099"
+#  sites:
+#    project-dashboard: "/project-dashboard"
+#    project-view: "/project-view"

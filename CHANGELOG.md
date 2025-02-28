@@ -4,7 +4,216 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2023-12-01]
+## [0.0.1 - 2025-02-11]
 ### Added
 - First version of the project
 - Spring Application
+- State Machine for project
+- Project states and event states
+- Project Service
+- OAuth2 Security
+- OIDC <> Organisation Roles Mapping
+- Session User Info
+- Session User Info email
+- Multi bridgehead user
+- Test user if security disabled
+- Bridgehead configuration
+- User Service
+- Project Role Constraints Aspect
+- Extract path roles map for Security Configuration
+- Project State Constraints Aspect
+- Frontend service
+- Set user as developer, pilot or final
+- REST Services: Design and Create project
+- REST Service: Accept, reject, archive, start develop, start pilot, start final, finish
+- Project Query and Query Format
+- REST Services: Create Query and Create CQL DATA Query
+- Document Service
+- Upload and Download documents
+- Project Type
+- HTTP Method for every endpoint in Security Configuration
+- IS_TEST_ENVIRONMENT variable disables CSRF
+- Create CREATOR user after creating project
+- Send and execute query REST Services
+- Label, description, template-id and output-format in Query
+- Token Manager Service
+- Dockerfile
+- Github CI
+- Exporter Service implementation
+- Bridgehead configuration with explorer and exporter mapping
+- Bridgehead Operation
+- Create query and draft project (Lens)
+- humanReadable in Bridgehead Config
+- Email Service
+- Email Templates
+- Email Sender Aspect
+- Thymeleaf Template Engine Configuration
+- EmailSender repeatable
+- Emails to BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT
+- FrontendSiteModule repeatable
+- Action names
+- Module names
+- Http Method and Params for Actions
+- Test endpoint
+- Download application form
+- Edit project and query
+- Fetch output format, query format and templates
+- Query Context
+- Download document rights to developer, pilot and final users
+- Fetch Projects
+- Modified Desc as parameter of fetch projects
+- Upload and download documents by document type
+- Fetch publications and other documents
+- Fetch project types
+- Accept and reject project bridgehead
+- Fetch project bridgeheads
+- Accept, reject and request changes in script
+- Fetch all actions
+- Accept, Reject and request changes in project results
+- Notification Service
+- Token Manager services
+- Integration in Focus and Beam
+- Frontend DTO
+- Email as Mime message
+- EmailSenderIfError annotation
+- Frontend DTO converters
+- Fetch all user visible notifications
+- Accepted state requirement for setting user as developer or pilot
+- Notification User Action
+- Replace Bridgehead Operation through Notification
+- Set notification as read
+- Fetch User Visible Projects and User Visible Notifications without constraints
+- Fetch Project
+- Fetch Project States
+- Fetch registered bridgeheads for project manager admin
+- Add notifications for services: document, project bridgehead, project event, project, query, user
+- DataSHIELD Token Manager Job
+- Check Expired Active Projects Job
+- Check if session scope is active before creating a notification for changing project state
+- Fetch token status and project status of token manager
+- New email if authentication script for DataSHIELD has changed
+- Explorer URL in CORS
+- Oauth2 Resource Server configuration
+- Allow required headers
+- Project Constraints: Project Type
+- Email template for Accept/Reject/Request changes in project
+- User Autocomplete
+- Explorer Ids to create and edit query
+- Decode redirect explorer URL
+- Fetch project users
+- rejectProject state constraints
+- Filter output formats for DataSHIELD
+- Flag ENABLE_TOKEN_MANAGER
+- Content Disposition in exposed headers
+- Exists Votum and Application Form
+- Exists Script
+- Explorer Redirect URI
+- User State in Frontend DTO
+- Fetch project configurations
+- Exists authentication script
+- Remove inactive projects in Opal
+- Project Bridgehead DataSHIELD info
+- Set project bridgehead datashield removed to false while sending query of DATASHIELD project to exporter
+- Fetch current project configuration
+- Custom project configuration
+- Fetch visible bridgeheads and fetch project bridgeheads
+- Allow other documents of certain bridgeheads
+- Fetch Project Roles
+- Email Types: NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
+- Email config for types NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
+- Fetch label of application form, label and script
+- Service exist invited users
+- R-Studio Group Manager
+- Email Sender: ALL_DEVELOP, ALL_PILOT, ALL_FINAL
+- Send email to all involved users after a publication has been uploaded
+- Project and project view url in email context
+- Create notification after sending an email
+- Send message while requesting changes in script or project
+- Send message while rejecting a project
+- Exporter Job
+- Check Queries in Exporter Job
+- Max time to wait focus task in minutes
+- Check export execution status
+- Coder Service
+- RStudio in Coder
+- Research environment project type
+- Upload file to Coder
+- Delete Coder workspace job
+- Resend export files to research environment
+- Query Code in Explorer URL
+- Decode human readable in base 64
+- Log bridgeheads at start
+- Replace hypen in bridgeheads
+- Log bridgeheads sorted
+- Replace hyphen in frontend sites
+- Human Readable Bridgehead for frontend dto
+- Http proxy configuration
+- Email as HTML
+- Provide also human readable by fetch all registered bridgeheads
+- DataSHIELD Project Status Error
+- Catch token manager exceptions and return ERROR status
+- Send emails in async execution pool
+- Notification async execution pool
+- Exporter async execution pool
+- Action explanations
+- Integration of action explanatios in fetch Actions
+- Action explanations templates
+- Email Context
+- Extend email context
+- Thymeleaf Dialect for email context variables
+- Combine first and last name in name 
+- Replace email context variables in email subject
+- Default and Default var in html tags
+- Fetch human readable bridgehead for emails
+- Email context project bridgeheads variable
+- Decode Base64 values of email context
+- Enable minus in variables of email context
+- Last document variables in email context
+- Support for Thymeleaf standard processor by converting hyphenated variables to camel case
+- Process variables recursively in Thymeleaf
+- Creator name in Frontend Project
+- Action explanation priority
+- Configurations as file
+- File Description for Frontend
+- Fetch Project-States for dashboard site
+- Primary and Test Mail Server
+- Email if project rejected
+- Send email when the query has arrived to the exporter or it has been executed
+- Export dispatch counter
+- Title and description in project configuration
+- Annotation Ignore Project Configuration Match
+- Send error email if error while sending query to bridgehead
+- Mailing Black List
+- Sort Mailing Black List by first and last name
+- Results
+- DRN in exporter label
+- Final User State in results
+- Create State in Frontend DTO's (for project and project bridgehead)
+- Fetch email message and subject HTTP endpoint
+- Send project results only if there are final users
+- User Project State in State Constraints
+- Bridgehead Admin info in the variables for the email templates
+- Results URL in frontend dto
+- EmailContextKey enum
+- Votum for all
+- Configuration Site
+- REST Service: is project manager admin 
+- Research Environment URL key for Email Context
+- REST Service: Fetch research environment URL
+- REST Service: Exists research environment workspace for user
+- View only last reseach environment workspace for a project
+- Valid Email Aspect
+- EncryptionConverter to encrypt results url
+- Coder Configuration
+- App Register Service
+- Coder Param (APP_ID and APP_SECRET)
+- Relate project constraints with project state constraints for DEVELOPER, PILOT and FINAL users
+- ROOT_LOG_LEVEL for ROOT and LOG_LEVEL only for de.samply packages
+- Exporter Job and Exporter Service debug messages
+- Performant HTTP Client configuration
+- Beam Wait Count environment variable
+- Log DataSHIELD Token Manager Job and Service
+- Log Coder Service and Job
+- Log App Register Service
+- Removal conditions for ProjectBridgeheadDataShield
+- Check message for HTTP requests to exporter

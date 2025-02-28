@@ -1,0 +1,25 @@
+{
+  "config": {
+    "CCP-DataSHIELD": {
+      "fieldValues": {
+        "type": "DATASHIELD",
+        "outputFormat": "OPAL",
+        "templateId": "opal-ccp"
+      }
+    },
+    "CCP-Export": {
+      "fieldValues": {
+        "type": "EXPORT",
+        "outputFormat": "EXCEL",
+        "templateId": "ccp"
+      }
+    },
+    "CCP-Research-Environment": {
+      "fieldValues": {
+        "type": "RESEARCH_ENVIRONMENT",
+        "outputFormat": "CSV",
+        "templateId": "ccp"
+      }
+    }
+  }
+}
