@@ -255,6 +255,7 @@ public class ProjectManagerConst {
     public final static String PARTIAL_EMAIL = "partial-email";
     public final static String SITE = "site";
     public final static String EMAIL = "email";
+    public final static String QUERY = "query";
     public final static String QUERY_FORMAT = "query-format";
     public final static String PROJECT_TYPE = "project-type";
     public final static String PROJECT_STATE = "project-state";
