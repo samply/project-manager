@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.coder.CoderService;
+import de.samply.datashield.DataShieldTokenManagerService;
 import de.samply.db.model.ProjectDocument;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
@@ -30,7 +31,6 @@ import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
 import de.samply.query.QueryState;
-import de.samply.datashield.DataShieldTokenManagerService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.ProjectRole;
@@ -43,7 +43,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -248,37 +251,37 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
+    @PostMapping(value = ProjectManagerConst.CREATE_QUERY, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createProjectQuery(
-            @NotEmpty @RequestBody() String query,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
-            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
-            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
-            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
-            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
+            @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
+            @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, notEmpty = true) QueryFormat queryFormat,
+            @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestVariable(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
+            @RequestVariable(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestVariable(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
+            @RequestVariable(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
+            @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
     ) {
         return convertToResponseEntity(() ->
                 this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT)
+    @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createQueryAndDesignProject(
-            @NotEmpty @RequestBody() String query,
-            @NotEmpty @RequestParam(name = ProjectManagerConst.QUERY_FORMAT) QueryFormat queryFormat,
-            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
-            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
-            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
-            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
-            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
+            @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
+            @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, notEmpty = true) QueryFormat queryFormat,
+            @RequestVariable(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
+            @RequestVariable(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
+            @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestVariable(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
+            @RequestVariable(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestVariable(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
+            @RequestVariable(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
+            @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
     ) throws ProjectEventActionsException {
         if (areBridgeheadsOrExplorerIdsEmpty(bridgeheads, explorerIds)) {
             return ResponseEntity.badRequest().body("Bridgeheads or explorer ids cannot be empty");
@@ -304,21 +307,21 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.CREATED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.EDIT_PROJECT)
+    @PostMapping(value = ProjectManagerConst.EDIT_PROJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> editProject(
-            @RequestBody() String query,
-            @RequestParam(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
-            @RequestParam(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
-            @RequestParam(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
-            @RequestParam(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
-            @RequestParam(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
-            @RequestParam(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
-            @RequestParam(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
-            @RequestParam(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
+            @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
+            @RequestVariable(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
+            @RequestVariable(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
+            @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestVariable(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
+            @RequestVariable(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
+            @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestVariable(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
+            @RequestVariable(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
+            @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
                 Arrays.stream(explorerIds).map(explorerId ->
@@ -604,7 +607,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-            return convertOptionalToResponseEntity(() -> projectService.fetchResults(projectCode));
+        return convertOptionalToResponseEntity(() -> projectService.fetchResults(projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.FINAL})
