@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2025-03-04]
+## [1.0.0 - 2025-03-13]
 ### Added
 - First version of the project
 - Spring Application
@@ -218,3 +218,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Removal conditions for ProjectBridgeheadDataShield
 - Check message for HTTP requests to exporter
 - Request Variable annotation
+
+### Changed
+- Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL

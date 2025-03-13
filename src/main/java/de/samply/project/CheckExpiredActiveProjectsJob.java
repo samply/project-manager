@@ -25,7 +25,7 @@ public class CheckExpiredActiveProjectsJob {
     @Scheduled(cron = ProjectManagerConst.CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION_SV)
     public void checkExpiredActiveProjects() {
         projectRepository.findByExpiresAtBeforeAndStateIn(LocalDate.now(),
-                Set.of(ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP,
+                Set.of(ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP,
                         ProjectState.PILOT, ProjectState.FINAL)).forEach(expiredActiveProject ->
                 projectEventService.archive(expiredActiveProject.getCode()));
     }

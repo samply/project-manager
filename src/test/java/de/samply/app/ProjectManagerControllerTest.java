@@ -99,7 +99,7 @@ class ProjectManagerControllerTest {
     }
 
     @GetMapping(value = "/test8")
-    @StateConstraints(projectStates = {ProjectState.CREATED})
+    @StateConstraints(projectStates = {ProjectState.REVIEW})
     @FrontendSiteModule(site = "Site_2", module = "Module_2")
     @FrontendAction(action = "test_8")
     public ResponseEntity<String> test8() {
