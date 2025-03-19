@@ -1,9 +1,6 @@
 package de.samply.utils;
 
-import de.samply.annotations.Bridgehead;
-import de.samply.annotations.Email;
-import de.samply.annotations.Message;
-import de.samply.annotations.ProjectCode;
+import de.samply.annotations.*;
 import de.samply.db.model.Project;
 import de.samply.db.repository.ProjectRepository;
 import org.aspectj.lang.JoinPoint;
@@ -14,9 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 public class AspectUtils {
 
@@ -64,12 +59,14 @@ public class AspectUtils {
     }
 
     public static String[] fetchRequestParamNames(Method method) {
-        Set<String> result = new HashSet<>();
-        Arrays.stream(method.getParameters()).forEach(parameter -> Arrays.stream(parameter.getAnnotations())
-                .filter(annotation -> annotation.annotationType() == RequestParam.class)
-                .map(annotation -> (RequestParam) annotation)
-                .forEach(requestParam -> result.add(requestParam.name())));
-        return result.toArray(String[]::new);
+        return Arrays.stream(method.getParameters())
+                .flatMap(parameter -> Arrays.stream(parameter.getAnnotations())
+                        .filter(annotation -> annotation instanceof RequestParam || annotation instanceof RequestVariable)
+                        .map(annotation -> annotation instanceof RequestParam
+                                ? ((RequestParam) annotation).name()
+                                : ((RequestVariable) annotation).name()))
+                .distinct()
+                .toArray(String[]::new);
     }
 
     public static Optional<String> fetchHttpMethod(Method method) {
