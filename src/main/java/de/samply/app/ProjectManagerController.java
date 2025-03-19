@@ -309,7 +309,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_ACTION)
     @PostMapping(value = ProjectManagerConst.EDIT_PROJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> editProject(
-            @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
+            @RequestVariable(name = ProjectManagerConst.QUERY, required = false) String query,
             @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
             @RequestVariable(name = ProjectManagerConst.BRIDGEHEADS, required = false) String[] bridgeheads,
             @RequestVariable(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
