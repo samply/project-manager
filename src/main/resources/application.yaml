@@ -36,6 +36,18 @@ spring:
     username: ${PROJECT_MANAGER_DB_USER:project_manager}
     password: ${PROJECT_MANAGER_DB_PASSWORD:project_manager}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000        # Close idle connections after 30s
+      connection-timeout: 30000  # Fail after 30s if no connection is available
+      max-lifetime: 1800000      # Close connections after 30 min
+      keepalive-time: 30000      # Prevents premature connection closure by PostgreSQL
+      leak-detection-threshold: 2000  # Log warnings if a connection is not released within 2s
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
 
   jpa:
     hibernate:
@@ -45,8 +57,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 30
+          order_inserts: true
+          order_updates: true
     database: postgresql
     show-sql: ${HIBERNATE_LOG:false}
+    open-in-view: false  # Avoid memory leaks
 
   security:
     oauth2:
