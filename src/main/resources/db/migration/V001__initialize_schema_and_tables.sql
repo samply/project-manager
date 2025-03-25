@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS samply;
 
 SET
-search_path TO samply;
+    search_path TO samply;
 
 CREATE TABLE samply.query
 (
@@ -141,6 +141,32 @@ CREATE TABLE samply.user
     mailing_black_list BOOLEAN NOT NULL
 );
 
+CREATE TABLE samply.sample
+(
+    id                         SERIAL NOT NULL PRIMARY KEY,
+    project_id                 BIGINT NOT NULL,
+    affiliation                TEXT,
+    study_objective            TEXT,
+    method                     TEXT,
+    ethical_approval           TEXT,
+    gratification              TEXT,
+    donor                      TEXT,
+    collection_description     TEXT,
+    type_and_quantity          TEXT,
+    matched_required           BOOLEAN DEFAULT FALSE,
+    slides_per_sample          INTEGER,
+    stained_slides             BOOLEAN DEFAULT FALSE,
+    slide_sufficiency_staining TEXT,
+    specific_requirements      TEXT
+);
+
+CREATE TABLE samply.sample_collection
+(
+    id        SERIAL NOT NULL PRIMARY KEY,
+    code      TEXT   NOT NULL,
+    sample_id BIGINT
+);
+
 ALTER TABLE samply.project
     ADD CONSTRAINT fk_project_query
         FOREIGN KEY (query_id)
@@ -180,6 +206,14 @@ ALTER TABLE samply.project_coder
 ALTER TABLE samply.user
     ADD CONSTRAINT unique_email UNIQUE (email);
 
+ALTER TABLE samply.sample
+    ADD CONSTRAINT fk_sample_project FOREIGN KEY (project_id)
+        REFERENCES samply.project (id);
+
+ALTER TABLE samply.sample_collection
+    ADD CONSTRAINT fk_sample_collection_sample FOREIGN KEY (sample_id)
+        REFERENCES samply.sample (id);
+
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);
 CREATE INDEX idx_project_document_project_id ON samply.project_document (project_id);
@@ -188,3 +222,5 @@ CREATE INDEX idx_notification_project_id ON samply.notification (project_id);
 CREATE INDEX idx_notification_user_action_notification_id ON samply.notification_user_action (notification_id);
 CREATE INDEX idx_project_bridgehead_datashield_project_bridgehead_id ON samply.project_bridgehead_datashield (project_bridgehead_id);
 CREATE INDEX idx_project_coder_project_bridgehead_user_id ON samply.project_coder (project_bridgehead_user_id);
+CREATE INDEX idx_sample_project_id ON samply.sample (project_id);
+CREATE INDEX idx_sample_collection_sample_id ON samply.sample_collection (sample_id);
