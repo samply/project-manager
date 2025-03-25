@@ -219,6 +219,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Check message for HTTP requests to exporter
 - Request Variable annotation
 - Sample and Collection
+- Sample Service
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
