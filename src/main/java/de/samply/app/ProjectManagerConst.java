@@ -119,6 +119,10 @@ public class ProjectManagerConst {
     public final static String IS_PROJECT_MANAGER_ADMIN_ACTION = "IS_PROJECT_MANAGER_ADMIN";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL_ACTION = "FETCH_RESEARCH_ENVIRONMENT_URL";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION = "EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE";
+    public final static String FETCH_PROJECT_FORM_TITLES_ACTION = "FETCH_PROJECT_FORM_TITLES";
+    public final static String FETCH_PROJECT_FORM_FIELDS_ACTION = "FETCH_PROJECT_FORM_FIELDS";
+    public final static String FETCH_PROJECT_FORM_VALUES_ACTION = "FETCH_PROJECT_FORM_VALUES";
+    public final static String ADD_PROJECT_FORM_FIELDS_ACTION = "ADD_PROJECT_FORM_FIELDS";
 
 
     // REST Services
@@ -223,6 +227,10 @@ public class ProjectManagerConst {
     public final static String IS_PROJECT_MANAGER_ADMIN = "/is-project-manager-admin";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL = "/research-environment-url";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/exists-research-environment-workspace";
+    public final static String FETCH_PROJECT_FORM_TITLES = "/project-form-titles";
+    public final static String FETCH_PROJECT_FORM_FIELDS = "/project-form-fields";
+    public final static String FETCH_PROJECT_FORM_VALUES = "/project-form-values";
+    public final static String ADD_PROJECT_FORM_FIELDS = "/add-project-form-fields";
 
 
     // REST Parameters
@@ -413,6 +421,8 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT = "APP_REGISTER_AUTHORIZATION_FORMAT";
     public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
 
+    public final static String FORM_CONFIG_PATH_PREFIX = "FORM_CONFIG_PATH";
+
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
@@ -517,6 +527,7 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_API_KEY_SV = HEAD_SV + APP_REGISTER_API_KEY + BOTTOM_SV;
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":ApiKey {}" + BOTTOM_SV;
     public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
+
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";

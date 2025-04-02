@@ -222,6 +222,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Compatibility with Authentik
 - JWT Decoder configuration
 - AST and AST_DATA as query format
+- Project Form
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
