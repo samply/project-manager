@@ -48,9 +48,6 @@ public class SecurityConfiguration {
     @Value(ProjectManagerConst.EXPLORER_URL_SV)
     private String explorerUrl;
 
-    @Value(ProjectManagerConst.JWKS_URI_PROPERTY_SV)
-    private String jwksUri;
-
     @Autowired
     private FrontendConfiguration frontendConfiguration;
 
@@ -70,7 +67,6 @@ public class SecurityConfiguration {
                         .csrf(csrf -> csrf.disable())
                         .oauth2ResourceServer(resourceServerConfigurer ->
                                 resourceServerConfigurer.jwt(jwtConfigurer -> {
-                                    jwtConfigurer.jwkSetUri(jwksUri);
                                     jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter());
                                 }))
                         .oauth2Login(oauth2 -> oauth2
