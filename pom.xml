@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.1</version>
+        <version>4.0.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>de.samply</groupId>
@@ -14,13 +14,14 @@
     <name>project-manager</name>
     <description>Samply Project Manager</description>
     <properties>
-        <java.version>21</java.version>
-        <openapi.version>2.2.0</openapi.version>
-        <spring-statemachine-core.version>3.2.1</spring-statemachine-core.version>
-        <lombok.version>1.18.30</lombok.version>
-        <maven-model.version>3.9.6</maven-model.version>
-        <spring-aop.version>6.1.1</spring-aop.version>
-        <byte-buddy.version>1.14.11</byte-buddy.version>
+        <java.version>25</java.version>
+        <openapi.version>3.0.0</openapi.version>
+        <spring-statemachine-core.version>4.0.1</spring-statemachine-core.version>
+        <lombok.version>1.18.42</lombok.version>
+        <maven-model.version>3.9.11</maven-model.version>
+        <spring-aop.version>7.0.1</spring-aop.version>
+        <spring-boot-starter-aop.version>4.0.0-M2</spring-boot-starter-aop.version>
+        <netty-transport-native-epoll.version>5.0.0.Alpha2</netty-transport-native-epoll.version>
     </properties>
     <dependencies>
         <dependency>
@@ -46,6 +47,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+            <version>${spring-boot-starter-aop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -80,6 +82,11 @@
             <artifactId>maven-model</artifactId>
             <version>${maven-model.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-native-epoll</artifactId>
+            <version>${netty-transport-native-epoll.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -99,13 +106,31 @@
     </dependencies>
 
     <build>
-        <finalName>project-manager</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
+
 
 </project>

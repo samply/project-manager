@@ -223,6 +223,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
+- Update to Maven 4
 
 ### Removed
 - RStudio Keycloak Groups
