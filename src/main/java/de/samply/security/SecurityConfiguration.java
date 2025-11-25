@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,7 +27,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -48,9 +48,6 @@ public class SecurityConfiguration {
     @Value(ProjectManagerConst.EXPLORER_URL_SV)
     private String explorerUrl;
 
-    @Value(ProjectManagerConst.JWKS_URI_PROPERTY_SV)
-    private String jwksUri;
-
     @Autowired
     private FrontendConfiguration frontendConfiguration;
 
@@ -70,26 +67,31 @@ public class SecurityConfiguration {
                         .csrf(csrf -> csrf.disable())
                         .oauth2ResourceServer(resourceServerConfigurer ->
                                 resourceServerConfigurer.jwt(jwtConfigurer -> {
-                                    jwtConfigurer.jwkSetUri(jwksUri);
                                     jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter());
                                 }))
                         .oauth2Login(oauth2 -> oauth2
                                 .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(oidcProjectUserService))
                                 .successHandler(successHandler()))
                         .build() :
-                http.authorizeRequests(authorize -> authorize.requestMatchers("/**").permitAll()).build();
+                http.authorizeHttpRequests(authorize -> authorize.requestMatchers("/**").permitAll()).build();
     }
 
-    private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
+    private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(
+            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
+
         // Services without authentication required
-        authorization.requestMatchers(new AntPathRequestMatcher(ProjectManagerConst.INFO, "GET")).permitAll();
+        authorization.requestMatchers(HttpMethod.GET, ProjectManagerConst.INFO).permitAll();
+
         // Services with authentication required
         Map<String, MethodRoles> pathRolesMap = RolesExtractor.extractPathRolesMap();
-        pathRolesMap.keySet().forEach(path -> authorization
-                .requestMatchers(new AntPathRequestMatcher(path, pathRolesMap.get(path).httpMethod()))
-                .hasAnyAuthority(pathRolesMap.get(path).roles()));
+        pathRolesMap.forEach((path, methodRoles) ->
+                authorization.requestMatchers(HttpMethod.valueOf(methodRoles.httpMethod()), path)
+                        .hasAnyAuthority(methodRoles.roles())
+        );
+
         return authorization.anyRequest().authenticated();
     }
+
 
     private AuthenticationSuccessHandler successHandler() {
         return new SimpleUrlAuthenticationSuccessHandler() {

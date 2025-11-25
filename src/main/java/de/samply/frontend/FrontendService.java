@@ -138,7 +138,7 @@ public class FrontendService {
     }
 
     public String fetchUrl(String site, Map<String, String> parameters) {
-        UriComponentsBuilder result = UriComponentsBuilder.fromHttpUrl(frontendConfiguration.getBaseUrl());
+        UriComponentsBuilder result = UriComponentsBuilder.fromUriString(frontendConfiguration.getBaseUrl());
         if (site != null) {
             Optional<String> sitePath = frontendConfiguration.getSitePath(site);
             if (sitePath.isPresent()) {

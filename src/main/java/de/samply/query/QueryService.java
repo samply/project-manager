@@ -75,7 +75,7 @@ public class QueryService {
 
     private String addProjectCodeToUrl(@NotNull String url, @NotNull String projectCode) {
         return (url.contains(ProjectManagerConst.PROJECT_CODE)) ? url :
-                UriComponentsBuilder.fromHttpUrl(url).queryParam(ProjectManagerConst.PROJECT_CODE, projectCode).toUriString();
+                UriComponentsBuilder.fromUriString(url).queryParam(ProjectManagerConst.PROJECT_CODE, projectCode).toUriString();
     }
 
     private String generateQueryCode() {

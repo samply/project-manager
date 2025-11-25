@@ -5,6 +5,7 @@ import de.samply.proxy.HttpProxyConfiguration;
 import de.samply.proxy.HttpsProxyConfiguration;
 import de.samply.proxy.ProxyConfiguration;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollChannelOption;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -64,22 +65,29 @@ public class WebClientFactory {
     }
 
     public WebClient createWebClient(String baseUrl) {
+        HttpClient httpClient = HttpClient.create()
+                .responseTimeout(Duration.ofSeconds(webClientRequestTimeoutInSeconds))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, webClientConnectionTimeoutInSeconds * 1000)
+                .option(ChannelOption.SO_KEEPALIVE, true);
+
+        if (Epoll.isAvailable()) {
+            httpClient = httpClient
+                    .option(EpollChannelOption.TCP_KEEPIDLE, webClientTcpKeepIdleInSeconds)
+                    .option(EpollChannelOption.TCP_KEEPINTVL, webClientTcpKeepIntervalInSeconds)
+                    .option(EpollChannelOption.TCP_KEEPCNT, webClientTcpKeepConnetionNumberOfTries);
+        }
+
         WebClient.Builder webClientBuilder = WebClient.builder()
                 .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(webClientBufferSizeInBytes))
-                .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create()
-                                .responseTimeout(Duration.ofSeconds(webClientRequestTimeoutInSeconds))
-                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, webClientConnectionTimeoutInSeconds * 1000)
-                                .option(ChannelOption.SO_KEEPALIVE, true)
-                                .option(EpollChannelOption.TCP_KEEPIDLE, webClientTcpKeepIdleInSeconds)
-                                .option(EpollChannelOption.TCP_KEEPINTVL, webClientTcpKeepIntervalInSeconds)
-                                .option(EpollChannelOption.TCP_KEEPCNT, webClientTcpKeepConnetionNumberOfTries)
-                ))
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .baseUrl(baseUrl);
+
         httpsProxyConfiguration.ifPresent(proxyConfig -> addProxy(webClientBuilder, proxyConfig));
         httpProxyConfiguration.ifPresent(proxyConfig -> addProxy(webClientBuilder, proxyConfig));
+
         return webClientBuilder.build();
     }
+
 
     private void addProxy(WebClient.Builder webClientBuilder, ProxyConfiguration proxyConfiguration) {
         webClientBuilder.clientConnector(new ReactorClientHttpConnector(HttpClient.create()

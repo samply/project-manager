@@ -4,24 +4,6 @@ public class ProjectManagerConst {
 
     public final static String APP_NAME = "Project Manager";
 
-    // R-Studio Group Implementations
-    public final static String RSTUDIO_GROUP_KEYCLOAK_IMPLEMENTATION = "KEYCLOAK";
-
-    // Keycloak paths
-    public final static String FETCH_USER_ID_KEYCLOAK_PATH = "/admin/realms/{realm}/users?email={email}";
-    public final static String FETCH_GROUP_ID_KEYCLOAK_PATH = "/admin/realms/{realm}/groups?search={group}";
-    public final static String CHANGE_USER_GROUP_KEYCLOAK_PATH = "/admin/realms/{realm}/users/{user-id}/groups/{group-id}";
-    public final static String FETCH_TOKEN_KEYCLOAK_PATH = "/realms/{realm}/protocol/openid-connect/token";
-
-    // Keycloak parameters
-    public final static String CLIENT_ID_KEYCLOAK_PARAM = "client_id";
-    public final static String CLIENT_SECRET_KEYCLOAK_PARAM = "client_secret";
-    public final static String GRANT_TYPE_KEYCLOAK_PARAM = "grant_type";
-    public final static String CLIENT_CREDENTIALS_KEYCLOAK_CONST = "client_credentials";
-    public final static String ACCES_TOKEN_KEYCLOAK_CONST = "access_token";
-    public final static String ID_KEYCLOAK_CONST = "id";
-
-
     // Sites
     public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
     public final static String PROJECT_VIEW_SITE = "project-view";
@@ -386,13 +368,6 @@ public class ProjectManagerConst {
     public final static String ENABLE_TOKEN_MANAGER = "ENABLE_TOKEN_MANAGER";
     public final static String EXPLORER_REDIRECT_URI_PARAMETER = "EXPLORER_REDIRECT_URI_PARAMETER";
     public final static String FRONTEND_PROJECT_CONFIG_PATH = "FRONTEND_PROJECT_CONFIG_PATH";
-    public final static String RSTUDIO_GROUP_IMPLEMENTATION = "RSTUDIO_GROUP_IMPLEMENTATION";
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID = "KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID";
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET = "KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET";
-    public final static String KEYCLOAK_RSTUDIO_GROUP = "KEYCLOAK_RSTUDIO_GROUP";
-    public final static String ENABLE_RSTUDIO_GROUP_MANAGER = "ENABLE_RSTUDIO_GROUP_MANAGER";
-    public final static String OIDC_URL = "OIDC_URL";
-    public final static String OIDC_REALM = "OIDC_REALM";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
@@ -504,13 +479,6 @@ public class ProjectManagerConst {
     public final static String EXPLORER_URL_SV = HEAD_SV + EXPLORER_URL + BOTTOM_SV;
     public final static String EXPLORER_REDIRECT_URI_PARAMETER_SV = HEAD_SV + EXPLORER_REDIRECT_URI_PARAMETER + BOTTOM_SV;
     public final static String FRONTEND_PROJECT_CONFIG_PATH_SV = HEAD_SV + FRONTEND_PROJECT_CONFIG_PATH + BOTTOM_SV;
-    public final static String RSTUDIO_GROUP_IMPLEMENTATION_SV = HEAD_SV + RSTUDIO_GROUP_IMPLEMENTATION + ":" + RSTUDIO_GROUP_KEYCLOAK_IMPLEMENTATION + BOTTOM_SV;
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID_SV = HEAD_SV + KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID + BOTTOM_SV;
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET_SV = HEAD_SV + KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET + BOTTOM_SV;
-    public final static String KEYCLOAK_RSTUDIO_GROUP_SV = HEAD_SV + KEYCLOAK_RSTUDIO_GROUP + BOTTOM_SV;
-    public final static String ENABLE_RSTUDIO_GROUP_MANAGER_SV = HEAD_SV + ENABLE_RSTUDIO_GROUP_MANAGER + ":true" + BOTTOM_SV;
-    public final static String OIDC_URL_SV = HEAD_SV + OIDC_URL + BOTTOM_SV;
-    public final static String OIDC_REALM_SV = HEAD_SV + OIDC_REALM + BOTTOM_SV;
     public final static String CODER_BASE_URL_SV = HEAD_SV + CODER_BASE_URL + BOTTOM_SV;
     public final static String CODER_ORGANISATION_ID_SV = HEAD_SV + CODER_ORGANISATION_ID + BOTTOM_SV;
     public final static String CODER_MEMBER_ID_SV = HEAD_SV + CODER_MEMBER_ID + BOTTOM_SV;

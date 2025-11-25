@@ -19,7 +19,6 @@ import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.register.AppRegisterService;
-import de.samply.rstudio.group.RstudioGroupService;
 import de.samply.user.roles.ProjectRole;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +38,6 @@ import java.util.stream.Stream;
 @Component
 public class DataShieldTokenManagerJob {
 
-    private final RstudioGroupService rstudioGroupService;
     private final CoderService coderService;
     private final DataShieldTokenManagerService tokenManagerService;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
@@ -50,8 +48,7 @@ public class DataShieldTokenManagerJob {
     private final AppRegisterService appRegisterService;
     private final boolean isTokenManagerActive;
 
-    public DataShieldTokenManagerJob(RstudioGroupService rstudioGroupService,
-                                     CoderService coderService,
+    public DataShieldTokenManagerJob(CoderService coderService,
                                      DataShieldTokenManagerService tokenManagerService,
                                      ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                                      ProjectBridgeheadRepository projectBridgeheadRepository,
@@ -60,7 +57,6 @@ public class DataShieldTokenManagerJob {
                                      AppRegisterService appRegisterService,
                                      @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive
     ) {
-        this.rstudioGroupService = rstudioGroupService;
         this.coderService = coderService;
         this.tokenManagerService = tokenManagerService;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
@@ -131,7 +127,6 @@ public class DataShieldTokenManagerJob {
         if (!usersToSendAnEmail.contains(projectEmail)) {
             usersToSendAnEmail.add(projectEmail);
             sendEmail(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), EmailTemplateType.NEW_TOKEN_FOR_AUTHENTICATION_SCRIPT, user.getProjectRole());
-            this.rstudioGroupService.addUserToRstudioGroup(user.getEmail());
             return createWorkspaceIfNotExists(user);
         }
         return Mono.empty();
@@ -209,7 +204,6 @@ public class DataShieldTokenManagerJob {
             usersToSendAnEmail.add(projectEmail);
             sendEmail(user.getEmail(), user.getProjectBridgehead().getProject().getCode(), user.getProjectBridgehead().getBridgehead(), EmailTemplateType.INVALID_AUTHENTICATION_SCRIPT, user.getProjectRole());
             if (user.getProjectRole() != ProjectRole.FINAL || this.projectBridgeheadRepository.findByProjectAndState(user.getProjectBridgehead().getProject(), ProjectBridgeheadState.ACCEPTED).isEmpty()) {
-                this.rstudioGroupService.removeUserFromRstudioGroup(user.getEmail());
                 return deleteWorkspace(user);
             }
         }
