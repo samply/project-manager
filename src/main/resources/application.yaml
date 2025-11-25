@@ -1,14 +1,5 @@
 server:
   port: ${APPLICATION_PORT:8097}
-#  ssl:
-#    key-store: ${KEYSTORE}
-#    key-store-password: ${KEYSTORE_PASSWORD}
-#    key-store-type: PKCS12
-#    key-alias: tomcat
-#    trust-all: true
-#    trust-store-type: JKS
-#    trust-store: ${TRUST_STORE}
-#    trust-store-password: ${TRUST_STORE_PASSWORD}
 
   servlet:
     session:
@@ -90,37 +81,3 @@ spring:
     multipart:
       max-file-size: ${MAX_FILE_SIZE:10MB}
       max-request-size: ${MAX_REQEST_SIZE:10MB}
-
-#  mail:
-#    host: ${SMTP_HOST}
-#    port: ${SMTP_PORT}
-#    username: ${SMTP_USER}
-#    password: ${SMTP_PASSWORD}
-  #    properties:
-  #      mail:
-  #        smtp:
-  #          auth: true
-  #          starttls:
-  #            enable: true
-  #          smtp:
-  #            proxy:
-  #              host: ${PROXY_HOST}
-  #              port: ${PROXY_PORT}
-
-
-#bridgeheads:
-#  config:
-#    frankfurt:
-#      explorer-code: frankfurt123
-#      exporter-url: http://frankfurt-bridgehead.com/ccp-exporter
-#      exporter-api-key: asdfkjalsdkjasfldkj
-#    berlin:
-#      explorer-code: berlin456
-#      exporter-url: http://berlin-bridgehead.com/ccp-exporter
-#      exporter-api-key: erewrtwwenbmtvwnbvetnbvter
-
-#frontend:
-#  base-url: "http://localhost:8099"
-#  sites:
-#    project-dashboard: "/project-dashboard"
-#    project-view: "/project-view"
