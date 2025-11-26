@@ -221,7 +221,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Optimize JPA configuration
 - Compatibility with Authentik
 - JWT Decoder configuration
-- ASP and ASP_DATA as query format
+- AST and AST_DATA as query format
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
@@ -230,3 +230,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 - RStudio Keycloak Groups
+
+### Fixed
+- Init flyway migration in spring 4
