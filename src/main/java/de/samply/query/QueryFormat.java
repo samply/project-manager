@@ -4,6 +4,6 @@ public enum QueryFormat {
     FHIR_SEARCH,
     CQL,
     CQL_DATA,
-    ASP,
-    ASP_DATA
+    AST,
+    AST_DATA
 }
