@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2025-11-25]
+## [1.0.0 - 2025-11-26]
 ### Added
 - First version of the project
 - Spring Application
@@ -221,6 +221,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Optimize JPA configuration
 - Compatibility with Authentik
 - JWT Decoder configuration
+- ASP and ASP_DATA as query format
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
