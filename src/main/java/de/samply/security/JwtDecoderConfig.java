@@ -10,12 +10,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 import tools.jackson.databind.JsonNode;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -39,7 +40,6 @@ public class JwtDecoderConfig {
 
         this.webClient = webClientFactory.createWebClient(issuerUri);
 
-        // Load OIDC discovery
         JsonNode config = webClient.get()
                 .uri("/.well-known/openid-configuration")
                 .retrieve()
@@ -49,45 +49,53 @@ public class JwtDecoderConfig {
         this.jwksUri = config.get("jwks_uri").asText();
         log.info("JWKS URI: {}", jwksUri);
 
-        // Initial load of JWKS
         refreshJwks();
     }
 
+    /**
+     * Shared JWKSource for both Resource Server and OIDC Login
+     */
     @Bean
-    public JwtDecoder jwtDecoder() {
-        JWKSource<SecurityContext> jwkSource = (jwkSelector, context) ->
-                jwkSelector.select(jwkSetRef.get());
+    public JWKSource<SecurityContext> jwkSource() {
+        return (selector, context) -> selector.select(jwkSetRef.get());
+    }
 
+    /**
+     * Resource-server JwtDecoder
+     */
+    @Bean
+    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
         return NimbusJwtDecoder.withJwkSource(jwkSource).build();
     }
 
     /**
-     * Refresh JWKS periodically (every 5 minutes)
+     * IMPORTANT:
+     * Override the decoder used for ID Token validation (OIDC login)
+     * This forces Spring Security to use YOUR cached JWKS instead of
+     * fetching it again over the network (which causes the timeout).
+     */
+    @Bean
+    public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory(JWKSource<SecurityContext> jwkSource) {
+        return registration -> NimbusJwtDecoder.withJwkSource(jwkSource).build();
+    }
+
+    /**
+     * Refresh JWKS every X ms (default 5 min)
      */
     @Scheduled(fixedDelayString = "${security.jwt.jwks-refresh-ms:300000}")
     public void refreshJwks() {
         try {
-            // Fetch JWKS as String
-            String jwksJson = webClient.get()
-                    .uri(URI.create(jwksUri))
+            String json = webClient.get()
+                    .uri(jwksUri)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block(Duration.ofSeconds(5));
 
-            if (jwksJson != null && !jwksJson.isBlank()) {
-                // Parse with Nimbus JWKSet
-                JWKSet jwkSet = JWKSet.parse(jwksJson);
-
-                if (!jwkSet.getKeys().isEmpty()) {
-                    jwkSetRef.set(jwkSet);
-                    log.debug("JWKS refreshed successfully, keys found: {}", jwkSet.getKeys().size());
-                } else {
-                    log.warn("JWKS refresh: no keys found!");
-                }
-            } else {
-                log.warn("JWKS refresh returned empty body!");
+            if (json != null && !json.isBlank()) {
+                JWKSet jwkSet = JWKSet.parse(json);
+                jwkSetRef.set(jwkSet);
+                log.debug("JWKS refreshed, keys: {}", jwkSet.getKeys().size());
             }
-
         } catch (Exception e) {
             log.error("Failed to refresh JWKS", e);
         }
