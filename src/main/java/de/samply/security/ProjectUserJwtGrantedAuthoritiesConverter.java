@@ -16,6 +16,7 @@ public class ProjectUserJwtGrantedAuthoritiesConverter implements Converter<Jwt,
     private final String emailClaim;
     private final String firstNameClaim;
     private final String lastNameClaim;
+    private final String fullNameClaim;
     private final GrantedAuthoritiesExtractor grantedAuthoritiesExtractor;
     private final NewUsersImporter newUsersImporter;
     private final SessionUser sessionUser;
@@ -25,6 +26,7 @@ public class ProjectUserJwtGrantedAuthoritiesConverter implements Converter<Jwt,
             @Value(ProjectManagerConst.JWT_EMAIL_CLAIM_SV) String emailClaim,
             @Value(ProjectManagerConst.JWT_FIRST_NAME_CLAIM_SV) String firstNameClaim,
             @Value(ProjectManagerConst.JWT_LAST_NAME_CLAIM_SV) String lastNameClaim,
+            @Value(ProjectManagerConst.JWT_FULL_NAME_CLAIM_SV) String fullNameClaim,
             GrantedAuthoritiesExtractor grantedAuthoritiesExtractor,
             NewUsersImporter newUsersImporter,
             SessionUser sessionUser) {
@@ -32,6 +34,7 @@ public class ProjectUserJwtGrantedAuthoritiesConverter implements Converter<Jwt,
         this.emailClaim = emailClaim;
         this.firstNameClaim = firstNameClaim;
         this.lastNameClaim = lastNameClaim;
+        this.fullNameClaim = fullNameClaim;
         this.grantedAuthoritiesExtractor = grantedAuthoritiesExtractor;
         this.newUsersImporter = newUsersImporter;
         this.sessionUser = sessionUser;
@@ -42,6 +45,9 @@ public class ProjectUserJwtGrantedAuthoritiesConverter implements Converter<Jwt,
         sessionUser.setEmail(jwt.getClaim(emailClaim));
         sessionUser.setFirstName(jwt.getClaim(firstNameClaim));
         sessionUser.setLastName(jwt.getClaim(lastNameClaim));
+        if (sessionUser.getFirstName() == null && sessionUser.getLastName() == null) {
+            sessionUser.setLastName(jwt.getClaimAsString(fullNameClaim));
+        }
         Collection<GrantedAuthority> grantedAuthorities = grantedAuthoritiesExtractor.extractAuthoritiesFromGroups(
                 jwt.getClaimAsStringList(groupClaim));
         newUsersImporter.importNewUsers();

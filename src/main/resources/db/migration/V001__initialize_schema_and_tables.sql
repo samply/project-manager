@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS samply;
 
 SET
-search_path TO samply;
+    search_path TO samply;
 
 CREATE TABLE samply.query
 (
@@ -136,8 +136,8 @@ CREATE TABLE samply.user
 (
     id                 SERIAL PRIMARY KEY,
     email              TEXT    NOT NULL,
-    first_name         TEXT    NOT NULL,
-    last_name          TEXT    NOT NULL,
+    first_name         TEXT,
+    last_name          TEXT,
     mailing_black_list BOOLEAN NOT NULL
 );
 

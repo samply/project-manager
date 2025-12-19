@@ -9,6 +9,7 @@ import de.samply.db.model.Query;
 import de.samply.db.repository.*;
 import de.samply.frontend.FrontendService;
 import de.samply.user.roles.ProjectRole;
+import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.HashMap;
@@ -229,7 +230,7 @@ public class EmailKeyValues {
             userRepository.findByEmail(email).ifPresent(user -> {
                 addKeyValue(emailFirstNameKey, user::getFirstName);
                 addKeyValue(emailLastNameKey, user::getLastName);
-                addKeyValue(emailNameKey, () -> user.getFirstName() + " " + user.getLastName());
+                addKeyValue(emailNameKey, () -> UserUtils.extractFullName(Optional.of(user)));
             });
         }
     }

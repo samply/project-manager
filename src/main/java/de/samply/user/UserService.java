@@ -216,7 +216,7 @@ public class UserService {
     }
 
     public synchronized void addUserInformationIfNotExists(String email, String firstName, String lastName) {
-        if (StringUtils.hasText(email) && StringUtils.hasText(firstName) && StringUtils.hasText(lastName)) {
+        if (StringUtils.hasText(email) && (StringUtils.hasText(firstName) || StringUtils.hasText(lastName))) {
             Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
             if (userOptional.isEmpty()) {
                 de.samply.db.model.User user = new de.samply.db.model.User();

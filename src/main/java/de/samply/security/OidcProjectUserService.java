@@ -43,6 +43,11 @@ public class OidcProjectUserService extends OidcUserService {
         OidcIdToken idToken = oidcUser.getIdToken();
         OidcUserInfo userInfo = oidcUser.getUserInfo();
         sessionUser.setEmail(userInfo.getEmail());
+        sessionUser.setFirstName(userInfo.getGivenName());
+        sessionUser.setLastName(userInfo.getFamilyName());
+        if (sessionUser.getFirstName() == null && sessionUser.getLastName() == null) {
+            sessionUser.setLastName(userInfo.getFullName());
+        }
 
         Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo);
         newUsersImporter.importNewUsers();

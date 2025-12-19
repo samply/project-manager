@@ -376,6 +376,7 @@ public class ProjectManagerConst {
     public final static String JWT_EMAIL_CLAIM = "JWT_EMAIL_CLAIM";
     public final static String JWT_FIRST_NAME_CLAIM = "JWT_FIRST_NAME_CLAIM";
     public final static String JWT_LAST_NAME_CLAIM = "JWT_LAST_NAME_CLAIM";
+    public final static String JWT_FULL_NAME_CLAIM = "JWT_FULL_NAME_CLAIM";
 
     public final static String CODER_BASE_URL = "CODER_BASE_URL";
     public final static String CODER_ORGANISATION_ID = "CODER_ORGANISATION_ID";
@@ -420,6 +421,7 @@ public class ProjectManagerConst {
     public final static String JWT_EMAIL_CLAIM_SV = HEAD_SV + JWT_EMAIL_CLAIM + ":email" + BOTTOM_SV;
     public final static String JWT_FIRST_NAME_CLAIM_SV = HEAD_SV + JWT_FIRST_NAME_CLAIM + ":given_name" + BOTTOM_SV;
     public final static String JWT_LAST_NAME_CLAIM_SV = HEAD_SV + JWT_LAST_NAME_CLAIM + ":family_name" + BOTTOM_SV;
+    public final static String JWT_FULL_NAME_CLAIM_SV = HEAD_SV + JWT_FULL_NAME_CLAIM + ":name" + BOTTOM_SV;
     public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;

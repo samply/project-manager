@@ -11,6 +11,7 @@ import de.samply.db.repository.UserRepository;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
 import de.samply.user.roles.ProjectRole;
+import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 
@@ -65,11 +66,9 @@ public class DtoFactory {
     }
 
     private String fetchEmailUserName(String email) {
-        Optional<de.samply.db.model.User> user = userRepository.findByEmail(email);
-        return (user.isPresent()) ?
-                user.get().getFirstName() + " " + user.get().getLastName() :
-                null;
+        return UserUtils.extractFullName(userRepository.findByEmail(email));
     }
+
 
     public static de.samply.db.model.Project convert(@NotNull Project projectConfiguration, @NotNull de.samply.db.model.Project project) {
         if (projectConfiguration.getExpiresAt() != null) {
@@ -193,7 +192,7 @@ public class DtoFactory {
         AtomicReference<Optional<String>> firstName = new AtomicReference<>(Optional.empty());
         AtomicReference<Optional<String>> lastName = new AtomicReference<>(Optional.empty());
         if (finalUser.isEmpty()) {
-            if (finalUsers.isEmpty()){
+            if (finalUsers.isEmpty()) {
                 return Optional.empty();
             }
             finalUser = finalUsers.stream().findAny();
@@ -241,7 +240,7 @@ public class DtoFactory {
         return value.get().isPresent() ? value.get().get() : null;
     }
 
-    private <I,O> O fetchValue(AtomicReference<Optional<I>> value, Function<I, O> function) {
+    private <I, O> O fetchValue(AtomicReference<Optional<I>> value, Function<I, O> function) {
         return value.get().isPresent() ? function.apply(value.get().get()) : null;
     }
 
