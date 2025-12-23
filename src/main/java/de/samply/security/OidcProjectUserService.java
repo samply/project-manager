@@ -48,6 +48,7 @@ public class OidcProjectUserService extends OidcUserService {
         if (sessionUser.getFirstName() == null && sessionUser.getLastName() == null) {
             sessionUser.setLastName(userInfo.getFullName());
         }
+        sessionUser.resetUserOrganisationRoles();
 
         Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo);
         newUsersImporter.importNewUsers();

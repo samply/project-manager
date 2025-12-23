@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2025-12-19]
+## [1.0.0 - 2025-12-23]
 ### Added
 - First version of the project
 - Spring Application
@@ -235,3 +235,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Init flyway migration in spring 4
 - Jwt decoder configuration
 - Full name if first or last name is missing
+- Only one user session at the same time

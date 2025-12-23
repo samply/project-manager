@@ -48,6 +48,7 @@ public class ProjectUserJwtGrantedAuthoritiesConverter implements Converter<Jwt,
         if (sessionUser.getFirstName() == null && sessionUser.getLastName() == null) {
             sessionUser.setLastName(jwt.getClaimAsString(fullNameClaim));
         }
+        sessionUser.resetUserOrganisationRoles();
         Collection<GrantedAuthority> grantedAuthorities = grantedAuthoritiesExtractor.extractAuthoritiesFromGroups(
                 jwt.getClaimAsStringList(groupClaim));
         newUsersImporter.importNewUsers();

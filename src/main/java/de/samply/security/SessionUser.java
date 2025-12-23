@@ -35,4 +35,8 @@ public class SessionUser {
         return getUserOrganisationRoles().getBridgeheads();
     }
 
+    public void resetUserOrganisationRoles() {
+        userOrganisationRoles = new UserOrganisationRoles();
+    }
+
 }
