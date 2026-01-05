@@ -22,7 +22,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p WHERE p.expiresAt < :expirationTime AND p.state IN :states")
     List<Project> findByExpiresAtBeforeAndStateIn(LocalDate expirationTime, Set<ProjectState> states);
 
-    ////////// Project Manager Admins:
+    /// /////// Project Manager Admins:
     List<Project> findAll();
 
     @Query("SELECT p FROM Project p WHERE p.state != 'DRAFT' ORDER BY p.modifiedAt DESC")
@@ -61,142 +61,478 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<Project> findNotArchivedProjectsByStateModifiedAtAsc(ProjectState state, Pageable pageable);
 
 
-    ////////// Bridgehead Admins:
+    /// /////// Bridgehead Admins:
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb  ON pb.project = p " +
-            "WHERE pb.bridgehead IN :bridgeheads ORDER BY p.modifiedAt DESC")
-    List<Project> findByBridgeheads(Set<String> bridgeheads);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb  ON pb.project = p " +
-            "WHERE pb.bridgehead IN :bridgeheads ORDER BY p.modifiedAt DESC")
-    Page<Project> findByBridgeheadsModifiedAtDesc(Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb  ON pb.project = p " +
-            "WHERE pb.bridgehead IN :bridgeheads ORDER BY p.modifiedAt ASC")
-    Page<Project> findByBridgeheadsModifiedAtAsc(Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads ORDER BY p.modifiedAt DESC")
-    Page<Project> findByStateAndBridgeheadsModifiedAtDesc(ProjectState state, Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads ORDER BY p.modifiedAt ASC")
-    Page<Project> findByStateAndBridgeheadsModifiedAtAsc(ProjectState state, Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findNotArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(ProjectState state, Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findNotArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(ProjectState state, Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(ProjectState state, Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(ProjectState state, Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE pb.bridgehead IN :bridgeheads AND p.archivedAt IS NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findNotArchivedProjectsByBridgeheadsModifiedAtDesc(Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE pb.bridgehead IN :bridgeheads AND p.archivedAt IS NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findNotArchivedProjectsByBridgeheadsModifiedAtAsc(Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE pb.bridgehead IN :bridgeheads AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findArchivedProjectsByBridgeheadsModifiedAtDesc(Set<String> bridgeheads, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "WHERE pb.bridgehead IN :bridgeheads AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findArchivedProjectsByBridgeheadsModifiedAtAsc(Set<String> bridgeheads, Pageable pageable);
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE
+                    p.creatorEmail = :email
+                    OR EXISTS (
+                        SELECT 1
+                        FROM ProjectBridgehead pb
+                        WHERE pb.project = p
+                          AND pb.bridgehead IN :bridgeheads
+                    )
+                ORDER BY p.modifiedAt DESC
+            """)
+    List<Project> findByBridgeheadsOrCreator(String email, Set<String> bridgeheads);
 
 
-    ////////// Researchers:
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE pb.bridgehead IN :bridgeheads " +
-            "AND (pbu.email = :email OR p.creatorEmail = :email) ORDER BY p.modifiedAt DESC")
-    Page<Project> findByEmailAndBridgeheadsModifiedAtDesc(String email, Set<String> bridgeheads, Pageable pageable);
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE
+                    p.creatorEmail = :email
+                    OR EXISTS (
+                        SELECT 1
+                        FROM ProjectBridgehead pb
+                        WHERE pb.project = p
+                          AND pb.bridgehead IN :bridgeheads
+                    )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findByBridgeheadsOrCreatorModifiedAtDesc(String email, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE pb.bridgehead IN :bridgeheads " +
-            "AND (pbu.email = :email OR p.creatorEmail = :email) ORDER BY p.modifiedAt ASC")
-    Page<Project> findByEmailAndBridgeheadsModifiedAtAsc(String email, Set<String> bridgeheads, Pageable pageable);
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE
+                    p.creatorEmail = :email
+                    OR EXISTS (
+                        SELECT 1
+                        FROM ProjectBridgehead pb
+                        WHERE pb.project = p
+                          AND pb.bridgehead IN :bridgeheads
+                    )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findByBridgeheadsOrCreatorModifiedAtAsc(String email, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads " +
-            "AND (pbu.email = :email OR p.creatorEmail = :email) ORDER BY p.modifiedAt DESC")
-    Page<Project> findByEmailAndStateAndBridgeheadsModifiedAtDesc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findByStateAndBridgeheadsOrCreatorModifiedAtDesc(String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findByStateAndBridgeheadsOrCreatorModifiedAtAsc(String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(String email, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(String email, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(String email, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(String email, Set<String> bridgeheads, Pageable pageable);
+
+
+    /// /////// Researchers:
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE
+                    p.creatorEmail = :email
+                    OR EXISTS (
+                        SELECT 1
+                        FROM ProjectBridgehead pb
+                        JOIN ProjectBridgeheadUser pbu
+                            ON pbu.projectBridgehead = pb
+                        WHERE pb.project = p
+                          AND pb.bridgehead IN :bridgeheads
+                          AND pbu.email = :email
+                    )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findByEmailAndBridgeheadsOrCreatorModifiedAtDesc(String email, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE
+                    p.creatorEmail = :email
+                    OR EXISTS (
+                        SELECT 1
+                        FROM ProjectBridgehead pb
+                        JOIN ProjectBridgeheadUser pbu
+                            ON pbu.projectBridgehead = pb
+                        WHERE pb.project = p
+                          AND pb.bridgehead IN :bridgeheads
+                          AND pbu.email = :email
+                    )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findByEmailAndBridgeheadsOrCreatorModifiedAtAsc(String email, Set<String> bridgeheads, Pageable pageable);
+
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(
             String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE p.state = :state AND pb.bridgehead IN :bridgeheads " +
-            "AND (pbu.email = :email OR p.creatorEmail = :email) ORDER BY p.modifiedAt ASC")
-    Page<Project> findByEmailAndStateAndBridgeheadsModifiedAtAsc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(
             String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND p.state = :state " +
-            "AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(
             String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND p.state = :state " +
-            "AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(
             String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND p.state = :state " +
-            "AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(
             String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND p.state = :state " +
-            "AND pb.bridgehead IN :bridgeheads AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.state = :state
+                  AND p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(
             String email, ProjectState state, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND pb.bridgehead IN :bridgeheads " +
-            "AND p.archivedAt IS NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(
             String email, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND pb.bridgehead IN :bridgeheads " +
-            "AND p.archivedAt IS NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(
             String email, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND pb.bridgehead IN :bridgeheads " +
-            "AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt DESC")
-    Page<Project> findArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt DESC
+            """)
+    Page<Project> findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(
             String email, Set<String> bridgeheads, Pageable pageable);
 
-    @Query("SELECT DISTINCT p FROM Project p INNER JOIN ProjectBridgehead pb ON pb.project = p " +
-            "LEFT JOIN ProjectBridgeheadUser pbu ON pbu.projectBridgehead = pb " +
-            "WHERE (pbu.email = :email OR p.creatorEmail = :email) AND pb.bridgehead IN :bridgeheads " +
-            "AND p.archivedAt IS NOT NULL ORDER BY p.modifiedAt ASC")
-    Page<Project> findArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(
+    @Query("""
+                SELECT p
+                FROM Project p
+                WHERE p.archivedAt IS NOT NULL
+                  AND (
+                      p.creatorEmail = :email
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ProjectBridgehead pb
+                          JOIN ProjectBridgeheadUser pbu
+                              ON pbu.projectBridgehead = pb
+                          WHERE pb.project = p
+                            AND pb.bridgehead IN :bridgeheads
+                            AND pbu.email = :email
+                      )
+                  )
+                ORDER BY p.modifiedAt ASC
+            """)
+    Page<Project> findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(
             String email, Set<String> bridgeheads, Pageable pageable);
 
 }

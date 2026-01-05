@@ -13,8 +13,6 @@ import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
-import de.samply.user.UserService;
-import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,7 +44,6 @@ public class ProjectEventService implements ProjectEventActions {
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final UserService userService;
     private final SessionUser sessionUser;
     private final int projectExpirationTimeInDays;
 
@@ -58,7 +55,6 @@ public class ProjectEventService implements ProjectEventActions {
                                LogUtils logUtils,
                                ProjectBridgeheadRepository projectBridgeheadRepository,
                                SessionUser sessionUser,
-                               UserService userService,
                                @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
@@ -66,7 +62,6 @@ public class ProjectEventService implements ProjectEventActions {
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
-        this.userService = userService;
         this.sessionUser = sessionUser;
         this.projectExpirationTimeInDays = projectExpirationTimeInDays;
     }
@@ -92,7 +87,7 @@ public class ProjectEventService implements ProjectEventActions {
         }
     }
 
-    private Project saveProject(@NotNull Project project){
+    private Project saveProject(@NotNull Project project) {
         project.setModifiedAt(Instant.now());
         projectRepository.save(project);
         return project;
@@ -198,28 +193,9 @@ public class ProjectEventService implements ProjectEventActions {
         return this.projectBridgeheadRepository.save(projectBridgehead);
     }
 
-    private void createProjectBridgeheadUser(String projectCode) throws ProjectEventActionsException {
-        Project project = fetchProject(projectCode);
-        sessionUser.getBridgeheads().stream().forEach(bridgehead -> {
-            Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project);
-            if (projectBridgehead.isPresent()) {
-                this.userService.createProjectBridgeheadUserIfNotExists(sessionUser.getEmail(), projectBridgehead.get(), ProjectRole.CREATOR);
-            }
-        });
-    }
-
-    private Project fetchProject(String projectCode) throws ProjectEventActionsException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectEventActionsException("Project not found");
-        }
-        return project.get();
-    }
-
     @Override
     public void create(String projectCode) throws ProjectEventActionsException {
         changeEvent(projectCode, ProjectEvent.CREATE);
-        createProjectBridgeheadUser(projectCode);
     }
 
     @Override
