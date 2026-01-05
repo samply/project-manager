@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2025-12-23]
+## [1.0.0 - 2026-01-05]
 ### Added
 - First version of the project
 - Spring Application
@@ -227,6 +227,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
 - Update to Maven 4
 - Update to Java 25
+- Remove project bridgehead user with role creator
 
 ### Removed
 - RStudio Keycloak Groups
