@@ -122,7 +122,7 @@ public class ProjectService {
         // Fetch projects as bridgehead admin
         // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
         if (isBridgeheadAdmin()) {
-            return projectRepository.findByBridgeheads(bridgeheads);
+            return projectRepository.findByBridgeheadsOrCreator(sessionUser.getEmail(), bridgeheads);
         }
         // Fetch projects as researcher
         return projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
@@ -213,44 +213,44 @@ public class ProjectService {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                    return projectRepository.findByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                    return projectRepository.findByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     }
                 }
             }
         } else {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     }
                 }
             }
@@ -263,44 +263,44 @@ public class ProjectService {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
                     }
                 }
             }
         } else {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
                     }
                 }
             }

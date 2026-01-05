@@ -228,6 +228,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update to Maven 4
 - Update to Java 25
 - Remove project bridgehead user with role creator
+- View also own created projects even if they don't belong to own bridgeheads
 
 ### Removed
 - RStudio Keycloak Groups

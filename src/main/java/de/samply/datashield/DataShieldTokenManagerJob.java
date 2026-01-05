@@ -162,7 +162,6 @@ public class DataShieldTokenManagerJob {
                                         this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT),
                                         this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.FINAL, ProjectRole.FINAL))
                                 .flatMap(Set::stream)
-                                .filter(user -> user.getProjectRole() != ProjectRole.CREATOR)
                                 .flatMap(user ->
                                         this.tokenManagerService.fetchProjectBridgeheads(
                                                         user.getProjectBridgehead().getProject().getCode(),
