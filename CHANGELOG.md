@@ -229,6 +229,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update to Java 25
 - Remove project bridgehead user with role creator
 - View also own created projects even if they don't belong to own bridgeheads
+- View all project bridgeheads for creator
 
 ### Removed
 - RStudio Keycloak Groups

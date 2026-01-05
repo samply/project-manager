@@ -78,7 +78,10 @@ public class ProjectBridgeheadService {
         }
         Set<ProjectBridgehead> tempProjectBridgeheads = new HashSet<>();
         projectBridgeheads.forEach(projectBridgehead -> {
-            if (isBridgeheadAdminOfProjectBridgehead(projectBridgehead) || isUserOfProjectBridgehead(projectBridgehead)) {
+            if (isBridgeheadAdminOfProjectBridgehead(projectBridgehead) ||
+                    isUserOfProjectBridgehead(projectBridgehead) ||
+                    isUserCreatorOfProject(project.get())
+            ) {
                 tempProjectBridgeheads.add(projectBridgehead);
             }
         });
@@ -110,6 +113,10 @@ public class ProjectBridgeheadService {
             }
         }
         return !projectBridgeheadUserRepository.getByEmailAndProjectBridgehead(sessionUser.getEmail(), projectBridgehead).isEmpty();
+    }
+
+    private boolean isUserCreatorOfProject(Project project) {
+        return project.getCreatorEmail().equals(sessionUser.getEmail());
     }
 
     public void scheduleSendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
