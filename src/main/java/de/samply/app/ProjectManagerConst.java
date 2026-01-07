@@ -122,7 +122,8 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_TITLES_ACTION = "FETCH_PROJECT_FORM_TITLES";
     public final static String FETCH_PROJECT_FORM_FIELDS_ACTION = "FETCH_PROJECT_FORM_FIELDS";
     public final static String FETCH_PROJECT_FORM_VALUES_ACTION = "FETCH_PROJECT_FORM_VALUES";
-    public final static String ADD_PROJECT_FORM_FIELDS_ACTION = "ADD_PROJECT_FORM_FIELDS";
+    public final static String FETCH_ALL_PROJECT_FORM_FIELDS_ACTION = "FETCH_ALL_PROJECT_FORM_FIELDS";
+    public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
 
 
     // REST Services
@@ -229,8 +230,9 @@ public class ProjectManagerConst {
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/exists-research-environment-workspace";
     public final static String FETCH_PROJECT_FORM_TITLES = "/project-form-titles";
     public final static String FETCH_PROJECT_FORM_FIELDS = "/project-form-fields";
+    public final static String FETCH_ALL_PROJECT_FORM_FIELDS = "/all-project-form-fields";
     public final static String FETCH_PROJECT_FORM_VALUES = "/project-form-values";
-    public final static String ADD_PROJECT_FORM_FIELDS = "/add-project-form-fields";
+    public final static String EDIT_PROJECT_FORM_FIELDS = "/edit-project-form-fields";
 
 
     // REST Parameters
@@ -258,6 +260,7 @@ public class ProjectManagerConst {
     public final static String FILENAME = "filename";
     public final static String QUERY_CODE = "query-code";
     public final static String LABEL = "label";
+    public final static String FORM_TITLE = "form-title";
     public final static String DESCRIPTION = "description";
     public final static String OUTPUT_FORMAT = "output-format";
     public final static String TEMPLATE_ID = "template-id";

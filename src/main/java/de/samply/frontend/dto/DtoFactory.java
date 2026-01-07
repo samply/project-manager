@@ -5,14 +5,19 @@ import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.BridgeheadAdminUser;
 import de.samply.db.model.NotificationUserAction;
 import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.db.model.ProjectForm;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.UserRepository;
+import de.samply.form.DisplayMetadata;
+import de.samply.form.FormConfig;
+import de.samply.form.FormFieldConfig;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -28,15 +33,22 @@ public class DtoFactory {
     private final UserRepository userRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
+    private final FormConfig formConfig;
+    private final String defaultLanguage;
+
 
     public DtoFactory(BridgeheadConfiguration bridgeheadConfiguration,
                       UserRepository userRepository,
                       ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                      BridgeheadAdminUserRepository bridgeheadAdminUserRepository) {
+                      BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
+                      FormConfig formConfig,
+                      @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.userRepository = userRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
+        this.formConfig = formConfig;
+        this.defaultLanguage = defaultLanguage;
     }
 
     public Project convert(@NotNull de.samply.db.model.Project project) {
@@ -147,15 +159,15 @@ public class DtoFactory {
 
     public String fetchHumanReadableBridgehead(@NotNull String bridgehead) {
         Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
-        return (humanReadable.isPresent()) ? humanReadable.get() : bridgehead;
+        return humanReadable.orElse(bridgehead);
     }
 
     public User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
         Optional<de.samply.db.model.User> user = userRepository.findByEmail(projectBridgeheadUser.getEmail());
         return new User(
                 projectBridgeheadUser.getEmail(),
-                user.isPresent() ? user.get().getFirstName() : null,
-                user.isPresent() ? user.get().getLastName() : null,
+                user.map(de.samply.db.model.User::getFirstName).orElse(null),
+                user.map(de.samply.db.model.User::getLastName).orElse(null),
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
                 projectBridgeheadUser.getProjectRole(),
@@ -167,8 +179,8 @@ public class DtoFactory {
         Optional<de.samply.db.model.User> user = userRepository.findByEmail(projectBridgeheadUser.getEmail());
         return new User(
                 projectBridgeheadUser.getEmail(),
-                user.isPresent() ? user.get().getFirstName() : null,
-                user.isPresent() ? user.get().getLastName() : null,
+                user.map(de.samply.db.model.User::getFirstName).orElse(null),
+                user.map(de.samply.db.model.User::getLastName).orElse(null),
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
                 null,
@@ -178,11 +190,80 @@ public class DtoFactory {
 
     public Bridgehead convertToBridgehead(@NotNull String bridgehead) {
         Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
-        return humanReadable.isPresent() ? new Bridgehead(bridgehead, humanReadable.get()) : new Bridgehead(bridgehead, null);
+        return humanReadable.map(s -> new Bridgehead(bridgehead, s)).orElseGet(() -> new Bridgehead(bridgehead, null));
     }
 
     public static User convert(de.samply.db.model.User user) {
         return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null);
+    }
+
+    public FormField convert(@NotNull String title, Optional<String> label, Optional<String> value, Optional<String> language) {
+        String languageCode = language.orElse(defaultLanguage);
+        return new FormField(
+                title,
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
+                        .map(DisplayMetadata::getDisplayName)
+                        .map(names -> names.get(languageCode))
+                        .orElse(null),
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
+                        .map(DisplayMetadata::getDescription)
+                        .map(names -> names.get(languageCode))
+                        .orElse(null),
+                label.orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(DisplayMetadata::getDisplayName)
+                        .map(d -> d.get(defaultLanguage))
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(DisplayMetadata::getDescription)
+                        .map(d -> d.get(defaultLanguage))
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getGroups)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getDataType)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::isMandatory)
+                        .orElse(null),
+                value.orElse(null)
+        );
+    }
+
+    public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig, Optional<String> value, Optional<String> language) {
+        String languageCode = language.orElse(defaultLanguage);
+        return new FormField(
+                title,
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
+                        .map(DisplayMetadata::getDisplayName)
+                        .map(names -> names.get(languageCode))
+                        .orElse(null),
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
+                        .map(DisplayMetadata::getDescription)
+                        .map(names -> names.get(languageCode))
+                        .orElse(null),
+                formFieldConfig.getLabel(),
+                formFieldConfig.getDisplayName().getOrDefault(languageCode, null),
+                formFieldConfig.getDescription().getOrDefault(languageCode, null),
+                formFieldConfig.getGroups(),
+                formFieldConfig.getDataType(),
+                formFieldConfig.isMandatory(),
+                value.orElse(null)
+        );
+    }
+
+    public FormField convert(@NotNull ProjectForm projectForm, Optional<String> language) {
+        return convert(
+                projectForm.getFormTitle(),
+                Optional.of(projectForm.getLabel()),
+                Optional.ofNullable(projectForm.getValue()),
+                language);
     }
 
     public Optional<Results> fetchResults(@NotNull de.samply.db.model.Project project) {
@@ -198,17 +279,15 @@ public class DtoFactory {
             finalUser = finalUsers.stream().findAny();
         }
         finalUser.ifPresent(user -> email.set(Optional.of(user.getEmail())));
-        email.get().ifPresent(tempEmail -> {
-            userRepository.findByEmail(tempEmail).ifPresent(tempUser -> {
-                firstName.set(Optional.of(tempUser.getFirstName()));
-                lastName.set(Optional.of(tempUser.getLastName()));
-            });
+        email.get().flatMap(userRepository::findByEmail).ifPresent(tempUser -> {
+            firstName.set(Optional.of(tempUser.getFirstName()));
+            lastName.set(Optional.of(tempUser.getLastName()));
         });
         return Optional.of(new Results(null, null, fetchValue(email), fetchValue(firstName), fetchValue(lastName),
                 fetchProjectResultsUrl(project, finalUser),
                 project.getCreatorResultsState(),
                 null,
-                fetchValue(new AtomicReference<>(finalUser), user -> user.getProjectState())));
+                fetchValue(new AtomicReference<>(finalUser), ProjectBridgeheadUser::getProjectState)));
     }
 
     private String fetchProjectResultsUrl(@NotNull de.samply.db.model.Project project, Optional<ProjectBridgeheadUser> finalUser) {
@@ -222,9 +301,9 @@ public class DtoFactory {
         AtomicReference<Optional<String>> humanReadableBridghead = new AtomicReference<>(bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead()));
         return new Results(projectBridgehead.getBridgehead(),
                 fetchValue(humanReadableBridghead),
-                fetchValue(user, u -> u.getEmail()),
-                fetchValue(user, u -> u.getFirstName()),
-                fetchValue(user, u -> u.getLastName()),
+                fetchValue(user, de.samply.db.model.User::getEmail),
+                fetchValue(user, de.samply.db.model.User::getFirstName),
+                fetchValue(user, de.samply.db.model.User::getLastName),
                 fetchProjectBridgeheadResults(projectBridgehead),
                 projectBridgehead.getCreatorResultsState(),
                 projectBridgehead.getState(),

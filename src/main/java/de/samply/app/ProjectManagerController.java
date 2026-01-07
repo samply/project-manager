@@ -15,8 +15,10 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
+import de.samply.form.FormService;
 import de.samply.frontend.FrontendService;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.FormField;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.project.ProjectBridgeheadService;
@@ -43,10 +45,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -56,6 +55,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -82,6 +82,7 @@ public class ProjectManagerController {
     private final DtoFactory dtoFactory;
     private final EmailService emailService;
     private final CoderService coderService;
+    private final FormService formService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -97,7 +98,8 @@ public class ProjectManagerController {
                                     ProjectConfigurations frontendProjectConfigurations,
                                     DtoFactory dtoFactory,
                                     EmailService emailService,
-                                    CoderService coderService) {
+                                    CoderService coderService,
+                                    FormService formService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -113,6 +115,7 @@ public class ProjectManagerController {
         this.dtoFactory = dtoFactory;
         this.emailService = emailService;
         this.coderService = coderService;
+        this.formService = formService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -332,6 +335,77 @@ public class ProjectManagerController {
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)
         ));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TITLES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TITLES)
+    public ResponseEntity<String> fetchProjectFormTitles(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language
+    ) {
+        return convertToResponseEntity(() -> formService.fetchProjectFormTitles(Optional.ofNullable(language)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_ALL_PROJECT_FORM_FIELDS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_ALL_PROJECT_FORM_FIELDS)
+    public ResponseEntity<String> fetchAllProjectFormFields(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language
+    ) {
+        return convertToResponseEntity(() -> formService.fetchAllProjectFormFields(Optional.ofNullable(language)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS)
+    public ResponseEntity<String> fetchProjectFormFields(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
+    ) {
+        return convertToResponseEntity(() -> formService.fetchProjectFormFields(formTitle, Optional.ofNullable(language)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_VALUES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_VALUES)
+    public ResponseEntity<String> fetchProjectFormValues(
+            // Project code and bridgehead needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
+    ) {
+        return convertToResponseEntity(() -> formService.fetchProjectFormLabelAndValues(formTitle, projectCode, Optional.ofNullable(language)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS_ACTION)
+    @PostMapping(value = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS)
+    public ResponseEntity<String> editProjectFormValues(
+            // Project code and bridgehead needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestBody List<FormField> formFields
+    ) {
+        return convertToResponseEntity(() -> formService.editProjectFormLabelAndValues(Optional.ofNullable(formFields), projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
