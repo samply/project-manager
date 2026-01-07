@@ -6,6 +6,7 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,11 +18,12 @@ import java.util.stream.Collectors;
 /**
  * Service class responsible for handling operations related to forms and their associated configurations,
  * labels, and values within a project context.
- *
+ * <p>
  * This class provides methods to fetch form titles, retrieve form field configurations, and manage label-value
  * pairs for specific project forms. It utilizes repositories and services to interact with underlying
  * storage and notification systems.
  */
+@Service
 public class FormService {
 
     private final FormConfig formConfig;
@@ -41,11 +43,11 @@ public class FormService {
     }
 
     public Set<String> fetchProjectFormTitles() {
-        return formConfig.getFormTitleFieldMap().keySet();
+        return formConfig.getFormTitleLabelFieldMap().keySet();
     }
 
     public List<FormFieldConfig> fetchProjectFormFields(@NotNull String projectFormTitle) {
-        return formConfig.getFormTitleFieldMap().get(projectFormTitle);
+        return List.copyOf(formConfig.getFormTitleLabelFieldMap().getOrDefault(projectFormTitle, Map.of()).values());
     }
 
     public Map<String, String> fetchProjectFormLabelAndValues(@NotNull String projectFormTitle, @NotNull String projectCode) {

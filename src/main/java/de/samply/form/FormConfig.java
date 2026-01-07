@@ -12,7 +12,10 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Configuration class responsible for loading form field configurations from external JSON files.
@@ -61,8 +64,7 @@ public class FormConfig {
 
     private final Map<String, DisplayMetadata> formTitleDisplaMetadataMap = new HashMap<>();
     private final Map<String, DisplayMetadata> groupsDisplayMetadataMap = new HashMap<>();
-    private final Map<String, List<FormFieldConfig>> formTitleFieldMap = new HashMap<>();
-    private final Map<String, FormFieldConfig> formLabelFieldMap = new HashMap<>();
+    private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
 
     /**
      * Constructor that initializes the form field configurations based on environment variables.
@@ -109,16 +111,13 @@ public class FormConfig {
                     this.groupsDisplayMetadataMap.putAll(formMetadataConfig.getGroups());
                 }
                 Arrays.stream(formMetadataConfig.getFields()).forEach(formFieldConfig -> {
-                    // Add form field config to label map
-                    formLabelFieldMap.put(formFieldConfig.getLabel(), formFieldConfig);
-
-                    // Add form field config to title map
-                    List<FormFieldConfig> formFieldConfigs = formTitleFieldMap.get(formMetadataConfig.getTitle());
-                    if (formFieldConfigs == null) {
-                        formFieldConfigs = new ArrayList<>();
-                        formTitleFieldMap.put(formMetadataConfig.getTitle(), formFieldConfigs);
+                    // Add form field config to map
+                    Map<String, FormFieldConfig> formFieldLabelConfigMap = formTitleLabelFieldMap.get(formMetadataConfig.getTitle());
+                    if (formFieldLabelConfigMap == null) {
+                        formFieldLabelConfigMap = new HashMap<>();
+                        formTitleLabelFieldMap.put(formMetadataConfig.getTitle(), formFieldLabelConfigMap);
                     }
-                    formFieldConfigs.add(formFieldConfig);
+                    formFieldLabelConfigMap.put(formFieldConfig.getLabel(), formFieldConfig);
                 });
                 log.info("Successfully loaded {} form fields from {}", formMetadataConfig.getFields().length, configPath);
             } catch (IOException e) {
