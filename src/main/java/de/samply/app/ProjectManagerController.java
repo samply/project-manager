@@ -132,7 +132,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> fetchActions(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
+            @Language String language,
             @RequestParam(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(() ->
@@ -143,7 +143,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> fetchAllActions(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
+            @Language String language,
             @RequestParam(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(() ->
@@ -346,7 +346,7 @@ public class ProjectManagerController {
             // Project code needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language
+            @Language String language
     ) {
         return convertToResponseEntity(() -> formService.fetchProjectFormTitles(Optional.ofNullable(language)));
     }
@@ -360,7 +360,7 @@ public class ProjectManagerController {
             // Project code needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language
+            @Language String language
     ) {
         return convertToResponseEntity(() -> formService.fetchAllProjectFormFields(Optional.ofNullable(language)));
     }
@@ -374,7 +374,7 @@ public class ProjectManagerController {
             // Project code needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
+            @Language String language,
             @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
     ) {
         return convertToResponseEntity(() -> formService.fetchProjectFormFields(formTitle, Optional.ofNullable(language)));
@@ -389,7 +389,7 @@ public class ProjectManagerController {
             // Project code and bridgehead needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LANGUAGE, required = false) String language,
+            @Language String language,
             @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
     ) {
         return convertToResponseEntity(() -> formService.fetchProjectFormLabelAndValues(formTitle, projectCode, Optional.ofNullable(language)));

@@ -519,7 +519,7 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE_SV = HEAD_SV + EXPORTER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
     public final static String EXPORTER_MAX_POOL_SIZE_SV = HEAD_SV + EXPORTER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
-    public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
+    public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":en" + BOTTOM_SV;
 
     public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS + ":" + BOTTOM_SV;
 

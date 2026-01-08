@@ -15,11 +15,14 @@ import de.samply.form.FormFieldConfig;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
 import de.samply.user.roles.ProjectRole;
+import de.samply.utils.LanguageUtils;
 import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,7 +51,7 @@ public class DtoFactory {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.formConfig = formConfig;
-        this.defaultLanguage = defaultLanguage;
+        this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
     }
 
     public Project convert(@NotNull de.samply.db.model.Project project) {
@@ -198,31 +201,31 @@ public class DtoFactory {
     }
 
     public FormField convert(@NotNull String title, Optional<String> label, Optional<String> value, Optional<String> language) {
-        String languageCode = language.orElse(defaultLanguage);
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
                         .map(DisplayMetadata::getDisplayName)
-                        .map(names -> names.get(languageCode))
+                        .map(m -> fetchValue(m, language))
                         .orElse(null),
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
                         .map(DisplayMetadata::getDescription)
-                        .map(names -> names.get(languageCode))
+                        .map(m -> fetchValue(m, language))
                         .orElse(null),
                 label.orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(DisplayMetadata::getDisplayName)
-                        .map(d -> d.get(defaultLanguage))
+                        .map(m -> fetchValue(m, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(DisplayMetadata::getDescription)
-                        .map(d -> d.get(defaultLanguage))
+                        .map(m -> fetchValue(m, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getGroups)
+                        .map(groups -> convert(groups, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
@@ -236,22 +239,50 @@ public class DtoFactory {
         );
     }
 
+    private FormFieldGroup[] convert(String[] groups, Optional<String> language) {
+        if (groups == null) {
+            return null;
+        }
+        return Arrays.stream(groups)
+                .map(group -> Map.entry(
+                        group,
+                        formConfig.getGroupsDisplayMetadataMap().get(group)
+                ))
+                .filter(entry -> entry.getValue() != null)
+                .map(entry -> {
+                    var group = entry.getKey();
+                    var metadata = entry.getValue();
+
+                    return new FormFieldGroup(
+                            group,
+                            fetchValue(metadata.getDisplayName(), language),
+                            fetchValue(metadata.getDescription(), language)
+                    );
+                })
+                .toArray(FormFieldGroup[]::new);
+    }
+
+    private <T> T fetchValue(Map<String, T> languageMapper, Optional<String> languageCode) {
+        return languageCode
+                .map(languageMapper::get)  // returns the value or null
+                .orElse(languageMapper.get(defaultLanguage));
+    }
+
     public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig, Optional<String> value, Optional<String> language) {
-        String languageCode = language.orElse(defaultLanguage);
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
                         .map(DisplayMetadata::getDisplayName)
-                        .map(names -> names.get(languageCode))
+                        .map(m -> fetchValue(m, language))
                         .orElse(null),
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
                         .map(DisplayMetadata::getDescription)
-                        .map(names -> names.get(languageCode))
+                        .map(m -> fetchValue(m, language))
                         .orElse(null),
                 formFieldConfig.getLabel(),
-                formFieldConfig.getDisplayName().getOrDefault(languageCode, null),
-                formFieldConfig.getDescription().getOrDefault(languageCode, null),
-                formFieldConfig.getGroups(),
+                fetchValue(formFieldConfig.getDisplayName(), language),
+                fetchValue(formFieldConfig.getDescription(), language),
+                convert(formFieldConfig.getGroups(), language),
                 formFieldConfig.getDataType(),
                 formFieldConfig.isMandatory(),
                 value.orElse(null)

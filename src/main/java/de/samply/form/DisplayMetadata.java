@@ -1,6 +1,7 @@
 package de.samply.form;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.samply.utils.LanguageUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,9 +41,9 @@ public class DisplayMetadata {
         if (displayName != null) {
             displayName = displayName.entrySet().stream()
                     .collect(Collectors.toMap(
-                            entry -> entry.getKey().toLowerCase(),
+                            entry -> LanguageUtils.normalize(entry.getKey()),
                             Map.Entry::getValue,
-                            (existing, replacement) -> existing,
+                            (existing, _) -> existing,
                             HashMap::new
                     ));
         }
@@ -50,15 +51,15 @@ public class DisplayMetadata {
         if (description != null) {
             description = description.entrySet().stream()
                     .collect(Collectors.toMap(
-                            entry -> entry.getKey().toLowerCase(),
+                            entry -> LanguageUtils.normalize(entry.getKey()),
                             Map.Entry::getValue,
-                            (existing, replacement) -> existing,
+                            (existing, _) -> existing,
                             HashMap::new
                     ));
         }
     }
 
-    public DisplayMetadata fetchDisplayMetadata(){
+    public DisplayMetadata fetchDisplayMetadata() {
         DisplayMetadata result = new DisplayMetadata();
         result.setDisplayName(displayName);
         result.setDescription(description);

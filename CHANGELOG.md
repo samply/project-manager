@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-01-07]
+## [1.0.0 - 2026-01-08]
 ### Added
 - First version of the project
 - Spring Application
@@ -224,6 +224,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - AST and AST_DATA as query format
 - Project Form
 - Project Form Services
+- Language annotation
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL

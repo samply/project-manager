@@ -2,6 +2,7 @@ package de.samply.frontend;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
@@ -42,6 +43,7 @@ public class ActionExplanation {
     @JsonProperty(value = "priority")
     private Integer priority;
     @JsonProperty(value = "messages", required = true)
+    @JsonDeserialize(using = LanguageMessageMapDeserializer.class)
     private Map<String, String> languageMessageMap;
 
 }
