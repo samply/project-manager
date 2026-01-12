@@ -1,7 +1,9 @@
 package de.samply.form;
 
+import de.samply.db.model.Project;
 import de.samply.db.model.ProjectForm;
 import de.samply.db.repository.ProjectFormRepository;
+import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.FormField;
 import de.samply.notification.NotificationService;
@@ -11,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +32,7 @@ import java.util.stream.Collectors;
 public class FormService {
 
     private final FormConfig formConfig;
+    private final ProjectRepository projectRepository;
     private final ProjectFormRepository projectFormRepository;
     private final NotificationService notificationService;
     private final SessionUser sessionUser;
@@ -36,11 +40,13 @@ public class FormService {
 
 
     public FormService(FormConfig formConfig,
+                       ProjectRepository projectRepository,
                        ProjectFormRepository projectFormRepository,
                        NotificationService notificationService,
                        SessionUser sessionUser,
                        DtoFactory dtoFactory) {
         this.formConfig = formConfig;
+        this.projectRepository = projectRepository;
         this.projectFormRepository = projectFormRepository;
         this.notificationService = notificationService;
         this.sessionUser = sessionUser;
@@ -86,13 +92,13 @@ public class FormService {
                 .toList();
     }
 
-    public void editProjectFormLabelAndValues(Optional<List<FormField>> formFields, @NotNull String projectCode) {
-        if (formFields.isEmpty() || formFields.get().isEmpty()) {
+    public void editProjectFormLabelAndValues(Optional<FormField[]> formFields, @NotNull String projectCode) {
+        if (formFields.isEmpty() || formFields.get().length == 0) {
             return;
         }
         Map<String, ProjectForm> labelFormMap = projectFormRepository.findByProject_Code(projectCode).stream()
                 .collect(Collectors.toMap(ProjectForm::getLabel, Function.identity()));
-        formFields.get().forEach(formField -> {
+        Arrays.stream(formFields.get()).forEach(formField -> {
             ProjectForm projectForm = labelFormMap.get(formField.label());
             boolean isModified = false;
             if (projectForm == null) {
@@ -100,6 +106,7 @@ public class FormService {
                 projectForm.setLabel(formField.label());
                 projectForm.setFormTitle(formField.title());
                 projectForm.setValue(formField.value());
+                projectForm.setProject(fetchProject(projectCode));
                 isModified = true;
                 notificationService.createNotification(projectCode, null,
                         sessionUser.getEmail(), OperationType.ADD_PROJECT_FORM_LABEL,
@@ -118,6 +125,14 @@ public class FormService {
                 projectFormRepository.save(projectForm);
             }
         });
+    }
+
+    private Project fetchProject(@NotNull String projectCode) throws FormServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new FormServiceException("Project " + projectCode + " not found");
+        }
+        return project.get();
     }
 
 

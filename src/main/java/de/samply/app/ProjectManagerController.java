@@ -45,7 +45,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -403,7 +406,7 @@ public class ProjectManagerController {
     public ResponseEntity<String> editProjectFormValues(
             // Project code and bridgehead needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestBody List<FormField> formFields
+            @RequestVariable(name = ProjectManagerConst.FORM_FIELDS) FormField[] formFields
     ) {
         return convertToResponseEntity(() -> formService.editProjectFormLabelAndValues(Optional.ofNullable(formFields), projectCode));
     }

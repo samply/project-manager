@@ -261,6 +261,7 @@ public class ProjectManagerConst {
     public final static String QUERY_CODE = "query-code";
     public final static String LABEL = "label";
     public final static String FORM_TITLE = "form-title";
+    public final static String FORM_FIELDS = "form-fields";
     public final static String DESCRIPTION = "description";
     public final static String OUTPUT_FORMAT = "output-format";
     public final static String TEMPLATE_ID = "template-id";
