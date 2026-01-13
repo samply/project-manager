@@ -6,9 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
 import java.io.FileNotFoundException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -36,8 +38,8 @@ public class ThymeleafConfiguration {
         FileTemplateResolver resolver = new FileTemplateResolver();
         resolver.setPrefix(externalTemplateDirectory);
         resolver.setSuffix(".html");
-        resolver.setTemplateMode("HTML");
-        resolver.setCharacterEncoding("UTF-8");
+        resolver.setTemplateMode(TemplateMode.HTML);
+        resolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
         resolver.setCacheable(true);
         return resolver;
     }

@@ -16,6 +16,7 @@ import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.form.FormService;
+import de.samply.form.pdf.FormPdfService;
 import de.samply.frontend.FrontendService;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.FormField;
@@ -58,7 +59,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -86,6 +86,7 @@ public class ProjectManagerController {
     private final EmailService emailService;
     private final CoderService coderService;
     private final FormService formService;
+    private final FormPdfService formPdfService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -102,7 +103,8 @@ public class ProjectManagerController {
                                     DtoFactory dtoFactory,
                                     EmailService emailService,
                                     CoderService coderService,
-                                    FormService formService) {
+                                    FormService formService,
+                                    FormPdfService formPdfService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -119,6 +121,7 @@ public class ProjectManagerController {
         this.emailService = emailService;
         this.coderService = coderService;
         this.formService = formService;
+        this.formPdfService = formPdfService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -409,6 +412,27 @@ public class ProjectManagerController {
             @RequestVariable(name = ProjectManagerConst.FORM_FIELDS) FormField[] formFields
     ) {
         return convertToResponseEntity(() -> formService.editProjectFormLabelAndValues(Optional.ofNullable(formFields), projectCode));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FORM_AS_PDF_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_FORM_AS_PDF)
+    public ResponseEntity<Resource> downloadFormAsPdf(
+            // Project code and bridgehead needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @Language String language,
+            @RequestVariable(name = ProjectManagerConst.FORM_TEMPLATE, required = false) String formTemplate
+    ) {
+        return convertToResponseEntity(() ->
+                ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
+                                formPdfService.fetchFormFilename(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .body(formPdfService.createFormAsPdf(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+        );
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})

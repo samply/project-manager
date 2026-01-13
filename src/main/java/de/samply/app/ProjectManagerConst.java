@@ -124,6 +124,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_VALUES_ACTION = "FETCH_PROJECT_FORM_VALUES";
     public final static String FETCH_ALL_PROJECT_FORM_FIELDS_ACTION = "FETCH_ALL_PROJECT_FORM_FIELDS";
     public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
+    public final static String DOWNLOAD_FORM_AS_PDF_ACTION = "DOWNLOAD_FORM_AS_PDF";
 
 
     // REST Services
@@ -233,6 +234,7 @@ public class ProjectManagerConst {
     public final static String FETCH_ALL_PROJECT_FORM_FIELDS = "/all-project-form-fields";
     public final static String FETCH_PROJECT_FORM_VALUES = "/project-form-values";
     public final static String EDIT_PROJECT_FORM_FIELDS = "/edit-project-form-fields";
+    public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
 
 
     // REST Parameters
@@ -262,6 +264,7 @@ public class ProjectManagerConst {
     public final static String LABEL = "label";
     public final static String FORM_TITLE = "form-title";
     public final static String FORM_FIELDS = "form-fields";
+    public final static String FORM_TEMPLATE = "form-template";
     public final static String DESCRIPTION = "description";
     public final static String OUTPUT_FORMAT = "output-format";
     public final static String TEMPLATE_ID = "template-id";
@@ -426,6 +429,8 @@ public class ProjectManagerConst {
     public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
 
     public final static String FORM_CONFIG_PATH_PREFIX = "FORM_CONFIG_PATH";
+    public final static String FORM_RESOURCES_PATH = "FORM_RESOURCES_PATH";
+    public final static String FORM_DEFAULT_TEMPLATE = "FORM_DEFAULT_TEMPLATE";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -531,6 +536,9 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_API_KEY_SV = HEAD_SV + APP_REGISTER_API_KEY + BOTTOM_SV;
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":ApiKey {}" + BOTTOM_SV;
     public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
+
+    public final static String FORM_RESOURCES_PATH_SV = HEAD_SV + FORM_RESOURCES_PATH + BOTTOM_SV;
+    public final static String FORM_DEFAULT_TEMPLATE_SV = HEAD_SV + FORM_DEFAULT_TEMPLATE + BOTTOM_SV;
 
 
     // Async Configuration
