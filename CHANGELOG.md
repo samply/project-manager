@@ -226,6 +226,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Form Services
 - Language annotation
 - Form Pdf Service
+- External Execution Not Allowed Profile
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL

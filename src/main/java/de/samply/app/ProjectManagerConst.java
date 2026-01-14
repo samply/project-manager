@@ -4,6 +4,9 @@ public class ProjectManagerConst {
 
     public final static String APP_NAME = "Project Manager";
 
+    // Profiles
+    public final static String EXTERNAL_EXECUTION_NOT_ALLOWED = "external-execution-not-allowed";
+
     // Sites
     public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
     public final static String PROJECT_VIEW_SITE = "project-view";
