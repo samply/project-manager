@@ -56,14 +56,20 @@ public class OidcProjectUserService extends OidcUserService {
         return new DefaultOidcUser(mappedAuthorities, idToken, userInfo);
     }
 
-    public Collection<? extends GrantedAuthority> extractAuthoritiesFromGroups(OidcUserInfo userInfo) throws OAuth2AuthenticationException {
+    public Collection<? extends GrantedAuthority> extractAuthoritiesFromGroups(OidcUserInfo userInfo)
+            throws OAuth2AuthenticationException {
+
         Map<String, Object> claims = userInfo.getClaims();
-        if (claims.containsKey(groupClaim)) {
-            return grantedAuthoritiesExtractor.extractAuthoritiesFromGroups((Collection<String>) claims.get(groupClaim));
+        Object groupsObj = claims.get(groupClaim);
+
+        if (groupsObj instanceof Collection<?> collection) {
+            return grantedAuthoritiesExtractor.extractAuthoritiesFromGroups(collection.stream()
+                    .map(Object::toString)
+                    .toList());
         }
+
         throw new OAuth2AuthenticationException("No groups found");
     }
-
 
 
 }

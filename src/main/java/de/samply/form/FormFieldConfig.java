@@ -2,7 +2,9 @@ package de.samply.form;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class FormFieldConfig extends DisplayMetadata{
 

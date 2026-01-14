@@ -8,28 +8,26 @@ import de.samply.utils.LanguageUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class LanguageMessageMapDeserializer
         extends JsonDeserializer<Map<String, String>> {
 
     @Override
-    public Map<String, String> deserialize(
-            JsonParser p,
-            DeserializationContext ctxt
-    ) throws IOException {
+    public Map<String, String> deserialize(JsonParser p, DeserializationContext ctxt)
+            throws IOException {
 
-        JsonNode node = p.getCodec().readTree(p);
         Map<String, String> result = new HashMap<>();
+        JsonNode node = p.getCodec().readTree(p);
 
-        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
-            String normalizedKey = LanguageUtils.normalize(entry.getKey());
-            result.put(normalizedKey, entry.getValue().asText());
-        }
+        node.properties().forEach(entry ->
+                result.put(
+                        LanguageUtils.normalize(entry.getKey()),
+                        entry.getValue().textValue()
+                )
+        );
 
         return result;
     }
 }
+
