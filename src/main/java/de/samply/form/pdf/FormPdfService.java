@@ -5,14 +5,17 @@ import de.samply.form.FormService;
 import de.samply.frontend.dto.FormField;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
+import de.samply.utils.FormFieldUtils;
 import de.samply.utils.LanguageUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class FormPdfService {
@@ -54,18 +57,30 @@ public class FormPdfService {
                 .map(t -> formService.fetchProjectFormFields(t, Optional.of(language)))
                 .orElseGet(() -> formService.fetchAllProjectFormFields(Optional.of(language)))
                 .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField));
+        // Override form fields with value
         formTitle
                 .map(t -> formService.fetchProjectFormLabelAndValues(t, projectCode, Optional.of(language)))
                 .orElseGet(() -> formService.fetchProjectFormLabelAndValues(projectCode, Optional.of(language)))
-                .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField)); // Override form fields with value
+                .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField));
         Map<String, Object> result = new HashMap<>();
-        result.put(FormKey.FIELDS.getText(), formFields);
+        result.put(FormKey.FIELDS.getText(), sortFormFields(formFields));
 
         return result;
     }
 
     private String fetchFormFieldKey(@NotNull FormField formField) {
         return formField.title() + formField.label();
+    }
+
+    private Map<String, FormField> sortFormFields(Map<String, FormField> formFields) {
+        return formFields.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(FormFieldUtils.FORM_FIELD_COMPARATOR))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, _) -> e1,
+                        LinkedHashMap::new
+                ));
     }
 
 }

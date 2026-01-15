@@ -235,6 +235,7 @@ public class DtoFactory {
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::isMandatory)
                         .orElse(null),
+                label.map(l -> formConfig.getFormTitleLabelOrderMap().get(title).get(l)).orElse(null),
                 value.orElse(null)
         );
     }
@@ -285,6 +286,7 @@ public class DtoFactory {
                 convert(formFieldConfig.getGroups(), language),
                 formFieldConfig.getDataType(),
                 formFieldConfig.isMandatory(),
+                formConfig.getFormTitleLabelOrderMap().get(title).get(formFieldConfig.getLabel()),
                 value.orElse(null)
         );
     }
@@ -329,9 +331,9 @@ public class DtoFactory {
         Optional<BridgeheadAdminUser> bridgeheadAdmin = bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).stream().findAny();
         AtomicReference<Optional<de.samply.db.model.User>> user = new AtomicReference<>(Optional.empty());
         bridgeheadAdmin.ifPresent(tempUser -> user.set(userRepository.findByEmail(tempUser.getEmail())));
-        AtomicReference<Optional<String>> humanReadableBridghead = new AtomicReference<>(bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead()));
+        AtomicReference<Optional<String>> humanReadableBridgehead = new AtomicReference<>(bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead()));
         return new Results(projectBridgehead.getBridgehead(),
-                fetchValue(humanReadableBridghead),
+                fetchValue(humanReadableBridgehead),
                 fetchValue(user, de.samply.db.model.User::getEmail),
                 fetchValue(user, de.samply.db.model.User::getFirstName),
                 fetchValue(user, de.samply.db.model.User::getLastName),

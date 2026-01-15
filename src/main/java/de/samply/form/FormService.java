@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * labels, and values within a project context.
  * <p>
  * This class provides methods to fetch form titles, retrieve form field configurations, and manage label-value
- * pairs for specific project forms. It utilizes repositories and services to interact with underlying
+ * pairs for specific project forms. It uses repositories and services to interact with underlying
  * storage and notification systems.
  */
 @Service
@@ -69,7 +69,8 @@ public class FormService {
                 .getOrDefault(formTitle, Map.of())
                 .values()
                 .stream()
-                .map(field -> dtoFactory.convert(formTitle, field, Optional.empty(), language))
+                .map(field ->
+                        dtoFactory.convert(formTitle, field, Optional.empty(), language))
                 .toList();
     }
 
@@ -82,7 +83,8 @@ public class FormService {
                                 titleFormFieldConfig.getKey(),
                                 titleFormFieldConfig.getValue(),
                                 Optional.empty(),
-                                language))
+                                language)
+                )
                 .toList();
     }
 
@@ -107,6 +109,7 @@ public class FormService {
         Arrays.stream(formFields.get()).forEach(formField -> {
             ProjectForm projectForm = labelFormMap.get(formField.label());
             boolean isModified = false;
+            String details = "title: " + formField.title() + "label: " + formField.label() + " - value: " + formField.value();
             if (projectForm == null) {
                 projectForm = new ProjectForm();
                 projectForm.setLabel(formField.label());
@@ -116,13 +119,13 @@ public class FormService {
                 isModified = true;
                 notificationService.createNotification(projectCode, null,
                         sessionUser.getEmail(), OperationType.ADD_PROJECT_FORM_LABEL,
-                        "title: " + formField.title() + "label: " + formField.label() + " - value: " + formField.value(), null, null);
+                        details, null, null);
             } else {
                 if (!projectForm.getValue().equals(formField.value())) {
                     projectForm.setValue(formField.value());
                     notificationService.createNotification(projectCode, null,
                             sessionUser.getEmail(), OperationType.EDIT_PROJECT_FORM_LABEL,
-                            "title: " + formField.title() + "label: " + formField.label() + " - value: " + formField.value(), null, null);
+                            details, null, null);
                     isModified = true;
                 }
             }

@@ -14,6 +14,7 @@ public record FormField(
         FormFieldGroup[] groups,
         DataType type,
         Boolean mandatory,
+        Integer order,
         String value
 ) {
 }

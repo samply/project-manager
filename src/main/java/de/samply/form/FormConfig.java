@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Configuration class responsible for loading form field configurations from external JSON files.
@@ -65,6 +66,7 @@ public class FormConfig {
     private final Map<String, DisplayMetadata> formTitleDisplaMetadataMap = new HashMap<>();
     private final Map<String, DisplayMetadata> groupsDisplayMetadataMap = new HashMap<>();
     private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
+    private final Map<String, Map<String, Integer>> formTitleLabelOrderMap = new HashMap<>();
 
     /**
      * Constructor that initializes the form field configurations based on environment variables.
@@ -110,14 +112,19 @@ public class FormConfig {
                 if (formMetadataConfig.getGroups() != null) {
                     this.groupsDisplayMetadataMap.putAll(formMetadataConfig.getGroups());
                 }
+                AtomicInteger counter = new AtomicInteger(1);
                 Arrays.stream(formMetadataConfig.getFields()).forEach(formFieldConfig -> {
                     // Add form field config to map
                     Map<String, FormFieldConfig> formFieldLabelConfigMap = formTitleLabelFieldMap.get(formMetadataConfig.getTitle());
+                    Map<String, Integer> formFieldLabelOrderMap = formTitleLabelOrderMap.get(formMetadataConfig.getTitle());
                     if (formFieldLabelConfigMap == null) {
                         formFieldLabelConfigMap = new HashMap<>();
+                        formFieldLabelOrderMap = new HashMap<>();
                         formTitleLabelFieldMap.put(formMetadataConfig.getTitle(), formFieldLabelConfigMap);
+                        formTitleLabelOrderMap.put(formMetadataConfig.getTitle(), formFieldLabelOrderMap);
                     }
                     formFieldLabelConfigMap.put(formFieldConfig.getLabel(), formFieldConfig);
+                    formFieldLabelOrderMap.put(formFieldConfig.getLabel(), counter.getAndIncrement());
                 });
                 log.info("Successfully loaded {} form fields from {}", formMetadataConfig.getFields().length, configPath);
             } catch (IOException e) {
