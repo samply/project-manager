@@ -2,6 +2,7 @@ package de.samply.form.pdf;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.pdf.PdfGenerator;
+import de.samply.utils.DirectoryUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
@@ -9,6 +10,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 
 @Component
@@ -18,9 +20,10 @@ public class FormPdfGeneratorFactory {
     private final TemplateEngine templateEngine;
 
     public FormPdfGeneratorFactory(FormPdfConverter formPdfConverter,
-                                   @Value(ProjectManagerConst.FORM_RESOURCES_PATH_SV) String externalTemplateDirectory) {
+                                   @Value(ProjectManagerConst.FORM_RESOURCES_DIRECTORY_SV) String externalTemplateDirectory) throws FileNotFoundException {
         this.formPdfConverter = formPdfConverter;
-        this.templateEngine = createTemplateEngine(externalTemplateDirectory);
+        this.templateEngine = createTemplateEngine(
+                DirectoryUtils.fetchExternalTemplateDirectory(externalTemplateDirectory));
     }
 
     public PdfGenerator createPdfGenerator() {

@@ -95,6 +95,10 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
     }
 
     private Object extractFromJsonBody(HttpServletRequest request, String key) throws IOException {
+        String contentType = request.getContentType();
+        if (contentType == null || !contentType.contains("application/json")) {
+            return null;
+        }
         Map<String, Object> jsonBody = requestBodyCache.getJsonBody(request); // Retrieve from the cache
         return (jsonBody != null) ? jsonBody.get(key) : null;
     }

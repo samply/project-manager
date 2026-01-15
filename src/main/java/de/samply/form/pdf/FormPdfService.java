@@ -2,6 +2,7 @@ package de.samply.form.pdf;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.form.FormService;
+import de.samply.frontend.dto.FormField;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
 import de.samply.utils.LanguageUtils;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -30,24 +32,40 @@ public class FormPdfService {
         this.defaultLanguage = defaultLanguage;
     }
 
-    public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) {
+    public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTitle, Optional<String> formTemplate, Optional<String> language) {
         //TODO
         return "form.pdf";
     }
 
-    public byte[] createFormAsPdf(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) throws FormPdfServiceException {
+    public byte[] createFormAsPdf(@NotNull String projectCode, Optional<String> formTitle, Optional<String> formTemplate, Optional<String> language) throws FormPdfServiceException {
         try {
             return pdfGenerator.generatePdf(
                     formTemplate.orElse(defaultFormTemplate),
-                    createContext(projectCode, LanguageUtils.normalize(language.orElse(defaultLanguage))));
+                    createContext(projectCode, formTitle, LanguageUtils.normalize(language.orElse(defaultLanguage))));
         } catch (PdfGeneratorException e) {
             throw new FormPdfServiceException(e);
         }
     }
 
-    private Map<String, Object> createContext(String projectCode, String language) {
+    private Map<String, Object> createContext(String projectCode, Optional<String> formTitle, String language) {
         //TODO
-        return Map.of();
+        Map<String, FormField> formFields = new HashMap<>();
+        formTitle
+                .map(t -> formService.fetchProjectFormFields(t, Optional.of(language)))
+                .orElseGet(() -> formService.fetchAllProjectFormFields(Optional.of(language)))
+                .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField));
+        formTitle
+                .map(t -> formService.fetchProjectFormLabelAndValues(t, projectCode, Optional.of(language)))
+                .orElseGet(() -> formService.fetchProjectFormLabelAndValues(projectCode, Optional.of(language)))
+                .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField)); // Override form fields with value
+        Map<String, Object> result = new HashMap<>();
+        result.put(FormKey.FIELDS.getText(), formFields);
+
+        return result;
+    }
+
+    private String fetchFormFieldKey(@NotNull FormField formField) {
+        return formField.title() + formField.label();
     }
 
 }

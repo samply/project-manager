@@ -389,6 +389,7 @@ public class ProjectManagerConst {
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
+    public final static String REQUEST_CACHE_LIMIT = "REQUEST_CACHE_LIMIT";
 
     public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
     public final static String JWT_EMAIL_CLAIM = "JWT_EMAIL_CLAIM";
@@ -432,7 +433,7 @@ public class ProjectManagerConst {
     public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
 
     public final static String FORM_CONFIG_PATH_PREFIX = "FORM_CONFIG_PATH";
-    public final static String FORM_RESOURCES_PATH = "FORM_RESOURCES_PATH";
+    public final static String FORM_RESOURCES_DIRECTORY = "FORM_RESOURCES_DIRECTORY";
     public final static String FORM_DEFAULT_TEMPLATE = "FORM_DEFAULT_TEMPLATE";
 
     // Spring Values (SV)
@@ -513,6 +514,7 @@ public class ProjectManagerConst {
     public final static String CODER_TEST_FILE_BEAM_ID_SV = HEAD_SV + CODER_TEST_FILE_BEAM_ID + BOTTOM_SV;
     public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
     public final static String CODER_WORKSPACE_NAME_MAX_LENGTH_SV = HEAD_SV + CODER_WORKSPACE_NAME_MAX_LENGTH + ":32" + BOTTOM_SV;
+    public final static String REQUEST_CACHE_LIMIT_SV = HEAD_SV + REQUEST_CACHE_LIMIT + ":#{2 * 1024 * 1024}" + BOTTOM_SV;
 
 
     public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
@@ -540,7 +542,7 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":ApiKey {}" + BOTTOM_SV;
     public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
 
-    public final static String FORM_RESOURCES_PATH_SV = HEAD_SV + FORM_RESOURCES_PATH + BOTTOM_SV;
+    public final static String FORM_RESOURCES_DIRECTORY_SV = HEAD_SV + FORM_RESOURCES_DIRECTORY + BOTTOM_SV;
     public final static String FORM_DEFAULT_TEMPLATE_SV = HEAD_SV + FORM_DEFAULT_TEMPLATE + BOTTOM_SV;
 
 

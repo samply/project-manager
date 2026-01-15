@@ -433,17 +433,18 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_FORM_AS_PDF)
     public ResponseEntity downloadFormAsPdf(
             // Project code and bridgehead needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle,
             @RequestVariable(name = ProjectManagerConst.FORM_TEMPLATE, required = false) String formTemplate
     ) {
         return convertToResponseEntity(() ->
                 ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
-                                formPdfService.fetchFormFilename(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+                                formPdfService.fetchFormFilename(projectCode, Optional.ofNullable(formTitle), Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
                         .contentType(MediaType.APPLICATION_PDF)
-                        .body(formPdfService.createFormAsPdf(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+                        .body(formPdfService.createFormAsPdf(projectCode, Optional.ofNullable(formTitle), Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
         );
     }
 

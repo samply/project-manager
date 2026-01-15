@@ -1016,6 +1016,38 @@
 			"response": []
 		},
 		{
+			"name": "Download Form",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8097/download-form-as-pdf?project-code=61c61ec5c6eb42408b11&form-title=sample_data",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8097",
+					"path": [
+						"download-form-as-pdf"
+					],
+					"query": [
+						{
+							"key": "project-code",
+							"value": "61c61ec5c6eb42408b11"
+						},
+						{
+							"key": "form-title",
+							"value": "sample_data"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Fetch Project Roles (any user)",
 			"request": {
 				"auth": {

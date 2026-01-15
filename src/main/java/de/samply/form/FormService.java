@@ -92,6 +92,12 @@ public class FormService {
                 .toList();
     }
 
+    public List<FormField> fetchProjectFormLabelAndValues(@NotNull String projectCode, Optional<String> language) {
+        return projectFormRepository.findByProject_Code(projectCode).stream()
+                .map(projectForm -> dtoFactory.convert(projectForm, language))
+                .toList();
+    }
+
     public void editProjectFormLabelAndValues(Optional<FormField[]> formFields, @NotNull String projectCode) {
         if (formFields.isEmpty() || formFields.get().length == 0) {
             return;

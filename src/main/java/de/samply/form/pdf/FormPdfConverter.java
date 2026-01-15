@@ -17,7 +17,7 @@ public class FormPdfConverter implements PdfConverter {
 
     private final String resourcesBaseUri;
 
-    public FormPdfConverter(@Value(ProjectManagerConst.FORM_RESOURCES_PATH_SV) String resourcesPath) {
+    public FormPdfConverter(@Value(ProjectManagerConst.FORM_RESOURCES_DIRECTORY_SV) String resourcesPath) {
         this.resourcesBaseUri = Paths.get(resourcesPath).toUri().toString();
     }
 
