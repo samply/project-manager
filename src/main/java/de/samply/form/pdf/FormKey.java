@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum FormKey {
 
     FIELDS("fields"),
-    DATA_TYPE_CLASS("DataType"),;
+    DATA_TYPE_CLASS("DataType");
 
     private final String text;
 

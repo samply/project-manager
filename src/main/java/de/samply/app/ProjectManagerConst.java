@@ -107,7 +107,7 @@ public class ProjectManagerConst {
     public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION = "REMOVE_USER_FROM_MAILING_BLACK_LIST";
     public final static String FETCH_MAILING_BLACK_LIST_ACTION = "FETCH_MAILING_BLACK_LIST";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST";
-    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGHEAD_RESULTS_URL";
+    public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGEHEAD_RESULTS_URL";
     public final static String ADD_PROJECT_RESULTS_URL_ACTION = "ADD_PROJECT_RESULTS_URL";
     public final static String ACCEPT_PROJECT_RESULTS_URL_ACTION = "ACCEPT_PROJECT_RESULTS_URL";
     public final static String REJECT_PROJECT_RESULTS_URL_ACTION = "REJECT_PROJECT_RESULTS_URL";
@@ -217,7 +217,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_USERS = "/project-users";
     public final static String FETCH_CURRENT_USER = "/current-user";
     public final static String EXIST_INVITED_USERS = "/exist-invited-users";
-    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL = "/project-bridgehead-results-url";
+    public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL = "/project-bridgehead-results-url";
     public final static String ADD_PROJECT_RESULTS_URL = "/project-results-url";
     public final static String ACCEPT_PROJECT_RESULTS_URL = "/accept-project-results-url";
     public final static String REJECT_PROJECT_RESULTS_URL = "/reject-project-results-url";
@@ -282,7 +282,6 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VARIABLE = "default-var";
 
     // Application Properties
-    public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
     public final static String HTTP_PROXY_PREFIX = "http.proxy";
@@ -435,6 +434,7 @@ public class ProjectManagerConst {
     public final static String FORM_CONFIG_PATH_PREFIX = "FORM_CONFIG_PATH";
     public final static String FORM_RESOURCES_DIRECTORY = "FORM_RESOURCES_DIRECTORY";
     public final static String FORM_DEFAULT_TEMPLATE = "FORM_DEFAULT_TEMPLATE";
+    public final static String FORM_VARIABLES_PATH = "FORM_VARIABLES_PATH";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -445,7 +445,6 @@ public class ProjectManagerConst {
     public final static String JWT_FIRST_NAME_CLAIM_SV = HEAD_SV + JWT_FIRST_NAME_CLAIM + ":given_name" + BOTTOM_SV;
     public final static String JWT_LAST_NAME_CLAIM_SV = HEAD_SV + JWT_LAST_NAME_CLAIM + ":family_name" + BOTTOM_SV;
     public final static String JWT_FULL_NAME_CLAIM_SV = HEAD_SV + JWT_FULL_NAME_CLAIM + ":name" + BOTTOM_SV;
-    public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
@@ -506,7 +505,6 @@ public class ProjectManagerConst {
     public final static String FRONTEND_PROJECT_CONFIG_PATH_SV = HEAD_SV + FRONTEND_PROJECT_CONFIG_PATH + BOTTOM_SV;
     public final static String CODER_BASE_URL_SV = HEAD_SV + CODER_BASE_URL + BOTTOM_SV;
     public final static String CODER_ORGANISATION_ID_SV = HEAD_SV + CODER_ORGANISATION_ID + BOTTOM_SV;
-    public final static String CODER_MEMBER_ID_SV = HEAD_SV + CODER_MEMBER_ID + BOTTOM_SV;
     public final static String CODER_CREATE_PATH_SV = HEAD_SV + CODER_CREATE_PATH + BOTTOM_SV;
     public final static String CODER_DELETE_PATH_SV = HEAD_SV + CODER_DELETE_PATH + BOTTOM_SV;
     public final static String CODER_SESSION_TOKEN_SV = HEAD_SV + CODER_SESSION_TOKEN + BOTTOM_SV;
@@ -544,6 +542,7 @@ public class ProjectManagerConst {
 
     public final static String FORM_RESOURCES_DIRECTORY_SV = HEAD_SV + FORM_RESOURCES_DIRECTORY + BOTTOM_SV;
     public final static String FORM_DEFAULT_TEMPLATE_SV = HEAD_SV + FORM_DEFAULT_TEMPLATE + BOTTOM_SV;
+    public final static String FORM_VARIABLES_PATH_SV = HEAD_SV + FORM_VARIABLES_PATH + BOTTOM_SV;
 
 
     // Async Configuration
@@ -563,7 +562,6 @@ public class ProjectManagerConst {
 
     // App Register
     public final static String REGISTER_PATH = "/beam-app";
-    public final static String UNREGISTER_PATH = "/beam-app";
 
 
     // Others

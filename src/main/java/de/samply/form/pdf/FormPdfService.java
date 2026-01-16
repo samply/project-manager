@@ -3,6 +3,7 @@ package de.samply.form.pdf;
 import de.samply.app.ProjectManagerConst;
 import de.samply.form.DataType;
 import de.samply.form.FormService;
+import de.samply.form.FormVariablesConfig;
 import de.samply.frontend.dto.FormField;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
@@ -25,15 +26,18 @@ public class FormPdfService {
     private final PdfGenerator pdfGenerator;
     private final String defaultFormTemplate;
     private final String defaultLanguage;
+    private final FormVariablesConfig formVariablesConfig;
 
     public FormPdfService(FormService formService,
                           FormPdfGeneratorFactory pdfGeneratorFactory,
                           @Value(ProjectManagerConst.FORM_DEFAULT_TEMPLATE_SV) String defaultFormTemplate,
-                          @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
+                          @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
+                          FormVariablesConfig formVariablesConfig) {
         this.formService = formService;
         this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
         this.defaultFormTemplate = defaultFormTemplate;
         this.defaultLanguage = defaultLanguage;
+        this.formVariablesConfig = formVariablesConfig;
     }
 
     public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTitle, Optional<String> formTemplate, Optional<String> language) {
@@ -68,6 +72,7 @@ public class FormPdfService {
 
         // Add DataType class of FormField
         result.put(FormKey.DATA_TYPE_CLASS.getText(), DataType.class);
+        result.putAll(formVariablesConfig.getAllValues(language));
 
         return result;
     }

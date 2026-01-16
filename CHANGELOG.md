@@ -230,6 +230,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Download Form PDF
 - Arrange form fields in right order in PDF
 - DataType in Form PDF
+- Form Variables Config
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL

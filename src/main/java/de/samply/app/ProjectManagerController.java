@@ -62,7 +62,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// Suppress rawtypes warning:
+// Suppress raw types warning:
 // This controller intentionally returns raw ResponseEntity to avoid
 // excessive generic duplication across many endpoints.
 
@@ -702,8 +702,8 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.FINAL}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGHEAD_RESULTS_URL_ADDED, recipients = {EmailRecipientType.ALL_FINALS, EmailRecipientType.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
-    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_BRIDGHEAD_RESULTS_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.ADD_PROJECT_BRIDGHEAD_RESULTS_URL)
+    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity addProjectBridgeheadResultsUrl(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
