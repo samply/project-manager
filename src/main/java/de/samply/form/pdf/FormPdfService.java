@@ -1,6 +1,7 @@
 package de.samply.form.pdf;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.form.DataType;
 import de.samply.form.FormService;
 import de.samply.frontend.dto.FormField;
 import de.samply.pdf.PdfGenerator;
@@ -51,7 +52,7 @@ public class FormPdfService {
     }
 
     private Map<String, Object> createContext(String projectCode, Optional<String> formTitle, String language) {
-        //TODO
+        // Add form fields
         Map<String, FormField> formFields = new HashMap<>();
         formTitle
                 .map(t -> formService.fetchProjectFormFields(t, Optional.of(language)))
@@ -64,6 +65,9 @@ public class FormPdfService {
                 .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField));
         Map<String, Object> result = new HashMap<>();
         result.put(FormKey.FIELDS.getText(), sortFormFields(formFields));
+
+        // Add DataType class of FormField
+        result.put(FormKey.DATA_TYPE_CLASS.getText(), DataType.class);
 
         return result;
     }
