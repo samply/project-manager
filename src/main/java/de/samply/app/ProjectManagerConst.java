@@ -431,10 +431,11 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT = "APP_REGISTER_AUTHORIZATION_FORMAT";
     public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
 
-    public final static String FORM_CONFIG_PATH_PREFIX = "FORM_CONFIG_PATH";
     public final static String FORM_RESOURCES_DIRECTORY = "FORM_RESOURCES_DIRECTORY";
     public final static String FORM_DEFAULT_TEMPLATE = "FORM_DEFAULT_TEMPLATE";
-    public final static String FORM_VARIABLES_PATH = "FORM_VARIABLES_PATH";
+    public final static String FORM_TEMPLATE_METADATA_DIRECTORY = "FORM_TEMPLATE_METADATA_DIRECTORY";
+    public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME = "FORM_TEMPLATE_DEFAULT_PDF_FILENAME";
+    public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -542,8 +543,9 @@ public class ProjectManagerConst {
 
     public final static String FORM_RESOURCES_DIRECTORY_SV = HEAD_SV + FORM_RESOURCES_DIRECTORY + BOTTOM_SV;
     public final static String FORM_DEFAULT_TEMPLATE_SV = HEAD_SV + FORM_DEFAULT_TEMPLATE + BOTTOM_SV;
-    public final static String FORM_VARIABLES_PATH_SV = HEAD_SV + FORM_VARIABLES_PATH + BOTTOM_SV;
-
+    public final static String FORM_TEMPLATE_METADATA_DIRECTORY_SV = HEAD_SV + FORM_TEMPLATE_METADATA_DIRECTORY + BOTTOM_SV;
+    public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV = HEAD_SV + FORM_TEMPLATE_DEFAULT_PDF_FILENAME + ":form.pdf" + BOTTOM_SV;
+    public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";

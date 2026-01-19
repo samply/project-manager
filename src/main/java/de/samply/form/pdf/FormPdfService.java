@@ -3,7 +3,7 @@ package de.samply.form.pdf;
 import de.samply.app.ProjectManagerConst;
 import de.samply.form.DataType;
 import de.samply.form.FormService;
-import de.samply.form.FormVariablesConfig;
+import de.samply.form.template.FormTemplateConfig;
 import de.samply.frontend.dto.FormField;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
@@ -13,11 +13,9 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FormPdfService {
@@ -26,70 +24,80 @@ public class FormPdfService {
     private final PdfGenerator pdfGenerator;
     private final String defaultFormTemplate;
     private final String defaultLanguage;
-    private final FormVariablesConfig formVariablesConfig;
+    private final FormTemplateConfig formTemplateConfig;
+    private final String defaultPdfFilename;
+
 
     public FormPdfService(FormService formService,
                           FormPdfGeneratorFactory pdfGeneratorFactory,
                           @Value(ProjectManagerConst.FORM_DEFAULT_TEMPLATE_SV) String defaultFormTemplate,
                           @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
-                          FormVariablesConfig formVariablesConfig) {
+                          @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
+                          FormTemplateConfig formTemplateConfig) {
         this.formService = formService;
         this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
         this.defaultFormTemplate = defaultFormTemplate;
         this.defaultLanguage = defaultLanguage;
-        this.formVariablesConfig = formVariablesConfig;
+        this.formTemplateConfig = formTemplateConfig;
+        this.defaultPdfFilename = defaultPdfFilename;
     }
 
-    public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTitle, Optional<String> formTemplate, Optional<String> language) {
+    public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) {
         //TODO
-        return "form.pdf";
+        return defaultPdfFilename;
     }
 
-    public byte[] createFormAsPdf(@NotNull String projectCode, Optional<String> formTitle, Optional<String> formTemplate, Optional<String> language) throws FormPdfServiceException {
+    public byte[] createFormAsPdf(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) throws FormPdfServiceException {
         try {
+            String template = formTemplate.orElse(defaultFormTemplate);
             return pdfGenerator.generatePdf(
-                    formTemplate.orElse(defaultFormTemplate),
-                    createContext(projectCode, formTitle, LanguageUtils.normalize(language.orElse(defaultLanguage))));
+                    template,
+                    createContext(projectCode, template, LanguageUtils.normalize(language.orElse(defaultLanguage))));
         } catch (PdfGeneratorException e) {
             throw new FormPdfServiceException(e);
         }
     }
 
-    private Map<String, Object> createContext(String projectCode, Optional<String> formTitle, String language) {
-        // Add form fields
-        Map<String, FormField> formFields = new HashMap<>();
-        formTitle
-                .map(t -> formService.fetchProjectFormFields(t, Optional.of(language)))
-                .orElseGet(() -> formService.fetchAllProjectFormFields(Optional.of(language)))
-                .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField));
-        // Override form fields with value
-        formTitle
-                .map(t -> formService.fetchProjectFormLabelAndValues(t, projectCode, Optional.of(language)))
-                .orElseGet(() -> formService.fetchProjectFormLabelAndValues(projectCode, Optional.of(language)))
-                .forEach(formField -> formFields.put(fetchFormFieldKey(formField), formField));
+    private Map<String, Object> createContext(String projectCode, String formTemplate, String language) {
         Map<String, Object> result = new HashMap<>();
-        result.put(FormKey.FIELDS.getText(), sortFormFields(formFields));
-
-        // Add DataType class of FormField
+        // Add form fields
+        result.put(FormKey.FIELDS.getText(), fetchFormFields(projectCode, formTemplate, language));
+        // Add form variables
+        result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
         result.put(FormKey.DATA_TYPE_CLASS.getText(), DataType.class);
-        result.putAll(formVariablesConfig.getAllValues(language));
 
         return result;
     }
 
-    private String fetchFormFieldKey(@NotNull FormField formField) {
-        return formField.title() + formField.label();
-    }
+    private Map<String, FormField> fetchFormFields(
+            @NotNull String projectCode,
+            @NotNull String formTemplate,
+            @NotNull String language
+    ) {
+        return formTemplateConfig.getTemplate(formTemplate)
+                .stream() // Optional → Stream<FormTemplateMetadata>
+                .flatMap(metadata -> Arrays.stream(metadata.getFormTitles()))
+                .flatMap(formTitle -> {
+                    var baseFields =
+                            formService.fetchProjectFormFields(formTitle, Optional.of(language)).stream();
+                    var overrideFields =
+                            formService.fetchProjectFormLabelAndValues(formTitle, projectCode, Optional.of(language)).stream();
 
-    private Map<String, FormField> sortFormFields(Map<String, FormField> formFields) {
-        return formFields.entrySet().stream()
+                    return Stream.concat(baseFields, overrideFields)
+                            .map(field -> Map.entry(fetchFormFieldKey(field), field));
+                })
                 .sorted(Map.Entry.comparingByValue(FormFieldUtils.FORM_FIELD_COMPARATOR))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
-                        (e1, _) -> e1,
+                        (_, newValue) -> newValue, // override
                         LinkedHashMap::new
                 ));
     }
 
+
+    private String fetchFormFieldKey(@NotNull FormField formField) {
+        return formField.title() + formField.label();
+    }
+    
 }

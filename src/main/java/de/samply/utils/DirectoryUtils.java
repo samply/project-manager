@@ -13,7 +13,7 @@ public class DirectoryUtils {
             return (environmentVariable.endsWith("/") || environmentVariable.endsWith("\\")) ?
                     environmentVariable : environmentVariable + "/";
         } else {
-            throw new FileNotFoundException("Email Templates Directory not set or set to incorrect directory: " + environmentVariable);
+            throw new FileNotFoundException("External Templates Directory not set or set to incorrect directory: " + environmentVariable);
         }
     }
 
