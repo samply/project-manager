@@ -10,6 +10,7 @@ import de.samply.frontend.dto.FormField;
 import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
+import de.samply.utils.DateUtils;
 import de.samply.utils.FileExtension;
 import de.samply.utils.FormFieldUtils;
 import de.samply.utils.LanguageUtils;
@@ -31,6 +32,7 @@ public class FormTemplateService {
     private final FormTemplateConfig formTemplateConfig;
     private final String defaultPdfFilename;
     private final DtoFactory dtoFactory;
+    private final String datePattern;
 
 
     public FormTemplateService(FormService formService,
@@ -39,7 +41,8 @@ public class FormTemplateService {
                                @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
                                @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
                                FormTemplateConfig formTemplateConfig,
-                               DtoFactory dtoFactory) {
+                               DtoFactory dtoFactory,
+                               @Value(ProjectManagerConst.FORM_TEMPLATE_DATE_PATTERN_SV) String datePattern) {
         this.formService = formService;
         this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
         this.defaultFormTemplate = defaultFormTemplate;
@@ -47,6 +50,7 @@ public class FormTemplateService {
         this.formTemplateConfig = formTemplateConfig;
         this.defaultPdfFilename = defaultPdfFilename;
         this.dtoFactory = dtoFactory;
+        this.datePattern = datePattern;
     }
 
     public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTemplate) {
@@ -78,6 +82,7 @@ public class FormTemplateService {
         // Add form variables
         result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
         result.put(FormKey.DATA_TYPE_CLASS.getText(), DataType.class);
+        result.put(FormKey.CURRENT_DATE.getText(), DateUtils.fetchCurrentDate(datePattern, language));
 
         return result;
     }

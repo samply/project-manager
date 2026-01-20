@@ -233,6 +233,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form Variables Config
 - Fetch Form Templates
 - Fetch Form Template Filename
+- Current Date in Form Template
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL

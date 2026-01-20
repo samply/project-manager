@@ -1,11 +1,9 @@
 package de.samply.form.template;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.utils.DateUtils;
 import lombok.Getter;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -19,10 +17,7 @@ public enum FormFilenameKey {
     TIMESTAMP("timestamp") {
         @Override
         public Optional<String> fetchValue(Map<String, String> context) {
-            return Optional.of(DateTimeFormatter
-                    .ofPattern(ProjectManagerConst.FORM_FILENAME_TIMESTAMP_FORMAT)
-                    .format(Instant.now()
-                            .atZone(ZoneId.of(ProjectManagerConst.FORM_FILENAME_TIMESTAMP_ZONE))));
+            return Optional.of(DateUtils.fetchCurrentDate(ProjectManagerConst.FORM_FILENAME_TIMESTAMP_FORMAT));
         }
     };
 

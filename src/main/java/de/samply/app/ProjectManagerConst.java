@@ -438,6 +438,7 @@ public class ProjectManagerConst {
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY = "FORM_TEMPLATE_METADATA_DIRECTORY";
     public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME = "FORM_TEMPLATE_DEFAULT_PDF_FILENAME";
     public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
+    public final static String FORM_TEMPLATE_DATE_PATTERN = "FORM_TEMPLATE_DATE_PATTERN";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -548,6 +549,8 @@ public class ProjectManagerConst {
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY_SV = HEAD_SV + FORM_TEMPLATE_METADATA_DIRECTORY + BOTTOM_SV;
     public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV = HEAD_SV + FORM_TEMPLATE_DEFAULT_PDF_FILENAME + ":form.pdf" + BOTTOM_SV;
     public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;
+    public final static String FORM_TEMPLATE_DATE_PATTERN_SV = HEAD_SV + FORM_TEMPLATE_DATE_PATTERN + ":d. MMMM yyyy" + BOTTOM_SV;
+
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
