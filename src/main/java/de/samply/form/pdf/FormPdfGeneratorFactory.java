@@ -3,6 +3,7 @@ package de.samply.form.pdf;
 import de.samply.app.ProjectManagerConst;
 import de.samply.pdf.PdfGenerator;
 import de.samply.utils.DirectoryUtils;
+import de.samply.utils.FileExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
@@ -39,7 +40,7 @@ public class FormPdfGeneratorFactory {
     private FileTemplateResolver createFileTemplateResolver(String externalTemplateDirectory) {
         FileTemplateResolver resolver = new FileTemplateResolver();
         resolver.setPrefix(externalTemplateDirectory);
-        resolver.setSuffix(".html");
+        resolver.setSuffix("." + FileExtension.HTML.value());
         resolver.setTemplateMode(TemplateMode.HTML);
         resolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
         resolver.setCacheable(true);

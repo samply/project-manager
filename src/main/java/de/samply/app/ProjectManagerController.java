@@ -441,7 +441,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() ->
                 ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
-                                formTemplateService.fetchFormFilename(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+                                formTemplateService.fetchFormFilename(projectCode, Optional.ofNullable(formTemplate)))
                         .contentType(MediaType.APPLICATION_PDF)
                         .body(formTemplateService.createFormAsPdf(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
         );

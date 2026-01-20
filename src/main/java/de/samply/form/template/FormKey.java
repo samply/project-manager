@@ -1,4 +1,4 @@
-package de.samply.form.pdf;
+package de.samply.form.template;
 
 import lombok.Getter;
 

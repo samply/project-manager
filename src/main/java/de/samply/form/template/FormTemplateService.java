@@ -3,7 +3,6 @@ package de.samply.form.template;
 import de.samply.app.ProjectManagerConst;
 import de.samply.form.DataType;
 import de.samply.form.FormService;
-import de.samply.form.pdf.FormKey;
 import de.samply.form.pdf.FormPdfGeneratorFactory;
 import de.samply.form.pdf.FormPdfServiceException;
 import de.samply.frontend.dto.DtoFactory;
@@ -11,6 +10,7 @@ import de.samply.frontend.dto.FormField;
 import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
+import de.samply.utils.FileExtension;
 import de.samply.utils.FormFieldUtils;
 import de.samply.utils.LanguageUtils;
 import jakarta.validation.constraints.NotNull;
@@ -49,9 +49,15 @@ public class FormTemplateService {
         this.dtoFactory = dtoFactory;
     }
 
-    public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) {
-        //TODO
-        return defaultPdfFilename;
+    public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTemplate) {
+
+        return FormFilenameResolver.resolve(
+                Optional.ofNullable(formTemplate.orElse(defaultFormTemplate))
+                        .flatMap(formTemplateConfig::getTemplate)
+                        .map(metadata -> metadata.getExtensionFilenameTemplateMap().get(FileExtension.PDF))
+                        .orElse(defaultPdfFilename),
+                Map.of(FormFilenameKey.PROJECT_CODE.getText(), projectCode)
+        );
     }
 
     public byte[] createFormAsPdf(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) throws FormPdfServiceException {

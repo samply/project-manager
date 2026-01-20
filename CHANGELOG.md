@@ -232,6 +232,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - DataType in Form PDF
 - Form Variables Config
 - Fetch Form Templates
+- Fetch Form Template Filename
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
