@@ -125,6 +125,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_TITLES_ACTION = "FETCH_PROJECT_FORM_TITLES";
     public final static String FETCH_PROJECT_FORM_FIELDS_ACTION = "FETCH_PROJECT_FORM_FIELDS";
     public final static String FETCH_PROJECT_FORM_VALUES_ACTION = "FETCH_PROJECT_FORM_VALUES";
+    public final static String FETCH_PROJECT_FORM_TEMPLATES_ACTION = "FETCH_FORM_TEMPLATES";
     public final static String FETCH_ALL_PROJECT_FORM_FIELDS_ACTION = "FETCH_ALL_PROJECT_FORM_FIELDS";
     public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
     public final static String DOWNLOAD_FORM_AS_PDF_ACTION = "DOWNLOAD_FORM_AS_PDF";
@@ -234,6 +235,7 @@ public class ProjectManagerConst {
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/exists-research-environment-workspace";
     public final static String FETCH_PROJECT_FORM_TITLES = "/project-form-titles";
     public final static String FETCH_PROJECT_FORM_FIELDS = "/project-form-fields";
+    public final static String FETCH_PROJECT_FORM_TEMPLATES = "/project-form-templates";
     public final static String FETCH_ALL_PROJECT_FORM_FIELDS = "/all-project-form-fields";
     public final static String FETCH_PROJECT_FORM_VALUES = "/project-form-values";
     public final static String EDIT_PROJECT_FORM_FIELDS = "/edit-project-form-fields";

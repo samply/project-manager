@@ -22,6 +22,8 @@ public class FormTemplateMetadata {
     @JsonProperty("variables")
     @JsonDeserialize(using = VariableLanguageValueMapDeserializer.class)
     private Map<String, Map<String, String>> variableLanguageValueMap;
+    @JsonProperty("display-name")
+    private Map<String,String> languageDisplayNameMap;
 
 
 }

@@ -22,19 +22,19 @@ import java.util.stream.Stream;
 public class FormTemplateConfig {
 
     @Getter
-    private final Map<String, FormTemplateMetadata> templates;
+    private final Map<String, FormTemplateMetadata> templateMetadataMap;
     private final String defaultLanguage;
 
     public FormTemplateConfig(
             @Value(ProjectManagerConst.FORM_TEMPLATE_METADATA_DIRECTORY_SV) Path templatesDir,
             @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage
     ) {
-        this.templates = loadTemplates(new ObjectMapper(), templatesDir);
+        this.templateMetadataMap = loadTemplates(new ObjectMapper(), templatesDir);
         this.defaultLanguage = defaultLanguage;
     }
 
     public Optional<FormTemplateMetadata> getTemplate(String key) {
-        return Optional.ofNullable(templates.get(key));
+        return Optional.ofNullable(templateMetadataMap.get(key));
     }
 
     private Map<String, FormTemplateMetadata> loadTemplates(
@@ -78,7 +78,7 @@ public class FormTemplateConfig {
     }
 
     public Optional<String> fetchFormVariable(String template, String formVariable, String language) {
-        return Optional.ofNullable(templates.get(template))
+        return Optional.ofNullable(templateMetadataMap.get(template))
                 .map(FormTemplateMetadata::getVariableLanguageValueMap)
                 .map(m -> m.get(formVariable))
                 .map(translations ->
@@ -87,7 +87,7 @@ public class FormTemplateConfig {
     }
 
     public Map<String, String> fetchAllFormVariables(@NotNull String template, @NotNull String language) {
-        return Optional.ofNullable(templates.get(template))
+        return Optional.ofNullable(templateMetadataMap.get(template))
                 .stream()
                 .flatMap(metadata ->
                         metadata.getVariableLanguageValueMap().keySet().stream()

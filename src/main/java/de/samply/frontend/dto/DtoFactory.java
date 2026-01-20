@@ -12,6 +12,7 @@ import de.samply.db.repository.UserRepository;
 import de.samply.form.DisplayMetadata;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
+import de.samply.form.template.FormTemplateMetadata;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
 import de.samply.user.roles.ProjectRole;
@@ -342,6 +343,13 @@ public class DtoFactory {
                 projectBridgehead.getState(),
                 null
         );
+    }
+
+    public FormTemplate convert(@NotNull FormTemplateMetadata formTemplateMetadata, Optional<String> language) {
+        return new FormTemplate(
+                formTemplateMetadata.getTemplate(),
+                Optional.ofNullable(formTemplateMetadata.getLanguageDisplayNameMap().get(language.orElse(defaultLanguage)))
+                        .orElse(formTemplateMetadata.getLanguageDisplayNameMap().get(defaultLanguage)));
     }
 
     private String fetchProjectBridgeheadResults(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {

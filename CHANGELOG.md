@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-01-16]
+## [1.0.0 - 2026-01-20]
 ### Added
 - First version of the project
 - Spring Application
@@ -231,6 +231,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Arrange form fields in right order in PDF
 - DataType in Form PDF
 - Form Variables Config
+- Fetch Form Templates
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL

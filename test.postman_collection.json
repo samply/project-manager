@@ -1021,6 +1021,34 @@
       "response": []
     },
     {
+      "name": "Fetch form templates",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project-form-templates?project-code=61c61ec5c6eb42408b11",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project-form-templates"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "61c61ec5c6eb42408b11"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Download Form",
       "request": {
         "auth": {

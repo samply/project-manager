@@ -16,7 +16,7 @@ import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.form.FormService;
-import de.samply.form.pdf.FormPdfService;
+import de.samply.form.template.FormTemplateService;
 import de.samply.frontend.FrontendService;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.FormField;
@@ -94,7 +94,7 @@ public class ProjectManagerController {
     private final EmailService emailService;
     private final CoderService coderService;
     private final FormService formService;
-    private final FormPdfService formPdfService;
+    private final FormTemplateService formTemplateService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -112,7 +112,7 @@ public class ProjectManagerController {
                                     EmailService emailService,
                                     CoderService coderService,
                                     FormService formService,
-                                    FormPdfService formPdfService) {
+                                    FormTemplateService formTemplateService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -129,7 +129,7 @@ public class ProjectManagerController {
         this.emailService = emailService;
         this.coderService = coderService;
         this.formService = formService;
-        this.formPdfService = formPdfService;
+        this.formTemplateService = formTemplateService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -441,10 +441,24 @@ public class ProjectManagerController {
         return convertToResponseEntity(() ->
                 ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
-                                formPdfService.fetchFormFilename(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+                                formTemplateService.fetchFormFilename(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
                         .contentType(MediaType.APPLICATION_PDF)
-                        .body(formPdfService.createFormAsPdf(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+                        .body(formTemplateService.createFormAsPdf(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
         );
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TEMPLATES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TEMPLATES)
+    public ResponseEntity fetchProjectFormTemplates(
+            // Project code and bridgehead needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @Language String language
+    ) {
+        return convertToResponseEntity(() -> formTemplateService.fetchTemplates(Optional.ofNullable(language)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})

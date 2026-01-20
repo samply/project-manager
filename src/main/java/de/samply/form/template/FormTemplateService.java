@@ -1,10 +1,14 @@
-package de.samply.form.pdf;
+package de.samply.form.template;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.form.DataType;
 import de.samply.form.FormService;
-import de.samply.form.template.FormTemplateConfig;
+import de.samply.form.pdf.FormKey;
+import de.samply.form.pdf.FormPdfGeneratorFactory;
+import de.samply.form.pdf.FormPdfServiceException;
+import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.FormField;
+import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
 import de.samply.utils.FormFieldUtils;
@@ -18,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class FormPdfService {
+public class FormTemplateService {
 
     private final FormService formService;
     private final PdfGenerator pdfGenerator;
@@ -26,20 +30,23 @@ public class FormPdfService {
     private final String defaultLanguage;
     private final FormTemplateConfig formTemplateConfig;
     private final String defaultPdfFilename;
+    private final DtoFactory dtoFactory;
 
 
-    public FormPdfService(FormService formService,
-                          FormPdfGeneratorFactory pdfGeneratorFactory,
-                          @Value(ProjectManagerConst.FORM_DEFAULT_TEMPLATE_SV) String defaultFormTemplate,
-                          @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
-                          @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
-                          FormTemplateConfig formTemplateConfig) {
+    public FormTemplateService(FormService formService,
+                               FormPdfGeneratorFactory pdfGeneratorFactory,
+                               @Value(ProjectManagerConst.FORM_DEFAULT_TEMPLATE_SV) String defaultFormTemplate,
+                               @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
+                               @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
+                               FormTemplateConfig formTemplateConfig,
+                               DtoFactory dtoFactory) {
         this.formService = formService;
         this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
         this.defaultFormTemplate = defaultFormTemplate;
         this.defaultLanguage = defaultLanguage;
         this.formTemplateConfig = formTemplateConfig;
         this.defaultPdfFilename = defaultPdfFilename;
+        this.dtoFactory = dtoFactory;
     }
 
     public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) {
@@ -99,5 +106,12 @@ public class FormPdfService {
     private String fetchFormFieldKey(@NotNull FormField formField) {
         return formField.title() + formField.label();
     }
-    
+
+    public List<FormTemplate> fetchTemplates(Optional<String> language) {
+        return formTemplateConfig.getTemplateMetadataMap().values().stream()
+                .map(metadata -> dtoFactory.convert(metadata, language))
+                .toList();
+    }
+
+
 }
