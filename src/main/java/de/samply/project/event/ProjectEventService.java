@@ -13,6 +13,7 @@ import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
+import de.samply.user.UserService;
 import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +47,7 @@ public class ProjectEventService implements ProjectEventActions {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
     private final int projectExpirationTimeInDays;
+    private final UserService userService;
 
 
     public ProjectEventService(NotificationService notificationService,
@@ -55,7 +57,8 @@ public class ProjectEventService implements ProjectEventActions {
                                LogUtils logUtils,
                                ProjectBridgeheadRepository projectBridgeheadRepository,
                                SessionUser sessionUser,
-                               @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays) {
+                               @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays,
+                               UserService userService) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.queryRepository = queryRepository;
@@ -64,6 +67,7 @@ public class ProjectEventService implements ProjectEventActions {
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
         this.projectExpirationTimeInDays = projectExpirationTimeInDays;
+        this.userService = userService;
     }
 
     public void loadProject(String projectCode, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
@@ -97,15 +101,15 @@ public class ProjectEventService implements ProjectEventActions {
         changeEvent(projectCode, projectEvent, Optional.empty());
     }
 
-    private void changeEvent(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccesfulChangeEvent) throws ProjectEventActionsException {
+    private void changeEvent(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) throws ProjectEventActionsException {
         try {
-            changeEventWithoutExceptionHandling(projectCode, projectEvent, consumerAfterSuccesfulChangeEvent);
+            changeEventWithoutExceptionHandling(projectCode, projectEvent, consumerAfterSuccessfulChangeEvent);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private void changeEventWithoutExceptionHandling(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccesfulChangeEvent) {
+    private void changeEventWithoutExceptionHandling(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) {
         loadProject(projectCode, stateMachine -> {
             Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
             stateMachine.sendEvent(Mono.just(createEventMessage)).subscribe(null, logUtils::logError, () -> {
@@ -116,9 +120,8 @@ public class ProjectEventService implements ProjectEventActions {
                     saveProject(project.get());
                     this.notificationService.createNotification(projectCode, null, fetchSessionUserEmailIfSessionIsActive(),
                             OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
-                    if (consumerAfterSuccesfulChangeEvent.isPresent()) {
-                        consumerAfterSuccesfulChangeEvent.get().accept(project.get());
-                    }
+                    consumerAfterSuccessfulChangeEvent.ifPresent(projectConsumer ->
+                            projectConsumer.accept(project.get()));
                 }
             });
         });
@@ -175,6 +178,7 @@ public class ProjectEventService implements ProjectEventActions {
         stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
             project.setState(stateMachine.getState().getId());
             projectConsumer.accept(saveProject(project));
+            userService.addCreatorIfNotExists();
             this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
                     OperationType.CHANGE_PROJECT_STATE, "Design project", null, null);
         });
@@ -184,13 +188,13 @@ public class ProjectEventService implements ProjectEventActions {
         return LocalDate.now().plusDays(projectExpirationTimeInDays);
     }
 
-    private ProjectBridgehead createProjectBridgehead(String bridgehead, Project project) {
+    private void createProjectBridgehead(String bridgehead, Project project) {
         ProjectBridgehead projectBridgehead = new ProjectBridgehead();
         projectBridgehead.setBridgehead(bridgehead.toLowerCase());
         projectBridgehead.setProject(project);
         projectBridgehead.setState(ProjectBridgeheadState.CREATED); // TODO: Replace with state machine
         projectBridgehead.setModifiedAt(Instant.now());
-        return this.projectBridgeheadRepository.save(projectBridgehead);
+        this.projectBridgeheadRepository.save(projectBridgehead);
     }
 
     @Override

@@ -30,6 +30,7 @@ public class UserService {
     private final ProjectManagerAdminUserRepository projectManagerAdminUserRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final UserRepository userRepository;
+    private final CreatorUserRepository creatorUserRepository;
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
@@ -41,6 +42,7 @@ public class UserService {
                        ProjectManagerAdminUserRepository projectManagerAdminUserRepository,
                        ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                        UserRepository userRepository,
+                       CreatorUserRepository creatorUserRepository,
                        ProjectRepository projectRepository,
                        ProjectBridgeheadRepository projectBridgeheadRepository,
                        SessionUser sessionUser,
@@ -51,6 +53,7 @@ public class UserService {
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.userRepository = userRepository;
+        this.creatorUserRepository = creatorUserRepository;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.sessionUser = sessionUser;
@@ -58,51 +61,28 @@ public class UserService {
         this.dtoFactory = dtoFactory;
     }
 
-    public BridgeheadAdminUser createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
+    public void createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
         Optional<BridgeheadAdminUser> bridgeheadAdminUserOptional = this.bridgeheadAdminUserRepository.findFirstByEmailAndBridgehead(email, bridgehead);
         BridgeheadAdminUser result;
         if (bridgeheadAdminUserOptional.isEmpty()) {
             result = new BridgeheadAdminUser();
             result.setBridgehead(bridgehead);
             result.setEmail(email);
-            result = this.bridgeheadAdminUserRepository.save(result);
-        } else {
-            result = bridgeheadAdminUserOptional.get();
+            this.bridgeheadAdminUserRepository.save(result);
         }
-        return result;
     }
 
-    public ProjectManagerAdminUser createProjectManagerAdminUserIfNotExists(@NotNull String email) {
+    public void createProjectManagerAdminUserIfNotExists(@NotNull String email) {
         Optional<ProjectManagerAdminUser> projectManagerAdminUserOptional = this.projectManagerAdminUserRepository.findFirstByEmail(email);
         ProjectManagerAdminUser result;
         if (projectManagerAdminUserOptional.isEmpty()) {
             result = new ProjectManagerAdminUser();
             result.setEmail(email);
-            result = this.projectManagerAdminUserRepository.save(result);
-        } else {
-            result = projectManagerAdminUserOptional.get();
+            this.projectManagerAdminUserRepository.save(result);
         }
-        return result;
     }
 
-    public ProjectBridgeheadUser createProjectBridgeheadUserIfNotExists(@NotNull String email, @NotNull ProjectBridgehead projectBridgehead, @NotNull ProjectRole projectRole) {
-        Optional<ProjectBridgeheadUser> projectBridgeheadUserOptional = this.projectBridgeheadUserRepository.findFirstByEmailAndProjectBridgeheadAndProjectRole(email, projectBridgehead, projectRole);
-        ProjectBridgeheadUser result;
-        if (projectBridgeheadUserOptional.isEmpty()) {
-            result = new ProjectBridgeheadUser();
-            result.setEmail(email);
-            result.setProjectBridgehead(projectBridgehead);
-            result.setProjectRole(projectRole);
-            result = this.projectBridgeheadUserRepository.save(result);
-            this.notificationService.createNotification(projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, OperationType.ASSIGN_USER_TO_PROJECT,
-                    "Set role " + projectRole + " to user", null, null);
-        } else {
-            result = projectBridgeheadUserOptional.get();
-        }
-        return result;
-    }
-
-    public void setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
+    public void setProjectBridgeheadUserWithRoleAndGenerateTokensIfDataShield(@NotNull String email, @NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectRole projectRole) throws UserServiceException {
         Optional<Project> project = this.projectRepository.findByCode(projectCode);
         if (project.isEmpty()) {
             throw new UserServiceException("Project " + projectCode + " not found");
@@ -160,7 +140,7 @@ public class UserService {
 
     public Optional<User> fetchCurrentUser(@NotNull String projectCode, @NotNull String bridgehead) {
         Optional<ProjectBridgeheadUser> user = this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(sessionUser.getEmail(), fetchProjectBridgehead(projectCode, bridgehead));
-        return (user.isEmpty()) ? Optional.empty() : Optional.ofNullable(dtoFactory.convert(user.get()));
+        return user.map(dtoFactory::convert);
     }
 
     public Set<User> fetchProjectUsers(@NotNull String projectCode) throws UserServiceException {
@@ -205,9 +185,7 @@ public class UserService {
             return new HashSet<>();
         }
         Set<ProjectRole> result = userProjectRoles.get().getRolesNotDependentOnBridgeheads();
-        if (bridgehead.isPresent()) {
-            result.addAll(userProjectRoles.get().getBridgeheadRoles(bridgehead.get()));
-        }
+        bridgehead.ifPresent(s -> result.addAll(userProjectRoles.get().getBridgeheadRoles(s)));
         return result;
     }
 
@@ -255,6 +233,17 @@ public class UserService {
 
     public List<User> fetchUsersForAutocompleteInMailingBlackList(String email) {
         return userRepository.findByEmailContainingIgnoreCaseAndIsInMailingBlackListIsFalse(email).stream().map(DtoFactory::convert).collect(Collectors.toList());
+    }
+
+    public void addCreatorIfNotExists() {
+        sessionUser.getBridgeheads().forEach(bridgehead ->
+                creatorUserRepository.findByEmailAndBridgehead(sessionUser.getEmail(), bridgehead)
+                        .orElseGet(() -> {
+                            CreatorUser creatorUser = new CreatorUser();
+                            creatorUser.setBridgehead(bridgehead);
+                            creatorUser.setEmail(sessionUser.getEmail());
+                            return creatorUserRepository.save(creatorUser);
+                        }));
     }
 
 }

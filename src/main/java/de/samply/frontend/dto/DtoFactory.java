@@ -12,6 +12,7 @@ import de.samply.db.repository.UserRepository;
 import de.samply.form.DisplayMetadata;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
+import de.samply.form.template.FormTemplateConfig;
 import de.samply.form.template.FormTemplateMetadata;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
@@ -38,6 +39,7 @@ public class DtoFactory {
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
     private final FormConfig formConfig;
+    private final FormTemplateConfig formTemplateConfig;
     private final String defaultLanguage;
 
 
@@ -46,12 +48,14 @@ public class DtoFactory {
                       ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                       BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
                       FormConfig formConfig,
+                      FormTemplateConfig formTemplateConfig,
                       @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
         this.userRepository = userRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.formConfig = formConfig;
+        this.formTemplateConfig = formTemplateConfig;
         this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
     }
 
@@ -236,7 +240,7 @@ public class DtoFactory {
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::isMandatory)
                         .orElse(null),
-                label.map(l -> formConfig.getFormTitleLabelOrderMap().get(title).get(l)).orElse(null),
+                label.map(l -> fetchFormFieldOrder(title, l)).orElse(null),
                 value.orElse(null)
         );
     }
@@ -287,9 +291,15 @@ public class DtoFactory {
                 convert(formFieldConfig.getGroups(), language),
                 formFieldConfig.getDataType(),
                 formFieldConfig.isMandatory(),
-                formConfig.getFormTitleLabelOrderMap().get(title).get(formFieldConfig.getLabel()),
+                fetchFormFieldOrder(title, formFieldConfig.getLabel()),
                 value.orElse(null)
         );
+    }
+
+    private int fetchFormFieldOrder(String title, String label) {
+        return formTemplateConfig.isProjectFormFieldTitle(title) ?
+                formTemplateConfig.fetchProjectFormFieldOrder(title, label) :
+                formConfig.getFormTitleLabelOrderMap().get(title).get(label);
     }
 
     public FormField convert(@NotNull ProjectForm projectForm, Optional<String> language) {

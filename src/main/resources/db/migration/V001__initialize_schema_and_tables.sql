@@ -70,6 +70,14 @@ CREATE TABLE samply.bridgehead_admin_user
     bridgehead TEXT   NOT NULL
 );
 
+CREATE TABLE samply.creator_user
+(
+    id         SERIAL NOT NULL PRIMARY KEY,
+    email      TEXT   NOT NULL,
+    bridgehead TEXT   NOT NULL
+);
+
+
 CREATE TABLE samply.project_manager_admin_user
 (
     id    SERIAL NOT NULL PRIMARY KEY,

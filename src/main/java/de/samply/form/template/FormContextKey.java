@@ -3,7 +3,7 @@ package de.samply.form.template;
 import lombok.Getter;
 
 @Getter
-public enum FormKey {
+public enum FormContextKey {
 
     FIELDS("fields"),
     DATA_TYPE_CLASS("DataType"),
@@ -11,7 +11,7 @@ public enum FormKey {
 
     private final String text;
 
-    FormKey(String text) {
+    FormContextKey(String text) {
         this.text = text;
     }
 

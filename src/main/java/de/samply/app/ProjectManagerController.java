@@ -232,7 +232,7 @@ public class ProjectManagerController {
             @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
+                this.userService.setProjectBridgeheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.DEVELOPER));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -249,7 +249,7 @@ public class ProjectManagerController {
             @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.PILOT));
+                this.userService.setProjectBridgeheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.PILOT));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -264,7 +264,7 @@ public class ProjectManagerController {
             @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() ->
-                this.userService.setProjectBridgheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.FINAL));
+                this.userService.setProjectBridgeheadUserWithRoleAndGenerateTokensIfDataShield(email, projectCode, bridgehead, ProjectRole.FINAL));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
