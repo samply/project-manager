@@ -235,6 +235,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch Form Template Filename
 - Current Date in Form Template
 - Project Form Fields
+- Bridgehead Affiliation
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL

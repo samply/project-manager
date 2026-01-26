@@ -12,6 +12,7 @@ public enum ProjectContextKey {
 
     PROJECT_CODE("project-code"),
     CREATOR_BRIDGEHEADS("creator-bridgeheads"),
+    CREATOR_AFFILIATIONS("creator-affiliations"),
     CREATOR_NAME("creator-name"),
     PROJECT_TITLE("project-title"),
     PROJECT_DESCRIPTION("project-description");

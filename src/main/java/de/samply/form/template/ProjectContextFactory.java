@@ -11,10 +11,7 @@ import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,13 +40,22 @@ public class ProjectContextFactory {
             result.put(ProjectContextKey.PROJECT_DESCRIPTION, project.getQuery().getDescription());
             fetchCreator(project).ifPresent(user -> {
                 result.put(ProjectContextKey.CREATOR_NAME, UserUtils.extractFullName(Optional.of(user)));
-                String bridgeheads = creatorUserRepository.findByEmail(user.getEmail()).stream()
+                Set<CreatorUser> users = creatorUserRepository.findByEmail(user.getEmail());
+                String bridgeheads = users.stream()
                         .map(CreatorUser::getBridgehead)
                         .map(bridgeheadConfiguration::getHumanReadable)
                         .flatMap(Optional::stream)
                         .collect(Collectors.joining(",")).trim();
                 if (!bridgeheads.isEmpty()) {
                     result.put(ProjectContextKey.CREATOR_BRIDGEHEADS, bridgeheads);
+                }
+                String affiliations = users.stream()
+                        .map(CreatorUser::getBridgehead)
+                        .map(bridgeheadConfiguration::getAffiliation)
+                        .flatMap(Optional::stream)
+                        .collect(Collectors.joining(",")).trim();
+                if (!affiliations.isEmpty()) {
+                    result.put(ProjectContextKey.CREATOR_AFFILIATIONS, affiliations);
                 }
             });
 
