@@ -102,13 +102,16 @@ public class FormTemplateService {
                 .orElseThrow(() -> new IllegalArgumentException("Template not found: " + formTemplate));
 
         // 1️⃣ Project fields
-        Stream<FormField> projectFields = Arrays.stream(template.getProjectFields())
-                .map(projectContext::resolveProjectContext)
-                .map(field -> dtoFactory.convert(
-                        formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
-                        field,
-                        Optional.ofNullable(field.getProjectValue()),
-                        Optional.of(language)));
+        Stream<FormField> projectFields =
+                Stream.ofNullable(template.getProjectFields())
+                        .flatMap(Arrays::stream)
+                        .map(projectContext::resolveProjectContext)
+                        .map(field -> dtoFactory.convert(
+                                formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
+                                field,
+                                Optional.ofNullable(field.getProjectValue()),
+                                Optional.of(language)
+                        ));
 
         // 2️⃣ Form fields for every title
         Stream<FormField> perTitleFields = Arrays.stream(template.getFormTitles())
