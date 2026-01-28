@@ -9,6 +9,7 @@ import de.samply.frontend.dto.FormField;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
+import de.samply.utils.FormFieldUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service class responsible for handling operations related to forms and their associated configurations,
@@ -64,7 +66,7 @@ public class FormService {
                 .collect(Collectors.toList());
     }
 
-    public List<FormField> fetchProjectFormFields(@NotNull String formTitle, Optional<String> language) {
+    public List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(@NotNull String formTitle, Optional<String> language) {
         return formConfig.getFormTitleLabelFieldMap()
                 .getOrDefault(formTitle, Map.of())
                 .values()
@@ -74,33 +76,24 @@ public class FormService {
                 .toList();
     }
 
-    public List<FormField> fetchAllProjectFormFields(Optional<String> language) {
-        return formConfig.getFormTitleLabelFieldMap().entrySet().stream()
-                .flatMap(e1 -> e1.getValue().values().stream()
-                        .map(formFieldConfig -> Map.entry(e1.getKey(), formFieldConfig)))
-                .map(titleFormFieldConfig ->
-                        dtoFactory.convert(
-                                titleFormFieldConfig.getKey(),
-                                titleFormFieldConfig.getValue(),
-                                Optional.empty(),
-                                language)
-                )
-                .toList();
-    }
-
-    public List<FormField> fetchProjectFormLabelAndValues(@NotNull String formTitle, @NotNull String projectCode, Optional<String> language) {
+    public List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull String projectCode, Optional<String> language) {
         return projectFormRepository.findByProject_CodeAndFormTitle(projectCode, formTitle).stream()
                 .map(projectForm -> dtoFactory.convert(projectForm, language))
                 .toList();
     }
 
-    public List<FormField> fetchProjectFormLabelAndValues(@NotNull String projectCode, Optional<String> language) {
-        return projectFormRepository.findByProject_Code(projectCode).stream()
-                .map(projectForm -> dtoFactory.convert(projectForm, language))
+    public List<FormField> fetchProjectFormFields(Optional<String> formTitle, @NotNull String projectCode, Optional<String> language) {
+        return formTitle.map(Stream::of)
+                .orElseGet(() -> formConfig.getFormTitleLabelFieldMap().keySet().stream())
+                .flatMap(title -> fetchBaseAndOverrideFormFields(title, projectCode, language))
+                .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
+                .collect(FormFieldUtils.formFieldMapCollector())
+                .values()
+                .stream()
                 .toList();
     }
 
-    public void editProjectFormLabelAndValues(Optional<FormField[]> formFields, @NotNull String projectCode) {
+    public void editProjectFormFieldValues(Optional<FormField[]> formFields, @NotNull String projectCode) {
         if (formFields.isEmpty() || formFields.get().length == 0) {
             return;
         }
@@ -142,6 +135,15 @@ public class FormService {
             throw new FormServiceException("Project " + projectCode + " not found");
         }
         return project.get();
+    }
+
+
+    public Stream<FormField> fetchBaseAndOverrideFormFields(@NotNull String formTitle, @NotNull String projectCode, Optional<String> language
+    ) {
+        return Stream.concat(
+                fetchProjectFormFieldsDefinedInConfigWithoutValues(formTitle, language).stream(),
+                fetchProjectFormFieldsWithValues(formTitle, projectCode, language).stream()
+        );
     }
 
 

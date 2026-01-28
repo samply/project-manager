@@ -372,20 +372,6 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
-    @FrontendAction(action = ProjectManagerConst.FETCH_ALL_PROJECT_FORM_FIELDS_ACTION)
-    @GetMapping(value = ProjectManagerConst.FETCH_ALL_PROJECT_FORM_FIELDS)
-    public ResponseEntity fetchAllProjectFormFields(
-            // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @Language String language
-    ) {
-        return convertToResponseEntity(() -> formService.fetchAllProjectFormFields(Optional.ofNullable(language)));
-    }
-
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS)
     public ResponseEntity fetchProjectFormFields(
@@ -393,24 +379,9 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
     ) {
-        return convertToResponseEntity(() -> formService.fetchProjectFormFields(formTitle, Optional.ofNullable(language)));
-    }
-
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
-    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
-    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_VALUES_ACTION)
-    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_VALUES)
-    public ResponseEntity fetchProjectFormValues(
-            // Project code and bridgehead needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @Language String language,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
-    ) {
-        return convertToResponseEntity(() -> formService.fetchProjectFormLabelAndValues(formTitle, projectCode, Optional.ofNullable(language)));
+        return convertToResponseEntity(() -> formService.fetchProjectFormFields(Optional.ofNullable(formTitle), projectCode, Optional.ofNullable(language)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -423,7 +394,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestVariable(name = ProjectManagerConst.FORM_FIELDS) FormField[] formFields
     ) {
-        return convertToResponseEntity(() -> formService.editProjectFormLabelAndValues(Optional.ofNullable(formFields), projectCode));
+        return convertToResponseEntity(() -> formService.editProjectFormFieldValues(Optional.ofNullable(formFields), projectCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN})
@@ -1469,7 +1440,7 @@ public class ProjectManagerController {
     // By default, it is disabled via spring.profiles.active in application.yaml.
     // To enable it, override the configuration so that the
     // 'external-execution-not-allowed' profile is NOT active
-    // (e.g. set SPRING_PROFILES_ACTIVE to an empty value).
+    // (e.g., set SPRING_PROFILES_ACTIVE to an empty value).
     @Profile("!" + ProjectManagerConst.EXTERNAL_EXECUTION_NOT_ALLOWED)
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL},

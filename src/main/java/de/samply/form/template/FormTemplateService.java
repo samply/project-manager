@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -90,60 +89,46 @@ public class FormTemplateService {
         return result;
     }
 
-    private Map<String, FormField> fetchFormFields(
+    public Map<String, FormField> fetchFormFields(
             @NotNull String projectCode,
             @NotNull String formTemplate,
             @NotNull String language
     ) {
-        ProjectContext projectContext = projectContextFactory.createProjectContext(projectCode);
+        FormTemplateMetadata template = resolveTemplateMetadata(formTemplate);
+        ProjectContext projectContext = projectContextFactory.createProjectContext(projectCode, language);
 
-        // Resolve the template at once; fail fast if not found
-        var template = formTemplateConfig.getTemplate(formTemplate)
-                .orElseThrow(() -> new IllegalArgumentException("Template not found: " + formTemplate));
+        return Stream.concat(
+                        // 1️⃣ Project fields
+                        Stream.ofNullable(template.getProjectFields())
+                                .flatMap(Arrays::stream)
+                                .map(projectContext::resolveProjectContext)
+                                .map(field -> dtoFactory.convert(
+                                        formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
+                                        field,
+                                        Optional.ofNullable(field.getProjectValue()),
+                                        Optional.of(language)
+                                )),
 
-        // 1️⃣ Project fields
-        Stream<FormField> projectFields =
-                Stream.ofNullable(template.getProjectFields())
-                        .flatMap(Arrays::stream)
-                        .map(projectContext::resolveProjectContext)
-                        .map(field -> dtoFactory.convert(
-                                formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
-                                field,
-                                Optional.ofNullable(field.getProjectValue()),
-                                Optional.of(language)
-                        ));
-
-        // 2️⃣ Form fields for every title
-        Stream<FormField> perTitleFields = Arrays.stream(template.getFormTitles())
-                .flatMap(formTitle -> {
-                    var baseFields = formService.fetchProjectFormFields(formTitle, Optional.of(language)).stream();
-                    var overrideFields = formService.fetchProjectFormLabelAndValues(formTitle, projectCode, Optional.of(language)).stream();
-
-                    // merge base + override
-                    return Stream.concat(baseFields, overrideFields);
-                });
-
-        // 3️⃣ Merge projectFields with form fields
-        return Stream.concat(projectFields, perTitleFields)
-                .map(field -> Map.entry(fetchFormFieldKey(field), field))
-                .sorted(Map.Entry.comparingByValue(FormFieldUtils.FORM_FIELD_COMPARATOR))
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (_, newValue) -> newValue, // override duplicates
-                        LinkedHashMap::new // preserve insertion order
-                ));
+                        // 2️⃣ Form fields from formService (raw, base + override)
+                        Arrays.stream(template.getFormTitles())
+                                .flatMap(formTitle -> formService.fetchBaseAndOverrideFormFields(
+                                        formTitle, projectCode, Optional.of(language)))
+                )
+                .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
+                .collect(FormFieldUtils.formFieldMapCollector());
     }
 
-
-    private String fetchFormFieldKey(@NotNull FormField formField) {
-        return formField.title() + formField.label();
-    }
 
     public List<FormTemplate> fetchTemplates(Optional<String> language) {
         return formTemplateConfig.getTemplateMetadataMap().values().stream()
                 .map(metadata -> dtoFactory.convert(metadata, language))
                 .toList();
+    }
+
+    private FormTemplateMetadata resolveTemplateMetadata(String formTemplate) {
+        return formTemplateConfig.getTemplate(formTemplate)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Template not found: " + formTemplate));
     }
 
 

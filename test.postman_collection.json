@@ -871,7 +871,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-form-titles?project-code=61c61ec5c6eb42408b11",
+          "raw": "http://localhost:8097/project-form-titles?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
@@ -883,7 +883,7 @@
           "query": [
             {
               "key": "project-code",
-              "value": "61c61ec5c6eb42408b11"
+              "value": "a1ba86d4574e45dd9962"
             }
           ]
         }
@@ -899,19 +899,19 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/all-project-form-fields?project-code=61c61ec5c6eb42408b11",
+          "raw": "http://localhost:8097/project-form-fields?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "all-project-form-fields"
+            "project-form-fields"
           ],
           "query": [
             {
               "key": "project-code",
-              "value": "61c61ec5c6eb42408b11"
+              "value": "a1ba86d4574e45dd9962"
             }
           ]
         }
@@ -927,7 +927,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-form-fields?project-code=61c61ec5c6eb42408b11&form-title=sample_data",
+          "raw": "http://localhost:8097/project-form-fields?project-code=a1ba86d4574e45dd9962&form-title=sample_data",
           "protocol": "http",
           "host": [
             "localhost"
@@ -939,12 +939,11 @@
           "query": [
             {
               "key": "project-code",
-              "value": "61c61ec5c6eb42408b11"
+              "value": "a1ba86d4574e45dd9962"
             },
             {
               "key": "form-title",
-              "value": "sample_data",
-              "type": "text"
+              "value": "sample_data"
             }
           ]
         }
@@ -969,7 +968,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/edit-project-form-fields?project-code=61c61ec5c6eb42408b11",
+          "raw": "http://localhost:8097/edit-project-form-fields?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
@@ -981,39 +980,7 @@
           "query": [
             {
               "key": "project-code",
-              "value": "61c61ec5c6eb42408b11"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Fetch form values",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8097/project-form-values?project-code=61c61ec5c6eb42408b11&form-title=sample_data",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8097",
-          "path": [
-            "project-form-values"
-          ],
-          "query": [
-            {
-              "key": "project-code",
-              "value": "61c61ec5c6eb42408b11"
-            },
-            {
-              "key": "form-title",
-              "value": "sample_data"
+              "value": "a1ba86d4574e45dd9962"
             }
           ]
         }
@@ -1029,7 +996,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-form-templates?project-code=61c61ec5c6eb42408b11",
+          "raw": "http://localhost:8097/project-form-templates?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
@@ -1041,7 +1008,7 @@
           "query": [
             {
               "key": "project-code",
-              "value": "61c61ec5c6eb42408b11"
+              "value": "a1ba86d4574e45dd9962"
             }
           ]
         }
@@ -1049,7 +1016,7 @@
       "response": []
     },
     {
-      "name": "Download Form",
+      "name": "Download Form (Samples)",
       "request": {
         "auth": {
           "type": "noauth"
@@ -1057,7 +1024,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/download-form-as-pdf?project-code=61c61ec5c6eb42408b11&form-template=samples",
+          "raw": "http://localhost:8097/download-form-as-pdf?project-code=a1ba86d4574e45dd9962&form-template=samples",
           "protocol": "http",
           "host": [
             "localhost"
@@ -1069,11 +1036,47 @@
           "query": [
             {
               "key": "project-code",
-              "value": "61c61ec5c6eb42408b11"
+              "value": "a1ba86d4574e45dd9962"
             },
             {
               "key": "form-template",
               "value": "samples"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download Form (Clinical Data)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/download-form-as-pdf?project-code=a1ba86d4574e45dd9962&form-template=clinical-data&language=de",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "download-form-as-pdf"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a1ba86d4574e45dd9962"
+            },
+            {
+              "key": "form-template",
+              "value": "clinical-data"
+            },
+            {
+              "key": "language",
+              "value": "de"
             }
           ]
         }
