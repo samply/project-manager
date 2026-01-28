@@ -1,23 +1,26 @@
 package de.samply.form;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 
+import java.time.Instant;
+import java.time.LocalDate;
+
+@Getter
 public enum DataType {
 
     INTEGER(Integer.class),
     DOUBLE(Double.class),
     BOOLEAN(Boolean.class),
-    STRING(String.class);
+    STRING(String.class),
+    DATE(LocalDate.class),
+    TIMESTAMP(Instant.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final Class<?> clazz;
 
     DataType(Class<?> clazz) {
         this.clazz = clazz;
-    }
-
-    public Class<?> getClazz() {
-        return clazz;
     }
 
     public static DataType fromString(String type) {

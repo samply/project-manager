@@ -14,8 +14,10 @@ public enum ProjectContextKey {
     CREATOR_BRIDGEHEADS("creator-bridgeheads"),
     CREATOR_AFFILIATIONS("creator-affiliations"),
     CREATOR_NAME("creator-name"),
+    CREATOR_EMAIL("creator-email"),
     PROJECT_TITLE("project-title"),
-    PROJECT_DESCRIPTION("project-description");
+    PROJECT_DESCRIPTION("project-description"),
+    PROJECT_CREATION_DATE("project-creation-date");
 
     private final String text;
 

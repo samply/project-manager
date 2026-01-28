@@ -17,10 +17,13 @@ public class DateUtils {
     }
 
     public static String fetchCurrentDate(String dateTimePattern, String languageCode) {
+        return fetchDate(Instant.now(), dateTimePattern, languageCode);
+    }
+
+    public static String fetchDate(Instant date, String dateTimePattern, String languageCode) {
         return DateTimeFormatter
                 .ofPattern(dateTimePattern, Locale.forLanguageTag(languageCode))
-                .format(Instant.now()
-                        .atZone(ZoneId.of(ProjectManagerConst.FORM_FILENAME_TIMESTAMP_ZONE)));
+                .format(date.atZone(ZoneId.of(ProjectManagerConst.FORM_FILENAME_TIMESTAMP_ZONE)));
     }
 
 
