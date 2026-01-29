@@ -407,14 +407,14 @@ public class ProjectManagerController {
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
-            @RequestVariable(name = ProjectManagerConst.FORM_TEMPLATE, required = false) String formTemplate
+            @RequestVariable(name = ProjectManagerConst.FORM_TEMPLATE) String formTemplate
     ) {
         return convertToResponseEntity(() ->
                 ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
-                                formTemplateService.fetchFormFilename(projectCode, Optional.ofNullable(formTemplate)))
+                                formTemplateService.fetchFormFilename(projectCode, formTemplate))
                         .contentType(MediaType.APPLICATION_PDF)
-                        .body(formTemplateService.createFormAsPdf(projectCode, Optional.ofNullable(formTemplate), Optional.ofNullable(language)))
+                        .body(formTemplateService.createFormAsPdf(projectCode, formTemplate, Optional.ofNullable(language)))
         );
     }
 

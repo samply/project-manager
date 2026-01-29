@@ -430,7 +430,6 @@ public class ProjectManagerConst {
     public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
 
     public final static String FORM_RESOURCES_DIRECTORY = "FORM_RESOURCES_DIRECTORY";
-    public final static String FORM_DEFAULT_TEMPLATE = "FORM_DEFAULT_TEMPLATE";
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY = "FORM_TEMPLATE_METADATA_DIRECTORY";
     public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME = "FORM_TEMPLATE_DEFAULT_PDF_FILENAME";
     public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
@@ -541,7 +540,6 @@ public class ProjectManagerConst {
     public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
 
     public final static String FORM_RESOURCES_DIRECTORY_SV = HEAD_SV + FORM_RESOURCES_DIRECTORY + BOTTOM_SV;
-    public final static String FORM_DEFAULT_TEMPLATE_SV = HEAD_SV + FORM_DEFAULT_TEMPLATE + BOTTOM_SV;
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY_SV = HEAD_SV + FORM_TEMPLATE_METADATA_DIRECTORY + BOTTOM_SV;
     public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV = HEAD_SV + FORM_TEMPLATE_DEFAULT_PDF_FILENAME + ":form.pdf" + BOTTOM_SV;
     public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;

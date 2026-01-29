@@ -26,7 +26,6 @@ public class FormTemplateService {
 
     private final FormService formService;
     private final PdfGenerator pdfGenerator;
-    private final String defaultFormTemplate;
     private final String defaultLanguage;
     private final FormTemplateConfig formTemplateConfig;
     private final String defaultPdfFilename;
@@ -37,7 +36,6 @@ public class FormTemplateService {
 
     public FormTemplateService(FormService formService,
                                FormPdfGeneratorFactory pdfGeneratorFactory,
-                               @Value(ProjectManagerConst.FORM_DEFAULT_TEMPLATE_SV) String defaultFormTemplate,
                                @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
                                @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
                                FormTemplateConfig formTemplateConfig,
@@ -46,7 +44,6 @@ public class FormTemplateService {
                                ProjectContextFactory projectContextFactory) {
         this.formService = formService;
         this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
-        this.defaultFormTemplate = defaultFormTemplate;
         this.defaultLanguage = defaultLanguage;
         this.formTemplateConfig = formTemplateConfig;
         this.defaultPdfFilename = defaultPdfFilename;
@@ -55,23 +52,20 @@ public class FormTemplateService {
         this.projectContextFactory = projectContextFactory;
     }
 
-    public String fetchFormFilename(@NotNull String projectCode, Optional<String> formTemplate) {
-
+    public String fetchFormFilename(@NotNull String projectCode, String formTemplate) {
         return FormFilenameResolver.resolve(
-                Optional.ofNullable(formTemplate.orElse(defaultFormTemplate))
-                        .flatMap(formTemplateConfig::getTemplate)
+                formTemplateConfig.getTemplate(formTemplate)
                         .map(metadata -> metadata.getExtensionFilenameTemplateMap().get(FileExtension.PDF))
                         .orElse(defaultPdfFilename),
                 Map.of(FormFilenameKey.PROJECT_CODE.getText(), projectCode)
         );
     }
 
-    public byte[] createFormAsPdf(@NotNull String projectCode, Optional<String> formTemplate, Optional<String> language) throws FormTemplateServiceException {
+    public byte[] createFormAsPdf(@NotNull String projectCode, @NotNull String formTemplate, Optional<String> language) throws FormTemplateServiceException {
         try {
-            String template = formTemplate.orElse(defaultFormTemplate);
             return pdfGenerator.generatePdf(
-                    template,
-                    createContext(projectCode, template, LanguageUtils.normalize(language.orElse(defaultLanguage))));
+                    formTemplate,
+                    createContext(projectCode, formTemplate, LanguageUtils.normalize(language.orElse(defaultLanguage))));
         } catch (PdfGeneratorException e) {
             throw new FormTemplateServiceException(e);
         }
