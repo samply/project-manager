@@ -34,6 +34,7 @@ public class BridgeheadConfiguration {
         private String fileDispatcherBeamId;
         private String tokenManagerId;
         private String humanReadable;
+        private String affiliation;
     }
 
     @PostConstruct
@@ -88,6 +89,10 @@ public class BridgeheadConfiguration {
 
     public Optional<String> getHumanReadable(String bridgehead) {
         return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getHumanReadable());
+    }
+
+    public Optional<String> getAffiliation(String bridgehead) {
+        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getAffiliation());
     }
 
     public Optional<String> getTokenManagerId(String bridgehead) {

@@ -4,6 +4,9 @@ public class ProjectManagerConst {
 
     public final static String APP_NAME = "Project Manager";
 
+    // Profiles
+    public final static String EXTERNAL_EXECUTION_NOT_ALLOWED = "external-execution-not-allowed";
+
     // Sites
     public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
     public final static String PROJECT_VIEW_SITE = "project-view";
@@ -104,7 +107,7 @@ public class ProjectManagerConst {
     public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION = "REMOVE_USER_FROM_MAILING_BLACK_LIST";
     public final static String FETCH_MAILING_BLACK_LIST_ACTION = "FETCH_MAILING_BLACK_LIST";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST";
-    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGHEAD_RESULTS_URL";
+    public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGEHEAD_RESULTS_URL";
     public final static String ADD_PROJECT_RESULTS_URL_ACTION = "ADD_PROJECT_RESULTS_URL";
     public final static String ACCEPT_PROJECT_RESULTS_URL_ACTION = "ACCEPT_PROJECT_RESULTS_URL";
     public final static String REJECT_PROJECT_RESULTS_URL_ACTION = "REJECT_PROJECT_RESULTS_URL";
@@ -119,6 +122,11 @@ public class ProjectManagerConst {
     public final static String IS_PROJECT_MANAGER_ADMIN_ACTION = "IS_PROJECT_MANAGER_ADMIN";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL_ACTION = "FETCH_RESEARCH_ENVIRONMENT_URL";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION = "EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE";
+    public final static String FETCH_PROJECT_FORM_TITLES_ACTION = "FETCH_PROJECT_FORM_TITLES";
+    public final static String FETCH_PROJECT_FORM_FIELDS_ACTION = "FETCH_PROJECT_FORM_FIELDS";
+    public final static String FETCH_PROJECT_FORM_TEMPLATES_ACTION = "FETCH_FORM_TEMPLATES";
+    public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
+    public final static String DOWNLOAD_FORM_AS_PDF_ACTION = "DOWNLOAD_FORM_AS_PDF";
 
 
     // REST Services
@@ -208,7 +216,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_USERS = "/project-users";
     public final static String FETCH_CURRENT_USER = "/current-user";
     public final static String EXIST_INVITED_USERS = "/exist-invited-users";
-    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL = "/project-bridgehead-results-url";
+    public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL = "/project-bridgehead-results-url";
     public final static String ADD_PROJECT_RESULTS_URL = "/project-results-url";
     public final static String ACCEPT_PROJECT_RESULTS_URL = "/accept-project-results-url";
     public final static String REJECT_PROJECT_RESULTS_URL = "/reject-project-results-url";
@@ -223,6 +231,11 @@ public class ProjectManagerConst {
     public final static String IS_PROJECT_MANAGER_ADMIN = "/is-project-manager-admin";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL = "/research-environment-url";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/exists-research-environment-workspace";
+    public final static String FETCH_PROJECT_FORM_TITLES = "/project-form-titles";
+    public final static String FETCH_PROJECT_FORM_FIELDS = "/project-form-fields";
+    public final static String FETCH_PROJECT_FORM_TEMPLATES = "/project-form-templates";
+    public final static String EDIT_PROJECT_FORM_FIELDS = "/edit-project-form-fields";
+    public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
 
 
     // REST Parameters
@@ -250,6 +263,9 @@ public class ProjectManagerConst {
     public final static String FILENAME = "filename";
     public final static String QUERY_CODE = "query-code";
     public final static String LABEL = "label";
+    public final static String FORM_TITLE = "form-title";
+    public final static String FORM_FIELDS = "form-fields";
+    public final static String FORM_TEMPLATE = "form-template";
     public final static String DESCRIPTION = "description";
     public final static String OUTPUT_FORMAT = "output-format";
     public final static String TEMPLATE_ID = "template-id";
@@ -264,7 +280,6 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VARIABLE = "default-var";
 
     // Application Properties
-    public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
     public final static String HTTP_PROXY_PREFIX = "http.proxy";
@@ -371,6 +386,7 @@ public class ProjectManagerConst {
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
+    public final static String REQUEST_CACHE_LIMIT = "REQUEST_CACHE_LIMIT";
 
     public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
     public final static String JWT_EMAIL_CLAIM = "JWT_EMAIL_CLAIM";
@@ -413,6 +429,13 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT = "APP_REGISTER_AUTHORIZATION_FORMAT";
     public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
 
+    public final static String FORM_RESOURCES_DIRECTORY = "FORM_RESOURCES_DIRECTORY";
+    public final static String FORM_DEFAULT_TEMPLATE = "FORM_DEFAULT_TEMPLATE";
+    public final static String FORM_TEMPLATE_METADATA_DIRECTORY = "FORM_TEMPLATE_METADATA_DIRECTORY";
+    public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME = "FORM_TEMPLATE_DEFAULT_PDF_FILENAME";
+    public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
+    public final static String FORM_TEMPLATE_DATE_PATTERN = "FORM_TEMPLATE_DATE_PATTERN";
+
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
@@ -422,7 +445,6 @@ public class ProjectManagerConst {
     public final static String JWT_FIRST_NAME_CLAIM_SV = HEAD_SV + JWT_FIRST_NAME_CLAIM + ":given_name" + BOTTOM_SV;
     public final static String JWT_LAST_NAME_CLAIM_SV = HEAD_SV + JWT_LAST_NAME_CLAIM + ":family_name" + BOTTOM_SV;
     public final static String JWT_FULL_NAME_CLAIM_SV = HEAD_SV + JWT_FULL_NAME_CLAIM + ":name" + BOTTOM_SV;
-    public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
@@ -483,7 +505,6 @@ public class ProjectManagerConst {
     public final static String FRONTEND_PROJECT_CONFIG_PATH_SV = HEAD_SV + FRONTEND_PROJECT_CONFIG_PATH + BOTTOM_SV;
     public final static String CODER_BASE_URL_SV = HEAD_SV + CODER_BASE_URL + BOTTOM_SV;
     public final static String CODER_ORGANISATION_ID_SV = HEAD_SV + CODER_ORGANISATION_ID + BOTTOM_SV;
-    public final static String CODER_MEMBER_ID_SV = HEAD_SV + CODER_MEMBER_ID + BOTTOM_SV;
     public final static String CODER_CREATE_PATH_SV = HEAD_SV + CODER_CREATE_PATH + BOTTOM_SV;
     public final static String CODER_DELETE_PATH_SV = HEAD_SV + CODER_DELETE_PATH + BOTTOM_SV;
     public final static String CODER_SESSION_TOKEN_SV = HEAD_SV + CODER_SESSION_TOKEN + BOTTOM_SV;
@@ -491,6 +512,7 @@ public class ProjectManagerConst {
     public final static String CODER_TEST_FILE_BEAM_ID_SV = HEAD_SV + CODER_TEST_FILE_BEAM_ID + BOTTOM_SV;
     public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
     public final static String CODER_WORKSPACE_NAME_MAX_LENGTH_SV = HEAD_SV + CODER_WORKSPACE_NAME_MAX_LENGTH + ":32" + BOTTOM_SV;
+    public final static String REQUEST_CACHE_LIMIT_SV = HEAD_SV + REQUEST_CACHE_LIMIT + ":#{2 * 1024 * 1024}" + BOTTOM_SV;
 
 
     public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
@@ -506,7 +528,7 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE_SV = HEAD_SV + EXPORTER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
     public final static String EXPORTER_MAX_POOL_SIZE_SV = HEAD_SV + EXPORTER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
-    public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
+    public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":en" + BOTTOM_SV;
 
     public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS + ":" + BOTTOM_SV;
 
@@ -517,6 +539,14 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_API_KEY_SV = HEAD_SV + APP_REGISTER_API_KEY + BOTTOM_SV;
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":ApiKey {}" + BOTTOM_SV;
     public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
+
+    public final static String FORM_RESOURCES_DIRECTORY_SV = HEAD_SV + FORM_RESOURCES_DIRECTORY + BOTTOM_SV;
+    public final static String FORM_DEFAULT_TEMPLATE_SV = HEAD_SV + FORM_DEFAULT_TEMPLATE + BOTTOM_SV;
+    public final static String FORM_TEMPLATE_METADATA_DIRECTORY_SV = HEAD_SV + FORM_TEMPLATE_METADATA_DIRECTORY + BOTTOM_SV;
+    public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV = HEAD_SV + FORM_TEMPLATE_DEFAULT_PDF_FILENAME + ":form.pdf" + BOTTOM_SV;
+    public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;
+    public final static String FORM_TEMPLATE_DATE_PATTERN_SV = HEAD_SV + FORM_TEMPLATE_DATE_PATTERN + ":d. MMMM yyyy" + BOTTOM_SV;
+
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
@@ -535,7 +565,6 @@ public class ProjectManagerConst {
 
     // App Register
     public final static String REGISTER_PATH = "/beam-app";
-    public final static String UNREGISTER_PATH = "/beam-app";
 
 
     // Others
@@ -554,6 +583,9 @@ public class ProjectManagerConst {
     public final static String PRIMARY_MAIL_SENDER = "primaryJavaMailSender";
     public final static String TEST_MAIL_SENDER = "testJavaMailSender";
     public final static String NOT_AUTHORIZED = "Not authorized yet";
+    public final static String FORM_FILENAME_TIMESTAMP_FORMAT = "yyyyMMdd-HHmm";
+    public final static String FORM_FILENAME_TIMESTAMP_ZONE = "UTC";
+    public final static String FORM_PROJECT_FIELDS_TITLE_PREFIX = "_project_fields";
 
 
 }

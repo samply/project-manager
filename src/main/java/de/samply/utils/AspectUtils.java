@@ -31,6 +31,10 @@ public class AspectUtils {
         return fetchStringParameterAnnotation(joinPoint, Message.class);
     }
 
+    public static Optional<String> fetchLanguage(JoinPoint joinPoint) {
+        return fetchStringParameterAnnotation(joinPoint, Language.class).map(LanguageUtils::normalize);
+    }
+
     private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class annotationClass) {
         Annotation[][] parameterAnnotations = fetchMethod(joinPoint).getParameterAnnotations();
         Object[] args = joinPoint.getArgs();

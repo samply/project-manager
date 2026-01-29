@@ -13,6 +13,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.RolesExtractor;
 import de.samply.utils.AspectUtils;
+import de.samply.utils.LanguageUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +50,7 @@ public class FrontendService {
         this.frontendConfiguration = frontendConfiguration;
         this.explorerUrlRedirectUriParameter = explorerUrlRedirectUriParameter;
         this.actionExplanations = actionExplanations;
-        this.defaultLanguage = defaultLanguage;
+        this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
         this.sessionUser = sessionUser;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectRepository = projectRepository;

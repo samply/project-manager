@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +28,7 @@ public class ProxyConfiguration {
     private String noProxyPattern;
 
     // Convenience method to get noProxy as a List
+    @SuppressWarnings("unused")
     public List<String> getNoProxyList() {
         return noProxy != null ? Arrays.asList(noProxy.split(",")) : List.of();
     }
@@ -34,7 +36,7 @@ public class ProxyConfiguration {
     @PostConstruct
     public void init() throws MalformedURLException {
         if (StringUtils.hasText(this.url)) {
-            URL url = new URL(this.url);
+            URL url = URI.create(this.url).toURL();
             this.schema = url.getProtocol();
             this.host = url.getHost();
             this.port = url.getPort();

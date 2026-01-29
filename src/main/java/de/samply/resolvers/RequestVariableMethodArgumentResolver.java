@@ -11,6 +11,8 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Map;
@@ -20,14 +22,14 @@ import java.util.Map;
  * It handles the extraction of parameter values either from HTTP request parameters
  * or the request body (JSON). It supports constraints such as 'required' and 'notEmpty'
  * for parameters and performs type conversion of the extracted values into the appropriate method argument type.
- *
+ * <p>
  * It first attempts to extract the parameter value from query parameters (via `@RequestParam`).
  * If the value is not found, it will then attempt to extract it from the JSON body of the request.
  * If both methods fail to find the value and the parameter is marked as required, an exception will be thrown.
- *
+ * <p>
  * It also ensures that parameters marked as 'notEmpty' contain a non-empty value. If a parameter is empty
  * when it should not be, a {@link ServletRequestBindingException} will be thrown.
- *
+ * <p>
  * The parameter value is then converted to the correct type using a {@link org.springframework.core.convert.ConversionService}.
  *
  * <p>Usage example:</p>
@@ -44,7 +46,9 @@ import java.util.Map;
 public class RequestVariableMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     private final DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+    ;
     private final RequestBodyCache requestBodyCache; // Injecting request-scoped bean
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public RequestVariableMethodArgumentResolver(RequestBodyCache requestBodyCache) {
         this.requestBodyCache = requestBodyCache;
@@ -65,13 +69,12 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
         String paramName = requestVariable.name();
         boolean required = requestVariable.required();
         boolean notEmpty = requestVariable.notEmpty();
-        Class<?> paramType = parameter.getParameterType();
 
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
 
-        // Try to get value from query parameters
-        String value = request.getParameter(paramName);
+        Object value = request.getParameter(paramName);
 
+        // Try to get value from query parameters
         if (value == null) {
             // Try to get value from JSON body
             value = extractFromJsonBody(request, paramName);
@@ -83,25 +86,37 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
         }
 
         // Handle notEmpty constraint
-        if (notEmpty && !StringUtils.hasText(value)) {
+        if (notEmpty && value instanceof String && !StringUtils.hasText((String) value)) {
             throw new ServletRequestBindingException("Parameter '" + paramName + "' must not be empty.");
         }
 
         // Convert value to target type using ConversionService
-        return convertValue(value, paramType);
+        return convertValue(value, parameter);
     }
 
-    private String extractFromJsonBody(HttpServletRequest request, String key) throws IOException {
+    private Object extractFromJsonBody(HttpServletRequest request, String key) throws IOException {
+        String contentType = request.getContentType();
+        if (contentType == null || !contentType.contains("application/json")) {
+            return null;
+        }
         Map<String, Object> jsonBody = requestBodyCache.getJsonBody(request); // Retrieve from the cache
-
-        Object value = jsonBody.get(key);
-        return (value != null) ? value.toString() : null;
+        return (jsonBody != null) ? jsonBody.get(key) : null;
     }
 
-    private Object convertValue(String value, Class<?> targetType) {
-        // Use ConversionService to convert the String value into the target type
+    private Object convertValue(Object value, MethodParameter parameter) {
         if (value == null) return null;
-        return conversionService.convert(value, targetType);
+
+        Class<?> targetType = parameter.getParameterType();
+
+        if (value instanceof String s) {
+            return conversionService.convert(s, targetType);
+        }
+
+        JavaType javaType =
+                objectMapper.getTypeFactory()
+                        .constructType(parameter.getGenericParameterType());
+
+        return objectMapper.convertValue(value, javaType);
     }
 
 

@@ -70,6 +70,14 @@ CREATE TABLE samply.bridgehead_admin_user
     bridgehead TEXT   NOT NULL
 );
 
+CREATE TABLE samply.creator_user
+(
+    id         SERIAL NOT NULL PRIMARY KEY,
+    email      TEXT   NOT NULL,
+    bridgehead TEXT   NOT NULL
+);
+
+
 CREATE TABLE samply.project_manager_admin_user
 (
     id    SERIAL NOT NULL PRIMARY KEY,
@@ -141,6 +149,17 @@ CREATE TABLE samply.user
     mailing_black_list BOOLEAN NOT NULL
 );
 
+CREATE TABLE samply.project_form
+(
+    id          SERIAL PRIMARY KEY,
+    project_id  BIGINT    NOT NULL,
+    label       TEXT      NOT NULL,
+    form_title  TEXT      NOT NULL,
+    value       TEXT,
+    created_at  TIMESTAMP NOT NULL,
+    modified_at TIMESTAMP
+);
+
 ALTER TABLE samply.project
     ADD CONSTRAINT fk_project_query
         FOREIGN KEY (query_id)
@@ -180,6 +199,10 @@ ALTER TABLE samply.project_coder
 ALTER TABLE samply.user
     ADD CONSTRAINT unique_email UNIQUE (email);
 
+ALTER TABLE samply.project_form
+    ADD CONSTRAINT fk_project FOREIGN KEY (project_id)
+        REFERENCES samply.project (id) ON DELETE CASCADE;
+
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);
 CREATE INDEX idx_project_document_project_id ON samply.project_document (project_id);
@@ -188,3 +211,4 @@ CREATE INDEX idx_notification_project_id ON samply.notification (project_id);
 CREATE INDEX idx_notification_user_action_notification_id ON samply.notification_user_action (notification_id);
 CREATE INDEX idx_project_bridgehead_datashield_project_bridgehead_id ON samply.project_bridgehead_datashield (project_bridgehead_id);
 CREATE INDEX idx_project_coder_project_bridgehead_user_id ON samply.project_coder (project_bridgehead_user_id);
+CREATE INDEX idx_project_form_project_id ON samply.project_form (project_id);

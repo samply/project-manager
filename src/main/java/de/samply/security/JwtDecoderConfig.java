@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -46,7 +47,7 @@ public class JwtDecoderConfig {
                 .bodyToMono(JsonNode.class)
                 .block(Duration.ofSeconds(5));
 
-        this.jwksUri = config.get("jwks_uri").asText();
+        this.jwksUri = Objects.requireNonNull(config).required("jwks_uri").asString();
         log.info("JWKS URI: {}", jwksUri);
 
         refreshJwks();
@@ -57,7 +58,7 @@ public class JwtDecoderConfig {
      */
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
-        return (selector, context) -> selector.select(jwkSetRef.get());
+        return (selector, _) -> selector.select(jwkSetRef.get());
     }
 
     /**
@@ -76,7 +77,7 @@ public class JwtDecoderConfig {
      */
     @Bean
     public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory(JWKSource<SecurityContext> jwkSource) {
-        return registration -> NimbusJwtDecoder.withJwkSource(jwkSource).build();
+        return _ -> NimbusJwtDecoder.withJwkSource(jwkSource).build();
     }
 
     /**
