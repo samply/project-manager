@@ -20,10 +20,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -33,8 +30,6 @@ public class DocumentService {
     private final ProjectDocumentRepository projectDocumentRepository;
     private final ProjectRepository projectRepository;
     private final Path documentsDirectory;
-    private final Path publicDocumentsDirectory;
-    private final String applicationFormFile;
     private final String timestampFormat;
     private final SessionUser sessionUser;
     private final DtoFactory dtoFactory;
@@ -43,8 +38,6 @@ public class DocumentService {
                            ProjectDocumentRepository projectDocumentRepository,
                            ProjectRepository projectRepository,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_SV) String documentsDirectory,
-                           @Value(ProjectManagerConst.PUBLIC_DOCUMENTS_DIRECTORY_SV) String publicDocumentsDirectory,
-                           @Value(ProjectManagerConst.APPLICATION_FORM_FILENAME_SV) String applicationFormFile,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV) String timestampFormat,
                            SessionUser sessionUser,
                            DtoFactory dtoFactory) throws IOException {
@@ -52,8 +45,6 @@ public class DocumentService {
         this.projectDocumentRepository = projectDocumentRepository;
         this.projectRepository = projectRepository;
         this.documentsDirectory = fetchPathDirectory(documentsDirectory);
-        this.publicDocumentsDirectory = Path.of(publicDocumentsDirectory);
-        this.applicationFormFile = applicationFormFile;
         this.timestampFormat = timestampFormat;
         this.sessionUser = sessionUser;
         this.dtoFactory = dtoFactory;
@@ -74,7 +65,7 @@ public class DocumentService {
             return Optional.empty();
         };
         ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> {
-            projectDocument.setOriginalFilename(document.getOriginalFilename().trim());
+            projectDocument.setOriginalFilename(Objects.requireNonNull(document.getOriginalFilename()).trim());
             Path documentPath = writeDocumentInDirectory(document);
             projectDocument.setFilePath(documentPath.toAbsolutePath().toString());
         };
@@ -83,18 +74,14 @@ public class DocumentService {
 
     public void addDocumentUrl(String projectCode, Optional<String> bridgeheadOptional, String url, DocumentType documentType, Optional<String> labelOptional) throws DocumentServiceException {
         String bridgehead = fetchBridgeheadForSearch(bridgeheadOptional);
-        FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer = project -> {
-            return this.projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project, bridgehead, url);
-        };
-        ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> {
-            projectDocument.setUrl(url);
-        };
+        FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer = project -> this.projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project, bridgehead, url);
+        ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> projectDocument.setUrl(url);
         addDocument(projectCode, bridgehead, documentType, labelOptional, documentInitializer, documentSetter);
     }
 
 
     private String fetchBridgeheadForSearch(Optional<String> bridgehead) {
-        return (bridgehead.isPresent()) ? bridgehead.get() : ProjectManagerConst.NO_BRIDGEHEAD;
+        return bridgehead.orElse(ProjectManagerConst.NO_BRIDGEHEAD);
     }
 
     private void addDocument(String projectCode,
@@ -116,7 +103,7 @@ public class DocumentService {
             projectDocument.setProject(project.get());
             projectDocument.setBridgehead(bridgehead);
         }
-        labelOptional.ifPresent(label -> projectDocument.setLabel(label));
+        labelOptional.ifPresent(projectDocument::setLabel);
         projectDocument.setDocumentType(documentType);
         projectDocument.setCreatedAt(Instant.now());
         projectDocument.setCreatorEmail(sessionUser.getEmail());
@@ -185,22 +172,7 @@ public class DocumentService {
         if (projectDocument.isEmpty()) {
             projectDocument = projectDocumentRepository.findFirstByProjectAndOriginalFilename(project.get(), filename);
         }
-        if (projectDocument.isEmpty()) {
-            return Optional.empty();
-        }
         return projectDocument;
-    }
-
-    public Optional<Path> fetchPublicDocument(String documentFilename) {
-        if (documentFilename == null) {
-            return Optional.empty();
-        }
-        Path path = publicDocumentsDirectory.resolve(documentFilename);
-        return (Files.exists(path)) ? Optional.of(path) : Optional.empty();
-    }
-
-    public Optional<Path> fetchApplicationForm() {
-        return fetchPublicDocument(applicationFormFile);
     }
 
     public List<de.samply.frontend.dto.ProjectDocument> fetchPublications(String projectCode) {
@@ -238,8 +210,7 @@ public class DocumentService {
 
     public Optional<de.samply.frontend.dto.ProjectDocument> fetchLastDocumentOfThisTypeForFrontend(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
         Optional<ProjectDocument> projectDocument = fetchLastDocumentOfThisType(projectCode, bridgeheadOptional, type);
-        return (projectDocument.isEmpty()) ? Optional.empty() : Optional.of(dtoFactory.convert(projectDocument.get()));
-
+        return projectDocument.map(dtoFactory::convert);
     }
 
     public Optional<ProjectDocument> fetchLastDocumentOfThisType(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {

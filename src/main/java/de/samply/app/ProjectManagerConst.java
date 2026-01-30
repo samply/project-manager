@@ -39,7 +39,6 @@ public class ProjectManagerConst {
     public final static String START_PILOT_STAGE_ACTION = "START_PILOT_STAGE";
     public final static String START_FINAL_STAGE_ACTION = "START_FINAL_STAGE";
     public final static String FINISH_PROJECT_ACTION = "FINISH_PROJECT";
-    public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE_ACTION = "DOWNLOAD_APPLICATION_FORM_TEMPLATE";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_QUERY_IN_BRIDGEHEAD";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
     public final static String DOWNLOAD_AUTHENTICATION_SCRIPT_ACTION = "DOWNLOAD_AUTHENTICATION_SCRIPT";
@@ -49,7 +48,6 @@ public class ProjectManagerConst {
     public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
     public final static String UPLOAD_VOTUM_ACTION = "UPLOAD_VOTUM";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
-    public final static String UPLOAD_APPLICATION_FORM_ACTION = "UPLOAD_APPLICATION_FORM";
     public final static String UPLOAD_PUBLICATION_ACTION = "UPLOAD_PUBLICATION";
     public final static String UPLOAD_SCRIPT_ACTION = "UPLOAD_SCRIPT";
     public final static String UPLOAD_OTHER_DOCUMENT_ACTION = "UPLOAD_OTHER_DOCUMENT";
@@ -61,9 +59,6 @@ public class ProjectManagerConst {
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION = "FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION";
     public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
     public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS";
-    public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
-    public final static String FETCH_APPLICATION_FORM_DESCRIPTION_ACTION = "FETCH_APPLICATION_FORM_DESCRIPTION";
-    public final static String EXISTS_APPLICATION_FORM_ACTION = "EXISTS_APPLICATION_FORM";
     public final static String EXISTS_SCRIPT_ACTION = "EXISTS_SCRIPT";
     public final static String DOWNLOAD_PUBLICATION_ACTION = "DOWNLOAD_PUBLICATION";
     public final static String DOWNLOAD_SCRIPT_ACTION = "DOWNLOAD_SCRIPT";
@@ -179,7 +174,6 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_TYPES = "/project-types";
     public final static String UPLOAD_VOTUM = "/upload-votum";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/upload-votum-for-all-bridgeheads";
-    public final static String UPLOAD_APPLICATION_FORM = "/upload-application-form";
     public final static String UPLOAD_PUBLICATION = "/upload-publication";
     public final static String UPLOAD_SCRIPT = "/upload-script";
     public final static String UPLOAD_OTHER_DOCUMENT = "/upload-other-document";
@@ -191,15 +185,11 @@ public class ProjectManagerConst {
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION = "/votum-description-for-all-bridgeheads";
     public final static String EXISTS_VOTUM = "/exists-votum";
     public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS = "/exists-votum-for-all-bridgeheads";
-    public final static String DOWNLOAD_APPLICATION_FORM = "/download-application-form";
-    public final static String FETCH_APPLICATION_FORM_DESCRIPTION = "/application-form-description";
-    public final static String EXISTS_APPLICATION_FORM = "/exists-application-form";
     public final static String DOWNLOAD_PUBLICATION = "/download-publication";
     public final static String DOWNLOAD_SCRIPT = "/download-script";
     public final static String FETCH_SCRIPT_DESCRIPTION = "/script-description";
     public final static String EXISTS_SCRIPT = "/exists-script";
     public final static String DOWNLOAD_OTHER_DOCUMENT = "/download-other-document";
-    public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE = "/download-application-form-template";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
     public final static String DOWNLOAD_AUTHENTICATION_SCRIPT = "/download-authentication-script";
@@ -348,8 +338,6 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
     public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
-    public final static String PUBLIC_DOCUMENTS_DIRECTORY = "PUBLIC_DOCUMENTS_DIRECTORY";
-    public final static String APPLICATION_FORM_FILENAME = "APPLICATION_FORM_FILENAME";
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT = "PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP";
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES = "WEBCLIENT_BUFFER_SIZE_IN_BYTES";
     public final static String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS = "WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS";
@@ -449,8 +437,6 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY + BOTTOM_SV;
-    public final static String PUBLIC_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PUBLIC_DOCUMENTS_DIRECTORY + BOTTOM_SV;
-    public final static String APPLICATION_FORM_FILENAME_SV = HEAD_SV + APPLICATION_FORM_FILENAME + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMdd-HHmmss" + BOTTOM_SV;
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =

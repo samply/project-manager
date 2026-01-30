@@ -250,6 +250,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 - RStudio Keycloak Groups
+- Application Form Services
 
 ### Fixed
 - Init flyway migration in spring 4
