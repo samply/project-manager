@@ -15,11 +15,11 @@ import java.util.Optional;
 
 @Component
 @Aspect
-public class ProjectRoleConstraintsAspect {
+public class RoleConstraintsAspect {
 
-    private ConstraintsService constraintsService;
+    private final ConstraintsService constraintsService;
 
-    public ProjectRoleConstraintsAspect(ConstraintsService constraintsService) {
+    public RoleConstraintsAspect(ConstraintsService constraintsService) {
         this.constraintsService = constraintsService;
     }
 
@@ -27,13 +27,14 @@ public class ProjectRoleConstraintsAspect {
     public void roleConstraintsPointcut() {
     }
 
+    @SuppressWarnings("rawtypes") // For Optional<ResponseEntity>. Otherwise, it would be too complex
     @Around("roleConstraintsPointcut()")
     public Object aroundRoleConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<RoleConstraints> roleConstraints = fetchRoleConstrains(joinPoint);
         Optional<StateConstraints> stateConstraints = fetchStateConstrains(joinPoint);
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
         Optional<String> bridgehead = AspectUtils.fetchBridgehead(joinPoint);
-        Optional<ResponseEntity> result = this.constraintsService.checkProjectRoleConstraints(roleConstraints, stateConstraints, projectCode, bridgehead);
+        Optional<ResponseEntity> result = this.constraintsService.checkRoleConstraints(roleConstraints, stateConstraints, projectCode, bridgehead);
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 

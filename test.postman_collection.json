@@ -1204,7 +1204,7 @@
       "response": []
     },
     {
-      "name": "Fetch registered bridgeheads (project manager admin)",
+      "name": "Fetch registered bridgeheads",
       "request": {
         "auth": {
           "type": "noauth"

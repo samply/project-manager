@@ -61,7 +61,7 @@ public class FrontendService {
                                                                      Optional<String> bridgehead, Optional<String> language, boolean withConstraints) {
         Map<String, Map<String, Action>> moduleActionMap = new HashMap<>();
         String rootPath = RolesExtractor.getRootPath();
-        String tempLanguage = (language.isPresent()) ? language.get() : defaultLanguage;
+        String tempLanguage = language.orElse(defaultLanguage);
         Optional<Project> project = fetchProject(projectCode);
         Optional<ProjectBridgehead> projectBridgehead = fetchProjectBridgehead(project, bridgehead);
         Optional<ProjectBridgeheadUser> projectBridgeheadUser = fetchProjectBridgeheadUser(projectBridgehead);
@@ -84,6 +84,7 @@ public class FrontendService {
         return moduleActionMap;
     }
 
+    @SuppressWarnings("rawtypes") // For Optional<ResponseEntity>. Otherwise, it would be too complex
     private void fetchModuleActionsPackages(Map<String, Map<String, Action>> moduleActionsMap,
                                             String rootPath, Optional<String> path,
                                             FrontendSiteModule frontendSiteModule, FrontendAction frontendAction,
@@ -116,22 +117,21 @@ public class FrontendService {
                            String rootPath, Optional<String> path, Method method,
                            Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
                            Optional<ProjectBridgeheadUser> projectBridgeheadUser, String language) {
-        Map<String, Action> actionNameActionsMap = moduleActionsMap.get(frontendSiteModule.module());
-        if (actionNameActionsMap == null) {
-            actionNameActionsMap = new HashMap<>();
-            moduleActionsMap.put(frontendSiteModule.module(), actionNameActionsMap);
-        }
+        Map<String, Action> actionNameActionsMap = moduleActionsMap.computeIfAbsent(frontendSiteModule.module(), _ -> new HashMap<>());
         Optional<Pair<String, Integer>> explanationPriority = actionExplanations.fetchExplanationAndPriority(frontendAction.action(), frontendSiteModule.module(),
                 language, project, projectBridgehead, projectBridgeheadUser, sessionUser);
-        String explanation = explanationPriority.isPresent() ? explanationPriority.get().getFirst() : null;
-        Integer priority = explanationPriority.isPresent() ? explanationPriority.get().getSecond() : null;
+        String explanation = explanationPriority.map(Pair::getFirst).orElse(null);
+        Integer priority = explanationPriority.map(Pair::getSecond).orElse(null);
+        String resolvedPath = path.orElseThrow(
+                () -> new IllegalStateException("Path must be present for action " + frontendAction.action())
+        );
         actionNameActionsMap.put(frontendAction.action(),
-                new Action(rootPath + path.get(), fetchHttpMethod(method), fetchHttpParams(method), explanation, priority));
+                new Action(rootPath + resolvedPath, fetchHttpMethod(method), fetchHttpParams(method), explanation, priority));
     }
 
     private String fetchHttpMethod(Method method) {
         Optional<String> result = AspectUtils.fetchHttpMethod(method);
-        return result.isPresent() ? result.get() : null;
+        return result.orElse(null);
     }
 
     private String[] fetchHttpParams(Method method) {
@@ -142,9 +142,7 @@ public class FrontendService {
         UriComponentsBuilder result = UriComponentsBuilder.fromUriString(frontendConfiguration.getBaseUrl());
         if (site != null) {
             Optional<String> sitePath = frontendConfiguration.getSitePath(site);
-            if (sitePath.isPresent()) {
-                result.path(sitePath.get());
-            }
+            sitePath.ifPresent(result::path);
         }
         if (parameters != null && !parameters.isEmpty()) {
             parameters.keySet().forEach(parameter ->

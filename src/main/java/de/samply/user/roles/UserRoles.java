@@ -1,19 +1,19 @@
 package de.samply.user.roles;
 
+import lombok.Getter;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserRoles<T> {
 
     private final Map<String, Set<T>> bridgheadRolesMap = new HashMap<>();
+    @Getter
     private final Set<T> rolesNotDependentOnBridgeheads = new HashSet<>();
 
     public void addBridgeheadRole(String bridgehead, T role) {
         if (bridgehead != null && role != null) {
-            Set<T> bridgeheadRoles = bridgheadRolesMap.get(bridgehead);
-            if (bridgeheadRoles == null) {
-                bridgeheadRoles = new HashSet<>();
-                bridgheadRolesMap.put(bridgehead, bridgeheadRoles);
-            }
+            Set<T> bridgeheadRoles = bridgheadRolesMap.computeIfAbsent(bridgehead, _ -> new HashSet<>());
             bridgeheadRoles.add(role);
         }
     }
@@ -22,10 +22,6 @@ public class UserRoles<T> {
         if (role != null) {
             rolesNotDependentOnBridgeheads.add(role);
         }
-    }
-
-    public Set<T> getRolesNotDependentOnBridgeheads() {
-        return rolesNotDependentOnBridgeheads;
     }
 
     public Set<T> getBridgeheadRoles(String bridgehead) {
@@ -41,6 +37,7 @@ public class UserRoles<T> {
         return containsRole(role, Optional.empty());
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // bridghead as optional
     public boolean containsRole(T role, Optional<String> bridgehead) {
         if (rolesNotDependentOnBridgeheads.contains(role)) {
             return true;
@@ -51,6 +48,16 @@ public class UserRoles<T> {
             }
         }
         return false;
+    }
+
+    public boolean containsAnyRole(T role) {
+        if (rolesNotDependentOnBridgeheads.contains(role)) {
+            return true;
+        } else {
+            return bridgheadRolesMap.values().stream()
+                    .flatMap(Set::stream)
+                    .collect(Collectors.toSet()).contains(role);
+        }
     }
 
 }
