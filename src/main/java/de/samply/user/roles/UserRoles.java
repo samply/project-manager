@@ -50,14 +50,12 @@ public class UserRoles<T> {
         return false;
     }
 
-    public boolean containsAnyRole(T role) {
-        if (rolesNotDependentOnBridgeheads.contains(role)) {
-            return true;
-        } else {
-            return bridgheadRolesMap.values().stream()
-                    .flatMap(Set::stream)
-                    .collect(Collectors.toSet()).contains(role);
-        }
+    // If the bridgehead is not provided, checks the role independently of the bridgehead
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // bridghead as optional
+    public boolean containsAnyRole(T role, Optional<String> bridgehead) {
+        return bridgehead.isPresent() ? containsRole(role, bridgehead) : bridgheadRolesMap.values().stream()
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet()).contains(role);
     }
 
 }
