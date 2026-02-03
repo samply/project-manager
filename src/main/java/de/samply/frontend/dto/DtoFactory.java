@@ -2,10 +2,7 @@ package de.samply.frontend.dto;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
-import de.samply.db.model.BridgeheadAdminUser;
-import de.samply.db.model.NotificationUserAction;
-import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.db.model.ProjectForm;
+import de.samply.db.model.*;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.UserRepository;
@@ -302,12 +299,26 @@ public class DtoFactory {
                 formConfig.getFormTitleLabelOrderMap().get(title).get(label);
     }
 
-    public FormField convert(@NotNull ProjectForm projectForm, Optional<String> language) {
+    public FormField convert(@NotNull ProjectFormField projectFormField, Optional<String> language) {
         return convert(
-                projectForm.getFormTitle(),
-                Optional.of(projectForm.getLabel()),
-                Optional.ofNullable(projectForm.getValue()),
+                projectFormField.getFormTitle(),
+                Optional.of(projectFormField.getLabel()),
+                Optional.ofNullable(projectFormField.getValue()),
                 language);
+    }
+
+    public Form convert(@NotNull ProjectForm projectForm, Optional<String> language) {
+        return new Form(
+                projectForm.getFormTitle(),
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(projectForm.getFormTitle()))
+                        .map(DisplayMetadata::getDisplayName)
+                        .map(m -> fetchValue(m, language))
+                        .orElse(null),
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(projectForm.getFormTitle()))
+                        .map(DisplayMetadata::getDescription)
+                        .map(m -> fetchValue(m, language))
+                        .orElse(null)
+        );
     }
 
     public Optional<Results> fetchResults(@NotNull de.samply.db.model.Project project) {

@@ -122,6 +122,8 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_TEMPLATES_ACTION = "FETCH_FORM_TEMPLATES";
     public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
     public final static String DOWNLOAD_FORM_AS_PDF_ACTION = "DOWNLOAD_FORM_AS_PDF";
+    public final static String FETCH_SELECTED_PROJECT_FORMS_ACTION = "FETCH_SELECTED_PROJECT_FORMS";
+    public final static String ADD_SELECTED_PROJECT_FORM_ACTION = "ADD_SELECTED_PROJECT_FORM";
 
 
     // REST Services
@@ -226,6 +228,9 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_TEMPLATES = "/project-form-templates";
     public final static String EDIT_PROJECT_FORM_FIELDS = "/edit-project-form-fields";
     public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
+    public final static String FETCH_SELECTED_PROJECT_FORMS = "/selected-project-forms";
+    public final static String ADD_SELECTED_PROJECT_FORM = "/add-selected-project-form";
+
 
 
     // REST Parameters

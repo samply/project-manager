@@ -2,9 +2,12 @@ package de.samply.form;
 
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectForm;
+import de.samply.db.model.ProjectFormField;
+import de.samply.db.repository.ProjectFormFieldRepository;
 import de.samply.db.repository.ProjectFormRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.FormField;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
@@ -35,6 +38,7 @@ public class FormService {
 
     private final FormConfig formConfig;
     private final ProjectRepository projectRepository;
+    private final ProjectFormFieldRepository projectFormFieldRepository;
     private final ProjectFormRepository projectFormRepository;
     private final NotificationService notificationService;
     private final SessionUser sessionUser;
@@ -43,12 +47,14 @@ public class FormService {
 
     public FormService(FormConfig formConfig,
                        ProjectRepository projectRepository,
+                       ProjectFormFieldRepository projectFormFieldRepository,
                        ProjectFormRepository projectFormRepository,
                        NotificationService notificationService,
                        SessionUser sessionUser,
                        DtoFactory dtoFactory) {
         this.formConfig = formConfig;
         this.projectRepository = projectRepository;
+        this.projectFormFieldRepository = projectFormFieldRepository;
         this.projectFormRepository = projectFormRepository;
         this.notificationService = notificationService;
         this.sessionUser = sessionUser;
@@ -77,8 +83,8 @@ public class FormService {
     }
 
     public List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull String projectCode, Optional<String> language) {
-        return projectFormRepository.findByProject_CodeAndFormTitle(projectCode, formTitle).stream()
-                .map(projectForm -> dtoFactory.convert(projectForm, language))
+        return projectFormFieldRepository.findByProject_CodeAndFormTitle(projectCode, formTitle).stream()
+                .map(projectFormField -> dtoFactory.convert(projectFormField, language))
                 .toList();
     }
 
@@ -97,25 +103,25 @@ public class FormService {
         if (formFields.isEmpty() || formFields.get().length == 0) {
             return;
         }
-        Map<String, ProjectForm> labelFormMap = projectFormRepository.findByProject_Code(projectCode).stream()
-                .collect(Collectors.toMap(ProjectForm::getLabel, Function.identity()));
+        Map<String, ProjectFormField> labelFormMap = projectFormFieldRepository.findByProject_Code(projectCode).stream()
+                .collect(Collectors.toMap(ProjectFormField::getLabel, Function.identity()));
         Arrays.stream(formFields.get()).forEach(formField -> {
-            ProjectForm projectForm = labelFormMap.get(formField.label());
+            ProjectFormField projectFormField = labelFormMap.get(formField.label());
             boolean isModified = false;
             String details = "title: " + formField.title() + "label: " + formField.label() + " - value: " + formField.value();
-            if (projectForm == null) {
-                projectForm = new ProjectForm();
-                projectForm.setLabel(formField.label());
-                projectForm.setFormTitle(formField.title());
-                projectForm.setValue(formField.value());
-                projectForm.setProject(fetchProject(projectCode));
+            if (projectFormField == null) {
+                projectFormField = new ProjectFormField();
+                projectFormField.setLabel(formField.label());
+                projectFormField.setFormTitle(formField.title());
+                projectFormField.setValue(formField.value());
+                projectFormField.setProject(fetchProject(projectCode));
                 isModified = true;
                 notificationService.createNotification(projectCode, null,
                         sessionUser.getEmail(), OperationType.ADD_PROJECT_FORM_LABEL,
                         details, null, null);
             } else {
-                if (!projectForm.getValue().equals(formField.value())) {
-                    projectForm.setValue(formField.value());
+                if (!projectFormField.getValue().equals(formField.value())) {
+                    projectFormField.setValue(formField.value());
                     notificationService.createNotification(projectCode, null,
                             sessionUser.getEmail(), OperationType.EDIT_PROJECT_FORM_LABEL,
                             details, null, null);
@@ -123,8 +129,8 @@ public class FormService {
                 }
             }
             if (isModified) {
-                projectForm.setModifiedAt(Instant.now());
-                projectFormRepository.save(projectForm);
+                projectFormField.setModifiedAt(Instant.now());
+                projectFormFieldRepository.save(projectFormField);
             }
         });
     }
@@ -144,6 +150,32 @@ public class FormService {
                 fetchProjectFormFieldsDefinedInConfigWithoutValues(formTitle, language).stream(),
                 fetchProjectFormFieldsWithValues(formTitle, projectCode, language).stream()
         );
+    }
+
+    public List<Form> fetchSelectedForms(@NotNull String projectCode, Optional<String> language) {
+        return projectFormRepository.findByProject_Code(projectCode).stream()
+                .map(projectForm -> dtoFactory.convert(projectForm, language))
+                .toList();
+    }
+
+    public void addSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
+        projectFormRepository
+                .findByProject_CodeAndFormTitle(projectCode, formTitle)
+                .ifPresentOrElse(
+                        _ -> { /* already exists → do nothing */ },
+                        () -> {
+                            if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
+                                throw new IllegalArgumentException("Form title not found: " + formTitle);
+                            }
+
+                            ProjectForm projectForm = new ProjectForm();
+                            projectForm.setFormTitle(formTitle);
+                            projectForm.setProject(fetchProject(projectCode));
+                            projectForm.setCreatedAt(Instant.now());
+
+                            projectFormRepository.save(projectForm);
+                        }
+                );
     }
 
 

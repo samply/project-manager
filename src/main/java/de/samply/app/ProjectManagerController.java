@@ -384,6 +384,33 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> formService.fetchProjectFormFields(Optional.ofNullable(formTitle), projectCode, Optional.ofNullable(language)));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_SELECTED_PROJECT_FORMS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_SELECTED_PROJECT_FORMS)
+    public ResponseEntity fetchSelectedProjectForms(
+            // Project code needed for role constraints
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @Language String language
+    ) {
+        return convertToResponseEntity(() -> formService.fetchSelectedForms(projectCode, Optional.ofNullable(language)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM)
+    public ResponseEntity addSelectedProjectForm(
+            // Project code and bridgehead needed for role constraints
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
+    ) {
+        return convertToResponseEntity(() -> formService.addSelectedForm(projectCode, formTitle));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
