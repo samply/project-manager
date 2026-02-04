@@ -987,14 +987,14 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/add-selected-project-form?project-code=8424df248c9a412b9d39&form-title=sample_data",
+          "raw": "http://localhost:8097/edit-selected-project-form?project-code=8424df248c9a412b9d39&form-title-to-add=sample_data",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "add-selected-project-form"
+            "edit-selected-project-form"
           ],
           "query": [
             {
@@ -1002,7 +1002,39 @@
               "value": "8424df248c9a412b9d39"
             },
             {
-              "key": "form-title",
+              "key": "form-title-to-add",
+              "value": "sample_data"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Selected Project Form",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/edit-selected-project-form?project-code=8424df248c9a412b9d39&form-title-to-remove=sample_data",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "edit-selected-project-form"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "8424df248c9a412b9d39"
+            },
+            {
+              "key": "form-title-to-remove",
               "value": "sample_data"
             }
           ]

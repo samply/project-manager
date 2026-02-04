@@ -158,22 +158,49 @@ public class FormService {
                 .toList();
     }
 
-    public void addSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
+    public void editSelectedForm(
+            @NotNull String projectCode,
+            Optional<String> formTitleToAdd,
+            Optional<String> formTitleToRemove
+    ) {
+        // Rule 1: exactly one must be present
+        if (formTitleToAdd.isPresent() == formTitleToRemove.isPresent()) {
+            throw new IllegalArgumentException(
+                    "Exactly one of fileTitleToAdd or formTitleToRemove must be present"
+            );
+        }
+
+        // Determine operation + title
+        boolean isAdd = formTitleToAdd.isPresent();
+        String formTitle = isAdd
+                ? formTitleToAdd.get()
+                : formTitleToRemove.get();
+
         projectFormRepository
                 .findByProject_CodeAndFormTitle(projectCode, formTitle)
                 .ifPresentOrElse(
-                        _ -> { /* already exists → do nothing */ },
-                        () -> {
-                            if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
-                                throw new IllegalArgumentException("Form title not found: " + formTitle);
+                        existing -> {
+                            if (!isAdd) {
+                                // REMOVE + exists → delete
+                                projectFormRepository.delete(existing);
                             }
+                            // Else: ADD + exists → do nothing
+                        },
+                        () -> {
+                            if (isAdd) {
+                                // ADD + not exists → create
+                                if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
+                                    throw new IllegalArgumentException("Form title not found: " + formTitle);
+                                }
 
-                            ProjectForm projectForm = new ProjectForm();
-                            projectForm.setFormTitle(formTitle);
-                            projectForm.setProject(fetchProject(projectCode));
-                            projectForm.setCreatedAt(Instant.now());
+                                ProjectForm projectForm = new ProjectForm();
+                                projectForm.setFormTitle(formTitle);
+                                projectForm.setProject(fetchProject(projectCode));
+                                projectForm.setCreatedAt(Instant.now());
 
-                            projectFormRepository.save(projectForm);
+                                projectFormRepository.save(projectForm);
+                            }
+                            // Else: REMOVE + not exists → do nothing
                         }
                 );
     }

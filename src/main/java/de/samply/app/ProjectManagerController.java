@@ -401,14 +401,16 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
-    @FrontendAction(action = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM_ACTION)
-    @PostMapping(value = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM)
-    public ResponseEntity addSelectedProjectForm(
-            // Project code and bridgehead needed for role constraints
+    @FrontendAction(action = ProjectManagerConst.EDIT_SELECTED_PROJECT_FORM_ACTION)
+    @PostMapping(value = ProjectManagerConst.EDIT_SELECTED_PROJECT_FORM)
+    public ResponseEntity editSelectedProjectForm(
+            // Project code needed for role constraints
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE_TO_ADD, required = false) String formTitleToAdd,
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE_TO_REMOVE, required = false) String formTitleToRemove
     ) {
-        return convertToResponseEntity(() -> formService.addSelectedForm(projectCode, formTitle));
+        return convertToResponseEntity(() -> formService.editSelectedForm(projectCode,
+                Optional.ofNullable(formTitleToAdd), Optional.ofNullable(formTitleToRemove)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -417,7 +419,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS_ACTION)
     @PostMapping(value = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS)
     public ResponseEntity editProjectFormValues(
-            // Project code and bridgehead needed for role constraints
+            // Project code needed for role constraints
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestVariable(name = ProjectManagerConst.FORM_FIELDS) FormField[] formFields
     ) {

@@ -249,6 +249,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - View also own created projects even if they don't belong to own bridgeheads
 - View all project bridgeheads for creator
 - RequestVariableMethodArgumentResolver for complexer datatypes
+- Edit form instead of just adding forms to the project
 
 ### Removed
 - RStudio Keycloak Groups
