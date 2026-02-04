@@ -951,6 +951,66 @@
       "response": []
     },
     {
+      "name": "Fetch selected project forms",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/selected-project-forms?project-code=8424df248c9a412b9d39",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "selected-project-forms"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "8424df248c9a412b9d39"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Selected Project Form",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/add-selected-project-form?project-code=8424df248c9a412b9d39&form-title=sample_data",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "add-selected-project-form"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "8424df248c9a412b9d39"
+            },
+            {
+              "key": "form-title",
+              "value": "sample_data"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Edit form fields",
       "request": {
         "auth": {
@@ -1056,7 +1116,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/download-form-as-pdf?project-code=a1ba86d4574e45dd9962&form-template=clinical-data&language=de",
+          "raw": "http://localhost:8097/download-form-as-pdf?project-code=4786deeb2c3c459c9e33&form-template=clinical-data&language=de",
           "protocol": "http",
           "host": [
             "localhost"
@@ -1068,7 +1128,7 @@
           "query": [
             {
               "key": "project-code",
-              "value": "a1ba86d4574e45dd9962"
+              "value": "4786deeb2c3c459c9e33"
             },
             {
               "key": "form-template",
