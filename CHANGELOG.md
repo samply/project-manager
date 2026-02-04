@@ -250,6 +250,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - View all project bridgeheads for creator
 - RequestVariableMethodArgumentResolver for complexer datatypes
 - Edit form instead of just adding forms to the project
+- Add and rename forms instead of editing services
 
 ### Removed
 - RStudio Keycloak Groups

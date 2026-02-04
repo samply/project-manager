@@ -123,7 +123,8 @@ public class ProjectManagerConst {
     public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
     public final static String DOWNLOAD_FORM_AS_PDF_ACTION = "DOWNLOAD_FORM_AS_PDF";
     public final static String FETCH_SELECTED_PROJECT_FORMS_ACTION = "FETCH_SELECTED_PROJECT_FORMS";
-    public final static String EDIT_SELECTED_PROJECT_FORM_ACTION = "EDIT_SELECTED_PROJECT_FORM";
+    public final static String ADD_SELECTED_PROJECT_FORM_ACTION = "ADD_SELECTED_PROJECT_FORM";
+    public final static String REMOVE_SELECTED_PROJECT_FORM_ACTION = "REMOVE_SELECTED_PROJECT_FORM";
 
 
     // REST Services
@@ -229,7 +230,8 @@ public class ProjectManagerConst {
     public final static String EDIT_PROJECT_FORM_FIELDS = "/edit-project-form-fields";
     public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
     public final static String FETCH_SELECTED_PROJECT_FORMS = "/selected-project-forms";
-    public final static String EDIT_SELECTED_PROJECT_FORM = "/edit-selected-project-form";
+    public final static String ADD_SELECTED_PROJECT_FORM = "/add-selected-project-form";
+    public final static String REMOVE_SELECTED_PROJECT_FORM = "/remove-selected-project-form";
 
 
 
@@ -259,8 +261,6 @@ public class ProjectManagerConst {
     public final static String QUERY_CODE = "query-code";
     public final static String LABEL = "label";
     public final static String FORM_TITLE = "form-title";
-    public final static String FORM_TITLE_TO_ADD = "form-title-to-add";
-    public final static String FORM_TITLE_TO_REMOVE = "form-title-to-remove";
     public final static String FORM_FIELDS = "form-fields";
     public final static String FORM_TEMPLATE = "form-template";
     public final static String DESCRIPTION = "description";

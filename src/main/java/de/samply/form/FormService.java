@@ -158,49 +158,34 @@ public class FormService {
                 .toList();
     }
 
-    public void editSelectedForm(
-            @NotNull String projectCode,
-            Optional<String> formTitleToAdd,
-            Optional<String> formTitleToRemove
-    ) {
-        // Rule 1: exactly one must be present
-        if (formTitleToAdd.isPresent() == formTitleToRemove.isPresent()) {
-            throw new IllegalArgumentException(
-                    "Exactly one of fileTitleToAdd or formTitleToRemove must be present"
-            );
-        }
-
-        // Determine operation + title
-        boolean isAdd = formTitleToAdd.isPresent();
-        String formTitle = isAdd
-                ? formTitleToAdd.get()
-                : formTitleToRemove.get();
-
+    public void addSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
         projectFormRepository
                 .findByProject_CodeAndFormTitle(projectCode, formTitle)
                 .ifPresentOrElse(
-                        existing -> {
-                            if (!isAdd) {
-                                // REMOVE + exists → delete
-                                projectFormRepository.delete(existing);
-                            }
-                            // Else: ADD + exists → do nothing
-                        },
+                        _ -> { /* already exists → do nothing */ },
                         () -> {
-                            if (isAdd) {
-                                // ADD + not exists → create
-                                if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
-                                    throw new IllegalArgumentException("Form title not found: " + formTitle);
-                                }
-
-                                ProjectForm projectForm = new ProjectForm();
-                                projectForm.setFormTitle(formTitle);
-                                projectForm.setProject(fetchProject(projectCode));
-                                projectForm.setCreatedAt(Instant.now());
-
-                                projectFormRepository.save(projectForm);
+                            if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
+                                throw new IllegalArgumentException("Form title not found: " + formTitle);
                             }
-                            // Else: REMOVE + not exists → do nothing
+
+                            ProjectForm projectForm = new ProjectForm();
+                            projectForm.setFormTitle(formTitle);
+                            projectForm.setProject(fetchProject(projectCode));
+                            projectForm.setCreatedAt(Instant.now());
+
+                            projectFormRepository.save(projectForm);
+                        }
+                );
+    }
+
+    public void removeSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
+        projectFormRepository
+                .findByProject_CodeAndFormTitle(projectCode, formTitle)
+                .ifPresent(projectForm -> {
+                            if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
+                                throw new IllegalArgumentException("Form title not found: " + formTitle);
+                            }
+                            this.projectFormRepository.delete(projectForm);
                         }
                 );
     }

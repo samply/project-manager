@@ -401,17 +401,29 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
-    @FrontendAction(action = ProjectManagerConst.EDIT_SELECTED_PROJECT_FORM_ACTION)
-    @PostMapping(value = ProjectManagerConst.EDIT_SELECTED_PROJECT_FORM)
-    public ResponseEntity editSelectedProjectForm(
+    @FrontendAction(action = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM)
+    public ResponseEntity addSelectedProjectForm(
             // Project code needed for role constraints
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE_TO_ADD, required = false) String formTitleToAdd,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE_TO_REMOVE, required = false) String formTitleToRemove
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
     ) {
-        return convertToResponseEntity(() -> formService.editSelectedForm(projectCode,
-                Optional.ofNullable(formTitleToAdd), Optional.ofNullable(formTitleToRemove)));
+        return convertToResponseEntity(() -> formService.addSelectedForm(projectCode, formTitle));
     }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM_ACTION)
+    @PostMapping(value = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM)
+    public ResponseEntity removeSelectedProjectForm(
+            // Project code needed for role constraints
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
+    ) {
+        return convertToResponseEntity(() -> formService.removeSelectedForm(projectCode, formTitle));
+    }
+
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
