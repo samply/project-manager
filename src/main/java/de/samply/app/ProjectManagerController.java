@@ -406,7 +406,7 @@ public class ProjectManagerController {
     public ResponseEntity addSelectedProjectForm(
             // Project code needed for role constraints
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
     ) {
         return convertToResponseEntity(() -> formService.addSelectedForm(projectCode, formTitle));
     }
@@ -419,7 +419,7 @@ public class ProjectManagerController {
     public ResponseEntity removeSelectedProjectForm(
             // Project code needed for role constraints
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
+            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
     ) {
         return convertToResponseEntity(() -> formService.removeSelectedForm(projectCode, formTitle));
     }
