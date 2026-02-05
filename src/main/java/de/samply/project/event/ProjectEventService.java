@@ -240,4 +240,20 @@ public class ProjectEventService implements ProjectEventActions {
         changeEvent(projectCode, ProjectEvent.FINISH);
     }
 
+    public ProjectState[] fetchAllProjectEvents(Optional<String> projectCode) {
+        // TODO: fetch states based on project type in a more sophisticated and consistent way
+        return projectCode
+                .flatMap(projectRepository::findByCode)
+                .filter(project -> project.getType() == ProjectType.EXPORT)
+                .map(_ -> EXPORT_PROJECT_STATES)
+                .orElseGet(ProjectState::values);
+    }
+
+    private static final ProjectState[] EXPORT_PROJECT_STATES = {
+            ProjectState.DRAFT,
+            ProjectState.REVIEW,
+            ProjectState.APPROVAL,
+            ProjectState.FINAL,
+            ProjectState.FINISHED
+    };
 }

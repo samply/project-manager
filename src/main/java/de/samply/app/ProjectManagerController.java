@@ -195,8 +195,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_STATES_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_STATES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjectStates(
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode
     ) {
-        return convertToResponseEntity(ProjectState::values);
+        return convertToResponseEntity(() -> projectEventService.fetchAllProjectEvents(Optional.ofNullable(projectCode)));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
