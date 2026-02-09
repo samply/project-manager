@@ -51,8 +51,7 @@ public class UserRoles<T> {
     }
 
     // Checks the role independently of the bridgehead
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // bridghead as optional
-    public boolean containsAnyRole(T role, Optional<String> bridgehead) {
+    public boolean containsAnyRole(T role) {
         if (rolesNotDependentOnBridgeheads.contains(role)) {
             return true;
         } else {

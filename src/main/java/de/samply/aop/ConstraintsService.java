@@ -56,15 +56,15 @@ public class ConstraintsService {
     }
 
     public Optional<ResponseEntity> checkRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<StateConstraints> stateConstraints, Optional<String> projectCode, Optional<String> bridgehead) {
-        Optional<ResponseEntity> result = checkOrganisationRoleConstraints(roleConstraints, bridgehead);
+        Optional<ResponseEntity> result = checkOrganisationRoleConstraints(roleConstraints);
         return (result.isPresent()) ? result : checkProjectRoleConstraints(roleConstraints, stateConstraints, projectCode, bridgehead);
     }
 
-    public Optional<ResponseEntity> checkOrganisationRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<String> bridgehead) {
+    public Optional<ResponseEntity> checkOrganisationRoleConstraints(Optional<RoleConstraints> roleConstraints) {
         if (roleConstraints.isPresent() && roleConstraints.get().organisationRoles().length > 0) {
             boolean hasAnyOrganisationRole = false;
             for (OrganisationRole organisationRole : roleConstraints.get().organisationRoles()) {
-                if (sessionUser.getUserOrganisationRoles().containsAnyRole(organisationRole, bridgehead)) {
+                if (sessionUser.getUserOrganisationRoles().containsAnyRole(organisationRole)) {
                     hasAnyOrganisationRole = true;
                     break;
                 }
