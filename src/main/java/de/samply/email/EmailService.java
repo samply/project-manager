@@ -83,7 +83,7 @@ public class EmailService {
                     if (message != null) {
                         details += " : " + message;
                     }
-                    notificationService.createNotification(project.get(), bridgehead.isPresent() ? bridgehead.get() : null,
+                    notificationService.createNotification(project.get(), bridgehead.orElse(null),
                             ProjectManagerConst.EMAIL_SERVICE, OperationType.SEND_EMAIL, details, null, null);
                 }
             } else {
@@ -91,8 +91,7 @@ public class EmailService {
             }
         } else {
             log.info(enableEmails ? "SMTP Server not enabled." : "User Email in mailing blacklist");
-            log.info("Email to " + emailTo + " with role " + role + " for bridgehead " +
-                    (bridgehead.isPresent() ? bridgehead.get() : "NONE") + " and type " + type + " could not be sent");
+            log.info("Email to {} with role {} for bridgehead {} and type {} could not be sent", emailTo, role, bridgehead.orElse("NONE"), type);
         }
     }
 
@@ -139,13 +138,13 @@ public class EmailService {
 
     private Context createContext(EmailKeyValues keyValues) {
         Context context = new Context();
-        keyValues.getKeyValues().forEach((key, value) -> context.setVariable(key, value));
+        keyValues.getKeyValues().forEach(context::setVariable);
         // Remove hyphens ("-") and convert keys to camel case to ensure Thymeleaf can process variables correctly.
-        // For example: "my-variable" -> "myVariable".
+        // For example, "my-variable" -> "myVariable".
         // In Thymeleaf templates, we can use <my-variable/> to reference the variable directly.
         // However, when using the standard Thymeleaf processor, we need to use <span th:text="${myVariable}">
         // because Thymeleaf does not support hyphens ("-") in variable names (e.g., ${my-variable} is invalid).
-        KeyTransformer.transformMapKeys(keyValues.getKeyValues()).forEach((key, value) -> context.setVariable(key, value));
+        KeyTransformer.transformMapKeys(keyValues.getKeyValues()).forEach(context::setVariable);
         return context;
     }
 
