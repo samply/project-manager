@@ -11,6 +11,7 @@ import de.samply.frontend.FrontendService;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,8 @@ import java.util.stream.Collectors;
 
 public class EmailKeyValues {
 
-    private Map<String, String> keyValues = new HashMap<>();
+    @Getter
+    private final Map<String, String> keyValues = new HashMap<>();
     private final FrontendService frontendService;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectRepository projectRepository;
@@ -70,13 +72,12 @@ public class EmailKeyValues {
     private void addProjectBridgeheadOrProject(EmailRecipient emailRecipient) {
         AtomicReference<Optional<ProjectBridgehead>> projectBridgeheadOptional = new AtomicReference<>(Optional.empty());
         AtomicReference<Optional<Project>> projectOptional = new AtomicReference<>(Optional.empty());
-        emailRecipient.getProjectCode().ifPresent(projectCode ->
-                projectRepository.findByCode(projectCode).ifPresent(project ->
-                        emailRecipient.getBridgehead().ifPresentOrElse(bridgehead ->
-                                        projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project).ifPresentOrElse(projectBridgehead ->
-                                                        projectBridgeheadOptional.set(Optional.of(projectBridgehead)),
-                                                () -> projectOptional.set(Optional.of(project))),
-                                () -> projectOptional.set(Optional.of(project)))));
+        emailRecipient.getProjectCode().flatMap(projectRepository::findByCode).ifPresent(project ->
+                emailRecipient.getBridgehead().ifPresentOrElse(bridgehead ->
+                                projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project).ifPresentOrElse(projectBridgehead ->
+                                                projectBridgeheadOptional.set(Optional.of(projectBridgehead)),
+                                        () -> projectOptional.set(Optional.of(project))),
+                        () -> projectOptional.set(Optional.of(project))));
         if (projectBridgeheadOptional.get().isPresent()) {
             add(projectBridgeheadOptional.get().get());
         } else if (projectOptional.get().isPresent()) {
@@ -105,11 +106,13 @@ public class EmailKeyValues {
         return this;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public EmailKeyValues addMessage(String message) {
         addKeyValue(EmailContextKey.MESSAGE, message);
         return this;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public EmailKeyValues addProjectCode(String projectCode) {
         addKeyValue(EmailContextKey.PROJECT_CODE, projectCode);
         addKeyValue(EmailContextKey.PROJECT_VIEW_URL,
@@ -128,6 +131,7 @@ public class EmailKeyValues {
         return this;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public EmailKeyValues addBridgeheadAdmin(String bridgehead) {
         if (bridgehead != null) {
             this.bridgeheadAdminUserRepository.findFirstByBridgehead(bridgehead).ifPresent(bridgeheadAdminUser ->
@@ -140,6 +144,7 @@ public class EmailKeyValues {
         return this;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public EmailKeyValues addBridgehead(String bridgehead) {
         addKeyValue(EmailContextKey.BRIDGEHEAD, fetchHumanReadableBridgehead(bridgehead));
         addBridgeheadAdmin(bridgehead);
@@ -148,7 +153,7 @@ public class EmailKeyValues {
 
     private String fetchHumanReadableBridgehead(String bridgehead) {
         Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
-        return humanReadable.isPresent() ? humanReadable.get() : bridgehead;
+        return humanReadable.orElse(bridgehead);
     }
 
     public EmailKeyValues add(Project project) {
@@ -220,10 +225,6 @@ public class EmailKeyValues {
         keyValues.put(key, value);
     }
 
-    public Map<String, String> getKeyValues() {
-        return keyValues;
-    }
-
     private void addEmailData(String email, @NotNull EmailContextKey emailKey, @NotNull EmailContextKey emailFirstNameKey, @NotNull EmailContextKey emailLastNameKey, @NotNull EmailContextKey emailNameKey) {
         if (email != null) {
             addKeyValue(emailKey, email);
@@ -242,7 +243,7 @@ public class EmailKeyValues {
     public static String replaceHtmlVariables(String htmlText, Map<String, String> keyValues) {
         if (htmlText != null) {
             // Regular expression to match the variable pattern
-            // e.g. <variable1/> It is like a HTML tag
+            // e.g. <variable1/> It is like an HTML tag
             String regex = "<\\s*([a-zA-Z0-9_-]+)\\s*/>";
 
             // Use StringBuilder to build the result efficiently
@@ -259,7 +260,7 @@ public class EmailKeyValues {
                 // Extract the variable name (group 1 in the regex)
                 String variableName = matcher.group(1);
 
-                // Replace the variable with its value, or keep it as-is if not found
+                // Replace the variable with its value or keep it as-is if not found
                 result.append(keyValues.getOrDefault(variableName, matcher.group()));
 
                 // Update lastMatchEnd to the end of this match
