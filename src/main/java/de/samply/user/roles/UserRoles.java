@@ -2,19 +2,25 @@ package de.samply.user.roles;
 
 import lombok.Getter;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class UserRoles<T> {
 
-    private final Map<String, Set<T>> bridgheadRolesMap = new HashMap<>();
+    private final Map<String, Set<T>> bridgheadRolesMap = new ConcurrentHashMap<>();
+
     @Getter
-    private final Set<T> rolesNotDependentOnBridgeheads = new HashSet<>();
+    private final Set<T> rolesNotDependentOnBridgeheads = ConcurrentHashMap.newKeySet();
 
     public void addBridgeheadRole(String bridgehead, T role) {
         if (bridgehead != null && role != null) {
-            Set<T> bridgeheadRoles = bridgheadRolesMap.computeIfAbsent(bridgehead, _ -> new HashSet<>());
-            bridgeheadRoles.add(role);
+            bridgheadRolesMap
+                    .computeIfAbsent(bridgehead, _ -> ConcurrentHashMap.newKeySet())
+                    .add(role);
         }
     }
 
