@@ -5,6 +5,6 @@ public enum OutputFormat {
     EXCEL,
     OPAL,
     JSON,
-    XML;
+    XML
 
 }

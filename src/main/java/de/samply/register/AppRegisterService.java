@@ -58,7 +58,7 @@ public class AppRegisterService {
                 projectCoder.getProjectBridgeheadUser().getEmail(),
                 projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
                 projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead()
-                );
+        );
         return webClient.post()
                 .uri(ProjectManagerConst.REGISTER_PATH)
                 .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
@@ -87,7 +87,7 @@ public class AppRegisterService {
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.REGISTER_IN_APP_REGISTER,
-                            "User app registered in Beam " + (response != null && response.length() > 0 ? " (" + response + ")" : ""),
+                            "User app registered in Beam " + (!response.isEmpty() ? " (" + response + ")" : ""),
                             null,
                             HttpStatus.OK
                     );
@@ -135,7 +135,7 @@ public class AppRegisterService {
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.UNREGISTER_IN_APP_REGISTER,
-                            "User app unregistered in Beam" + (response != null && response.length() > 0 ? response : ""),
+                            "User app unregistered in Beam" + (!response.isEmpty() ? response : ""),
                             null,
                             HttpStatus.OK
                     );

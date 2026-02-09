@@ -1,9 +1,12 @@
 package de.samply.email;
 
+import lombok.Getter;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Getter
 public enum EmailContextKey {
 
     BRIDGEHEAD("bridgehead"),
@@ -43,19 +46,12 @@ public enum EmailContextKey {
     BRIDGEHEAD_ADMIN_EMAIL("bridgehead-admin-email"),
     RESEARCH_ENVIRONMENT_URL("research-environment-url");
 
-    private String value;
-    private static Set<String> allValues = Stream.of(values()).map(EmailContextKey::getValue).collect(Collectors.toSet());
+    private final String value;
+    @Getter
+    private static final Set<String> allValues = Stream.of(values()).map(EmailContextKey::getValue).collect(Collectors.toSet());
 
     EmailContextKey(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public static Set<String> getAllValues() {
-        return allValues;
     }
 
 }

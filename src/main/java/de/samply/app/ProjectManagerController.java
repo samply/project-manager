@@ -648,7 +648,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.PILOT, ProjectState.APPROVAL})
-    @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT})
+    @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGEHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_FINAL_STAGE_ACTION)
     @PostMapping(value = ProjectManagerConst.START_FINAL_STAGE)
@@ -725,7 +725,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.FINAL}, projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
-    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGHEAD_RESULTS_URL_ADDED, recipients = {EmailRecipientType.ALL_FINALS, EmailRecipientType.CREATOR})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_RESULTS_URL_ADDED, recipients = {EmailRecipientType.ALL_FINALS, EmailRecipientType.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_BRIDGEHEAD_RESULTS_URL)

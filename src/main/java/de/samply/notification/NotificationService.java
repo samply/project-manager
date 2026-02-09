@@ -67,14 +67,13 @@ public class NotificationService {
         return project.get();
     }
 
-    // We use a supplier of ProjectService.fetchAllUserVisibleProjects in order to remove interdependence
+    // We use a supplier of ProjectService.fetchAllUserVisibleProjects to remove interdependence
     // between the notification service and the project service.
     public List<de.samply.frontend.dto.Notification> fetchUserVisibleNotifications(
             Optional<String> projectCodeOptional, Optional<String> bridgheadOptional,
             Supplier<List<Project>> allUserVisibleProjectFetcher) throws NotificationServiceException {
         List<Notification> result = new ArrayList<>();
-        List<Project> projects = (projectCodeOptional.isEmpty()) ?
-                allUserVisibleProjectFetcher.get() : List.of(fetchProject(projectCodeOptional.get()));
+        List<Project> projects = projectCodeOptional.map(s -> List.of(fetchProject(s))).orElseGet(allUserVisibleProjectFetcher);
         List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgheadOptional);
         projects.forEach(project -> {
             if (bridgeheads.isEmpty() && sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
@@ -90,14 +89,10 @@ public class NotificationService {
 
     private List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {
         if (sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
-            return (requestedBridgehead.isEmpty()) ? new ArrayList<>() : List.of(requestedBridgehead.get());
+            return requestedBridgehead.map(List::of).orElseGet(ArrayList::new);
         } else {
-            if (requestedBridgehead.isEmpty()) {
-                return sessionUser.getBridgeheads().stream().toList();
-            } else {
-                return (sessionUser.getBridgeheads().contains(requestedBridgehead.get())) ?
-                        List.of(requestedBridgehead.get()) : new ArrayList<>();
-            }
+            return requestedBridgehead.<List<String>>map(s -> (sessionUser.getBridgeheads().contains(s)) ?
+                    List.of(s) : new ArrayList<>()).orElseGet(() -> sessionUser.getBridgeheads().stream().toList());
 
         }
     }

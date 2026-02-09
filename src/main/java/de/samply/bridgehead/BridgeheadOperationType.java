@@ -1,5 +1,6 @@
 package de.samply.bridgehead;
 
+@SuppressWarnings("unused")
 public enum BridgeheadOperationType {
     SEND_QUERY_TO_BRIDGEHEAD_AND_EXECUTE,
     SEND_QUERY_TO_BRIDGEHEAD,

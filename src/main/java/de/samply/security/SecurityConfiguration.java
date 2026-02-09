@@ -7,7 +7,7 @@ import de.samply.user.roles.RolesExtractor;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +17,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
@@ -39,8 +40,7 @@ import java.util.Map;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
-    @Autowired
-    private RequestCacheFilter requestCacheFilter;
+    private final RequestCacheFilter requestCacheFilter;
 
     @Value(ProjectManagerConst.SECURITY_ENABLED_SV)
     private boolean isSecurityEnabled;
@@ -48,27 +48,29 @@ public class SecurityConfiguration {
     @Value(ProjectManagerConst.EXPLORER_URL_SV)
     private String explorerUrl;
 
-    @Autowired
-    private FrontendConfiguration frontendConfiguration;
+    private final FrontendConfiguration frontendConfiguration;
 
-    @Autowired
-    private ProjectUserJwtGrantedAuthoritiesConverter projectUserJwtGrantedAuthoritiesConverter;
+    private final ProjectUserJwtGrantedAuthoritiesConverter projectUserJwtGrantedAuthoritiesConverter;
 
-    @Autowired
-    private OidcProjectUserService oidcProjectUserService;
+    private final OidcProjectUserService oidcProjectUserService;
+
+    public SecurityConfiguration(RequestCacheFilter requestCacheFilter, FrontendConfiguration frontendConfiguration, ProjectUserJwtGrantedAuthoritiesConverter projectUserJwtGrantedAuthoritiesConverter, OidcProjectUserService oidcProjectUserService) {
+        this.requestCacheFilter = requestCacheFilter;
+        this.frontendConfiguration = frontendConfiguration;
+        this.projectUserJwtGrantedAuthoritiesConverter = projectUserJwtGrantedAuthoritiesConverter;
+        this.oidcProjectUserService = oidcProjectUserService;
+    }
 
     @Order(1)
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) {
         return (isSecurityEnabled) ?
                 http.addFilterBefore(requestCacheFilter, OAuth2LoginAuthenticationFilter.class)
                         .authorizeHttpRequests(this::addAuthorityMapping)
                         .cors(Customizer.withDefaults())
-                        .csrf(csrf -> csrf.disable())
+                        .csrf(AbstractHttpConfigurer::disable)
                         .oauth2ResourceServer(resourceServerConfigurer ->
-                                resourceServerConfigurer.jwt(jwtConfigurer -> {
-                                    jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter());
-                                }))
+                                resourceServerConfigurer.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                         .oauth2Login(oauth2 -> oauth2
                                 .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(oidcProjectUserService))
                                 .successHandler(successHandler()))
@@ -76,7 +78,7 @@ public class SecurityConfiguration {
                 http.authorizeHttpRequests(authorize -> authorize.requestMatchers("/**").permitAll()).build();
     }
 
-    private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry addAuthorityMapping(
+    private void addAuthorityMapping(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorization) {
 
         // Services without authentication required
@@ -89,17 +91,17 @@ public class SecurityConfiguration {
                         .hasAnyAuthority(methodRoles.roles())
         );
 
-        return authorization.anyRequest().authenticated();
+        authorization.anyRequest().authenticated();
     }
 
 
     private AuthenticationSuccessHandler successHandler() {
         return new SimpleUrlAuthenticationSuccessHandler() {
-            private RequestCache requestCache = new HttpSessionRequestCache();
+            private final RequestCache requestCache = new HttpSessionRequestCache();
 
             @Override
             public void onAuthenticationSuccess(
-                    HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                    @NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Authentication authentication) throws IOException, ServletException {
                 SavedRequest savedRequest = requestCache.getRequest(request, response);
                 setUseReferer(true);
                 if (savedRequest != null) {
@@ -125,6 +127,7 @@ public class SecurityConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(frontendConfiguration.getBaseUrl(), explorerUrl));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
+        //noinspection SpellCheckingInspection
         configuration.setAllowedHeaders(Arrays.asList(HttpHeaders.ORIGIN, HttpHeaders.CONTENT_TYPE, HttpHeaders.ACCEPT, HttpHeaders.AUTHORIZATION, "Returnaccept")); // Allow required headers
         configuration.setAllowCredentials(true); // Allow credentials
         configuration.setExposedHeaders(Arrays.asList(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, HttpHeaders.CONTENT_DISPOSITION)); // Expose required headers

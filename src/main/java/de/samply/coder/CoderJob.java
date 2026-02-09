@@ -3,7 +3,6 @@ package de.samply.coder;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
-import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.exporter.ExporterService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
@@ -22,19 +21,16 @@ import java.util.List;
 public class CoderJob {
 
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
-    private final ProjectCoderRepository projectCoderRepository;
     private final CoderService coderService;
     private final ExporterService exporterService;
     private final AppRegisterService appRegisterService;
 
     public CoderJob(ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                    ProjectCoderRepository projectCoderRepository,
                     CoderService coderService,
                     ExporterService exporterService,
                     AppRegisterService appRegisterService
     ) {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
-        this.projectCoderRepository = projectCoderRepository;
         this.coderService = coderService;
         this.exporterService = exporterService;
         this.appRegisterService = appRegisterService;

@@ -7,6 +7,7 @@ import de.samply.proxy.ProxyConfiguration;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollChannelOption;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
@@ -20,13 +21,15 @@ import java.util.Optional;
 @Component
 public class WebClientFactory {
 
+    @Getter
     private final int webClientMaxNumberOfRetries;
+    @Getter
     private final int webClientTimeInSecondsAfterRetryWithFailure;
     private final int webClientRequestTimeoutInSeconds;
     private final int webClientConnectionTimeoutInSeconds;
     private final int webClientTcpKeepIdleInSeconds;
     private final int webClientTcpKeepIntervalInSeconds;
-    private final int webClientTcpKeepConnetionNumberOfTries;
+    private final int webClientTcpKeepConnectionNumberOfTries;
     private final int webClientBufferSizeInBytes;
     private Optional<ProxyConfiguration> httpProxyConfiguration = Optional.empty();
     private Optional<ProxyConfiguration> httpsProxyConfiguration = Optional.empty();
@@ -36,7 +39,7 @@ public class WebClientFactory {
             @Value(ProjectManagerConst.WEBCLIENT_CONNECTION_TIMEOUT_IN_SECONDS_SV) Integer webClientConnectionTimeoutInSeconds,
             @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_IDLE_IN_SECONDS_SV) Integer webClientTcpKeepIdleInSeconds,
             @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_INTERVAL_IN_SECONDS_SV) Integer webClientTcpKeepIntervalInSeconds,
-            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV) Integer webClientTcpKeepConnetionNumberOfTries,
+            @Value(ProjectManagerConst.WEBCLIENT_TCP_KEEP_CONNECTION_NUMBER_OF_TRIES_SV) Integer webClientTcpKeepConnectionNumberOfTries,
             @Value(ProjectManagerConst.WEBCLIENT_MAX_NUMBER_OF_RETRIES_SV) Integer webClientMaxNumberOfRetries,
             @Value(ProjectManagerConst.WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE_SV) Integer webClientTimeInSecondsAfterRetryWithFailure,
             @Value(ProjectManagerConst.WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV) Integer webClientBufferSizeInBytes,
@@ -49,7 +52,7 @@ public class WebClientFactory {
         this.webClientConnectionTimeoutInSeconds = webClientConnectionTimeoutInSeconds;
         this.webClientTcpKeepIdleInSeconds = webClientTcpKeepIdleInSeconds;
         this.webClientTcpKeepIntervalInSeconds = webClientTcpKeepIntervalInSeconds;
-        this.webClientTcpKeepConnetionNumberOfTries = webClientTcpKeepConnetionNumberOfTries;
+        this.webClientTcpKeepConnectionNumberOfTries = webClientTcpKeepConnectionNumberOfTries;
         this.webClientBufferSizeInBytes = webClientBufferSizeInBytes;
 
         setHttpProxies(httpProxyConfiguration, httpsProxyConfiguration);
@@ -74,7 +77,7 @@ public class WebClientFactory {
             httpClient = httpClient
                     .option(EpollChannelOption.TCP_KEEPIDLE, webClientTcpKeepIdleInSeconds)
                     .option(EpollChannelOption.TCP_KEEPINTVL, webClientTcpKeepIntervalInSeconds)
-                    .option(EpollChannelOption.TCP_KEEPCNT, webClientTcpKeepConnetionNumberOfTries);
+                    .option(EpollChannelOption.TCP_KEEPCNT, webClientTcpKeepConnectionNumberOfTries);
         }
 
         WebClient.Builder webClientBuilder = WebClient.builder()
@@ -95,17 +98,9 @@ public class WebClientFactory {
                         .host(proxyConfiguration.getHost())
                         .port(proxyConfiguration.getPort())
                         .username(proxyConfiguration.getUsername())
-                        .password(password -> proxyConfiguration.getPassword()) // Use Function.identity() here if needed
+                        .password(_ -> proxyConfiguration.getPassword()) // Use Function.identity() here if needed
                         .nonProxyHosts(proxyConfiguration.getNoProxyPattern())
                 )));
-    }
-
-    public int getWebClientMaxNumberOfRetries() {
-        return webClientMaxNumberOfRetries;
-    }
-
-    public int getWebClientTimeInSecondsAfterRetryWithFailure() {
-        return webClientTimeInSecondsAfterRetryWithFailure;
     }
 
 }

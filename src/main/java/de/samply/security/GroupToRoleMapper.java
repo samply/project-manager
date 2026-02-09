@@ -3,7 +3,6 @@ package de.samply.security;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.user.roles.OrganisationRole;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -25,19 +24,25 @@ public class GroupToRoleMapper {
     @Value(ProjectManagerConst.BK_ADMIN_GROUP_SUFFIX_SV)
     private String bridgeheadAdminGroupSuffix;
 
-    @Autowired
-    private ProjectManagerAdminGroups projectManagerAdminGroups;
+    private final ProjectManagerAdminGroups projectManagerAdminGroups;
 
-    @Autowired
-    private SessionUser sessionUser;
+    private final SessionUser sessionUser;
 
-    @Autowired
-    private BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadConfiguration bridgeheadConfiguration;
 
     private Boolean adminOverUser;
 
 
     private final Map<String, OrganisationRole> groupToRoleMapCache = new HashMap<>();
+
+    public GroupToRoleMapper(
+            ProjectManagerAdminGroups projectManagerAdminGroups,
+            SessionUser sessionUser,
+            BridgeheadConfiguration bridgeheadConfiguration) {
+        this.projectManagerAdminGroups = projectManagerAdminGroups;
+        this.sessionUser = sessionUser;
+        this.bridgeheadConfiguration = bridgeheadConfiguration;
+    }
 
     public OrganisationRole getRoleFromGroup(String group) {
         group = removeSlashFromStart(group);
@@ -79,7 +84,7 @@ public class GroupToRoleMapper {
     }
 
     private String extractBridgehead(String prefix, String suffix, String group) {
-        return ((suffix.length() > 0) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
+        return ((!suffix.isEmpty()) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
     }
 
     // Important for Keycloak configuration of the groups

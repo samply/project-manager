@@ -55,10 +55,8 @@ public class BridgeheadConfiguration {
     }
 
     private void logBridgeheads() {
-        log.info("Registered bridgeheads: (" + config.keySet().size() + ")");
-        config.keySet().stream().sorted().forEach(bridgehead -> {
-            log.info("\t- " + bridgehead + " (" + getHumanReadable(bridgehead).get() + ")");
-        });
+        log.info("Registered bridgeheads: ({})", config.size());
+        config.keySet().stream().sorted().forEach(bridgehead -> log.info("\t- {} ({})", bridgehead, getHumanReadable(bridgehead).orElse("")));
     }
 
     private String replaceHyphen(String var) {
@@ -80,23 +78,23 @@ public class BridgeheadConfiguration {
     }
 
     public boolean isRegisteredBridgehead(String bridgehead) {
-        return config.keySet().contains(bridgehead);
+        return config.containsKey(bridgehead);
     }
 
     public Optional<String> getFocusBeamId(String bridgehead) {
-        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getFocusBeamId());
+        return getProperty(bridgehead, BridgeheadConfig::getFocusBeamId);
     }
 
     public Optional<String> getHumanReadable(String bridgehead) {
-        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getHumanReadable());
+        return getProperty(bridgehead, BridgeheadConfig::getHumanReadable);
     }
 
     public Optional<String> getAffiliation(String bridgehead) {
-        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getAffiliation());
+        return getProperty(bridgehead, BridgeheadConfig::getAffiliation);
     }
 
     public Optional<String> getTokenManagerId(String bridgehead) {
-        return getProperty(bridgehead, bridgeheadConfig -> bridgeheadConfig.getTokenManagerId());
+        return getProperty(bridgehead, BridgeheadConfig::getTokenManagerId);
     }
 
     Optional<String> getProperty(@NotNull String bridgehead, Function<BridgeheadConfig, String> propertyGetter) {
@@ -112,14 +110,17 @@ public class BridgeheadConfiguration {
         return fetchBridgeheadOptional(explorerId, explorerIdBridgeheadMap);
     }
 
+    @SuppressWarnings("unused")
     public String fetchBridgeheadForExplorerId(String explorerId) {
         return fetchBridgehead(explorerId, explorerIdBridgeheadMap);
     }
 
+    @SuppressWarnings("unused")
     public Optional<String> getBridgeheadForFocusId(String focusId) {
         return fetchBridgeheadOptional(focusId, focusIdBridgeheadMap);
     }
 
+    @SuppressWarnings("unused")
     public String fetchBridgeheadForFocusId(String focusId) {
         return fetchBridgehead(focusId, focusIdBridgeheadMap);
     }
@@ -128,6 +129,7 @@ public class BridgeheadConfiguration {
         return config.get(bridgehead).getFileDispatcherBeamId();
     }
 
+    @SuppressWarnings("unused")
     public Optional<String> getBridgeheadForTokenManagerId(String tokenManagerId) {
         return fetchBridgeheadOptional(tokenManagerId, tokenManagerIdBridgeheadMap);
     }

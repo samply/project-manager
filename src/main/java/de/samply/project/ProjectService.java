@@ -83,7 +83,7 @@ public class ProjectService {
         }
     }
 
-    private void saveProject(@NotNull Project project){
+    private void saveProject(@NotNull Project project) {
         project.setModifiedAt(Instant.now());
         projectRepository.save(project);
     }
@@ -92,15 +92,14 @@ public class ProjectService {
         Set<String> editionBridgeheads = Set.of(bridgeheads);
         // Remove bridgeheads that are no longer present
         projectBridgeheadRepository.findByProject(project).stream().filter(projectBridgehead ->
-                !editionBridgeheads.contains(projectBridgehead.getBridgehead())).forEach(projectBridgehead ->
-                projectBridgeheadRepository.delete(projectBridgehead));
+                !editionBridgeheads.contains(projectBridgehead.getBridgehead())).forEach(projectBridgeheadRepository::delete);
         // Add new bridgeheads
         Set<String> oldBridgeheads = new HashSet<>(projectBridgeheadRepository.findByProject(project).stream().
-                map(projectBridgehead -> projectBridgehead.getBridgehead()).toList());
+                map(ProjectBridgehead::getBridgehead).toList());
         editionBridgeheads.stream().filter(bridgehead -> !oldBridgeheads.contains(bridgehead)).forEach(bridgehead ->
                 createProjectBridgehead(project, bridgehead));
         this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
-                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + bridgeheads), null, null);
+                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + Arrays.toString(bridgeheads)), null, null);
 
     }
 
@@ -114,7 +113,7 @@ public class ProjectService {
     }
 
     public List<Project> fetchAllUserVisibleProjects() {
-        // Fetch projects as project manager
+        // Fetch projects as a project manager
         if (isProjectManagerAdmin()) {
             return projectRepository.findAll();
         }
@@ -124,7 +123,7 @@ public class ProjectService {
         if (isBridgeheadAdmin()) {
             return projectRepository.findByBridgeheadsOrCreator(sessionUser.getEmail(), bridgeheads);
         }
-        // Fetch projects as researcher
+        // Fetch projects as a researcher
         return projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
     }
 
@@ -312,9 +311,10 @@ public class ProjectService {
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
-        if (projectOptional.get().getType() == null){
+        if (projectOptional.get().getType() == null) {
             return OutputFormat.values();
         }
+        //noinspection SwitchStatementWithTooFewBranches
         return switch (projectOptional.get().getType()) {
             case DATASHIELD -> new OutputFormat[]{OutputFormat.OPAL};
             default ->

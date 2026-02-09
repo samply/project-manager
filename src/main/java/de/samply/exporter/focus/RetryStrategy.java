@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class RetryStrategy {
 
+    @SuppressWarnings("SpellCheckingInspection")
     @JsonProperty("backoff_millisecs")
     private Integer backoffInMilliseconds;
     @JsonProperty("max_tries")

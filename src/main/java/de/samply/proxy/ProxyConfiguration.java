@@ -47,14 +47,14 @@ public class ProxyConfiguration {
         }
         if (isConfigured()) {
             String schema = (this.schema != null) ? this.schema : "";
-            log.info(schema + " proxy configured:");
-            log.info("\t-Host: " + this.host);
-            log.info("\t-Port: " + this.port);
+            log.info("{} proxy configured:", schema);
+            log.info("\t-Host: {}", this.host);
+            log.info("\t-Port: {}", this.port);
             if (username != null && password != null) {
-                log.info("\t-Username: " + username);
+                log.info("\t-Username: {}", username);
             }
             if (noProxy != null) {
-                log.info("\t-NoProxy: " + noProxy);
+                log.info("\t-NoProxy: {}", noProxy);
             }
         }
     }

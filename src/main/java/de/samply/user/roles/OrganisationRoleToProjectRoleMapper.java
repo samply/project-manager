@@ -17,7 +17,7 @@ public class OrganisationRoleToProjectRoleMapper {
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
-    private Map<OrganisationRole, ProjectRole> organisationToProjectRoleMap = Map.of(
+    private final Map<OrganisationRole, ProjectRole> organisationToProjectRoleMap = Map.of(
             OrganisationRole.PROJECT_MANAGER_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN,
             OrganisationRole.BRIDGEHEAD_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN
     );

@@ -10,15 +10,14 @@ public record MessageStatus(String message, HttpStatus status) {
     public static MessageStatus newInstance(@NotNull Throwable throwable, @NotNull String defaultErrorMessage) {
         String message = defaultErrorMessage;
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        if (throwable instanceof WebClientResponseException) {
-            WebClientResponseException responseException = (WebClientResponseException) throwable;
+        if (throwable instanceof WebClientResponseException responseException) {
             String responseBody = responseException.getResponseBodyAsString();
-            if (responseBody != null && StringUtils.hasText(responseBody)) {
+            if (StringUtils.hasText(responseBody)) {
                 message += " (" + responseBody + ")";
             }
             try {
                 status = (HttpStatus) responseException.getStatusCode();
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException _) {
             }
         }
         return new MessageStatus(message, status);

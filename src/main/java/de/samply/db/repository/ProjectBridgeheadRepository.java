@@ -6,8 +6,7 @@ import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryState;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -23,14 +22,20 @@ public interface ProjectBridgeheadRepository extends JpaRepository<ProjectBridge
 
     Set<ProjectBridgehead> findByProject(Project project);
 
-    Set<ProjectBridgehead> findByProjectCodeAndState(String projectCode, ProjectBridgeheadState state);
-
     Set<ProjectBridgehead> findByProjectAndState(Project project, ProjectBridgeheadState state);
+    
+    @Query("""
+                SELECT DISTINCT pb
+                FROM ProjectBridgehead pb
+                WHERE pb.project.type = :projectType
+                  AND pb.project.state NOT IN :projectStates
+            """)
+    @NonNull
+    List<ProjectBridgehead> getByProjectTypeAndNotProjectState(
+            @NonNull ProjectType projectType,
+            @NonNull Set<ProjectState> projectStates
+    );
 
-    Page<ProjectBridgehead> findAll(Pageable pageable);
-
-    @Query("SELECT DISTINCT pb FROM ProjectBridgehead pb WHERE pb.project.type = :projectType AND pb.project.state NOT IN :projectStates")
-    List<ProjectBridgehead> getByProjectTypeAndNotProjectState(ProjectType projectType, Set<ProjectState> projectStates);
 
     @Query("SELECT DISTINCT pb FROM ProjectBridgehead pb WHERE pb.queryState = :queryState AND pb.project.state IN :projectStates")
     Set<ProjectBridgehead> getByQueryStateAndProjectState(QueryState queryState, Set<ProjectState> projectStates);

@@ -26,8 +26,8 @@ public class ActionExplanations {
     }
 
     public Optional<Pair<String, Integer>> fetchExplanationAndPriority(@NotNull String action, @NotNull String module, @NotNull String language,
-                                                             Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
-                                                             Optional<ProjectBridgeheadUser> projectBridgeheadUser, SessionUser sessionUser) {
+                                                                       Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
+                                                                       Optional<ProjectBridgeheadUser> projectBridgeheadUser, SessionUser sessionUser) {
         Optional<List<ActionExplanation>> actionExplanations = getActionExplanation(action);
         if (actionExplanations.isPresent()) {
             for (ActionExplanation explanation : actionExplanations.get()) {
@@ -70,10 +70,7 @@ public class ActionExplanations {
                 return false;
             }
         }
-        if (explanation.getOrganisationRole() != null && !sessionUser.getUserOrganisationRoles().containsRole(explanation.getOrganisationRole())) {
-            return false;
-        }
-        return true;
+        return explanation.getOrganisationRole() == null || sessionUser.getUserOrganisationRoles().containsRole(explanation.getOrganisationRole());
     }
 
 }

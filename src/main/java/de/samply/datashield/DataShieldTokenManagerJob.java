@@ -156,7 +156,7 @@ public class DataShieldTokenManagerJob {
         log.debug("Manage DataSHIELD inactive users...");
         Set<ProjectEmail> usersToSendAnEmail = new HashSet<>();
         return Flux.fromIterable(Stream.concat(
-                        // Manage users that are not developers in develop, pilot in pilot or final in final
+                        // Manage users that are not developers in development, pilot in pilot or final in final
                         Stream.of(
                                         this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.DEVELOP, ProjectRole.DEVELOPER),
                                         this.projectBridgeheadUserRepository.getByProjectTypeAndProjectStateAndNotProjectRole(ProjectType.DATASHIELD, ProjectState.PILOT, ProjectRole.PILOT),
@@ -186,9 +186,9 @@ public class DataShieldTokenManagerJob {
     private Mono<Void> manageInactiveUsers(ProjectBridgeheadUser user, String bridgehead, Set<ProjectEmail> usersToSendAnEmail) {
         return tokenManagerService.fetchTokenStatus(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail()) // Check user status
                 .filter(status -> status.tokenStatus() != DataShieldTokenStatus.NOT_FOUND && status.tokenStatus() != DataShieldTokenStatus.INACTIVE)
-                .flatMap(status -> {
-                    // If user token created or expired: Remove token
-                    if (this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(user.getEmail(), user.getProjectBridgehead()).isEmpty()) { // Check that is not valid again (e.g. user that is developer and final user in final state
+                .flatMap(_ -> {
+                    // If a user token created or expired: Remove token
+                    if (this.projectBridgeheadUserRepository.getFirstValidByEmailAndProjectBridgehead(user.getEmail(), user.getProjectBridgehead()).isEmpty()) { // Check that is not valid again (e.g., user that is a developer and final user in the final state
                         return tokenManagerService.removeTokens(user.getProjectBridgehead().getProject().getCode(), bridgehead, user.getEmail(),
                                 () -> sendEmailAndDeleteWorkspace(user, usersToSendAnEmail));
                     } else {
@@ -240,20 +240,20 @@ public class DataShieldTokenManagerJob {
                 .flatMap(inactiveProject ->
                         Mono.when(
                                         Mono.just(inactiveProject)
-                                                .filter(unused ->
+                                                .filter(_ ->
                                                         inactiveProject.getStatus().projectStatus() != DataShieldProjectStatus.NOT_FOUND &&
                                                                 inactiveProject.getStatus().projectStatus() != DataShieldProjectStatus.INACTIVE)
-                                                .flatMap(unused -> tokenManagerService.removeProjectAndTokens(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())),
+                                                .flatMap(_ -> tokenManagerService.removeProjectAndTokens(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())),
                                         coderService.deleteAllWorkspaces(inactiveProject.getProjectBridgehead().getProject().getCode(), inactiveProject.getProjectBridgehead().getBridgehead())
                                                 .flatMap(appRegisterService::unregister).then())
-                                .doOnSuccess(unused -> setAsRemovedIfConditions(inactiveProject))
+                                .doOnSuccess(_ -> setAsRemovedIfConditions(inactiveProject))
                 )
                 .then();
     }
 
     @Data
-    private class InactiveProject {
-        private Optional<ProjectBridgeheadDataShield> projectBridgeheadDataShield = Optional.empty();
+    private static class InactiveProject {
+        private Optional<ProjectBridgeheadDataShield> projectBridgeheadDataShield;
         private ProjectBridgehead projectBridgehead;
         private DataShieldTokenManagerProjectStatus status;
 

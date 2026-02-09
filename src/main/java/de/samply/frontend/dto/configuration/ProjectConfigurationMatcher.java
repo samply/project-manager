@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectConfigurationMatcher {
 
-    private static Map<String, Project> CUSTOM_CONFIGURATION = Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project() {{
+    private static final Map<String, Project> CUSTOM_CONFIGURATION = Map.of(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION, new Project() {{
         setCustomConfig(true);
     }});
 
@@ -33,7 +33,7 @@ public class ProjectConfigurationMatcher {
         Optional<Map.Entry<String, Project>> nameProjectConfig = matchedFieldCounts.entrySet().stream()
                 .max(Comparator.comparingInt(Map.Entry::getValue))
                 .map(Map.Entry::getKey);
-        return (nameProjectConfig.isPresent()) ? Map.ofEntries(nameProjectConfig.get()) : fetchCustomConfiguration(projectConfigurations);
+        return nameProjectConfig.map(Map::ofEntries).orElseGet(() -> fetchCustomConfiguration(projectConfigurations));
     }
 
     private static Map<String, Project> fetchCustomConfiguration(Map<String, Project> projectConfigurations) {

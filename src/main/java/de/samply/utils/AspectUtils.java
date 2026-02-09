@@ -79,15 +79,16 @@ public class AspectUtils {
             for (Annotation methodAnnotation : method.getDeclaredAnnotations()) {
                 for (Annotation methodAnnotationAnnotation : methodAnnotation.annotationType().getDeclaredAnnotations()) {
                     if (methodAnnotationAnnotation.annotationType() == RequestMapping.class) {
-                        return fetchHttpMetod((RequestMapping) methodAnnotationAnnotation);
+                        return fetchHttpMethod((RequestMapping) methodAnnotationAnnotation);
                     }
                 }
             }
         }
-        return fetchHttpMetod(annotation);
+        assert annotation != null;
+        return fetchHttpMethod(annotation);
     }
 
-    private static Optional<String> fetchHttpMetod(RequestMapping requestMapping) {
+    private static Optional<String> fetchHttpMethod(RequestMapping requestMapping) {
         return Optional.of(requestMapping.method()[0].name());
     }
 

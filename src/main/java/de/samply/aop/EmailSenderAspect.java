@@ -110,7 +110,7 @@ public class EmailSenderAspect {
             return responseEntity;
         } catch (Exception e) {
             if (ifError) {
-                sendEmail(joinPoint, isSingleEmailSender, ifError);
+                sendEmail(joinPoint, isSingleEmailSender, true);
             }
             throw new RuntimeException(e);
         }
@@ -138,8 +138,8 @@ public class EmailSenderAspect {
     }
 
     private void sendEmailFromEmailSender(ProceedingJoinPoint joinPoint, Optional<EmailSender> emailSenderOptional) {
-        emailSenderOptional.ifPresent(emailSender -> fetchEmailRecipients(() -> emailSender.recipients(), joinPoint)
-                .forEach(emailRecipient -> sendEmail(emailRecipient, () -> emailSender.templateType())));
+        emailSenderOptional.ifPresent(emailSender -> fetchEmailRecipients(emailSender::recipients, joinPoint)
+                .forEach(emailRecipient -> sendEmail(emailRecipient, emailSender::templateType)));
     }
 
     private void sendEmailFromEmailSendersIfError(ProceedingJoinPoint joinPoint, Optional<EmailSendersIfError> emailSendersIfErrorOptional) {
@@ -148,8 +148,8 @@ public class EmailSenderAspect {
     }
 
     private void sendEmailFromEmailSenderIfError(ProceedingJoinPoint joinPoint, Optional<EmailSenderIfError> emailSenderIfErrorOptional) {
-        emailSenderIfErrorOptional.ifPresent(emailSenderIfError -> fetchEmailRecipients(() -> emailSenderIfError.recipients(), joinPoint)
-                .forEach(emailRecipient -> sendEmail(emailRecipient, () -> emailSenderIfError.templateType())));
+        emailSenderIfErrorOptional.ifPresent(emailSenderIfError -> fetchEmailRecipients(emailSenderIfError::recipients, joinPoint)
+                .forEach(emailRecipient -> sendEmail(emailRecipient, emailSenderIfError::templateType)));
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
@@ -194,7 +194,7 @@ public class EmailSenderAspect {
                     case ALL_PILOTS -> fetchEmailRecipientsForAllPilotUsersOfTheProject(projectCode);
                     case ALL_FINALS -> fetchEmailRecipientsForAllFinalUsersOfTheProject(projectCode);
                     case BRIDGEHEAD_ADMIN -> fetchEmailRecipientsForBridgeheadAdmin(projectCode, bridgehead);
-                    case BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT ->
+                    case BRIDGEHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT ->
                             fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(projectCode);
                     case PROJECT_MANAGER_ADMIN -> fetchEmailRecipientsForProjectManagerAdmin(projectCode, bridgehead);
                     case PROJECT_ALL -> fetchEmailRecipientsForAllProjectUsers(projectCode, bridgehead);
@@ -209,9 +209,7 @@ public class EmailSenderAspect {
         Set<EmailRecipient> result = new HashSet<>();
         if (projectCode.isPresent()) {
             Optional<Project> project = this.projectRepository.findByCode(projectCode.get());
-            if (project.isPresent()) {
-                result.add(new EmailRecipient(project.get().getCreatorEmail(), projectCode, bridgehead, ProjectRole.CREATOR));
-            }
+            project.ifPresent(value -> result.add(new EmailRecipient(value.getCreatorEmail(), projectCode, bridgehead, ProjectRole.CREATOR)));
         }
         return result;
     }
@@ -243,12 +241,10 @@ public class EmailSenderAspect {
         Set<EmailRecipient> result = new HashSet<>();
         if (projectCode.isPresent()) {
             Optional<Project> project = this.projectRepository.findByCode(projectCode.get());
-            if (project.isPresent()) {
-                this.projectBridgeheadRepository.findByProject(project.get()).forEach(projectBridgehead ->
-                        this.bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdminUser ->
-                                result.add(new EmailRecipient(bridgeheadAdminUser.getEmail(), projectCode,
-                                        Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN))));
-            }
+            project.ifPresent(value -> this.projectBridgeheadRepository.findByProject(value).forEach(projectBridgehead ->
+                    this.bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdminUser ->
+                            result.add(new EmailRecipient(bridgeheadAdminUser.getEmail(), projectCode,
+                                    Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN)))));
         }
         return result;
     }
@@ -261,13 +257,13 @@ public class EmailSenderAspect {
             if (bridgehead.isPresent()) {
                 List<ProjectRole> bridgeheadRolesOrderedInTimeDescendent = userProjectRoles.getBridgeheadRolesOrderedInDescendentTime(bridgehead.get());
                 if (!bridgeheadRolesOrderedInTimeDescendent.isEmpty()) {
-                    projectRole = bridgeheadRolesOrderedInTimeDescendent.get(0);
+                    projectRole = bridgeheadRolesOrderedInTimeDescendent.getFirst();
                 }
             }
             if (projectRole == null) {
                 Set<ProjectRole> rolesNotDependentOnBridgeheads = userProjectRoles.getRolesNotDependentOnBridgeheads();
                 if (!rolesNotDependentOnBridgeheads.isEmpty()) {
-                    projectRole = rolesNotDependentOnBridgeheads.stream().toList().get(0);
+                    projectRole = rolesNotDependentOnBridgeheads.stream().toList().getFirst();
                 }
             }
             if (projectRole == null) {
@@ -305,9 +301,9 @@ public class EmailSenderAspect {
                 List<ProjectBridgeheadUser> projectBridgeheadUserList =
                         ProjectRolesUtils.orderCollectionInDescendentTime(
                                 projectBridgeheadUserRepository.getByEmailAndProjectBridgehead(email, projectBridgehead.get()),
-                                projectBridgeheadUser -> projectBridgeheadUser.getProjectRole());
+                                ProjectBridgeheadUser::getProjectRole);
                 if (!projectBridgeheadUserList.isEmpty()) {
-                    return Optional.of(projectBridgeheadUserList.get(0));
+                    return Optional.of(projectBridgeheadUserList.getFirst());
                 }
             }
         }

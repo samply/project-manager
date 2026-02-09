@@ -1,7 +1,6 @@
 package de.samply.frontend.dto.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.samply.app.ProjectManagerConst;
 import de.samply.frontend.dto.Project;
 import lombok.Data;
 

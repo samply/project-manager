@@ -46,7 +46,6 @@ import java.util.Map;
 public class RequestVariableMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     private final DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
-    ;
     private final RequestBodyCache requestBodyCache; // Injecting request-scoped bean
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -66,17 +65,19 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
                                   WebDataBinderFactory binderFactory) throws Exception {
 
         RequestVariable requestVariable = parameter.getParameterAnnotation(RequestVariable.class);
+        assert requestVariable != null;
         String paramName = requestVariable.name();
         boolean required = requestVariable.required();
         boolean notEmpty = requestVariable.notEmpty();
 
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
 
+        assert request != null;
         Object value = request.getParameter(paramName);
 
         // Try to get value from query parameters
         if (value == null) {
-            // Try to get value from JSON body
+            // Try to get value from the JSON body
             value = extractFromJsonBody(request, paramName);
         }
 
@@ -90,7 +91,7 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
             throw new ServletRequestBindingException("Parameter '" + paramName + "' must not be empty.");
         }
 
-        // Convert value to target type using ConversionService
+        // Convert a value to a target type using ConversionService
         return convertValue(value, parameter);
     }
 

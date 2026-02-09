@@ -46,10 +46,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,7 +76,7 @@ public class ExporterService {
     private final EmailService emailService;
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
     private final EmailKeyValuesFactory emailKeyValuesFactory;
-    private ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+    private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public ExporterService(
@@ -131,7 +128,11 @@ public class ExporterService {
         log.info(description);
         TaskType taskType = TaskType.CREATE;
         return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
-                .doOnSuccess(exporterServiceResult -> log.info("Query sent"));
+                .doOnSuccess(_ -> logQuerySent());
+    }
+
+    private void logQuerySent() {
+        log.info("Query sent");
     }
 
     public Mono<ExporterServiceResult> sendQueryToBridgeheadAndExecute(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
@@ -139,7 +140,7 @@ public class ExporterService {
         log.info(description);
         TaskType taskType = TaskType.EXECUTE;
         return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
-                .doOnSuccess(exporterServiceResult -> log.info("Query sent"));
+                .doOnSuccess(_ -> logQuerySent());
     }
 
     public Mono<ExporterServiceResult> checkExecutionStatus(ProjectBridgehead projectBridgehead) {
@@ -147,7 +148,7 @@ public class ExporterService {
         log.info(description);
         TaskType taskType = TaskType.STATUS;
         return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
-                .doOnSuccess(exporterServiceResult -> log.info("Status checked"));
+                .doOnSuccess(_ -> log.info("Status checked"));
     }
 
     @Async()
@@ -156,7 +157,7 @@ public class ExporterService {
         if (projectCoder.isEmpty()) {
             throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
         }
-        transferFileToResearchEnvironment(projectCoder.get(0)).block();
+        transferFileToResearchEnvironment(projectCoder.getFirst()).block();
     }
 
     public boolean isExportFileTransferredToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
@@ -164,7 +165,7 @@ public class ExporterService {
         if (projectCoder.isEmpty()) {
             throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
         }
-        return projectCoder.get(0).isExportTransferred();
+        return projectCoder.getFirst().isExportTransferred();
     }
 
     @Async
@@ -185,7 +186,7 @@ public class ExporterService {
                     );
                     log.error(ExceptionUtils.getStackTrace(throwable));
                 })
-                .doOnSuccess(result -> {
+                .doOnSuccess(_ -> {
                     log.info("Files transferred correctly");
                     projectCoder.setExportTransferred(true);
                     this.projectCoderRepository.save(projectCoder);
@@ -207,10 +208,7 @@ public class ExporterService {
     }
 
     private String fetchCoderFileBeamId(ProjectCoder projectCoder) {
-        if (testCoderFileBeamId != null) {
-            return testCoderFileBeamId;
-        }
-        return projectCoder.getAppId() + ((coderBeamIdSuffix.startsWith(".")) ? "" : ".") + coderBeamIdSuffix;
+        return Objects.requireNonNullElseGet(testCoderFileBeamId, () -> projectCoder.getAppId() + ((coderBeamIdSuffix.startsWith(".")) ? "" : ".") + coderBeamIdSuffix);
     }
 
     private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, BeamRequest beamRequest, TaskType taskType, String description) {
@@ -224,18 +222,23 @@ public class ExporterService {
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
 
                         fetchBridgeheadOperationType(taskType).ifPresent(operationType ->
-                                createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), null, projectBridgehead, projectBridgehead.getExporterUser(), operationType, description));
+                                createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), projectBridgehead, projectBridgehead.getExporterUser(), operationType, description));
                         resetProjectBridgeheadDataShield(projectBridgehead);
                         return Mono.just(new ExporterServiceResult(projectBridgehead, beamService.serializeFocusQuery(beamRequest)));
                     } else {
-                        log.error("Http Error " + clientResponse.statusCode() + " posting task " + beamRequest.getId() + " : " + beamRequest.getBody() +
-                                " for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
+                        log.error("Http Error {} posting task {} : {} for project {} and bridgehead {}",
+                                clientResponse.statusCode(), beamRequest.getId(), beamRequest.getBody(),
+                                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
                         return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
-                            log.error("Error: {}", errorBody);
+                            logError(errorBody);
                             return Mono.error(new RuntimeException(errorBody));
                         });
                     }
                 });
+    }
+
+    private void logError(String error) {
+        log.error("Error: {}", error);
     }
 
     private String fetchAuthorization() {
@@ -243,9 +246,9 @@ public class ExporterService {
     }
 
     private void createBridgeheadNotification(
-            HttpStatus status, String error, ProjectBridgehead projectBridgehead, String email, OperationType operationType, String description) {
+            HttpStatus status, ProjectBridgehead projectBridgehead, String email, OperationType operationType, String description) {
         notificationService.createNotification(
-                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, operationType, description, error, status);
+                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, operationType, description, null, status);
     }
 
     private Optional<OperationType> fetchBridgeheadOperationType(TaskType taskType) {
@@ -394,9 +397,9 @@ public class ExporterService {
                             default -> Optional.empty();
                         };
                         operationType.ifPresent(type -> createBridgeheadNotification(
-                                HttpStatus.OK, null, projectBridgehead, projectBridgehead.getExporterUser(),
+                                HttpStatus.OK, projectBridgehead, projectBridgehead.getExporterUser(),
                                 type, "Checking if query is already sent or executed"));
-                        return clientResponse.bodyToMono(BeamRequest[].class).filter(focusQueries -> focusQueries != null && focusQueries.length > 0).flatMap(newBeamRequest -> {
+                        return clientResponse.bodyToMono(BeamRequest[].class).filter(focusQueries -> focusQueries.length > 0).flatMap(newBeamRequest -> {
                             if (projectBridgehead.getQueryState() == QueryState.EXPORT_RUNNING_2) {
                                 if (newBeamRequest[0].getBody() == null) {
                                     return Mono.empty();
@@ -414,13 +417,14 @@ public class ExporterService {
                             return Mono.just(new ExporterServiceResult(projectBridgehead, beamService.serializeFocusQuery(newBeamRequest[0])));
                         });
                     } else {
-                        log.error("Http Error " + clientResponse.statusCode() + " checking task " + extractTaskId(focusQuery.get()) +
-                                " for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
+                        log.error("Http Error {} checking task {} for project {} and bridgehead {}",
+                                clientResponse.statusCode(), extractTaskId(focusQuery.get()),
+                                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
                         if (isQueryStateToBeChangedToError((HttpStatus) clientResponse.statusCode(), projectBridgehead)) {
                             modifyProjectBridgeheadState(projectBridgehead, QueryState.ERROR);
                         }
                         return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
-                            log.error("Error: {}", errorBody);
+                            logError(errorBody);
                             return Mono.error(new RuntimeException(errorBody));
                         });
                     }
@@ -438,9 +442,11 @@ public class ExporterService {
     }
 
     private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {
-        bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdmin -> {
-            emailService.sendEmail(bridgeheadAdmin.getEmail(), Optional.of(projectBridgehead.getProject().getCode()), Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN, templateType, emailKeyValuesFactory.newInstance().add(projectBridgehead));
-        });
+        bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdmin ->
+                emailService.sendEmail(bridgeheadAdmin.getEmail(),
+                        Optional.of(projectBridgehead.getProject().getCode()),
+                        Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN, templateType,
+                        emailKeyValuesFactory.newInstance().add(projectBridgehead)));
     }
 
     private String extractTaskId(BeamRequest beamRequest) {

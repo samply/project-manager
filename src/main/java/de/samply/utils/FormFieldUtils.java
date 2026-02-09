@@ -21,7 +21,7 @@ public class FormFieldUtils {
     formFieldMapCollector() {
 
         return Collectors.toMap(
-                field -> fetchFormFieldKey(field),
+                FormFieldUtils::fetchFormFieldKey,
                 Function.identity(),
                 (_, newValue) -> newValue, // the last one wins
                 LinkedHashMap::new

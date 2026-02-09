@@ -6,8 +6,4 @@ public class FormServiceException extends RuntimeException {
         super(message);
     }
 
-    public FormServiceException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

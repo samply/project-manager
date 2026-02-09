@@ -1,7 +1,6 @@
 package de.samply.aop;
 
 import de.samply.annotations.Email;
-import de.samply.annotations.NotEmpty;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,12 +12,11 @@ import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
-// It checks if the parameters marked with the annotation @Email of a REST service, are valid emails.
+// It checks if the parameters marked with the annotation @Email of a REST service are valid emails.
 // If not, it returns BAD REQUEST
 @Component
 @Aspect

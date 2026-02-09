@@ -2,16 +2,18 @@ package de.samply.email;
 
 import de.samply.user.roles.ProjectRole;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Optional;
 
 @Getter
 public class EmailRecipient {
 
-    private String email;
-    private Optional<String> projectCode;
-    private Optional<String> bridgehead;
-    private ProjectRole role;
+    private final String email;
+    private final Optional<String> projectCode;
+    private final Optional<String> bridgehead;
+    private final ProjectRole role;
+    @Setter
     private Optional<String> message = Optional.empty();
 
     public EmailRecipient(String email, Optional<String> projectCode, Optional<String> bridgehead, ProjectRole role) {
@@ -21,8 +23,4 @@ public class EmailRecipient {
         this.role = role;
     }
 
-    public void setMessage(Optional<String> message) {
-        this.message = message;
-    }
-    
 }
