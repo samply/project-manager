@@ -26,7 +26,7 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
                     @Override
                     public void stateChanged(State<ProjectState, ProjectEvent> from, State<ProjectState, ProjectEvent> to) {
                         super.stateChanged(from, to);
-                        log.info("State changed from " + from + " to " + to);
+                        log.info("State changed from {} to {}", from, to);
                     }
                 });
     }

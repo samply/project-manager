@@ -5,8 +5,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>4.0.2</version>
+        <relativePath/> <!-- lookup parent from a repository -->
     </parent>
     <groupId>de.samply</groupId>
     <artifactId>project-manager</artifactId>
@@ -18,11 +18,10 @@
         <openapi.version>3.0.0</openapi.version>
         <spring-statemachine-core.version>4.0.1</spring-statemachine-core.version>
         <lombok.version>1.18.42</lombok.version>
-        <maven-model.version>3.9.11</maven-model.version>
-        <spring-aop.version>7.0.1</spring-aop.version>
-        <spring-boot-starter-aop.version>4.0.0-M2</spring-boot-starter-aop.version>
+        <maven-model.version>3.9.12</maven-model.version>
         <netty-transport-native-epoll.version>5.0.0.Alpha2</netty-transport-native-epoll.version>
         <openhtmltopdf-pdfbox.version>1.1.36</openhtmltopdf-pdfbox.version>
+        <spring-boot-starter-aop.version>4.0.0-M2</spring-boot-starter-aop.version>
     </properties>
     <dependencies>
         <dependency>

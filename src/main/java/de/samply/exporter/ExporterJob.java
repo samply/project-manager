@@ -77,7 +77,7 @@ public class ExporterJob {
 
     private Mono<Void> checkQueriesAlreadySent() {
         log.debug("Checking queries already sent...");
-        return checkQueries(QueryState.SENDING, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER);
+        return checkQueries(QueryState.SENDING, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER);
     }
 
     private Mono<Void> checkQueriesAlreadyExecutingStep1() {
@@ -87,7 +87,7 @@ public class ExporterJob {
 
     private Mono<Void> checkQueriesAlreadyExecutingStep2() {
         log.debug("Checking queries already executing (step 2)...");
-        return checkQueries(QueryState.EXPORT_RUNNING_2, QueryState.FINISHED, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER_AND_EXECUTED);
+        return checkQueries(QueryState.EXPORT_RUNNING_2, exporterService::checkIfQueryIsAlreadySentOrExecuted, EmailTemplateType.QUERY_SAVED_IN_EXPORTER_AND_EXECUTED);
     }
 
     private Mono<Void> checkQueriesAlreadySentToBeExecuted() {
@@ -103,9 +103,9 @@ public class ExporterJob {
         return checkQueries(initialQueryState, finalQueryState, exporterServiceFunction, Optional.empty(), Optional.empty());
     }
 
-    private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
+    private Mono<Void> checkQueries(QueryState initialQueryState,
                                     Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction, EmailTemplateType emailTemplateType) {
-        return checkQueries(initialQueryState, finalQueryState, exporterServiceFunction, Optional.empty(), Optional.of(emailTemplateType));
+        return checkQueries(initialQueryState, QueryState.FINISHED, exporterServiceFunction, Optional.empty(), Optional.of(emailTemplateType));
     }
 
 

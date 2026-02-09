@@ -6,7 +6,6 @@ import de.samply.coder.request.Response;
 import de.samply.coder.request.TransitionRequestBody;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.ProjectCoder;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
@@ -32,7 +31,6 @@ public class CoderService {
 
     private final boolean coderEnabled;
 
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectCoderRepository projectCoderRepository;
     private final NotificationService notificationService;
     private final CoderConfiguration coderConfiguration;
@@ -50,7 +48,6 @@ public class CoderService {
     public CoderService(
             ProjectCoderRepository projectCoderRepository,
             NotificationService notificationService,
-            ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
             CoderConfiguration coderConfiguration,
             WebClientFactory webClientFactory,
             @Value(ProjectManagerConst.ENABLE_CODER_SV) boolean coderEnabled,
@@ -63,7 +60,6 @@ public class CoderService {
         this.coderEnabled = coderEnabled;
         this.projectCoderRepository = projectCoderRepository;
         this.notificationService = notificationService;
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.coderConfiguration = coderConfiguration;
         this.coderSessionToken = coderSessionToken;
         this.coderWorkspaceMaxLength = coderWorkspaceMaxLength;
@@ -87,15 +83,6 @@ public class CoderService {
 
     private String fetchVariableExpression(String variable) {
         return "{" + variable + "}";
-    }
-
-    public Mono<ProjectCoder> createWorkspace(String email, String projectCode) throws CoderServiceException {
-        Optional<ProjectBridgeheadUser> user = projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgehead_ProjectCodeOrderByModifiedAtDesc(email, projectCode);
-        if (user.isEmpty()) {
-            log.error("User {} for project {} not found", email, projectCode);
-            return Mono.empty();
-        }
-        return createWorkspace(user.get());
     }
 
     public Mono<ProjectCoder> createWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
@@ -169,13 +156,13 @@ public class CoderService {
 
     public Mono<ProjectCoder> deleteWorkspace(@NotNull ProjectCoder projectCoder) {
         if (coderEnabled) {
-            return deleteWorkspaceInCoder(projectCoder).doOnSuccess(response -> {
+            return deleteWorkspaceInCoder(projectCoder).doOnSuccess(_ -> {
                 projectCoder.setDeletedAt(Instant.now());
                 projectCoderRepository.save(projectCoder);
                 notificationService.createNotification(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
                         projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(), projectCoder.getProjectBridgeheadUser().getEmail(), OperationType.DELETE_CODER_WORKSPACE,
                         "Deleted workspace " + projectCoder.getWorkspaceId(), null, null);
-            }).flatMap(response -> Mono.just(projectCoder));
+            }).flatMap(_ -> Mono.just(projectCoder));
         }
         return Mono.empty();
     }

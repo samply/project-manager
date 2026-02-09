@@ -202,7 +202,7 @@ public class UserService {
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
                 userRepository.save(user);
-                log.info("Added user information for " + email);
+                log.info("Added user information for {}", email);
             }
         }
     }

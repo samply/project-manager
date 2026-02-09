@@ -21,13 +21,15 @@ class ProjectManagerControllerTest {
 
     private final ProjectEventService projectEventService;
 
-    public ProjectManagerControllerTest(ProjectEventService projectEventService) {
+    @SuppressWarnings("unused")
+    ProjectManagerControllerTest(ProjectEventService projectEventService) {
         this.projectEventService = projectEventService;
     }
 
     @GetMapping(value = "/testCreateProject")
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     public ResponseEntity<String> testCreateProject() throws ProjectEventActionsException {
+        @SuppressWarnings("SpellCheckingInspection")
         String[] bridgeheads = {"david-j-develop", "frankfurt", "berlin"};
         this.projectEventService.draft(bridgeheads, "myQuery", ProjectType.EXPORT);
         return new ResponseEntity<>("Test 6", HttpStatus.OK);

@@ -33,8 +33,8 @@ spring:
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
-      idle-timeout: 30000        # Close idle connections after 30s
-      connection-timeout: 30000  # Fail after 30s if no connection is available
+      idle-timeout: 30000        # Close idle connections after the 30s
+      connection-timeout: 30000  # Fail after the 30s if no connection is available
       max-lifetime: 1800000      # Close connections after 30 min
       keepalive-time: 30000      # Prevents premature connection closure by PostgreSQL
       leak-detection-threshold: 2000  # Log warnings if a connection is not released within 2s
@@ -46,7 +46,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-      naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
