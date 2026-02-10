@@ -125,7 +125,6 @@ public class ProjectManagerConst {
     public final static String FETCH_SELECTED_PROJECT_FORMS_ACTION = "FETCH_SELECTED_PROJECT_FORMS";
     public final static String ADD_SELECTED_PROJECT_FORM_ACTION = "ADD_SELECTED_PROJECT_FORM";
     public final static String REMOVE_SELECTED_PROJECT_FORM_ACTION = "REMOVE_SELECTED_PROJECT_FORM";
-    public final static String FETCH_FRONTEND_NAME_ACTION = "FETCH_FRONTEND_NAME";
 
 
     // REST Services
@@ -233,7 +232,6 @@ public class ProjectManagerConst {
     public final static String FETCH_SELECTED_PROJECT_FORMS = "/selected-project-forms";
     public final static String ADD_SELECTED_PROJECT_FORM = "/add-selected-project-form";
     public final static String REMOVE_SELECTED_PROJECT_FORM = "/remove-selected-project-form";
-    public final static String FETCH_FRONTEND_NAME = "/frontend-name";
 
 
     // REST Parameters
@@ -431,7 +429,6 @@ public class ProjectManagerConst {
     public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
     public final static String FORM_TEMPLATE_DATE_PATTERN = "FORM_TEMPLATE_DATE_PATTERN";
 
-    public final static String FRONTEND_NAME = "FRONTEND_NAME";
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -542,7 +539,6 @@ public class ProjectManagerConst {
     public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;
     public final static String FORM_TEMPLATE_DATE_PATTERN_SV = HEAD_SV + FORM_TEMPLATE_DATE_PATTERN + ":d. MMMM yyyy" + BOTTOM_SV;
 
-    public final static String FRONTEND_NAME_SV = HEAD_SV + FRONTEND_NAME + ":Samply.Requester" + BOTTOM_SV;
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";

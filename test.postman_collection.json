@@ -79,28 +79,6 @@
       "response": []
     },
     {
-      "name": "Fetch Frontend Name",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8097/frontend-name",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8097",
-          "path": [
-            "frontend-name"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "Actions Project Dashboard",
       "request": {
         "auth": {

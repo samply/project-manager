@@ -142,14 +142,6 @@ public class ProjectManagerController {
         return new ResponseEntity<>(ProjectManagerConst.THIS_IS_A_TEST, HttpStatus.OK);
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @FrontendSiteModule(site = ProjectManagerConst.NAVIGATION_BAR_SITE, module = ProjectManagerConst.USER_MODULE)
-    @FrontendAction(action = ProjectManagerConst.FETCH_FRONTEND_NAME_ACTION)
-    @GetMapping(value = ProjectManagerConst.FETCH_FRONTEND_NAME)
-    public ResponseEntity fetchFrontendName() {
-        return new ResponseEntity<>(frontendService.getFrontendName(), HttpStatus.OK);
-    }
-
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchActions(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,

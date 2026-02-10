@@ -242,7 +242,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form Repository
 - Fetch all project states depending on project code
 - Make user role thread safe
-- Frontend Name
+
 
 ### Changed
 - Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
