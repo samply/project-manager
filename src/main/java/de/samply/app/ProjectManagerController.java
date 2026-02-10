@@ -471,7 +471,7 @@ public class ProjectManagerController {
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language
     ) {
-        return convertToResponseEntity(() -> formTemplateService.fetchTemplates(Optional.ofNullable(language)));
+        return convertToResponseEntity(() -> formTemplateService.fetchTemplates(projectCode, Optional.ofNullable(language)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})

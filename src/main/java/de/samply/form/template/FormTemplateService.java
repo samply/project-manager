@@ -6,6 +6,7 @@ import de.samply.form.FormService;
 import de.samply.form.pdf.FormPdfGeneratorFactory;
 import de.samply.form.pdf.FormTemplateServiceException;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.FormField;
 import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -113,8 +115,15 @@ public class FormTemplateService {
     }
 
 
-    public List<FormTemplate> fetchTemplates(Optional<String> language) {
+    public List<FormTemplate> fetchTemplates(@NotNull String projectCode, Optional<String> language) {
+        Set<String> selectedFormTitles = formService.fetchSelectedForms(projectCode, language).stream()
+                .map(Form::title)
+                .collect(Collectors.toSet());
+
         return formTemplateConfig.getTemplateMetadataMap().values().stream()
+                .filter(metadata -> Arrays.stream(metadata.getFormTitles())
+                        .allMatch(selectedFormTitles::contains)
+                )
                 .map(metadata -> dtoFactory.convert(metadata, language))
                 .toList();
     }
