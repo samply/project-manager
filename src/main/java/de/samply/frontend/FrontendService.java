@@ -14,6 +14,7 @@ import de.samply.security.SessionUser;
 import de.samply.user.roles.RolesExtractor;
 import de.samply.utils.AspectUtils;
 import de.samply.utils.LanguageUtils;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,8 @@ public class FrontendService {
     private final ProjectRepository projectRepository;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    @Getter
+    private final String frontendName;
 
     public FrontendService(
             ConstraintsService constraintsService,
@@ -45,7 +48,8 @@ public class FrontendService {
             ProjectRepository projectRepository,
             ProjectBridgeheadRepository projectBridgeheadRepository,
             @Value(ProjectManagerConst.EXPLORER_REDIRECT_URI_PARAMETER_SV) String explorerUrlRedirectUriParameter,
-            @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
+            @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
+            @Value(ProjectManagerConst.FRONTEND_NAME_SV) String frontendName) {
         this.constraintsService = constraintsService;
         this.frontendConfiguration = frontendConfiguration;
         this.explorerUrlRedirectUriParameter = explorerUrlRedirectUriParameter;
@@ -55,6 +59,7 @@ public class FrontendService {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.frontendName = frontendName;
     }
 
     public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<String> projectCode,
@@ -172,6 +177,5 @@ public class FrontendService {
                 projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(sessionUser.getEmail(), projectBridgehead.get()) :
                 Optional.empty();
     }
-
 
 }
