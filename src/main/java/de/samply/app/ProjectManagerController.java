@@ -1498,6 +1498,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.dataShieldTokenManagerService.existsAuthenticationScript(projectCode, bridgehead));
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
@@ -1509,6 +1510,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.notificationService.fetchUserVisibleNotifications(Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), projectService::fetchAllUserVisibleProjects));
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_NOTIFICATION_AS_READ_ACTION)
