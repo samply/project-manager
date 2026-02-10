@@ -57,6 +57,7 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
                 .withExternal().source(ProjectState.PILOT).target(ProjectState.FINAL).event(ProjectEvent.START_FINAL).and()
                 .withExternal().source(ProjectState.FINAL).target(ProjectState.FINISHED).event(ProjectEvent.FINISH).and()
                 .withExternal().source(ProjectState.APPROVAL).target(ProjectState.FINAL).event(ProjectEvent.START_FINAL).and()
+                .withExternal().source(ProjectState.APPROVAL).target(ProjectState.FINISHED).event(ProjectEvent.FINISH).and()
                 .withExternal().source(ProjectState.ARCHIVED).target(ProjectState.APPROVAL).event(ProjectEvent.ACCEPT);
     }
 

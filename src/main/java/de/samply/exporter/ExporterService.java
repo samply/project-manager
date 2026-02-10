@@ -356,6 +356,8 @@ public class ExporterService {
     public Set<String> getExporterTemplates(@NotNull ProjectType projectType) {
         return switch (projectType) {
             case EXPORT -> exportTemplates;
+            // Samples don't involve themselves the execution of the query in the bridgehead
+            case SAMPLES -> new HashSet<>();
             case DATASHIELD -> datashieldTemplates;
             case RESEARCH_ENVIRONMENT -> researchEnvironmentTemplates;
         };
@@ -441,7 +443,7 @@ public class ExporterService {
         projectBridgeheadRepository.save(projectBridgehead);
     }
 
-    private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {
+    private void sendEmail(ProjectBridgehead projectBridgehead, @SuppressWarnings("SameParameterValue") EmailTemplateType templateType) {
         bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdmin ->
                 emailService.sendEmail(bridgeheadAdmin.getEmail(),
                         Optional.of(projectBridgehead.getProject().getCode()),

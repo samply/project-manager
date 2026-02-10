@@ -243,6 +243,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch all project states depending on project code
 - Make user role thread safe
 - Log frontend config
+- SAMPLES project type
 
 
 ### Changed

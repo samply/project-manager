@@ -244,11 +244,18 @@ public class ProjectEventService implements ProjectEventActions {
         // TODO: fetch states based on project type in a more sophisticated and consistent way
         return projectCode
                 .flatMap(projectRepository::findByCode)
-                .filter(project -> project.getType() == ProjectType.EXPORT)
-                .map(_ -> EXPORT_PROJECT_STATES)
+                .map(project -> statesFor(project.getType()))
                 .orElseGet(ProjectState::values);
     }
 
+    private ProjectState[] statesFor(ProjectType type) {
+        return switch (type) {
+            case EXPORT -> EXPORT_PROJECT_STATES;
+            case SAMPLES -> SAMPLES_PROJECT_STATES;
+            default -> ProjectState.values();
+        };
+    }
+    
     private static final ProjectState[] EXPORT_PROJECT_STATES = {
             ProjectState.DRAFT,
             ProjectState.REVIEW,
@@ -256,4 +263,12 @@ public class ProjectEventService implements ProjectEventActions {
             ProjectState.FINAL,
             ProjectState.FINISHED
     };
+
+    private static final ProjectState[] SAMPLES_PROJECT_STATES = {
+            ProjectState.DRAFT,
+            ProjectState.REVIEW,
+            ProjectState.APPROVAL,
+            ProjectState.FINISHED
+    };
+
 }
