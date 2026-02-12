@@ -65,6 +65,7 @@ public class ExporterService {
     private final Set<String> exportTemplates;
     private final Set<String> datashieldTemplates;
     private final Set<String> researchEnvironmentTemplates;
+    private final Set<String> samplesTemplates;
     private final String focusProjectManagerId;
     private final String exporterApiKey;
     private final String coderBeamIdSuffix;
@@ -86,6 +87,7 @@ public class ExporterService {
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
             @Value(ProjectManagerConst.RESEARCH_ENVIRONMENT_TEMPLATES_SV) Set<String> researchEnvironmentTemplates,
+            @Value(ProjectManagerConst.SAMPLES_TEMPLATES_SV) Set<String> samplesTemplates,
             @Value(ProjectManagerConst.BEAM_TTL_SV) String beamWaitTime,
             @Value(ProjectManagerConst.BEAM_WAIT_COUNT_SV) String beamWaitCount,
             @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
@@ -101,6 +103,7 @@ public class ExporterService {
             EmailService emailService,
             BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
             EmailKeyValuesFactory emailKeyValuesFactory) {
+        this.samplesTemplates = samplesTemplates;
         this.sessionUser = sessionUser;
         this.beamService = beamService;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
@@ -356,8 +359,7 @@ public class ExporterService {
     public Set<String> getExporterTemplates(@NotNull ProjectType projectType) {
         return switch (projectType) {
             case EXPORT -> exportTemplates;
-            // Samples don't involve themselves the execution of the query in the bridgehead
-            case SAMPLES -> new HashSet<>();
+            case SAMPLES -> samplesTemplates;
             case DATASHIELD -> datashieldTemplates;
             case RESEARCH_ENVIRONMENT -> researchEnvironmentTemplates;
         };
