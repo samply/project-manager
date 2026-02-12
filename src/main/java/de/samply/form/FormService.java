@@ -15,12 +15,10 @@ import de.samply.security.SessionUser;
 import de.samply.utils.FormFieldUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,6 +97,7 @@ public class FormService {
                 .toList();
     }
 
+    @Transactional
     public void editProjectFormFieldValues(Optional<FormField[]> formFields, @NotNull String projectCode) {
         if (formFields.isEmpty() || formFields.get().length == 0) {
             return;
@@ -158,6 +157,7 @@ public class FormService {
                 .toList();
     }
 
+    @Transactional
     public void addSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
         projectFormRepository
                 .findByProject_CodeAndFormTitle(projectCode, formTitle)
@@ -178,6 +178,7 @@ public class FormService {
                 );
     }
 
+    @Transactional
     public void removeSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
         projectFormRepository
                 .findByProject_CodeAndFormTitle(projectCode, formTitle)
@@ -188,6 +189,54 @@ public class FormService {
                             this.projectFormRepository.delete(projectForm);
                         }
                 );
+    }
+
+    @Transactional
+    public void syncSelectedForms(@NotNull String projectCode,
+                                  @NotNull Collection<String> formTitles) {
+
+        // Validate input titles first
+        Set<String> allowedTitles = formConfig.getFormTitleLabelFieldMap().keySet();
+
+        for (String title : formTitles) {
+            if (!allowedTitles.contains(title)) {
+                throw new IllegalArgumentException("Form title not found: " + title);
+            }
+        }
+
+        // Load existing forms from DB
+        List<ProjectForm> existingForms =
+                projectFormRepository.findByProject_Code(projectCode);
+
+        Set<String> existingTitles = existingForms.stream()
+                .map(ProjectForm::getFormTitle)
+                .collect(Collectors.toSet());
+
+        Set<String> newTitles = new HashSet<>(formTitles);
+
+        // Determine what to ADD
+        Set<String> toAdd = new HashSet<>(newTitles);
+        toAdd.removeAll(existingTitles);
+
+        // Determine what to REMOVE
+        Set<String> toRemove = new HashSet<>(existingTitles);
+        toRemove.removeAll(newTitles);
+
+        Project project = fetchProject(projectCode);
+
+        // Add missing forms
+        for (String title : toAdd) {
+            ProjectForm projectForm = new ProjectForm();
+            projectForm.setProject(project);
+            projectForm.setFormTitle(title);
+            projectForm.setCreatedAt(Instant.now());
+            projectFormRepository.save(projectForm);
+        }
+
+        // Remove obsolete forms
+        existingForms.stream()
+                .filter(pf -> toRemove.contains(pf.getFormTitle()))
+                .forEach(projectFormRepository::delete);
     }
 
 

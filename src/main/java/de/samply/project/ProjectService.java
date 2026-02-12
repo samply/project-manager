@@ -7,7 +7,9 @@ import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.QueryRepository;
+import de.samply.form.FormService;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.Results;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
@@ -37,6 +39,7 @@ public class ProjectService {
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectConfigurations projectConfigurations;
     private final DtoFactory dtoFactory;
+    private final FormService formService;
 
     public ProjectService(NotificationService notificationService,
                           ProjectRepository projectRepository,
@@ -45,7 +48,8 @@ public class ProjectService {
                           SessionUser sessionUser,
                           ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                           ProjectConfigurations projectConfigurations,
-                          DtoFactory dtoFactory) {
+                          DtoFactory dtoFactory,
+                          FormService formService) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
         this.queryRepository = queryRepository;
@@ -54,6 +58,7 @@ public class ProjectService {
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectConfigurations = projectConfigurations;
         this.dtoFactory = dtoFactory;
+        this.formService = formService;
     }
 
     public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
@@ -322,12 +327,12 @@ public class ProjectService {
         };
     }
 
-    public Map<String, de.samply.frontend.dto.Project> fetchCurrentProjectConfiguration(@NotNull String projectCode) throws ProjectServiceException {
+    public Map<String, de.samply.frontend.dto.ProjectAndForms> fetchCurrentProjectConfiguration(@NotNull String projectCode) throws ProjectServiceException {
         Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
-        return this.projectConfigurations.fetchCurrentProjectConfiguration(dtoFactory.convert(projectOptional.get()));
+        return this.projectConfigurations.fetchCurrentProjectConfiguration(dtoFactory.convertToProjectAndForms(projectOptional.get(), Optional.empty()));
     }
 
     public void setProjectConfiguration(@NotNull String projectCode, @NotNull String projectConfigurationName) throws ProjectServiceException {
@@ -336,14 +341,25 @@ public class ProjectService {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
         if (!projectConfigurationName.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
-            de.samply.frontend.dto.Project projectConfiguration = this.projectConfigurations.getConfig().get(projectConfigurationName);
-            if (projectConfiguration == null) {
+            de.samply.frontend.dto.ProjectAndForms projectAndForms = this.projectConfigurations.getConfig().get(projectConfigurationName);
+            if (projectAndForms == null) {
                 throw new ProjectServiceException("Project configuration " + projectConfigurationName + " not found");
             }
-            Project project = DtoFactory.convert(projectConfiguration, projectOptional.get());
+
+            // Synchronize Project
+            Project project = DtoFactory.merge(projectAndForms.project(), projectOptional.get());
             project.setCustomConfig(false);
             saveProject(project);
             this.queryRepository.save(project.getQuery());
+
+            // Synchronize Forms
+            if (projectAndForms.forms() != null && projectAndForms.forms().length > 0) {
+                this.formService.syncSelectedForms(projectCode, Arrays.stream(projectAndForms.forms()).map(Form::title).toList());
+            }
+
+            // Synchronize Form Fields
+            this.formService.editProjectFormFieldValues(Optional.ofNullable(projectAndForms.formFields()), projectCode);
+
         } else if (!projectOptional.get().isCustomConfig()) {
             projectOptional.get().setCustomConfig(true);
             saveProject(projectOptional.get());

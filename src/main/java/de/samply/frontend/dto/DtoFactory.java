@@ -3,9 +3,7 @@ package de.samply.frontend.dto;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.*;
-import de.samply.db.repository.BridgeheadAdminUserRepository;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
-import de.samply.db.repository.UserRepository;
+import de.samply.db.repository.*;
 import de.samply.form.DisplayMetadata;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
@@ -35,6 +33,8 @@ public class DtoFactory {
     private final UserRepository userRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
+    private final ProjectFormRepository projectFormRepository;
+    private final ProjectFormFieldRepository projectFormFieldRepository;
     private final FormConfig formConfig;
     private final FormTemplateConfig formTemplateConfig;
     private final String defaultLanguage;
@@ -44,6 +44,8 @@ public class DtoFactory {
                       UserRepository userRepository,
                       ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                       BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
+                      ProjectFormRepository projectFormRepository,
+                      ProjectFormFieldRepository projectFormFieldRepository,
                       FormConfig formConfig,
                       FormTemplateConfig formTemplateConfig,
                       @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
@@ -51,6 +53,8 @@ public class DtoFactory {
         this.userRepository = userRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
+        this.projectFormRepository = projectFormRepository;
+        this.projectFormFieldRepository = projectFormFieldRepository;
         this.formConfig = formConfig;
         this.formTemplateConfig = formTemplateConfig;
         this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
@@ -87,32 +91,32 @@ public class DtoFactory {
     }
 
 
-    public static de.samply.db.model.Project convert(@NotNull Project projectConfiguration, @NotNull de.samply.db.model.Project project) {
-        if (projectConfiguration.getExpiresAt() != null) {
-            project.setExpiresAt(projectConfiguration.getExpiresAt());
+    public static de.samply.db.model.Project merge(@NotNull Project dtoProject, @NotNull de.samply.db.model.Project dbProject) {
+        if (dtoProject.getExpiresAt() != null) {
+            dbProject.setExpiresAt(dtoProject.getExpiresAt());
         }
-        if (projectConfiguration.getType() != null) {
-            project.setType(projectConfiguration.getType());
+        if (dtoProject.getType() != null) {
+            dbProject.setType(dtoProject.getType());
         }
-        if (projectConfiguration.getQuery() != null) {
-            project.getQuery().setQuery(projectConfiguration.getQuery());
+        if (dtoProject.getQuery() != null) {
+            dbProject.getQuery().setQuery(dtoProject.getQuery());
         }
-        if (projectConfiguration.getHumanReadable() != null) {
-            project.getQuery().setHumanReadable(projectConfiguration.getHumanReadable());
+        if (dtoProject.getHumanReadable() != null) {
+            dbProject.getQuery().setHumanReadable(dtoProject.getHumanReadable());
         }
-        if (projectConfiguration.getQueryFormat() != null) {
-            project.getQuery().setQueryFormat(projectConfiguration.getQueryFormat());
+        if (dtoProject.getQueryFormat() != null) {
+            dbProject.getQuery().setQueryFormat(dtoProject.getQueryFormat());
         }
-        if (projectConfiguration.getOutputFormat() != null) {
-            project.getQuery().setOutputFormat(projectConfiguration.getOutputFormat());
+        if (dtoProject.getOutputFormat() != null) {
+            dbProject.getQuery().setOutputFormat(dtoProject.getOutputFormat());
         }
-        if (projectConfiguration.getTemplateId() != null) {
-            project.getQuery().setTemplateId(projectConfiguration.getTemplateId());
+        if (dtoProject.getTemplateId() != null) {
+            dbProject.getQuery().setTemplateId(dtoProject.getTemplateId());
         }
-        if (projectConfiguration.getQueryContext() != null) {
-            project.getQuery().setContext(projectConfiguration.getQueryContext());
+        if (dtoProject.getQueryContext() != null) {
+            dbProject.getQuery().setContext(dtoProject.getQueryContext());
         }
-        return project;
+        return dbProject;
     }
 
     public Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
@@ -363,6 +367,14 @@ public class DtoFactory {
                 projectBridgehead.getCreatorResultsState(),
                 projectBridgehead.getState(),
                 null
+        );
+    }
+
+    public ProjectAndForms convertToProjectAndForms(@NotNull de.samply.db.model.Project project, Optional<String> language) {
+        return new ProjectAndForms(
+                convert(project),
+                projectFormRepository.findByProject_Code(project.getCode()).stream().map(f -> convert(f, language)).toArray(Form[]::new),
+                projectFormFieldRepository.findByProject_Code(project.getCode()).stream().map(f -> convert(f, language)).toArray(FormField[]::new)
         );
     }
 
