@@ -26,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -64,18 +63,22 @@ public class EmailSenderAspect {
         this.emailKeyValuesFactory = emailKeyValuesFactory;
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(de.samply.annotations.EmailSender)")
     public void emailSenderPointcut() {
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(de.samply.annotations.EmailSenders)")
     public void emailSendersPointcut() {
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(de.samply.annotations.EmailSenderIfError)")
     public void emailSenderIfErrorPointcut() {
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(de.samply.annotations.EmailSendersIfError)")
     public void emailSendersIfErrorPointcut() {
     }
@@ -101,7 +104,7 @@ public class EmailSenderAspect {
         return aroundEmailSender(joinPoint, false, true);
     }
 
-    private <T extends Annotation> Object aroundEmailSender(ProceedingJoinPoint joinPoint, boolean isSingleEmailSender, boolean ifError) throws Throwable {
+    private Object aroundEmailSender(ProceedingJoinPoint joinPoint, boolean isSingleEmailSender, boolean ifError) throws Throwable {
         try {
             @SuppressWarnings("rawtypes") ResponseEntity responseEntity = (ResponseEntity) joinPoint.proceed();
             if (responseEntity.getStatusCode().is2xxSuccessful() ^ ifError) {

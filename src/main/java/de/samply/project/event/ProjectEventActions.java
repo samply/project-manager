@@ -2,6 +2,7 @@ package de.samply.project.event;
 
 import de.samply.project.ProjectType;
 
+@SuppressWarnings("unused")
 public interface ProjectEventActions {
 
     String draft(String[] bridgeheads, String queryCode, ProjectType projectType) throws ProjectEventActionsException;

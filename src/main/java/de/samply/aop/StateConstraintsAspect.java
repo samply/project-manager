@@ -22,6 +22,7 @@ public class StateConstraintsAspect {
         this.constraintsService = constraintsService;
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(de.samply.annotations.StateConstraints)")
     public void stateConstraintsPointcut() {
     }

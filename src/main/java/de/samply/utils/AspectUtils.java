@@ -31,7 +31,7 @@ public class AspectUtils {
         return fetchStringParameterAnnotation(joinPoint, Message.class);
     }
 
-    private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class annotationClass) {
+    private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class<? extends Annotation> annotationClass) {
         Annotation[][] parameterAnnotations = fetchMethod(joinPoint).getParameterAnnotations();
         Object[] args = joinPoint.getArgs();
         for (int i = 0; i < parameterAnnotations.length; i++) {

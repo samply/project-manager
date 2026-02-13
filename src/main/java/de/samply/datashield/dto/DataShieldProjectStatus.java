@@ -1,5 +1,8 @@
 package de.samply.datashield.dto;
 
+
+// Status comes from Token Manager
+@SuppressWarnings("unused")
 public enum DataShieldProjectStatus {
     CREATED, // The project exists in the bridgehead opal
     WITH_DATA, // The project already has data in the bridgehead opal

@@ -88,6 +88,7 @@ public class EmailKeyValues {
         }
     }
 
+    @SuppressWarnings("unused")
     public EmailKeyValues add(ProjectBridgeheadUser projectBridgeheadUser) {
         if (projectBridgeheadUser != null) {
             addEmailData(projectBridgeheadUser.getEmail(),

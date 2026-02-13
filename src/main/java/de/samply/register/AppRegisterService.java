@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 public class AppRegisterService {
@@ -82,15 +84,20 @@ public class AppRegisterService {
                     log.info("App registered");
                     projectCoder.setInAppRegister(true);
                     projectCoderRepository.save(projectCoder);
+                    String message = Optional.ofNullable(response)
+                            .filter(r -> !r.isEmpty())
+                            .map(r -> " (" + r + ")")
+                            .orElse("");
                     notificationService.createNotification(
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.REGISTER_IN_APP_REGISTER,
-                            "User app registered in Beam " + (!response.isEmpty() ? " (" + response + ")" : ""),
+                            "User app registered in Beam" + message,
                             null,
                             HttpStatus.OK
                     );
+
                 }).then();
     }
 
@@ -130,12 +137,16 @@ public class AppRegisterService {
                     log.info("App unregistered");
                     projectCoder.setInAppRegister(false);
                     projectCoderRepository.save(projectCoder);
+                    String message = Optional.ofNullable(response)
+                            .filter(r -> !r.isEmpty())
+                            .map(r -> " (" + r + ")")
+                            .orElse("");
                     notificationService.createNotification(
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.UNREGISTER_IN_APP_REGISTER,
-                            "User app unregistered in Beam" + (!response.isEmpty() ? response : ""),
+                            "User app unregistered in Beam" + message,
                             null,
                             HttpStatus.OK
                     );

@@ -22,6 +22,7 @@ public class ProjectConstraintsAspect {
         this.constraintsService = constraintsService;
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(de.samply.annotations.ProjectConstraints)")
     public void projectConstraintsPointcut() {
     }
