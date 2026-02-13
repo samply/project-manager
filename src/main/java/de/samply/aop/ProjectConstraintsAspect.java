@@ -30,7 +30,7 @@ public class ProjectConstraintsAspect {
     public Object aroundProjectConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<ProjectConstraints> projectConstraints = fetchProjectConstrains(joinPoint);
         Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
-        Optional<ResponseEntity> result = this.constraintsService.checkProjectConstraints(projectConstraints, projectCode);
+        @SuppressWarnings("rawtypes") Optional<ResponseEntity> result = this.constraintsService.checkProjectConstraints(projectConstraints, projectCode);
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 

@@ -3087,7 +3087,7 @@
       "response": []
     },
     {
-      "name": "Add other documetn URL (researcher)",
+      "name": "Add other document URL (researcher)",
       "request": {
         "auth": {
           "type": "noauth"

@@ -24,9 +24,7 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
     List<ProjectBridgeheadUser> getByEmailAndProjectBridgehead(String email, ProjectBridgehead projectBridgehead);
 
     Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(String email, ProjectBridgehead projectBridgehead);
-
-    Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgehead_ProjectCodeOrderByModifiedAtDesc(String email, String projectCode);
-
+    
     Optional<ProjectBridgeheadUser> getFirstByEmailAndProjectBridgehead_ProjectAndProjectBridgehead_BridgeheadOrderByModifiedAtDesc(String email, Project project, String bridgehead);
 
     List<ProjectBridgeheadUser> getByProjectBridgehead(ProjectBridgehead projectBridgehead);

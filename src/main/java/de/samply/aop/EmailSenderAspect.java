@@ -103,7 +103,7 @@ public class EmailSenderAspect {
 
     private <T extends Annotation> Object aroundEmailSender(ProceedingJoinPoint joinPoint, boolean isSingleEmailSender, boolean ifError) throws Throwable {
         try {
-            ResponseEntity responseEntity = (ResponseEntity) joinPoint.proceed();
+            @SuppressWarnings("rawtypes") ResponseEntity responseEntity = (ResponseEntity) joinPoint.proceed();
             if (responseEntity.getStatusCode().is2xxSuccessful() ^ ifError) {
                 sendEmail(joinPoint, isSingleEmailSender, ifError);
             }

@@ -13,10 +13,7 @@ public class ProjectConfigurationMatcher {
 
     private static final String CUSTOM_KEY = ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION;
 
-    public static Map<String, ProjectAndForms> fetchMatchProjectConfiguration(
-            ProjectAndForms runtime,
-            Map<String, ProjectAndForms> config)
-            throws ProjectConfigurationMatcherException {
+    public static Map<String, ProjectAndForms> fetchMatchProjectConfiguration(ProjectAndForms runtime, Map<String, ProjectAndForms> config) {
 
         if (runtime.project() != null && runtime.project().isCustomConfig()) {
             return fetchCustomConfiguration(config);
