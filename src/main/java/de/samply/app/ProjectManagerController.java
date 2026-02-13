@@ -46,10 +46,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -70,7 +67,7 @@ import java.util.stream.Collectors;
 // Parameters such as bridgehead and projectCode are not always used
 // directly in the method body but are required for validation and
 // authorization in the AOP layer.
-@SuppressWarnings({"rawtypes", "unused"})
+@SuppressWarnings({"rawtypes"})
 @RestController
 @Slf4j
 public class ProjectManagerController {
@@ -185,7 +182,7 @@ public class ProjectManagerController {
     public ResponseEntity fetchProject(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // Bridgehead required for role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.fetchProject(projectCode));
     }
@@ -226,7 +223,7 @@ public class ProjectManagerController {
     //TODO: Send email to PM-ADMIN, that there was a problem with the operation
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
-    @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
+    @PutMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
     public ResponseEntity setUserAsDeveloper(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -243,7 +240,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
-    @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
+    @PutMapping(value = ProjectManagerConst.SET_PILOT_USER)
     public ResponseEntity setUserAsPilot(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -258,7 +255,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
-    @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
+    @PutMapping(value = ProjectManagerConst.SET_FINAL_USER)
     public ResponseEntity setUserAsFinal(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -327,7 +324,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.EDIT_PROJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ProjectManagerConst.EDIT_PROJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity editProject(
             @RequestVariable(name = ProjectManagerConst.QUERY, required = false) String query,
             @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
@@ -363,8 +360,8 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TITLES)
     public ResponseEntity fetchProjectFormTitles(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language
     ) {
         return convertToResponseEntity(() -> formService.fetchProjectFormTitles(Optional.ofNullable(language)));
@@ -378,7 +375,7 @@ public class ProjectManagerController {
     public ResponseEntity fetchProjectFormFields(
             // Project code needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
             @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
     ) {
@@ -393,7 +390,7 @@ public class ProjectManagerController {
     public ResponseEntity fetchSelectedProjectForms(
             // Project code needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language
     ) {
         return convertToResponseEntity(() -> formService.fetchSelectedForms(projectCode, Optional.ofNullable(language)));
@@ -416,11 +413,11 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM_ACTION)
-    @PostMapping(value = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM)
+    @DeleteMapping(value = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM)
     public ResponseEntity removeSelectedProjectForm(
             // Project code needed for role constraints
-            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE) String formTitle
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParam(name = ProjectManagerConst.FORM_TITLE) String formTitle
     ) {
         return convertToResponseEntity(() -> formService.removeSelectedForm(projectCode, formTitle));
     }
@@ -430,7 +427,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS_ACTION)
-    @PostMapping(value = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS)
+    @PutMapping(value = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS)
     public ResponseEntity editProjectFormValues(
             // Project code needed for role constraints
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
@@ -447,7 +444,7 @@ public class ProjectManagerController {
     public ResponseEntity downloadFormAsPdf(
             // Project code and bridgehead needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
             @RequestParam(name = ProjectManagerConst.FORM_TEMPLATE) String formTemplate
     ) {
@@ -468,7 +465,7 @@ public class ProjectManagerController {
     public ResponseEntity fetchProjectFormTemplates(
             // Project code and bridgehead needed for role constraints
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language
     ) {
         return convertToResponseEntity(() -> formTemplateService.fetchTemplates(projectCode, Optional.ofNullable(language)));
@@ -481,7 +478,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES)
     public ResponseEntity fetchExporterTemplates(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestParam(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
     ) {
         return convertToResponseEntity(() -> exporterService.getExporterTemplates(projectType));
@@ -494,7 +491,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_QUERY_FORMATS)
     public ResponseEntity fetchQueryFormats(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(QueryFormat::values);
     }
@@ -536,8 +533,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL)
     public ResponseEntity fetchResearchEnvironmentUrl(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(coderService::getResearchEnvironmentUrl);
     }
@@ -560,7 +557,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS)
     public ResponseEntity fetchProjectConfigurations(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(this.frontendProjectConfigurations::getConfig);
     }
@@ -580,7 +577,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PROJECT_CONFIGURATION_ACTION)
-    @PostMapping(value = ProjectManagerConst.SET_PROJECT_CONFIGURATION)
+    @PutMapping(value = ProjectManagerConst.SET_PROJECT_CONFIGURATION)
     public ResponseEntity setProjectConfiguration(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @RequestVariable(name = ProjectManagerConst.PROJECT_CONFIGURATION) String projectConfigurationName
@@ -595,7 +592,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_TYPES)
     public ResponseEntity fetchProjectTypes(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(ProjectType::values);
     }
@@ -627,7 +624,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
-    @PostMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
+    @PutMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
     public ResponseEntity startDevelopStage(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
@@ -639,7 +636,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_PILOT_STAGE_ACTION)
-    @PostMapping(value = ProjectManagerConst.START_PILOT_STAGE)
+    @PutMapping(value = ProjectManagerConst.START_PILOT_STAGE)
     public ResponseEntity startPilotStage(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
@@ -651,7 +648,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGEHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_FINAL_STAGE_ACTION)
-    @PostMapping(value = ProjectManagerConst.START_FINAL_STAGE)
+    @PutMapping(value = ProjectManagerConst.START_FINAL_STAGE)
     public ResponseEntity startFinalStage(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
@@ -664,7 +661,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT_ACCEPTED, recipients = {EmailRecipientType.ALL_BRIDGEHEAD_ADMINS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT)
+    @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT)
     public ResponseEntity acceptProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
@@ -676,11 +673,11 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_REJECTED, recipients = {EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT)
+    @PutMapping(value = ProjectManagerConst.REJECT_PROJECT)
     public ResponseEntity rejectProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> projectEventService.reject(projectCode));
     }
@@ -698,9 +695,9 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
     @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION)
-    @PostMapping(value = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST)
+    @DeleteMapping(value = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST)
     public ResponseEntity removeUserFromMailingBlackList(
-            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, false));
     }
@@ -708,7 +705,7 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
     @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_MAILING_BLACK_LIST_ACTION)
-    @PostMapping(value = ProjectManagerConst.FETCH_MAILING_BLACK_LIST)
+    @GetMapping(value = ProjectManagerConst.FETCH_MAILING_BLACK_LIST)
     public ResponseEntity fetchMailingBlackList() {
         return convertToResponseEntity(userService::fetchMailingBlackList);
     }
@@ -716,9 +713,9 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
     @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION)
-    @PostMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
+    @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
     public ResponseEntity fetchUsersForAutocompleteInMailingBlackList(
-            @RequestVariable(name = ProjectManagerConst.EMAIL, required = false) String partialEmail
+            @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String partialEmail
     ) {
         return convertToResponseEntity(() -> userService.fetchUsersForAutocompleteInMailingBlackList(partialEmail));
     }
@@ -745,7 +742,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_RESULTS)
     public ResponseEntity fetchProjectResults(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> projectService.fetchResults(projectCode));
     }
@@ -758,7 +755,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS)
     public ResponseEntity fetchProjectBridgeheadResults(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.fetchResults(projectCode));
     }
@@ -785,7 +782,7 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_RESULTS_URL)
     public ResponseEntity addProjectResultsUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestVariable(name = ProjectManagerConst.RESULTS_URL) String resultsUrl
     ) {
         return convertToResponseEntity(() -> projectService.addProjectResultUrl(projectCode, resultsUrl));
@@ -797,10 +794,10 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_ACCEPTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL)
+    @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL)
     public ResponseEntity acceptProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.acceptResultsByCreator(projectCode));
     }
@@ -811,10 +808,10 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_REJECTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL)
+    @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL)
     public ResponseEntity rejectProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.rejectResultsForCreator(projectCode));
     }
@@ -825,10 +822,10 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_RESULTS_REQUESTED_CHANGES_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL)
+    @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL)
     public ResponseEntity requestChangesInProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.requestChangesInResultsForCreator(projectCode));
     }
@@ -839,7 +836,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_RESULTS_ACCEPTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.BRIDGEHEAD_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL)
+    @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity acceptProjectBridgeheadResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -853,7 +850,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_RESULTS_REJECTED_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.BRIDGEHEAD_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL)
+    @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity rejectProjectBridgeheadResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -867,7 +864,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_RESULTS_REQUESTED_CHANGES_BY_CREATOR, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.BRIDGEHEAD_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
-    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL)
+    @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity requestChangesProjectBridgeheadResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -878,13 +875,13 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT)
+    @GetMapping(value = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT)
     public ResponseEntity fetchEmailMessageAndSubject(
-            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
-            @RequestVariable(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
+            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email,
+            @RequestParam(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
+            @RequestParam(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
     ) {
         return convertOptionalToResponseEntity(() -> emailService.createEmailMessageAndSubject(email, Optional.of(projectCode), Optional.of(bridgehead), projectRole, emailTemplateType));
     }
@@ -894,7 +891,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT)
+    @PutMapping(value = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT)
     public ResponseEntity acceptBridgeheadProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -907,12 +904,12 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.PROJECT_BRIDGEHEAD_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT)
+    @PutMapping(value = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT)
     public ResponseEntity rejectBridgeheadProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.rejectProject(projectCode, bridgehead));
     }
@@ -923,7 +920,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.SCRIPT_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_SCRIPT_ACTION)
-    @PostMapping(value = ProjectManagerConst.ACCEPT_SCRIPT)
+    @PutMapping(value = ProjectManagerConst.ACCEPT_SCRIPT)
     public ResponseEntity acceptScript(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -937,12 +934,12 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.SCRIPT_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_SCRIPT_ACTION)
-    @PostMapping(value = ProjectManagerConst.REJECT_SCRIPT)
+    @PutMapping(value = ProjectManagerConst.REJECT_SCRIPT)
     public ResponseEntity rejectScript(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
@@ -953,12 +950,12 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_SCRIPT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_SCRIPT_CHANGES_ACTION)
-    @PostMapping(value = ProjectManagerConst.REQUEST_SCRIPT_CHANGES)
+    @PutMapping(value = ProjectManagerConst.REQUEST_SCRIPT_CHANGES)
     public ResponseEntity requestChangesInScript(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
@@ -969,7 +966,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.RESULTS_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_ACTION)
-    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS)
+    @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS)
     public ResponseEntity acceptProjectResults(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -983,12 +980,12 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.RESULTS_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_ACTION)
-    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
+    @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
     public ResponseEntity rejectProjectResults(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
@@ -998,12 +995,12 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_PROJECT, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
+    @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
     public ResponseEntity requestChangesInProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
@@ -1014,7 +1011,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.ANALYSIS_ACCEPTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS_ACTION)
-    @PostMapping(value = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS)
+    @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS)
     public ResponseEntity acceptProjectAnalysis(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -1028,12 +1025,12 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.ANALYSIS_REJECTED, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ANALYSIS_ACTION)
-    @PostMapping(value = ProjectManagerConst.REJECT_PROJECT_ANALYSIS)
+    @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_ANALYSIS)
     public ResponseEntity rejectProjectAnalysis(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.rejectProject(projectCode, bridgehead));
     }
@@ -1044,12 +1041,12 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.REQUEST_CHANGES_IN_PROJECT_ANALYSIS, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_DEVELOPERS, EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION)
-    @PostMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS)
+    @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS)
     public ResponseEntity requestChangesInProjectAnalysis(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             // Message is sent per email
-            @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
+            @SuppressWarnings("unused") @Message @RequestVariable(name = ProjectManagerConst.MESSAGE, required = false) String message
     ) {
         return convertToResponseEntity(() -> userService.requestChangesInProject(projectCode, bridgehead));
     }
@@ -1058,7 +1055,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ARCHIVE_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.ARCHIVE_PROJECT)
+    @PutMapping(value = ProjectManagerConst.ARCHIVE_PROJECT)
     public ResponseEntity archiveProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
@@ -1070,7 +1067,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.FINISHED_PROJECT, recipients = {EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.FINISH_PROJECT_ACTION)
-    @PostMapping(value = ProjectManagerConst.FINISH_PROJECT)
+    @PutMapping(value = ProjectManagerConst.FINISH_PROJECT)
     public ResponseEntity finishProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
@@ -1085,8 +1082,8 @@ public class ProjectManagerController {
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestVariable(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.of(bridgehead), document, DocumentType.OTHERS, Optional.ofNullable(label)));
@@ -1116,7 +1113,7 @@ public class ProjectManagerController {
     public ResponseEntity uploadScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
@@ -1150,7 +1147,7 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity uploadVotumForAllBridgeheads(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
             @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
@@ -1167,7 +1164,7 @@ public class ProjectManagerController {
     public ResponseEntity addPublicationUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying bridgehead admin in role constraints
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @RequestVariable(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
             @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label
     ) {
@@ -1198,7 +1195,7 @@ public class ProjectManagerController {
     public ResponseEntity downloadScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, Optional.empty(), DocumentType.SCRIPT);
     }
@@ -1212,7 +1209,7 @@ public class ProjectManagerController {
     public ResponseEntity fetchScriptDescription(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.SCRIPT));
     }
@@ -1226,7 +1223,7 @@ public class ProjectManagerController {
     public ResponseEntity existsScript(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return existsProjectDocument(projectCode, Optional.empty(), DocumentType.SCRIPT);
     }
@@ -1252,7 +1249,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity downloadVotumForAllBridgeheads(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, Optional.empty(), DocumentType.VOTUM);
     }
@@ -1278,7 +1275,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION)
     public ResponseEntity fetchVotumDescriptionForAllBridgeheads(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.VOTUM));
     }
@@ -1304,7 +1301,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity existsVotumForAllBridgeheads(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return existsProjectDocument(projectCode, Optional.empty(), DocumentType.VOTUM);
     }
@@ -1410,7 +1407,7 @@ public class ProjectManagerController {
             queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
-    @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
+    @PutMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity saveQueryInBridgehead(
             @NotEmpty @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
@@ -1525,7 +1522,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_NOTIFICATION_AS_READ_ACTION)
-    @PostMapping(value = ProjectManagerConst.SET_NOTIFICATION_AS_READ)
+    @PutMapping(value = ProjectManagerConst.SET_NOTIFICATION_AS_READ)
     public ResponseEntity setNotificationAsRead(
             @RequestVariable(name = ProjectManagerConst.NOTIFICATION_ID) Long notificationId
     ) {
@@ -1560,7 +1557,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_USERS)
     public ResponseEntity fetchProjectUsers(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode));
     }
@@ -1584,7 +1581,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.EXIST_INVITED_USERS)
     public ResponseEntity existInvitedUsers(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.userService.existInvitedUsers(projectCode));
     }
