@@ -9,6 +9,7 @@ import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
 import de.samply.form.template.FormTemplateConfig;
 import de.samply.form.template.FormTemplateMetadata;
+import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
 import de.samply.user.roles.ProjectRole;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Component
 public class DtoFactory {
@@ -71,18 +73,18 @@ public class DtoFactory {
         result.setModifiedAt(project.getModifiedAt());
         result.setState(project.getState());
         result.setCustomConfig(project.isCustomConfig());
-        result.setType(project.getType());
         result.setQuery(project.getQuery().getQuery());
         result.setHumanReadable(project.getQuery().getHumanReadable());
         result.setQueryFormat(project.getQuery().getQueryFormat());
-        result.setOutputFormat(project.getQuery().getOutputFormat());
-        result.setTemplateId(project.getQuery().getTemplateId());
         result.setLabel(project.getQuery().getLabel());
         result.setDescription(project.getQuery().getDescription());
         result.setExplorerUrl(project.getQuery().getExplorerUrl());
         result.setQueryContext(project.getQuery().getContext());
         result.setCreatorState(project.getCreatorResultsState());
         result.setResultsUrl(project.getResultsUrl());
+        result.setOutputs(project.getQuery().getOutputs().stream().map(queryOutput ->
+                new ProjectOutput(queryOutput.getProjectType(), queryOutput.getOutputFormat(), queryOutput.getTemplateId())
+        ).toArray(ProjectOutput[]::new));
         return result;
     }
 
@@ -95,9 +97,6 @@ public class DtoFactory {
         if (dtoProject.getExpiresAt() != null) {
             dbProject.setExpiresAt(dtoProject.getExpiresAt());
         }
-        if (dtoProject.getType() != null) {
-            dbProject.setType(dtoProject.getType());
-        }
         if (dtoProject.getQuery() != null) {
             dbProject.getQuery().setQuery(dtoProject.getQuery());
         }
@@ -107,16 +106,32 @@ public class DtoFactory {
         if (dtoProject.getQueryFormat() != null) {
             dbProject.getQuery().setQueryFormat(dtoProject.getQueryFormat());
         }
-        if (dtoProject.getOutputFormat() != null) {
-            dbProject.getQuery().setOutputFormat(dtoProject.getOutputFormat());
-        }
-        if (dtoProject.getTemplateId() != null) {
-            dbProject.getQuery().setTemplateId(dtoProject.getTemplateId());
-        }
         if (dtoProject.getQueryContext() != null) {
             dbProject.getQuery().setContext(dtoProject.getQueryContext());
         }
+        if (dtoProject.getOutputs() != null) {
+            merge(dtoProject.getOutputs(), dbProject);
+        }
         return dbProject;
+    }
+
+    private static void merge(@NotNull ProjectOutput[] dtoOutputs, @NotNull de.samply.db.model.Project project) {
+        Map<ProjectType, QueryOutput> outputMap = project.getQuery().getOutputs().stream().collect(Collectors.toMap(QueryOutput::getProjectType, Function.identity()));
+        Arrays.stream(dtoOutputs).forEach(dtoOutput ->
+                outputMap.compute(dtoOutput.getProjectType(), (key, existing) -> {
+                    if (existing == null) {
+                        QueryOutput created = new QueryOutput();
+                        created.setProjectType(key);
+                        created.setOutputFormat(dtoOutput.getOutputFormat());
+                        created.setTemplateId(dtoOutput.getTemplateId());
+                        project.addOutput(created);
+                        return created;
+                    }
+                    Optional.ofNullable(dtoOutput.getOutputFormat()).ifPresent(existing::setOutputFormat);
+                    Optional.ofNullable(dtoOutput.getTemplateId()).ifPresent(existing::setTemplateId);
+                    return existing;
+                })
+        );
     }
 
     public Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
@@ -157,7 +172,11 @@ public class DtoFactory {
                 fetchHumanReadableBridgehead(projectBridgehead),
                 projectBridgehead.getState(),
                 projectBridgehead.getModifiedAt(),
-                projectBridgehead.getQueryState(),
+                projectBridgehead.getExecutions().stream()
+                        .map(execution -> new ProjectBridgeheadExecution(
+                                execution.getQueryOutput().getProjectType(),
+                                execution.getQueryState()))
+                        .collect(Collectors.toSet()).toArray(ProjectBridgeheadExecution[]::new),
                 projectBridgehead.getCreatorResultsState()
         );
     }

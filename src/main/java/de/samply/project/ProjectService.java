@@ -69,43 +69,27 @@ public class ProjectService {
         return dtoFactory.convert(projectOptional.get());
     }
 
-    public void editProject(@NotNull String projectCode, ProjectType type, String[] bridgeheads) {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        boolean hasChanged = false;
-        if (projectOptional.isPresent()) {
-            if (type != null) {
-                projectOptional.get().setType(type);
-                this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
-                        OperationType.EDIT_PROJECT, "Changed project type to " + type, null, null);
-                hasChanged = true;
-            }
-            if (hasChanged) {
-                saveProject(projectOptional.get());
-            }
-            if (bridgeheads != null && bridgeheads.length > 0) {
-                updateBridgeheads(projectOptional.get(), bridgeheads);
-            }
-        }
-    }
 
     private void saveProject(@NotNull Project project) {
         project.setModifiedAt(Instant.now());
         projectRepository.save(project);
     }
 
-    private void updateBridgeheads(Project project, String[] bridgeheads) {
-        Set<String> editionBridgeheads = Set.of(bridgeheads);
-        // Remove bridgeheads that are no longer present
-        projectBridgeheadRepository.findByProject(project).stream().filter(projectBridgehead ->
-                !editionBridgeheads.contains(projectBridgehead.getBridgehead())).forEach(projectBridgeheadRepository::delete);
-        // Add new bridgeheads
-        Set<String> oldBridgeheads = new HashSet<>(projectBridgeheadRepository.findByProject(project).stream().
-                map(ProjectBridgehead::getBridgehead).toList());
-        editionBridgeheads.stream().filter(bridgehead -> !oldBridgeheads.contains(bridgehead)).forEach(bridgehead ->
-                createProjectBridgehead(project, bridgehead));
-        this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
-                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + Arrays.toString(bridgeheads)), null, null);
+    public void updateBridgeheads(String projectCode, String[] bridgeheads) {
+        this.projectRepository.findByCode(projectCode).ifPresent(project -> {
+            Set<String> editionBridgeheads = Set.of(bridgeheads);
+            // Remove bridgeheads that are no longer present
+            projectBridgeheadRepository.findByProject(project).stream().filter(projectBridgehead ->
+                    !editionBridgeheads.contains(projectBridgehead.getBridgehead())).forEach(projectBridgeheadRepository::delete);
+            // Add new bridgeheads
+            Set<String> oldBridgeheads = new HashSet<>(projectBridgeheadRepository.findByProject(project).stream().
+                    map(ProjectBridgehead::getBridgehead).toList());
+            editionBridgeheads.stream().filter(bridgehead -> !oldBridgeheads.contains(bridgehead)).forEach(bridgehead ->
+                    createProjectBridgehead(project, bridgehead));
+            this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
+                    OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + Arrays.toString(bridgeheads)), null, null);
 
+        });
     }
 
     private void createProjectBridgehead(Project project, String bridgehead) {
@@ -311,20 +295,21 @@ public class ProjectService {
         }
     }
 
-    public OutputFormat[] fetchOutputFormats(@NotNull String projectCode) throws ProjectServiceException {
+    public Map<ProjectType, List<OutputFormat>> fetchOutputFormats(@NotNull String projectCode) throws ProjectServiceException {
         Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");
         }
-        if (projectOptional.get().getType() == null) {
-            return OutputFormat.values();
-        }
-        //noinspection SwitchStatementWithTooFewBranches
-        return switch (projectOptional.get().getType()) {
-            case DATASHIELD -> new OutputFormat[]{OutputFormat.OPAL};
-            default ->
-                    Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toArray(OutputFormat[]::new);
-        };
+        Map<ProjectType, List<OutputFormat>> result = new HashMap<>();
+        projectOptional.get().fetchProjectTypes().forEach(projectType ->
+                result.put(projectType, fetchOutputFormats(projectType)));
+        return result;
+    }
+
+    private List<OutputFormat> fetchOutputFormats(ProjectType projectType) {
+        return (projectType == ProjectType.DATASHIELD) ?
+                List.of(OutputFormat.OPAL) :
+                Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toList();
     }
 
     public Map<String, de.samply.frontend.dto.ProjectAndForms> fetchCurrentProjectConfiguration(@NotNull String projectCode) throws ProjectServiceException {

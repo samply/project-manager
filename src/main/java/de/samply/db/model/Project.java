@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Table(name = "project", schema = "samply")
@@ -52,10 +54,6 @@ public class Project {
     @JoinColumn(name = "query_id")
     private Query query;
 
-    @Column(name = "type")
-    @Enumerated(EnumType.STRING)
-    private ProjectType type;
-
     @Column(name = "is_custom_config", nullable = false)
     private boolean isCustomConfig = true;
 
@@ -66,5 +64,30 @@ public class Project {
     @Column(name = "creator_results_state", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserProjectState creatorResultsState = UserProjectState.CREATED;
+
+    @Transient
+    public Set<ProjectType> fetchProjectTypes() {
+        return query.fetchProjectTypes();
+    }
+
+    @Transient
+    public boolean hasProjectType(ProjectType projectType) {
+        return query.hasProjectType(projectType);
+    }
+
+    @Transient
+    public Optional<QueryOutput> fetchOutput(ProjectType projectType) {
+        return query.fetchOutput(projectType);
+    }
+
+    @Transient
+    public void addOutput(QueryOutput output) {
+        query.addOutput(output);
+    }
+
+    @Transient
+    public void removeOutput(QueryOutput output) {
+        query.removeOutput(output);
+    }
 
 }

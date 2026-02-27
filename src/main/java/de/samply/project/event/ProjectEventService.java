@@ -31,9 +31,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Service
@@ -136,15 +134,15 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public String draft(String[] bridgeheads, String queryCode, ProjectType projectType) throws ProjectEventActionsException {
+    public String draft(String[] bridgeheads, String queryCode) throws ProjectEventActionsException {
         try {
-            return draftWithoutExceptionHandling(bridgeheads, queryCode, projectType);
+            return draftWithoutExceptionHandling(bridgeheads, queryCode);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private String draftWithoutExceptionHandling(@NotNull String[] bridgeheads, @NotNull String queryCode, ProjectType projectType) throws ProjectEventActionsException {
+    private String draftWithoutExceptionHandling(@NotNull String[] bridgeheads, @NotNull String queryCode) throws ProjectEventActionsException {
         Optional<Query> queryOptional = this.queryRepository.findByCode(queryCode);
         if (queryOptional.isEmpty()) {
             throw new ProjectEventActionsException("Query not found");
@@ -153,8 +151,7 @@ public class ProjectEventService implements ProjectEventActions {
         createProjectAsDraft(
                 projectCode,
                 project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)),
-                queryOptional.get(),
-                projectType);
+                queryOptional.get());
         return projectCode;
     }
 
@@ -163,7 +160,7 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
 
-    private void createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer, Query query, ProjectType projectType) {
+    private void createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer, Query query) {
         Project project = new Project();
         project.setCode(projectCode);
         project.setCreatorEmail(sessionUser.getEmail());
@@ -172,7 +169,6 @@ public class ProjectEventService implements ProjectEventActions {
         project.setModifiedAt(Instant.now());
         project.setStateMachineKey(UUID.randomUUID().toString().replace("-", ""));
         project.setQuery(query);
-        project.setType(projectType);
         StateMachine<ProjectState, ProjectEvent> stateMachine =
                 this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
         stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
@@ -241,21 +237,43 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     public ProjectState[] fetchAllProjectEvents(Optional<String> projectCode) {
-        // TODO: fetch states based on project type in a more sophisticated and consistent way
         return projectCode
                 .flatMap(projectRepository::findByCode)
-                .map(project -> statesFor(project.getType()))
+                .map(project -> statesFor(project.fetchProjectTypes()))
                 .orElseGet(ProjectState::values);
     }
 
-    private ProjectState[] statesFor(ProjectType type) {
+    private ProjectState[] statesFor(Set<ProjectType> types) {
+
+        if (types == null || types.isEmpty()) {
+            return ProjectState.values();
+        }
+
+        // Convert each type to a Set for intersection
+        Set<ProjectState> intersection = types.stream()
+                .map(this::statesForSingleType)
+                .map(Set::of) // convert array to Set
+                .reduce((set1, set2) -> {
+                    Set<ProjectState> result = new HashSet<>(set1);
+                    result.retainAll(set2);
+                    return result;
+                })
+                .orElse(Set.of());
+
+        // Preserve enum declaration order
+        return Arrays.stream(ProjectState.values())
+                .filter(intersection::contains)
+                .toArray(ProjectState[]::new);
+    }
+
+    private ProjectState[] statesForSingleType(ProjectType type) {
         return switch (type) {
             case EXPORT -> EXPORT_PROJECT_STATES;
             case SAMPLES -> SAMPLES_PROJECT_STATES;
             default -> ProjectState.values();
         };
     }
-    
+
     private static final ProjectState[] EXPORT_PROJECT_STATES = {
             ProjectState.DRAFT,
             ProjectState.REVIEW,

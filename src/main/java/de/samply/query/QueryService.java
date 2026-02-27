@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
+import de.samply.db.model.QueryOutput;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.QueryRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
 import jakarta.validation.constraints.NotNull;
@@ -47,7 +49,8 @@ public class QueryService {
 
     public String createQuery(
             String query, QueryFormat queryFormat, String label, String description,
-            OutputFormat outputFormat, String templateId, String humanReadable, String explorerUrl, String queryContext) {
+            OutputFormat outputFormat, String templateId, ProjectType projectType,
+            String humanReadable, String explorerUrl, String queryContext) {
         Query tempQuery = new Query();
         tempQuery.setCode(generateQueryCode());
         tempQuery.setQuery(query);
@@ -55,13 +58,30 @@ public class QueryService {
         tempQuery.setCreatedAt(Instant.now());
         tempQuery.setLabel(label);
         tempQuery.setDescription(description);
-        tempQuery.setOutputFormat(outputFormat);
-        tempQuery.setTemplateId(templateId);
         Base64Utils.decodeIfNecessary(humanReadable).ifPresent(tempQuery::setHumanReadable);
         tempQuery.setExplorerUrl(decodeUrlIfNecessary(explorerUrl));
         tempQuery.setContext(queryContext);
         tempQuery = this.queryRepository.save(tempQuery);
+        // Every Query should have at least one output:
+        addOutputToQuery(tempQuery, Optional.of(outputFormat), Optional.of(templateId), projectType);
         return tempQuery.getCode();
+    }
+
+    private void addOutputToQuery(Query query,
+                                  Optional<OutputFormat> outputFormat,
+                                  Optional<String> templateId,
+                                  @NotNull ProjectType projectType) {
+        QueryOutput output = query.fetchOutput(projectType)
+                .orElseGet(() -> {
+                    QueryOutput newOutput = new QueryOutput();
+                    newOutput.setProjectType(projectType);
+                    query.addOutput(newOutput);
+                    return newOutput;
+                });
+
+        outputFormat.ifPresent(output::setOutputFormat);
+        templateId.ifPresent(output::setTemplateId);
+        queryRepository.save(query);
     }
 
     public void addProjectCodeToExporterUrl(@NotNull String queryCode, @NotNull String projectCode) {
@@ -84,7 +104,8 @@ public class QueryService {
 
     public void editQuery(@NotNull String projectCode,
                           String query, QueryFormat queryFormat, String label, String description,
-                          OutputFormat outputFormat, String templateId, String humanReadable, String explorerUrl, String queryContext) {
+                          OutputFormat outputFormat, String templateId, ProjectType projectType,
+                          String humanReadable, String explorerUrl, String queryContext) {
         Optional<Project> projectOptional = projectRepository.findByCode(projectCode);
         if (projectOptional.isPresent()) {
             Query projectQuery = projectOptional.get().getQuery();
@@ -106,14 +127,6 @@ public class QueryService {
                     projectQuery.setDescription(description);
                     changedKeyValueMap.put("description", description);
                 }
-                if (outputFormat != null) {
-                    projectQuery.setOutputFormat(outputFormat);
-                    changedKeyValueMap.put("output format", outputFormat.toString());
-                }
-                if (templateId != null) {
-                    projectQuery.setTemplateId(templateId);
-                    changedKeyValueMap.put("template id", templateId);
-                }
                 if (humanReadable != null) {
                     Base64Utils.decodeIfNecessary(humanReadable).ifPresent(projectQuery::setHumanReadable);
                     changedKeyValueMap.put("human readable", humanReadable);
@@ -125,6 +138,13 @@ public class QueryService {
                 if (queryContext != null) {
                     projectQuery.setContext(queryContext);
                     changedKeyValueMap.put("query context", queryContext);
+                }
+                if (projectType != null && (outputFormat != null || templateId != null)) {
+                    Optional<OutputFormat> outputFormatOptional = Optional.ofNullable(outputFormat);
+                    Optional<String> templateIdOptional = Optional.ofNullable(templateId);
+                    addOutputToQuery(projectQuery, outputFormatOptional, templateIdOptional, projectType);
+                    outputFormatOptional.ifPresent(of -> changedKeyValueMap.put("output format", of.toString()));
+                    templateIdOptional.ifPresent(id -> changedKeyValueMap.put("template id", id));
                 }
                 if (!changedKeyValueMap.isEmpty()) {
                     queryRepository.save(projectQuery);

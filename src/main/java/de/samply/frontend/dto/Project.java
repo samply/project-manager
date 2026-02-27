@@ -48,5 +48,6 @@ public class Project {
     private UserProjectState creatorState;
     @IgnoreProjectConfigurationMatch
     private String resultsUrl;
+    private ProjectOutput[] outputs;
 
 }

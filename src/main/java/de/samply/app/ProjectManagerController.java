@@ -276,10 +276,12 @@ public class ProjectManagerController {
             @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestVariable(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
             @RequestVariable(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
-            @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
+            @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType
     ) {
         return convertToResponseEntity(() ->
-                this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext));
+                this.queryService.createQuery(query, queryFormat, label, description,
+                        outputFormat, templateId, projectType, humanReadable, explorerUrl, queryContext));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
@@ -307,8 +309,9 @@ public class ProjectManagerController {
                         .flatMap(Optional::stream)
                         .toArray(String[]::new) : bridgeheads;
         String queryCode = this.queryService.createQuery(
-                query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
-        String projectCode = this.projectEventService.draft(tempBridgeheads, queryCode, projectType);
+                query, queryFormat, label, description, outputFormat, templateId,
+                projectType, humanReadable, explorerUrl, queryContext);
+        String projectCode = this.projectEventService.draft(tempBridgeheads, queryCode);
         this.queryService.addProjectCodeToExporterUrl(queryCode, projectCode);
         return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
@@ -334,9 +337,9 @@ public class ProjectManagerController {
             @RequestVariable(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
             @RequestVariable(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
             @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
             @RequestVariable(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
             @RequestVariable(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
             @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
@@ -345,8 +348,9 @@ public class ProjectManagerController {
                         .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
                         .flatMap(Optional::stream)
                         .toArray(String[]::new) : bridgeheads;
-        projectService.editProject(projectCode, projectType, tempBridgeheads);
-        queryService.editQuery(projectCode, (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query : null, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
+        projectService.updateBridgeheads(projectCode, tempBridgeheads);
+        queryService.editQuery(projectCode, (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query : null, queryFormat, label, description,
+                outputFormat, templateId, projectType, humanReadable, explorerUrl, queryContext);
         return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)
@@ -601,10 +605,9 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity designProject(
             @RequestVariable(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
-            @RequestVariable(name = ProjectManagerConst.QUERY_CODE) String queryCode,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @RequestVariable(name = ProjectManagerConst.QUERY_CODE) String queryCode
     ) {
-        return convertToResponseEntity(() -> this.projectEventService.draft(bridgeheads, queryCode, projectType));
+        return convertToResponseEntity(() -> this.projectEventService.draft(bridgeheads, queryCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -1410,9 +1413,10 @@ public class ProjectManagerController {
     @PutMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity saveQueryInBridgehead(
             @NotEmpty @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
     ) {
-        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgehead(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgehead(projectCode, bridgehead, projectType));
     }
 
 
@@ -1430,9 +1434,10 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity saveAndExecuteQueryInBridgehead(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
     ) {
-        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(projectCode, bridgehead, projectType));
     }
 
 

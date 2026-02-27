@@ -132,22 +132,19 @@ public class ProjectBridgeheadService {
         return project.getCreatorEmail().equals(sessionUser.getEmail());
     }
 
-    public void scheduleSendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT);
+    public void scheduleSendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectType projectType) throws ProjectBridgeheadServiceException {
+        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT, projectType);
     }
 
-    public void scheduleSendQueryToBridgeheadAndExecute(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT_AND_EXECUTED);
+    public void scheduleSendQueryToBridgeheadAndExecute(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectType projectType) throws ProjectBridgeheadServiceException {
+        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT_AND_EXECUTED, projectType);
     }
 
-    private void changeQueryState(String projectCode, String bridgehead, QueryState queryState) throws ProjectBridgeheadServiceException {
+    private void changeQueryState(String projectCode, String bridgehead, QueryState queryState, ProjectType projectType) throws ProjectBridgeheadServiceException {
         Project project = fetchProject(projectCode);
         ProjectBridgehead projectBridgehead = fetchProjectBridgehead(project, bridgehead);
-        projectBridgehead.setQueryState(queryState);
         projectBridgehead.setModifiedAt(Instant.now());
-        projectBridgehead.setExporterUser(sessionUser.getEmail());
-        projectBridgehead.setExporterExecutionId(null);
-        projectBridgehead.setExporterResponse(null);
+        projectBridgehead.addOrUpdateExecution(projectType, queryState, null, sessionUser.getEmail(), null, null);
         projectBridgeheadRepository.save(projectBridgehead);
     }
 

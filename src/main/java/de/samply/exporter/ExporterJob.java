@@ -2,6 +2,7 @@ package de.samply.exporter;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadExecution;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.email.EmailKeyValuesFactory;
@@ -95,38 +96,54 @@ public class ExporterJob {
         return checkQueries(QueryState.SENDING_AND_EXECUTING, QueryState.EXPORT_RUNNING_1, exporterService::checkIfQueryIsAlreadySentOrExecuted, Optional.of(
                 exporterServiceResult ->
                         exporterService.fetchExporterExecutionIdFromExporterResponse(exporterServiceResult.result()).ifPresent(exportExecutionId ->
-                                exporterServiceResult.projectBridgehead().setExporterExecutionId(exportExecutionId))), Optional.empty());
+                                exporterServiceResult
+                                        .projectBridgeheadAndType()
+                                        .projectBridgehead()
+                                        .fetchExecution(exporterServiceResult.projectBridgeheadAndType().projectType())
+                                        .orElseThrow(() -> new IllegalStateException("Missing execution for " + exporterServiceResult.projectBridgeheadAndType().projectType()))
+                                        .setExporterExecutionId(exportExecutionId))), Optional.empty());
     }
 
     private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
-                                    Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction) {
+                                    Function<ProjectBridgeheadAndType, Mono<ExporterServiceResult>> exporterServiceFunction) {
         return checkQueries(initialQueryState, finalQueryState, exporterServiceFunction, Optional.empty(), Optional.empty());
     }
 
     private Mono<Void> checkQueries(QueryState initialQueryState,
-                                    Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction, EmailTemplateType emailTemplateType) {
+                                    Function<ProjectBridgeheadAndType, Mono<ExporterServiceResult>> exporterServiceFunction, EmailTemplateType emailTemplateType) {
         return checkQueries(initialQueryState, QueryState.FINISHED, exporterServiceFunction, Optional.empty(), Optional.of(emailTemplateType));
     }
 
 
-    private Mono<Void> checkQueries(QueryState initialQueryState, QueryState finalQueryState,
-                                    Function<ProjectBridgehead, Mono<ExporterServiceResult>> exporterServiceFunction,
-                                    Optional<Consumer<ExporterServiceResult>> exporterServiceResultConsumer, Optional<EmailTemplateType> emailTemplateType) {
-        return Flux.fromIterable(projectBridgeheadRepository.getByQueryStateAndProjectState(initialQueryState, activeStates))
+    private Mono<Void> checkQueries(QueryState initialQueryState,
+                                    QueryState finalQueryState,
+                                    Function<ProjectBridgeheadAndType, Mono<ExporterServiceResult>> exporterServiceFunction,
+                                    Optional<Consumer<ExporterServiceResult>> exporterServiceResultConsumer,
+                                    Optional<EmailTemplateType> emailTemplateType) {
+        return Flux.fromStream(
+                        projectBridgeheadRepository
+                                .getByQueryStateAndProjectState(initialQueryState, activeStates)
+                                .stream()
+                                .flatMap(ProjectBridgeheadAndType::from)
+                )
                 .flatMap(exporterServiceFunction)
                 .doOnNext(exporterServiceResult -> {
                     exporterServiceResultConsumer.ifPresent(consumer -> consumer.accept(exporterServiceResult));
-                    ProjectBridgehead projectBridgehead = exporterServiceResult.projectBridgehead();
+                    ProjectBridgehead projectBridgehead = exporterServiceResult.projectBridgeheadAndType().projectBridgehead();
+                    ProjectBridgeheadExecution execution = projectBridgehead
+                            .fetchExecution(exporterServiceResult.projectBridgeheadAndType().projectType())
+                            .orElseThrow(() -> new IllegalStateException("Missing execution for " + exporterServiceResult.projectBridgeheadAndType().projectType()));
                     log.debug("Setting final query state and updating exporter response for project {} and bridgehead {}", projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
-                    projectBridgehead.setQueryState(finalQueryState);
-                    projectBridgehead.setExporterResponse(exporterServiceResult.result());
-                    projectBridgehead.setModifiedAt(Instant.now());
+                    execution.setQueryState(finalQueryState);
+                    execution.setExporterResponse(exporterServiceResult.result());
+                    execution.setModifiedAt(Instant.now());
                     if (finalQueryState == QueryState.FINISHED) {
-                        projectBridgehead.setExporterDispatchCounter(projectBridgehead.getExporterDispatchCounter() + 1);
+                        execution.setExporterDispatchCounter(execution.getExporterDispatchCounter() + 1);
                     }
                     projectBridgeheadRepository.save(projectBridgehead);
                     emailTemplateType.ifPresent(type -> sendEmail(projectBridgehead, type));
-                }).then();
+                })
+                .then();
     }
 
     private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {
