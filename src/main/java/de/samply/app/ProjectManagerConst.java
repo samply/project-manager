@@ -43,6 +43,7 @@ public class ProjectManagerConst {
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
     public final static String DOWNLOAD_AUTHENTICATION_SCRIPT_ACTION = "DOWNLOAD_AUTHENTICATION_SCRIPT";
     public final static String EDIT_PROJECT_ACTION = "EDIT_PROJECT";
+    public final static String REMOVE_PROJECT_OUTPUT_ACTION = "REMOVE_PROJECT_OUTPUT";
     public final static String FETCH_EXPORTER_TEMPLATES_ACTION = "EXPORTER_TEMPLATES";
     public final static String FETCH_QUERY_FORMATS_ACTION = "FETCH_QUERY_FORMATS";
     public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
@@ -138,6 +139,7 @@ public class ProjectManagerConst {
     public final static String SET_FINAL_USER = "/final-user";
     public final static String CREATE_QUERY_AND_DESIGN_PROJECT = "/create-query-and-design-project";
     public final static String EDIT_PROJECT = "/project/edit";
+    public final static String REMOVE_PROJECT_OUTPUT = "/project/output";
     public final static String FETCH_EXPORTER_TEMPLATES = "/exporter/templates";
     public final static String FETCH_QUERY_FORMATS = "/query/formats";
     public final static String FETCH_PROJECT_ROLES = "/project/roles";

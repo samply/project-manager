@@ -86,8 +86,8 @@ public class Project {
     }
 
     @Transient
-    public void removeOutput(QueryOutput output) {
-        query.removeOutput(output);
+    public void removeOutput(ProjectType projectType) {
+        query.removeOutput(projectType);
     }
 
 }

@@ -246,6 +246,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - SAMPLES project type
 - Project And Form Configuration
 - Multiple types pro project
+- Remove project output service
 
 
 ### Changed

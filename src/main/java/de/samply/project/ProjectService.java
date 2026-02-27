@@ -306,6 +306,20 @@ public class ProjectService {
         return result;
     }
 
+    public void removeOutput(@NotNull String projectCode, @NotNull ProjectType projectType) {
+        this.projectRepository.findByCode(projectCode).ifPresentOrElse(project -> {
+                    project.removeOutput(projectType);
+                    project.setModifiedAt(Instant.now());
+                    saveProject(project);
+                    this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
+                            OperationType.EDIT_PROJECT, "Removed output format " + projectType.name(), null, null);
+                },
+                () -> {
+                    throw new ProjectServiceException("Project " + projectCode + " not found");
+                }
+        );
+    }
+
     private List<OutputFormat> fetchOutputFormats(ProjectType projectType) {
         return (projectType == ProjectType.DATASHIELD) ?
                 List.of(OutputFormat.OPAL) :

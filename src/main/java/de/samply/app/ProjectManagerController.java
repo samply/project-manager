@@ -357,6 +357,18 @@ public class ProjectManagerController {
         ));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_PROJECT_OUTPUT_ACTION)
+    @DeleteMapping(value = ProjectManagerConst.REMOVE_PROJECT_OUTPUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity removeOutputFormat(
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> this.projectService.removeOutput(projectCode, projectType));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)

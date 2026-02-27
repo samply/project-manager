@@ -79,9 +79,8 @@ public class Query {
     }
 
     @Transient
-    public void removeOutput(QueryOutput output) {
-        outputs.remove(output);
-        output.setQuery(null);
+    public void removeOutput(ProjectType projectType) {
+        outputs.removeIf(queryOutput -> queryOutput.getProjectType() == projectType);
     }
 
 }
