@@ -223,7 +223,7 @@ public class ProjectManagerController {
     //TODO: Send email to PM-ADMIN, that there was a problem with the operation
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
-    @PutMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
+    @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
     public ResponseEntity setUserAsDeveloper(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -240,7 +240,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
-    @PutMapping(value = ProjectManagerConst.SET_PILOT_USER)
+    @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
     public ResponseEntity setUserAsPilot(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -255,7 +255,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
-    @PutMapping(value = ProjectManagerConst.SET_FINAL_USER)
+    @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
     public ResponseEntity setUserAsFinal(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -1505,7 +1505,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_DATASHIELD_STATUS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_DATASHIELD_STATUS)
-    public ResponseEntity fetchOpalStatus(
+    public ResponseEntity fetchDatashieldStatus(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {

@@ -249,14 +249,14 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/create-query?label=Test2&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=(gender = male)",
+          "raw": "http://localhost:8097/query?label=Test2&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=(gender = male)",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "create-query"
+            "query"
           ],
           "query": [
             {
@@ -639,7 +639,7 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "body": {
           "mode": "raw",
@@ -651,14 +651,15 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/edit-project?label=Test2 changed&description=I could change the query&template-id=opal-ccp&output-format=OPAL&human-readable=(gender = male) and (vitalstatus = lebend)&bridgeheads=jurassic-park,frankfurt&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884",
+          "raw": "http://localhost:8097/project/edit?label=Test2 changed&description=I could change the query&template-id=opal-ccp&output-format=OPAL&human-readable=(gender = male) and (vitalstatus = lebend)&bridgeheads=jurassic-park,frankfurt&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884&project-type=DATASHIELD",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "edit-project"
+            "project",
+            "edit"
           ],
           "query": [
             {
@@ -697,6 +698,10 @@
             {
               "key": "project-code",
               "value": "2dfcd1bf620241f9b884"
+            },
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
             }
           ]
         }
@@ -709,7 +714,7 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "body": {
           "mode": "raw",
@@ -721,14 +726,15 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/edit-project?label=Test2 changed&description=I could change the query&template-id=opal-ccp&output-format=OPAL&human-readable=(gender = male) and (vitalstatus = lebend)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884&query-context=key1=value1;key2=value2",
+          "raw": "http://localhost:8097/project/edit?label=Test2 changed&description=I could change the query&template-id=opal-ccp&output-format=OPAL&human-readable=(gender = male) and (vitalstatus = lebend)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884&query-context=key1=value1;key2=value2&project-type=DATASHIELD",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "edit-project"
+            "project",
+            "edit"
           ],
           "query": [
             {
@@ -771,6 +777,93 @@
             {
               "key": "query-context",
               "value": "key1=value1;key2=value2"
+            },
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Output",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/project/output?project-type=DATASHIELD&project-code=e650191ea08143b5bb11",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "output"
+          ],
+          "query": [
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            },
+            {
+              "key": "project-code",
+              "value": "e650191ea08143b5bb11"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Output",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/edit?project-type=EXPORT&project-code=e650191ea08143b5bb11&output-format=EXCEL&template-id=ccp",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "edit"
+          ],
+          "query": [
+            {
+              "key": "project-type",
+              "value": "EXPORT"
+            },
+            {
+              "key": "project-code",
+              "value": "e650191ea08143b5bb11"
+            },
+            {
+              "key": "output-format",
+              "value": "EXCEL"
+            },
+            {
+              "key": "template-id",
+              "value": "ccp"
             }
           ]
         }
@@ -783,7 +876,7 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "body": {
           "mode": "raw",
@@ -795,14 +888,15 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/edit-project?human-readable=(gender = male) and (vitalstatus = lebend)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884",
+          "raw": "http://localhost:8097/project/edit?human-readable=(gender = male) and (vitalstatus = lebend)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "edit-project"
+            "project",
+            "edit"
           ],
           "query": [
             {
@@ -835,14 +929,15 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/design-project?bridgeheads=david-j-develop,jurassic-park&query-code=c66cbbee57a941ddac12&project-type=DATASHIELD",
+          "raw": "http://localhost:8097/project/design?bridgeheads=david-j-develop,jurassic-park&query-code=c66cbbee57a941ddac12&project-type=DATASHIELD",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "design-project"
+            "project",
+            "design"
           ],
           "query": [
             {
@@ -871,14 +966,14 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/create-project?project-code=7e5b829f25224090b7b8",
+          "raw": "http://localhost:8097/project?project-code=7e5b829f25224090b7b8",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "create-project"
+            "project"
           ],
           "query": [
             {
@@ -899,14 +994,16 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-form-titles?project-code=a1ba86d4574e45dd9962",
+          "raw": "http://localhost:8097/project/forms/titles?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-form-titles"
+            "project",
+            "forms",
+            "titles"
           ],
           "query": [
             {
@@ -927,14 +1024,16 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-form-fields?project-code=a1ba86d4574e45dd9962",
+          "raw": "http://localhost:8097/project/forms/fields?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-form-fields"
+            "project",
+            "forms",
+            "fields"
           ],
           "query": [
             {
@@ -955,14 +1054,16 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-form-fields?project-code=a1ba86d4574e45dd9962&form-title=sample_data",
+          "raw": "http://localhost:8097/project/forms/fields?project-code=a1ba86d4574e45dd9962&form-title=sample_data",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-form-fields"
+            "project",
+            "forms",
+            "fields"
           ],
           "query": [
             {
@@ -987,14 +1088,16 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/selected-project-forms?project-code=8424df248c9a412b9d39",
+          "raw": "http://localhost:8097/project/forms/selected?project-code=8424df248c9a412b9d39",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "selected-project-forms"
+            "project",
+            "forms",
+            "selected"
           ],
           "query": [
             {
@@ -1015,14 +1118,16 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/add-selected-project-form?project-code=8424df248c9a412b9d39&form-title=sample_data",
+          "raw": "http://localhost:8097/project/forms/selected?project-code=8424df248c9a412b9d39&form-title=sample_data",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "add-selected-project-form"
+            "project",
+            "forms",
+            "selected"
           ],
           "query": [
             {
@@ -1044,17 +1149,19 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/remove-selected-project-form?project-code=8424df248c9a412b9d39&form-title=sample_data",
+          "raw": "http://localhost:8097/project/forms/selected?project-code=8424df248c9a412b9d39&form-title=sample_data",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "remove-selected-project-form"
+            "project",
+            "forms",
+            "selected"
           ],
           "query": [
             {
@@ -1076,7 +1183,7 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "body": {
           "mode": "raw",
@@ -1088,14 +1195,16 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/edit-project-form-fields?project-code=a1ba86d4574e45dd9962",
+          "raw": "http://localhost:8097/project/forms/fields?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "edit-project-form-fields"
+            "project",
+            "forms",
+            "fields"
           ],
           "query": [
             {
@@ -1116,14 +1225,16 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-form-templates?project-code=a1ba86d4574e45dd9962",
+          "raw": "http://localhost:8097/project/forms/templates?project-code=a1ba86d4574e45dd9962",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-form-templates"
+            "project",
+            "forms",
+            "templates"
           ],
           "query": [
             {
@@ -1212,14 +1323,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-roles?project-code=9cb4eef8063441d8a820&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/roles?project-code=9cb4eef8063441d8a820&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-roles"
+            "project",
+            "roles"
           ],
           "query": [
             {
@@ -1310,14 +1422,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-states",
+          "raw": "http://localhost:8097/project/states",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-states"
+            "project",
+            "states"
           ]
         }
       },
@@ -1354,14 +1467,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-bridgeheads?project-code=2bb9caf3c03a4d8296a0",
+          "raw": "http://localhost:8097/project/bridgeheads?project-code=2bb9caf3c03a4d8296a0",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-bridgeheads"
+            "project",
+            "bridgeheads"
           ],
           "query": [
             {
@@ -1379,7 +1493,7 @@
       "response": []
     },
     {
-      "name": "Fetch Script Label",
+      "name": "Fetch Script Description",
       "request": {
         "auth": {
           "type": "noauth"
@@ -1387,14 +1501,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/script-label?project-code=ce573ab8dd1a4a53bce7&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/script/description?project-code=ce573ab8dd1a4a53bce7&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "script-label"
+            "script",
+            "description"
           ],
           "query": [
             {
@@ -1411,7 +1526,7 @@
       "response": []
     },
     {
-      "name": "Fetch Application Form Label",
+      "name": "Fetch Votum Description",
       "request": {
         "auth": {
           "type": "noauth"
@@ -1419,46 +1534,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/application-form-label?project-code=ce573ab8dd1a4a53bce7&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/votum/description?project-code=ce573ab8dd1a4a53bce7&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "application-form-label"
-          ],
-          "query": [
-            {
-              "key": "project-code",
-              "value": "ce573ab8dd1a4a53bce7"
-            },
-            {
-              "key": "bridgehead",
-              "value": "jurassic-park"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Fetch Votum Label",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8097/votum-label?project-code=ce573ab8dd1a4a53bce7&bridgehead=jurassic-park",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8097",
-          "path": [
-            "votum-label"
+            "votum",
+            "description"
           ],
           "query": [
             {
@@ -1710,14 +1794,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/exporter-templates?project-code=5e632908aac4412a892e&project-type=EXPORT",
+          "raw": "http://localhost:8097/exporter/templates?project-code=5e632908aac4412a892e&project-type=EXPORT",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "exporter-templates"
+            "exporter",
+            "templates"
           ],
           "query": [
             {
@@ -1742,14 +1827,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/exporter-templates?project-code=5e632908aac4412a892e&project-type=DATASHIELD",
+          "raw": "http://localhost:8097/exporter/templates?project-code=5e632908aac4412a892e&project-type=DATASHIELD",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "exporter-templates"
+            "exporter",
+            "templates"
           ],
           "query": [
             {
@@ -1774,14 +1860,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/query-formats?project-code=5c8bb65ffcf3405c8b3a",
+          "raw": "http://localhost:8097/query/formats?project-code=5c8bb65ffcf3405c8b3a",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "query-formats"
+            "query",
+            "formats"
           ],
           "query": [
             {
@@ -1802,14 +1889,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/output-formats?project-code=c319ad0b3d7d463cab5a",
+          "raw": "http://localhost:8097/output/formats?project-code=c319ad0b3d7d463cab5a",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "output-formats"
+            "output",
+            "formats"
           ],
           "query": [
             {
@@ -1836,19 +1924,20 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-configurations?project-code=c0add03cde2245318a1b",
+          "raw": "http://localhost:8097/project/configurations?project-code=a004d11ade614e2b871b",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-configurations"
+            "project",
+            "configurations"
           ],
           "query": [
             {
               "key": "project-code",
-              "value": "c0add03cde2245318a1b"
+              "value": "a004d11ade614e2b871b"
             }
           ]
         }
@@ -1864,19 +1953,20 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-configuration?project-code=e7cff999e8424e8ba9b7",
+          "raw": "http://localhost:8097/project/configuration?project-code=a004d11ade614e2b871b",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-configuration"
+            "project",
+            "configuration"
           ],
           "query": [
             {
               "key": "project-code",
-              "value": "e7cff999e8424e8ba9b7"
+              "value": "a004d11ade614e2b871b"
             }
           ]
         }
@@ -1892,14 +1982,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-types?project-code=eca876afe8fb46f0ad03",
+          "raw": "http://localhost:8097/project/types?project-code=eca876afe8fb46f0ad03",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-types"
+            "project",
+            "types"
           ],
           "query": [
             {
@@ -1917,17 +2008,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/accept-project?project-code=7e5b829f25224090b7b8",
+          "raw": "http://localhost:8097/project/accept?project-code=7e5b829f25224090b7b8",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "accept-project"
+            "project",
+            "accept"
           ],
           "query": [
             {
@@ -1945,17 +2037,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/archive-project?project-code=9e1e43f738c840788f11",
+          "raw": "http://localhost:8097/project/archive?project-code=9e1e43f738c840788f11",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "archive-project"
+            "project",
+            "archive"
           ],
           "query": [
             {
@@ -1976,14 +2069,17 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/save-query-in-bridgehead?project-code=14ed087fb7994c84a564&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/bridgehead/query/save?project-code=14ed087fb7994c84a564&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "save-query-in-bridgehead"
+            "project",
+            "bridgehead",
+            "query",
+            "save"
           ],
           "query": [
             {
@@ -2008,14 +2104,17 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/save-and-execute-query-in-bridgehead?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/bridgehead/query/save-execute?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "save-and-execute-query-in-bridgehead"
+            "project",
+            "bridgehead",
+            "query",
+            "save-execute"
           ],
           "query": [
             {
@@ -2037,17 +2136,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/start-develop-project?project-code=7e5b829f25224090b7b8",
+          "raw": "http://localhost:8097/project/start-develop?project-code=7e5b829f25224090b7b8",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "start-develop-project"
+            "project",
+            "start-develop"
           ],
           "query": [
             {
@@ -2068,14 +2168,14 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/set-developer-user?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park&email=developer@test.dkfz.de",
+          "raw": "http://localhost:8097/developer?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park&email=developer@test.dkfz.de",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "set-developer-user"
+            "developer"
           ],
           "query": [
             {
@@ -2101,17 +2201,19 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/accept-bridgehead-project?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/bridgehead/accept?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "accept-bridgehead-project"
+            "project",
+            "bridgehead",
+            "accept"
           ],
           "query": [
             {
@@ -2133,17 +2235,19 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/reject-bridgehead-project?project-code=eca876afe8fb46f0ad03&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/bridgehead/reject?project-code=eca876afe8fb46f0ad03&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "reject-bridgehead-project"
+            "project",
+            "bridgehead",
+            "reject"
           ],
           "query": [
             {
@@ -2165,17 +2269,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/accept-script?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/script/accept?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "accept-script"
+            "script",
+            "accept"
           ],
           "query": [
             {
@@ -2197,17 +2302,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/reject-script?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/script/reject?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "reject-script"
+            "script",
+            "reject"
           ],
           "query": [
             {
@@ -2229,17 +2335,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/request-script-changes?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/script/request-changes?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "request-script-changes"
+            "script",
+            "request-changes"
           ],
           "query": [
             {
@@ -2261,17 +2368,19 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/accept-project-results?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/results/accept?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "accept-project-results"
+            "project",
+            "results",
+            "accept"
           ],
           "query": [
             {
@@ -2293,17 +2402,19 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/reject-project-results?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/results/reject?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "reject-project-results"
+            "project",
+            "results",
+            "reject"
           ],
           "query": [
             {
@@ -2325,17 +2436,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/request-changes-in-project?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/request-changes?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "request-changes-in-project"
+            "project",
+            "request-changes"
           ],
           "query": [
             {
@@ -2357,17 +2469,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/start-pilot-project?project-code=9e1e43f738c840788f11",
+          "raw": "http://localhost:8097/project/start-pilot?project-code=9e1e43f738c840788f11",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "start-pilot-project"
+            "project",
+            "start-pilot"
           ],
           "query": [
             {
@@ -2388,14 +2501,14 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/set-pilot-user?project-code=3b0a76b850864fc7916e&bridgehead=jurassic-park&email=pilot@test.dkfz.de",
+          "raw": "http://localhost:8097/pilot-user?project-code=3b0a76b850864fc7916e&bridgehead=jurassic-park&email=pilot@test.dkfz.de",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "set-pilot-user"
+            "pilot-user"
           ],
           "query": [
             {
@@ -2421,17 +2534,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/start-final-project?project-code=2bb9caf3c03a4d8296a0",
+          "raw": "http://localhost:8097/project/start-final?project-code=2bb9caf3c03a4d8296a0",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "start-final-project"
+            "project",
+            "start-final"
           ],
           "query": [
             {
@@ -2452,14 +2566,14 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/set-final-user?project-code=6491e451354c42b48e67&bridgehead=jurassic-park&email=final@test.dkfz.de",
+          "raw": "http://localhost:8097/final-user?project-code=6491e451354c42b48e67&bridgehead=jurassic-park&email=final@test.dkfz.de",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "set-final-user"
+            "final-user"
           ],
           "query": [
             {
@@ -2485,145 +2599,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/finish-project?project-code=2bb9caf3c03a4d8296a0",
+          "raw": "http://localhost:8097/project/finish?project-code=2bb9caf3c03a4d8296a0",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "finish-project"
-          ],
-          "query": [
-            {
-              "key": "project-code",
-              "value": "2bb9caf3c03a4d8296a0"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Download application form template",
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "GET",
-        "header": [],
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            {
-              "key": "document",
-              "type": "file",
-              "src": "test-file.txt"
-            }
-          ]
-        },
-        "url": {
-          "raw": "http://localhost:8097/download-application-form-template?project-code=2bb9caf3c03a4d8296a0",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8097",
-          "path": [
-            "download-application-form-template"
-          ],
-          "query": [
-            {
-              "key": "project-code",
-              "value": "2bb9caf3c03a4d8296a0"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Upload Application Form (researcher)",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            {
-              "key": "document",
-              "type": "file",
-              "src": "application-form.txt"
-            }
-          ]
-        },
-        "url": {
-          "raw": "http://localhost:8097/upload-application-form?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park&label=This is an application form",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8097",
-          "path": [
-            "upload-application-form"
-          ],
-          "query": [
-            {
-              "key": "project-code",
-              "value": "2bb9caf3c03a4d8296a0"
-            },
-            {
-              "key": "bridgehead",
-              "value": "jurassic-park"
-            },
-            {
-              "key": "label",
-              "value": "This is an application form"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Download Application Form (researcher)",
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "GET",
-        "header": [],
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            {
-              "key": "document",
-              "type": "file",
-              "src": "application-form.txt"
-            }
-          ]
-        },
-        "url": {
-          "raw": "http://localhost:8097/download-application-form?project-code=2bb9caf3c03a4d8296a0",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8097",
-          "path": [
-            "download-application-form"
+            "project",
+            "finish"
           ],
           "query": [
             {
@@ -2654,14 +2641,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/upload-votum?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park&label=This is a votum",
+          "raw": "http://localhost:8097/votum/upload?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park&label=This is a votum",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "upload-votum"
+            "votum",
+            "upload"
           ],
           "query": [
             {
@@ -2703,14 +2691,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/download-votum?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/votum/download?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "download-votum"
+            "votum",
+            "download"
           ],
           "query": [
             {
@@ -2748,14 +2737,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/exists-votum?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/votum/exists?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "exists-votum"
+            "votum",
+            "exists"
           ],
           "query": [
             {
@@ -2790,14 +2780,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/upload-script?project-code=2bb9caf3c03a4d8296a0&label=This is a script&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/script/upload?project-code=2bb9caf3c03a4d8296a0&label=This is a script&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "upload-script"
+            "script",
+            "upload"
           ],
           "query": [
             {
@@ -2810,8 +2801,7 @@
             },
             {
               "key": "bridgehead",
-              "value": "jurassic-park",
-              "type": "text"
+              "value": "jurassic-park"
             }
           ]
         }
@@ -2840,14 +2830,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/download-script?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/script/download?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "download-script"
+            "script",
+            "download"
           ],
           "query": [
             {
@@ -2882,14 +2873,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/upload-publication?project-code=2bb9caf3c03a4d8296a0&label=This is a publication",
+          "raw": "http://localhost:8097/publication/upload?project-code=2bb9caf3c03a4d8296a0&label=This is a publication",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "upload-publication"
+            "publication",
+            "upload"
           ],
           "query": [
             {
@@ -2927,14 +2919,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/download-publication?project-code=2bb9caf3c03a4d8296a0&filename=publication.txt",
+          "raw": "http://localhost:8097/publication/download?project-code=2bb9caf3c03a4d8296a0&filename=publication.txt",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "download-publication"
+            "publication",
+            "download"
           ],
           "query": [
             {
@@ -2969,14 +2962,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/upload-other-document?project-code=2bb9caf3c03a4d8296a0&label=This is a script&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/other-document/upload?project-code=2bb9caf3c03a4d8296a0&label=This is a script&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "upload-other-document"
+            "other-document",
+            "upload"
           ],
           "query": [
             {
@@ -3018,14 +3012,15 @@
           ]
         },
         "url": {
-          "raw": "http://localhost:8097/download-other-document?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park&filename=other-file.txt",
+          "raw": "http://localhost:8097/other-document/download?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park&filename=other-file.txt",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "download-other-document"
+            "other-document",
+            "download"
           ],
           "query": [
             {
@@ -3054,14 +3049,15 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/add-publication-url?project-code=2bb9caf3c03a4d8296a0&document-url=https://escholarship.org/uc/item/5d08883v&label=A methane seep from the deep-marine, late Eocene Keasey Formation, Rock Creek, Columbia County, Oregon",
+          "raw": "http://localhost:8097/publication/url?project-code=2bb9caf3c03a4d8296a0&document-url=https://escholarship.org/uc/item/5d08883v&label=A methane seep from the deep-marine, late Eocene Keasey Formation, Rock Creek, Columbia County, Oregon",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "add-publication-url"
+            "publication",
+            "url"
           ],
           "query": [
             {
@@ -3087,7 +3083,7 @@
       "response": []
     },
     {
-      "name": "Add other document URL (researcher)",
+      "name": "Add other documetn URL (researcher)",
       "request": {
         "auth": {
           "type": "noauth"
@@ -3095,14 +3091,15 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/add-other-document-url?project-code=2bb9caf3c03a4d8296a0&document-url=https://escholarship.org/uc/item/49c1b8zb&label=Acanthodian fauna from the Early Devonian (Emsian) of Death Valley, California",
+          "raw": "http://localhost:8097/document/url?project-code=2bb9caf3c03a4d8296a0&document-url=https://escholarship.org/uc/item/49c1b8zb&label=Acanthodian fauna from the Early Devonian (Emsian) of Death Valley, California",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "add-other-document-url"
+            "document",
+            "url"
           ],
           "query": [
             {
@@ -3251,17 +3248,18 @@
         "auth": {
           "type": "noauth"
         },
-        "method": "POST",
+        "method": "PUT",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/read-notification?notification-id=1",
+          "raw": "http://localhost:8097/notification/read?notification-id=1",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "read-notification"
+            "notification",
+            "read"
           ],
           "query": [
             {
@@ -3314,14 +3312,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/download-authentication-script?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/authentication-script/download?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "download-authentication-script"
+            "authentication-script",
+            "download"
           ],
           "query": [
             {
@@ -3382,14 +3381,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project-users?project-code=6491e451354c42b48e67&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/users?project-code=6491e451354c42b48e67&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8097",
           "path": [
-            "project-users"
+            "project",
+            "users"
           ],
           "query": [
             {
