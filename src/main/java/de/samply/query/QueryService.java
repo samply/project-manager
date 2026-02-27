@@ -10,6 +10,7 @@ import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.QueryRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.project.ProjectServiceException;
 import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
@@ -83,6 +84,20 @@ public class QueryService {
         templateId.ifPresent(output::setTemplateId);
         queryRepository.save(query);
     }
+
+    public void removeOutput(@NotNull String projectCode, @NotNull ProjectType projectType) {
+        this.projectRepository.findByCode(projectCode).ifPresentOrElse(project -> {
+                    project.getQuery().removeOutput(projectType);
+                    this.queryRepository.save(project.getQuery());
+                    this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
+                            OperationType.EDIT_PROJECT, "Removed output of type " + projectType.name(), null, null);
+                },
+                () -> {
+                    throw new ProjectServiceException("Project " + projectCode + " not found");
+                }
+        );
+    }
+
 
     public void addProjectCodeToExporterUrl(@NotNull String queryCode, @NotNull String projectCode) {
         queryRepository.findByCode(queryCode).ifPresent(query -> {

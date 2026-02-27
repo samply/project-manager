@@ -2,9 +2,7 @@ package de.samply.db.model;
 
 import de.samply.query.QueryState;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -16,18 +14,24 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ProjectBridgeheadExecution {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "project_bridgehead_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private ProjectBridgehead projectBridgehead;
 
     @ManyToOne
     @JoinColumn(name = "query_output_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private QueryOutput queryOutput;
 
     @Column(name = "query_state", nullable = false)

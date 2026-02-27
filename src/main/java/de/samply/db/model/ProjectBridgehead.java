@@ -7,9 +7,7 @@ import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryState;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -21,11 +19,12 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ProjectBridgehead {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne
@@ -52,7 +51,9 @@ public class ProjectBridgehead {
 
     @OneToMany(mappedBy = "projectBridgehead",
             cascade = CascadeType.ALL,
-            orphanRemoval = true)
+            orphanRemoval = true,
+            fetch = FetchType.EAGER)
+    @ToString.Exclude
     private Set<ProjectBridgeheadExecution> executions = new HashSet<>();
 
     @Transient
