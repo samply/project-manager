@@ -118,17 +118,17 @@ public class DtoFactory {
     private static void merge(@NotNull ProjectOutput[] dtoOutputs, @NotNull de.samply.db.model.Project project) {
         Map<ProjectType, QueryOutput> outputMap = project.getQuery().getOutputs().stream().collect(Collectors.toMap(QueryOutput::getProjectType, Function.identity()));
         Arrays.stream(dtoOutputs).forEach(dtoOutput ->
-                outputMap.compute(dtoOutput.getProjectType(), (key, existing) -> {
+                outputMap.compute(dtoOutput.projectType(), (key, existing) -> {
                     if (existing == null) {
                         QueryOutput created = new QueryOutput();
                         created.setProjectType(key);
-                        created.setOutputFormat(dtoOutput.getOutputFormat());
-                        created.setTemplateId(dtoOutput.getTemplateId());
+                        created.setOutputFormat(dtoOutput.outputFormat());
+                        created.setTemplateId(dtoOutput.templateId());
                         project.addOutput(created);
                         return created;
                     }
-                    Optional.ofNullable(dtoOutput.getOutputFormat()).ifPresent(existing::setOutputFormat);
-                    Optional.ofNullable(dtoOutput.getTemplateId()).ifPresent(existing::setTemplateId);
+                    Optional.ofNullable(dtoOutput.outputFormat()).ifPresent(existing::setOutputFormat);
+                    Optional.ofNullable(dtoOutput.templateId()).ifPresent(existing::setTemplateId);
                     return existing;
                 })
         );
