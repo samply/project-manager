@@ -261,7 +261,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add and rename forms instead of editing services
 - Notifications only for Project Manager Admin
 - Filter templates by selected forms
-- Samples project can generate exports not visible to researcher 
+- Samples project can generate exports not visible to researcher
+- Update to Java 26
 
 ### Removed
 - RStudio Keycloak Groups

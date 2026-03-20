@@ -14,7 +14,7 @@
     <name>project-manager</name>
     <description>Samply Project Manager</description>
     <properties>
-        <java.version>25</java.version>
+        <java.version>26</java.version>
         <openapi.version>3.0.0</openapi.version>
         <spring-statemachine-core.version>4.0.1</spring-statemachine-core.version>
         <lombok.version>1.18.42</lombok.version>
