@@ -323,7 +323,7 @@ public class ProjectManagerController {
         return (bridgeheads == null || bridgeheads.length == 0) && (explorerIds == null || explorerIds.length == 0);
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_ACTION)
@@ -359,7 +359,7 @@ public class ProjectManagerController {
         ));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_PROJECT_OUTPUT_ACTION)
