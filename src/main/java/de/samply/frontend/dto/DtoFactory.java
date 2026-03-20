@@ -118,20 +118,27 @@ public class DtoFactory {
     private static void merge(@NotNull ProjectOutput[] dtoOutputs, @NotNull de.samply.db.model.Project project) {
         Map<ProjectType, QueryOutput> outputMap = project.getQuery().getOutputs().stream().collect(Collectors.toMap(QueryOutput::getProjectType, Function.identity()));
         Arrays.stream(dtoOutputs).forEach(dtoOutput ->
-                outputMap.compute(dtoOutput.projectType(), (key, existing) -> {
-                    if (existing == null) {
+                outputMap.compute(dtoOutput.projectType(), (projectType, existingQueryOutput) -> {
+                    if (existingQueryOutput == null) {
                         QueryOutput created = new QueryOutput();
-                        created.setProjectType(key);
+                        created.setProjectType(projectType);
                         created.setOutputFormat(dtoOutput.outputFormat());
                         created.setTemplateId(dtoOutput.templateId());
                         project.addOutput(created);
                         return created;
                     }
-                    Optional.ofNullable(dtoOutput.outputFormat()).ifPresent(existing::setOutputFormat);
-                    Optional.ofNullable(dtoOutput.templateId()).ifPresent(existing::setTemplateId);
-                    return existing;
+                    Optional.ofNullable(dtoOutput.outputFormat()).ifPresent(existingQueryOutput::setOutputFormat);
+                    Optional.ofNullable(dtoOutput.templateId()).ifPresent(existingQueryOutput::setTemplateId);
+                    return existingQueryOutput;
                 })
         );
+
+        var dtoTypes = Arrays.stream(dtoOutputs)
+                .map(ProjectOutput::projectType)
+                .collect(Collectors.toSet());
+
+        project.getQuery().getOutputs()
+                .removeIf(o -> !dtoTypes.contains(o.getProjectType()));
     }
 
     public Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {

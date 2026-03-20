@@ -158,8 +158,8 @@ public class QueryService {
                     Optional<OutputFormat> outputFormatOptional = Optional.ofNullable(outputFormat);
                     Optional<String> templateIdOptional = Optional.ofNullable(templateId);
                     addOutputToQuery(projectQuery, outputFormatOptional, templateIdOptional, projectType);
-                    outputFormatOptional.ifPresent(of -> changedKeyValueMap.put("output format", of.toString()));
-                    templateIdOptional.ifPresent(id -> changedKeyValueMap.put("template id", id));
+                    outputFormatOptional.ifPresent(of -> changedKeyValueMap.put("output format for project type " + projectType, of.toString()));
+                    templateIdOptional.ifPresent(tid -> changedKeyValueMap.put("template id for project type " + projectType, tid));
                 }
                 if (!changedKeyValueMap.isEmpty()) {
                     queryRepository.save(projectQuery);

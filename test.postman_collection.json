@@ -313,7 +313,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=opal-ccp&output-format=OPAL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park&project-type=DATASHIELD",
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park&project-type=EXPORT",
           "protocol": "http",
           "host": [
             "localhost"
@@ -333,11 +333,11 @@
             },
             {
               "key": "template-id",
-              "value": "opal-ccp"
+              "value": "ccp"
             },
             {
               "key": "output-format",
-              "value": "OPAL"
+              "value": "EXCEL"
             },
             {
               "key": "query-format",
@@ -359,7 +359,7 @@
             },
             {
               "key": "project-type",
-              "value": "DATASHIELD"
+              "value": "EXPORT"
             }
           ]
         }
@@ -384,7 +384,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=opal-ccp&output-format=OPAL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park&project-type=DATASHIELD",
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park&project-type=EXPORT",
           "protocol": "http",
           "host": [
             "localhost"
@@ -404,11 +404,11 @@
             },
             {
               "key": "template-id",
-              "value": "opal-ccp"
+              "value": "ccp"
             },
             {
               "key": "output-format",
-              "value": "OPAL"
+              "value": "EXCEL"
             },
             {
               "key": "query-format",
@@ -430,7 +430,7 @@
             },
             {
               "key": "project-type",
-              "value": "DATASHIELD"
+              "value": "EXPORT"
             }
           ]
         }
@@ -455,7 +455,7 @@
           }
         },
         "url": {
-          "raw": "https://e260-ccp-req/project-manager-api/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=opal-ccp&output-format=OPAL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=mannheim,dktk-test,dktk-datashield-test&project-type=DATASHIELD",
+          "raw": "https://e260-ccp-req/project-manager-api/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=mannheim,dktk-test,dktk-datashield-test&project-type=EXPORT",
           "protocol": "https",
           "host": [
             "e260-ccp-req"
@@ -475,11 +475,11 @@
             },
             {
               "key": "template-id",
-              "value": "opal-ccp"
+              "value": "ccp"
             },
             {
               "key": "output-format",
-              "value": "OPAL"
+              "value": "EXCEL"
             },
             {
               "key": "query-format",
@@ -501,7 +501,7 @@
             },
             {
               "key": "project-type",
-              "value": "DATASHIELD"
+              "value": "EXPORT"
             }
           ]
         }
@@ -1794,7 +1794,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/exporter/templates?project-code=5e632908aac4412a892e&project-type=EXPORT",
+          "raw": "http://localhost:8097/exporter/templates?project-code=e650191ea08143b5bb11",
           "protocol": "http",
           "host": [
             "localhost"
@@ -1807,11 +1807,7 @@
           "query": [
             {
               "key": "project-code",
-              "value": "5e632908aac4412a892e"
-            },
-            {
-              "key": "project-type",
-              "value": "EXPORT"
+              "value": "e650191ea08143b5bb11"
             }
           ]
         }

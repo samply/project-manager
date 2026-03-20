@@ -1,13 +1,12 @@
 package de.samply.frontend.dto.configuration;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.frontend.dto.Form;
-import de.samply.frontend.dto.FormField;
-import de.samply.frontend.dto.Project;
-import de.samply.frontend.dto.ProjectAndForms;
+import de.samply.frontend.dto.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class ProjectConfigurationMatcher {
 
@@ -74,34 +73,37 @@ public class ProjectConfigurationMatcher {
     }
 
     private static int matchProject(Project runtime, Project template) {
+        if (runtime == null || template == null) return -1;
 
-        if (runtime == null || template == null) {
+        // Check the project-level field
+        if (template.isCustomConfig() && !runtime.isCustomConfig()) return -1;
+
+        ProjectOutput[] templateOutputs = template.getOutputs();
+        ProjectOutput[] runtimeOutputs = runtime.getOutputs();
+
+        if (templateOutputs == null || templateOutputs.length == 0) return 0;
+
+        if (runtimeOutputs == null || runtimeOutputs.length != templateOutputs.length) return -1;
+
+        // Compute score using streams
+        return (template.isCustomConfig() ? 1 : 0) +
+                IntStream.range(0, templateOutputs.length)
+                        .map(i -> matchOutput(runtimeOutputs[i], templateOutputs[i]))
+                        .filter(s -> s >= 0) // only count successful matches
+                        .sum();
+    }
+
+    private static int matchOutput(ProjectOutput runtime, ProjectOutput template) {
+        if (template.projectType() != null && !Objects.equals(template.projectType(), runtime.projectType())) return -1;
+        if (template.outputFormat() != null && !Objects.equals(template.outputFormat(), runtime.outputFormat()))
             return -1;
-        }
+        if (template.templateId() != null && !Objects.equals(template.templateId(), runtime.templateId())) return -1;
 
-        int score = 0;
-
-        if (template.getType() != null) {
-            if (!Objects.equals(template.getType(), runtime.getType())) return -1;
-            score++;
-        }
-
-        if (template.getOutputFormat() != null) {
-            if (!Objects.equals(template.getOutputFormat(), runtime.getOutputFormat())) return -1;
-            score++;
-        }
-
-        if (template.getTemplateId() != null) {
-            if (!Objects.equals(template.getTemplateId(), runtime.getTemplateId())) return -1;
-            score++;
-        }
-
-        if (template.isCustomConfig()) {
-            if (!runtime.isCustomConfig()) return -1;
-            score++;
-        }
-
-        return score;
+        // Count matched fields
+        return Stream.of(template.projectType(), template.outputFormat(), template.templateId())
+                .filter(Objects::nonNull)
+                .mapToInt(_ -> 1)
+                .sum();
     }
 
     private static int matchForms(Form[] runtimeForms, Form[] templateForms) {

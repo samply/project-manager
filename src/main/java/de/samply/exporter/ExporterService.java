@@ -27,6 +27,7 @@ import de.samply.utils.Base64Utils;
 import de.samply.utils.MessageStatus;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,10 +61,8 @@ public class ExporterService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectCoderRepository projectCoderRepository;
     private final NotificationService notificationService;
-    private final Set<String> exportTemplates;
-    private final Set<String> datashieldTemplates;
-    private final Set<String> researchEnvironmentTemplates;
-    private final Set<String> samplesTemplates;
+    @Getter
+    private final Map<ProjectType, Set<String>> exporterTemplates = new HashMap<>();
     private final String focusProjectManagerId;
     private final String exporterApiKey;
     private final String coderBeamIdSuffix;
@@ -101,18 +100,20 @@ public class ExporterService {
             EmailService emailService,
             BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
             EmailKeyValuesFactory emailKeyValuesFactory) {
-        this.samplesTemplates = samplesTemplates;
+
+        this.exporterTemplates.put(ProjectType.EXPORT, exportTemplates);
+        this.exporterTemplates.put(ProjectType.DATASHIELD, datashieldTemplates);
+        this.exporterTemplates.put(ProjectType.RESEARCH_ENVIRONMENT, researchEnvironmentTemplates);
+        this.exporterTemplates.put(ProjectType.SAMPLES, samplesTemplates);
+
         this.sessionUser = sessionUser;
         this.beamService = beamService;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.notificationService = notificationService;
-        this.exportTemplates = exportTemplates;
-        this.datashieldTemplates = datashieldTemplates;
         this.focusProjectManagerId = focusProjectManagerId;
         this.beamWaitTime = beamWaitTime;
         this.beamWaitCount = beamWaitCount;
         this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
-        this.researchEnvironmentTemplates = researchEnvironmentTemplates;
         this.coderBeamIdSuffix = coderBeamIdSuffix;
         this.testCoderFileBeamId = testCoderFileBeamId;
         this.projectCoderRepository = projectCoderRepository;
@@ -412,15 +413,6 @@ public class ExporterService {
             context += ProjectManagerConst.EXPORTER_QUERY_CONTEXT_SEPARATOR + queryContext;
         }
         return Base64Utils.encode(context);
-    }
-
-    public Set<String> getExporterTemplates(@NotNull ProjectType projectType) {
-        return switch (projectType) {
-            case EXPORT -> exportTemplates;
-            case SAMPLES -> samplesTemplates;
-            case DATASHIELD -> datashieldTemplates;
-            case RESEARCH_ENVIRONMENT -> researchEnvironmentTemplates;
-        };
     }
 
     private void resetProjectBridgeheadDataShield(ProjectBridgeheadAndType projectBridgeheadAndType) {

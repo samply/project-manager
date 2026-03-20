@@ -363,9 +363,9 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_PROJECT_OUTPUT_ACTION)
-    @DeleteMapping(value = ProjectManagerConst.REMOVE_PROJECT_OUTPUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = ProjectManagerConst.REMOVE_PROJECT_OUTPUT)
     public ResponseEntity removeOutput(
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType,
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> this.queryService.removeOutput(projectCode, projectType));
@@ -496,10 +496,9 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES)
     public ResponseEntity fetchExporterTemplates(
             // Project code needed for role constraints
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> exporterService.getExporterTemplates(projectType));
+        return convertToResponseEntity(() -> exporterService.getExporterTemplates());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
