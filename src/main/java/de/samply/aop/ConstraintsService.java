@@ -9,11 +9,9 @@ import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
-import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
-import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
@@ -155,13 +153,9 @@ public class ConstraintsService {
                     }
                 }
                 if (hasAnyProjectBridgeheadStateConstraint && stateConstraints.get().queryStates().length > 0) {
-                    hasAnyProjectBridgeheadStateConstraint = false;
-                    for (QueryState queryState : stateConstraints.get().queryStates()) {
-                        if (projectBridgehead.get().getQueryState() == queryState) {
-                            hasAnyProjectBridgeheadStateConstraint = true;
-                            break;
-                        }
-                    }
+                    hasAnyProjectBridgeheadStateConstraint = projectBridgehead.get().getExecutions().stream()
+                            .anyMatch(exec -> Arrays.asList(stateConstraints.get().queryStates())
+                                    .contains(exec.getQueryState()));
                 }
                 if (hasAnyProjectBridgeheadStateConstraint && stateConstraints.get().userProjectStates().length > 0) {
                     hasAnyProjectBridgeheadStateConstraint = false;
@@ -205,13 +199,9 @@ public class ConstraintsService {
                 return Optional.of(ResponseEntity.notFound().build());
             }
             if (projectConstraints.get().projectTypes().length > 0) {
-                boolean hasAnyProjectTypeConstraint = false;
-                for (ProjectType projectType : projectConstraints.get().projectTypes()) {
-                    if (project.get().getType() == projectType) {
-                        hasAnyProjectTypeConstraint = true;
-                        break;
-                    }
-                }
+                boolean hasAnyProjectTypeConstraint = Arrays.stream(projectConstraints.get().projectTypes())
+                        .anyMatch(pc -> project.get().hasProjectType(pc));
+
                 if (!hasAnyProjectTypeConstraint) {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
                 }

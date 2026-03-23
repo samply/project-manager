@@ -9,6 +9,7 @@ import de.samply.db.model.ProjectCoder;
 import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.project.ProjectType;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -190,7 +191,7 @@ public class CoderService {
     }
 
     private CreateRequestBody generateCreateRequestBody(ProjectCoder projectCoder) {
-        CreateRequestBody createRequestBody = coderConfiguration.cloneCreateRequestBody(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getType());
+        CreateRequestBody createRequestBody = coderConfiguration.cloneCreateRequestBody(ProjectType.RESEARCH_ENVIRONMENT);
         createRequestBody.setName(projectCoder.getAppId());
         replaceParameterValues(createRequestBody, projectCoder);
         return createRequestBody;

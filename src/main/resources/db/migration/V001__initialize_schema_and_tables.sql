@@ -12,11 +12,18 @@ CREATE TABLE samply.query
     created_at     TIMESTAMP NOT NULL,
     human_readable TEXT,
     explorer_url   TEXT,
-    output_format  TEXT,
-    template_id    TEXT,
     label          TEXT,
     description    TEXT,
     context        TEXT
+);
+
+CREATE TABLE samply.query_output
+(
+    id            SERIAL PRIMARY KEY,
+    query_id      BIGINT NOT NULL,
+    project_type  TEXT   NOT NULL,
+    template_id   TEXT,
+    output_format TEXT
 );
 
 CREATE TABLE samply.project
@@ -31,26 +38,33 @@ CREATE TABLE samply.project
     archived_at           TIMESTAMP,
     modified_at           TIMESTAMP NOT NULL,
     query_id              BIGINT,
-    type                  TEXT,
-    is_custom_config      BOOLEAN,
+    is_custom_config      BOOLEAN   NOT NULL,
     results_url           TEXT,
     creator_results_state TEXT      NOT NULL
 );
 
 CREATE TABLE samply.project_bridgehead
 (
-    id                        SERIAL    NOT NULL PRIMARY KEY,
-    project_id                BIGINT    NOT NULL,
-    bridgehead                TEXT      NOT NULL,
-    modified_at               TIMESTAMP NOT NULL,
-    state                     TEXT      NOT NULL,
+    id                    SERIAL    NOT NULL PRIMARY KEY,
+    project_id            BIGINT    NOT NULL,
+    bridgehead            TEXT      NOT NULL,
+    modified_at           TIMESTAMP NOT NULL,
+    state                 TEXT      NOT NULL,
+    results_url           TEXT,
+    creator_results_state TEXT      NOT NULL
+);
+
+CREATE TABLE samply.project_bridgehead_execution
+(
+    id                        SERIAL PRIMARY KEY,
+    project_bridgehead_id     BIGINT    NOT NULL,
+    query_output_id           BIGINT    NOT NULL,
     query_state               TEXT      NOT NULL,
     exporter_response         TEXT,
     exporter_user             TEXT,
     exporter_execution_id     TEXT,
     exporter_dispatch_counter INT       NOT NULL,
-    results_url               TEXT,
-    creator_results_state     TEXT      NOT NULL
+    modified_at               TIMESTAMP NOT NULL
 );
 
 CREATE TABLE samply.project_bridgehead_user
@@ -169,6 +183,16 @@ CREATE TABLE samply.project_form
     modified_at TIMESTAMP
 );
 
+ALTER TABLE samply.query_output
+    ADD CONSTRAINT fk_query_output_query
+        FOREIGN KEY (query_id)
+            REFERENCES samply.query (id)
+            ON DELETE CASCADE;
+
+ALTER TABLE samply.query_output
+    ADD CONSTRAINT uq_query_project_type
+        UNIQUE (query_id, project_type);
+
 
 ALTER TABLE samply.project
     ADD CONSTRAINT fk_project_query
@@ -217,7 +241,23 @@ ALTER TABLE samply.project_form
     ADD CONSTRAINT fk_project FOREIGN KEY (project_id)
         REFERENCES samply.project (id) ON DELETE CASCADE;
 
+ALTER TABLE samply.project_bridgehead_execution
+    ADD CONSTRAINT fk_execution_bridgehead
+        FOREIGN KEY (project_bridgehead_id)
+            REFERENCES samply.project_bridgehead (id)
+            ON DELETE CASCADE;
 
+ALTER TABLE samply.project_bridgehead_execution
+    ADD CONSTRAINT fk_execution_query_output
+        FOREIGN KEY (query_output_id)
+            REFERENCES samply.query_output (id)
+            ON DELETE CASCADE;
+
+ALTER TABLE samply.project_bridgehead_execution
+    ADD CONSTRAINT uq_execution_unique
+        UNIQUE (project_bridgehead_id, query_output_id);
+
+CREATE INDEX idx_query_output_query_id ON samply.query_output (query_id);
 CREATE INDEX idx_project_bridgehead_project_id ON samply.project_bridgehead (project_id);
 CREATE INDEX idx_project_bridgehead_user_project_bridgehead_id ON samply.project_bridgehead_user (project_bridgehead_id);
 CREATE INDEX idx_project_document_project_id ON samply.project_document (project_id);
@@ -228,3 +268,5 @@ CREATE INDEX idx_project_bridgehead_datashield_project_bridgehead_id ON samply.p
 CREATE INDEX idx_project_coder_project_bridgehead_user_id ON samply.project_coder (project_bridgehead_user_id);
 CREATE INDEX idx_project_form_field_project_id ON samply.project_form_field (project_id);
 CREATE INDEX idx_project_form_project_id ON samply.project_form (project_id);
+CREATE INDEX idx_execution_bridgehead ON samply.project_bridgehead_execution (project_bridgehead_id);
+CREATE INDEX idx_execution_query_output ON samply.project_bridgehead_execution (query_output_id);

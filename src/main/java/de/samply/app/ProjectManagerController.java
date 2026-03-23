@@ -223,7 +223,7 @@ public class ProjectManagerController {
     //TODO: Send email to PM-ADMIN, that there was a problem with the operation
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
-    @PutMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
+    @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
     public ResponseEntity setUserAsDeveloper(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -240,7 +240,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
-    @PutMapping(value = ProjectManagerConst.SET_PILOT_USER)
+    @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
     public ResponseEntity setUserAsPilot(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -255,7 +255,7 @@ public class ProjectManagerController {
     @EmailSender(templateType = EmailTemplateType.INVITATION, recipients = {EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
-    @PutMapping(value = ProjectManagerConst.SET_FINAL_USER)
+    @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
     public ResponseEntity setUserAsFinal(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
@@ -266,7 +266,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_QUERY, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
     public ResponseEntity createProjectQuery(
             @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
             @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, notEmpty = true) QueryFormat queryFormat,
@@ -276,14 +276,16 @@ public class ProjectManagerController {
             @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestVariable(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
             @RequestVariable(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
-            @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext
+            @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType
     ) {
         return convertToResponseEntity(() ->
-                this.queryService.createQuery(query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext));
+                this.queryService.createQuery(query, queryFormat, label, description,
+                        outputFormat, templateId, projectType, humanReadable, explorerUrl, queryContext));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
-    @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT)
     public ResponseEntity createQueryAndDesignProject(
             @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
             @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, notEmpty = true) QueryFormat queryFormat,
@@ -307,8 +309,9 @@ public class ProjectManagerController {
                         .flatMap(Optional::stream)
                         .toArray(String[]::new) : bridgeheads;
         String queryCode = this.queryService.createQuery(
-                query, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
-        String projectCode = this.projectEventService.draft(tempBridgeheads, queryCode, projectType);
+                query, queryFormat, label, description, outputFormat, templateId,
+                projectType, humanReadable, explorerUrl, queryContext);
+        String projectCode = this.projectEventService.draft(tempBridgeheads, queryCode);
         this.queryService.addProjectCodeToExporterUrl(queryCode, projectCode);
         return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
@@ -320,11 +323,11 @@ public class ProjectManagerController {
         return (bridgeheads == null || bridgeheads.length == 0) && (explorerIds == null || explorerIds.length == 0);
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_ACTION)
-    @PutMapping(value = ProjectManagerConst.EDIT_PROJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ProjectManagerConst.EDIT_PROJECT)
     public ResponseEntity editProject(
             @RequestVariable(name = ProjectManagerConst.QUERY, required = false) String query,
             @RequestVariable(name = ProjectManagerConst.QUERY_FORMAT, required = false) QueryFormat queryFormat,
@@ -334,23 +337,38 @@ public class ProjectManagerController {
             @RequestVariable(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
             @RequestVariable(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
             @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
             @RequestVariable(name = ProjectManagerConst.HUMAN_READABLE, required = false) String humanReadable,
             @RequestVariable(name = ProjectManagerConst.REDIRECT_EXPLORER_URL, required = false) String explorerUrl,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
             @RequestVariable(name = ProjectManagerConst.QUERY_CONTEXT, required = false) String queryContext,
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
-                Arrays.stream(explorerIds)
-                        .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
-                        .flatMap(Optional::stream)
-                        .toArray(String[]::new) : bridgeheads;
-        projectService.editProject(projectCode, projectType, tempBridgeheads);
-        queryService.editQuery(projectCode, (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query : null, queryFormat, label, description, outputFormat, templateId, humanReadable, explorerUrl, queryContext);
+        if (bridgeheads != null) {
+            String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
+                    Arrays.stream(explorerIds)
+                            .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
+                            .flatMap(Optional::stream)
+                            .toArray(String[]::new) : bridgeheads;
+            projectService.updateBridgeheads(projectCode, tempBridgeheads);
+        }
+        queryService.editQuery(projectCode, (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query : null, queryFormat, label, description,
+                outputFormat, templateId, projectType, humanReadable, explorerUrl, queryContext);
         return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)
         ));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_PROJECT_OUTPUT_ACTION)
+    @DeleteMapping(value = ProjectManagerConst.REMOVE_PROJECT_OUTPUT)
+    public ResponseEntity removeOutput(
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType,
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+    ) {
+        return convertToResponseEntity(() -> this.queryService.removeOutput(projectCode, projectType));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
@@ -478,10 +496,9 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES)
     public ResponseEntity fetchExporterTemplates(
             // Project code needed for role constraints
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> exporterService.getExporterTemplates(projectType));
+        return convertToResponseEntity(() -> exporterService.getExporterTemplates());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -601,10 +618,9 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity designProject(
             @RequestVariable(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
-            @RequestVariable(name = ProjectManagerConst.QUERY_CODE) String queryCode,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @RequestVariable(name = ProjectManagerConst.QUERY_CODE) String queryCode
     ) {
-        return convertToResponseEntity(() -> this.projectEventService.draft(bridgeheads, queryCode, projectType));
+        return convertToResponseEntity(() -> this.projectEventService.draft(bridgeheads, queryCode));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -1407,12 +1423,13 @@ public class ProjectManagerController {
             queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
-    @PutMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
+    @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity saveQueryInBridgehead(
             @NotEmpty @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
     ) {
-        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgehead(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgehead(projectCode, bridgehead, projectType));
     }
 
 
@@ -1430,9 +1447,10 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity saveAndExecuteQueryInBridgehead(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
     ) {
-        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(projectCode, bridgehead));
+        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(projectCode, bridgehead, projectType));
     }
 
 
@@ -1486,7 +1504,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_DATASHIELD_STATUS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_DATASHIELD_STATUS)
-    public ResponseEntity fetchOpalStatus(
+    public ResponseEntity fetchDatashieldStatus(
             @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {

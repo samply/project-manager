@@ -47,7 +47,7 @@ public class ActionExplanations {
             return false;
         }
         if (project.isPresent()) {
-            if (explanation.getProjectType() != null && project.get().getType() != explanation.getProjectType()) {
+            if (explanation.getProjectType() != null && !project.get().hasProjectType(explanation.getProjectType())) {
                 return false;
             }
             if (explanation.getProjectState() != null && project.get().getState() != explanation.getProjectState()) {
@@ -55,7 +55,9 @@ public class ActionExplanations {
             }
         }
         if (projectBridgehead.isPresent()) {
-            if (explanation.getQueryState() != null && projectBridgehead.get().getQueryState() != explanation.getQueryState()) {
+            if (explanation.getQueryState() != null &&
+                    projectBridgehead.get().getExecutions().stream()
+                            .noneMatch(exec -> exec.getQueryState() == explanation.getQueryState())) {
                 return false;
             }
             if (explanation.getProjectBridgeheadState() != null && projectBridgehead.get().getState() != explanation.getProjectBridgeheadState()) {

@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
-import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.model.ProjectBridgeheadDataShield;
-import de.samply.db.model.ProjectCoder;
-import de.samply.db.model.Query;
+import de.samply.db.model.*;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
@@ -30,6 +27,7 @@ import de.samply.utils.Base64Utils;
 import de.samply.utils.MessageStatus;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +38,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -62,10 +61,8 @@ public class ExporterService {
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectCoderRepository projectCoderRepository;
     private final NotificationService notificationService;
-    private final Set<String> exportTemplates;
-    private final Set<String> datashieldTemplates;
-    private final Set<String> researchEnvironmentTemplates;
-    private final Set<String> samplesTemplates;
+    @Getter
+    private final Map<ProjectType, Set<String>> exporterTemplates = new HashMap<>();
     private final String focusProjectManagerId;
     private final String exporterApiKey;
     private final String coderBeamIdSuffix;
@@ -103,18 +100,20 @@ public class ExporterService {
             EmailService emailService,
             BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
             EmailKeyValuesFactory emailKeyValuesFactory) {
-        this.samplesTemplates = samplesTemplates;
+
+        this.exporterTemplates.put(ProjectType.EXPORT, exportTemplates);
+        this.exporterTemplates.put(ProjectType.DATASHIELD, datashieldTemplates);
+        this.exporterTemplates.put(ProjectType.RESEARCH_ENVIRONMENT, researchEnvironmentTemplates);
+        this.exporterTemplates.put(ProjectType.SAMPLES, samplesTemplates);
+
         this.sessionUser = sessionUser;
         this.beamService = beamService;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.notificationService = notificationService;
-        this.exportTemplates = exportTemplates;
-        this.datashieldTemplates = datashieldTemplates;
         this.focusProjectManagerId = focusProjectManagerId;
         this.beamWaitTime = beamWaitTime;
         this.beamWaitCount = beamWaitCount;
         this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
-        this.researchEnvironmentTemplates = researchEnvironmentTemplates;
         this.coderBeamIdSuffix = coderBeamIdSuffix;
         this.testCoderFileBeamId = testCoderFileBeamId;
         this.projectCoderRepository = projectCoderRepository;
@@ -126,11 +125,11 @@ public class ExporterService {
         this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
 
-    public Mono<ExporterServiceResult> sendQueryToBridgehead(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
-        String description = "Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " ...";
+    public Mono<ExporterServiceResult> sendQueryToBridgehead(ProjectBridgeheadAndType projectBridgeheadAndType) throws ExporterServiceException {
+        String description = "Sending query of project " + projectBridgeheadAndType.projectBridgehead().getProject().getCode() + " to bridgehead " + projectBridgeheadAndType.projectBridgehead().getBridgehead() + " ...";
         log.info(description);
         TaskType taskType = TaskType.CREATE;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
+        return postRequest(projectBridgeheadAndType, generateFocusBody(projectBridgeheadAndType, taskType), taskType, description)
                 .doOnSuccess(_ -> logQuerySent());
     }
 
@@ -138,19 +137,19 @@ public class ExporterService {
         log.info("Query sent");
     }
 
-    public Mono<ExporterServiceResult> sendQueryToBridgeheadAndExecute(ProjectBridgehead projectBridgehead) throws ExporterServiceException {
-        String description = "Sending query of project " + projectBridgehead.getProject().getCode() + " to bridgehead " + projectBridgehead.getBridgehead() + " to be executed...";
+    public Mono<ExporterServiceResult> sendQueryToBridgeheadAndExecute(ProjectBridgeheadAndType projectBridgeheadAndType) throws ExporterServiceException {
+        String description = "Sending query of project " + projectBridgeheadAndType.projectBridgehead().getProject().getCode() + " to bridgehead " + projectBridgeheadAndType.projectBridgehead().getBridgehead() + " to be executed...";
         log.info(description);
         TaskType taskType = TaskType.EXECUTE;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
+        return postRequest(projectBridgeheadAndType, generateFocusBody(projectBridgeheadAndType, taskType), taskType, description)
                 .doOnSuccess(_ -> logQuerySent());
     }
 
-    public Mono<ExporterServiceResult> checkExecutionStatus(ProjectBridgehead projectBridgehead) {
-        String description = "Checking export execution status of project " + projectBridgehead.getProject().getCode() + " in bridgehead " + projectBridgehead.getBridgehead() + "...";
+    public Mono<ExporterServiceResult> checkExecutionStatus(ProjectBridgeheadAndType projectBridgeheadAndType) throws ExporterServiceException {
+        String description = "Checking export execution status of project " + projectBridgeheadAndType.projectBridgehead().getProject().getCode() + " in bridgehead " + projectBridgeheadAndType.projectBridgehead().getBridgehead() + "...";
         log.info(description);
         TaskType taskType = TaskType.STATUS;
-        return postRequest(projectBridgehead, generateFocusBody(projectBridgehead, taskType), taskType, description)
+        return postRequest(projectBridgeheadAndType, generateFocusBody(projectBridgeheadAndType, taskType), taskType, description)
                 .doOnSuccess(_ -> log.info("Status checked"));
     }
 
@@ -175,46 +174,67 @@ public class ExporterService {
     public Mono<Void> transferFileToResearchEnvironment(ProjectCoder projectCoder) {
         String description = "Transferring file to Research Environment for project " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode() + " in bridgehead " + projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead();
         log.info(description);
-        return postRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), generateTransferFileBeamRequest(projectCoder), TaskType.FILE_TRANSFER, description)
-                .doOnError(throwable -> {
-                    MessageStatus messageStatus = MessageStatus.newInstance(throwable, "Error transferring file to Research Environment");
-                    notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
-                            projectCoder.getProjectBridgeheadUser().getEmail(),
-                            OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
-                            messageStatus.message(),
-                            ExceptionUtils.getStackTrace(throwable),
-                            messageStatus.status()
-                    );
-                    log.error(ExceptionUtils.getStackTrace(throwable));
-                })
-                .doOnSuccess(_ -> {
-                    log.info("Files transferred correctly");
-                    projectCoder.setExportTransferred(true);
-                    this.projectCoderRepository.save(projectCoder);
-                    notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
-                            projectCoder.getProjectBridgeheadUser().getEmail(),
-                            OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
-                            "File transferred to Research Environment",
-                            null,
-                            HttpStatus.OK
-                    );
-                }).then();
+
+        return Flux.fromStream(
+                        projectCoder
+                                .getProjectBridgeheadUser()
+                                .getProjectBridgehead()
+                                .getProject()
+                                .fetchProjectTypes()
+                                .stream()
+                                .map(projectType -> new ProjectBridgeheadAndType(projectCoder.getProjectBridgeheadUser().getProjectBridgehead(), projectType))
+                ).flatMap(projectBridgeheadAndType ->
+                        postRequest(projectBridgeheadAndType,
+                                generateTransferFileBeamRequest(projectCoder, projectBridgeheadAndType.projectType()),
+                                TaskType.FILE_TRANSFER, description)
+                                .doOnError(throwable -> {
+                                    MessageStatus messageStatus = MessageStatus.newInstance(throwable, "Error transferring file to Research Environment");
+                                    notificationService.createNotification(
+                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
+                                            projectCoder.getProjectBridgeheadUser().getEmail(),
+                                            OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
+                                            messageStatus.message(),
+                                            ExceptionUtils.getStackTrace(throwable),
+                                            messageStatus.status()
+                                    );
+                                    log.error(ExceptionUtils.getStackTrace(throwable));
+                                })
+                                .doOnSuccess(_ -> {
+                                    log.info("Files transferred correctly");
+                                    projectCoder.setExportTransferred(true);
+                                    this.projectCoderRepository.save(projectCoder);
+                                    notificationService.createNotification(
+                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
+                                            projectCoder.getProjectBridgeheadUser().getEmail(),
+                                            OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
+                                            "File transferred to Research Environment",
+                                            null,
+                                            HttpStatus.OK
+                                    );
+                                }))
+                .then();
     }
 
-    private BeamRequest generateTransferFileBeamRequest(ProjectCoder projectCoder) {
-        return beamService.generateExporterFileTransferBeamRequest(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
-                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getExporterExecutionId(), fetchCoderFileBeamId(projectCoder));
+    private BeamRequest generateTransferFileBeamRequest(ProjectCoder projectCoder, ProjectType projectType) {
+        return beamService.generateExporterFileTransferBeamRequest(
+                projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
+                projectCoder.getProjectBridgeheadUser().getProjectBridgehead()
+                        .fetchExecution(projectType)
+                        .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                        .getExporterExecutionId(),
+                fetchCoderFileBeamId(projectCoder)
+        );
     }
 
     private String fetchCoderFileBeamId(ProjectCoder projectCoder) {
         return Objects.requireNonNullElseGet(testCoderFileBeamId, () -> projectCoder.getAppId() + ((coderBeamIdSuffix.startsWith(".")) ? "" : ".") + coderBeamIdSuffix);
     }
 
-    private Mono<ExporterServiceResult> postRequest(ProjectBridgehead projectBridgehead, BeamRequest beamRequest, TaskType taskType, String description) {
+    private Mono<ExporterServiceResult> postRequest(ProjectBridgeheadAndType projectBridgeheadAndType, BeamRequest beamRequest, TaskType taskType, String description) {
+        ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
+        ProjectType projectType = projectBridgeheadAndType.projectType();
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.BEAM_TASK_PATH).build())
                 .header(HttpHeaders.AUTHORIZATION, fetchAuthorization())
@@ -223,11 +243,18 @@ public class ExporterService {
                 .exchangeToMono(clientResponse -> {
                     log.debug("Received HTTP POST response with status {}", clientResponse.statusCode());
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.CREATED)) {
-
                         fetchBridgeheadOperationType(taskType).ifPresent(operationType ->
-                                createBridgeheadNotification((HttpStatus) clientResponse.statusCode(), projectBridgehead, projectBridgehead.getExporterUser(), operationType, description));
-                        resetProjectBridgeheadDataShield(projectBridgehead);
-                        return Mono.just(new ExporterServiceResult(projectBridgehead, beamService.serializeFocusQuery(beamRequest)));
+                                createBridgeheadNotification(
+                                        (HttpStatus) clientResponse.statusCode(),
+                                        projectBridgehead,
+                                        projectBridgehead
+                                                .fetchExecution(projectType)
+                                                .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                                                .getExporterUser(),
+                                        operationType,
+                                        description));
+                        resetProjectBridgeheadDataShield(projectBridgeheadAndType);
+                        return Mono.just(new ExporterServiceResult(projectBridgeheadAndType, beamService.serializeFocusQuery(beamRequest)));
                     } else {
                         log.error("Http Error {} posting task {} : {} for project {} and bridgehead {}",
                                 clientResponse.statusCode(), beamRequest.getId(), beamRequest.getBody(),
@@ -271,20 +298,31 @@ public class ExporterService {
         }
     }
 
-    private String generateExportQueryInBase64ForExporterRequest(ProjectBridgehead projectBridgehead)
+    private String generateExportQueryInBase64ForExporterRequest(ProjectBridgeheadAndType projectBridgeheadAndType)
             throws ExporterServiceException {
+        ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
+        ProjectType projectType = projectBridgeheadAndType.projectType();
         Query query = projectBridgehead.getProject().getQuery();
         Map<String, String> result = Stream.of(
                         new String[][]{
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name()},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, fetchLabel(projectBridgehead)},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, fetchLabel(projectBridgeheadAndType)},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectBridgehead.getProject().getCode())},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, projectBridgehead.getProject().getCreatorEmail()},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID, projectBridgehead.getExporterUser()},
-                                {ProjectManagerConst.EXPORTER_PARAM_OUTPUT_FORMAT, query.getOutputFormat().name()},
-                                {ProjectManagerConst.EXPORTER_PARAM_TEMPLATE_ID, query.getTemplateId()},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_CONTACT_ID, projectBridgehead
+                                        .fetchExecution(projectType)
+                                        .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                                        .getExporterUser()},
+                                {ProjectManagerConst.EXPORTER_PARAM_OUTPUT_FORMAT, query
+                                        .fetchOutput(projectType)
+                                        .orElseThrow(() -> new IllegalStateException("Missing output for " + projectType))
+                                        .getOutputFormat().name()},
+                                {ProjectManagerConst.EXPORTER_PARAM_TEMPLATE_ID, query
+                                        .fetchOutput(projectType)
+                                        .orElseThrow(() -> new IllegalStateException("Missing output for " + projectType))
+                                        .getTemplateId()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(projectBridgehead.getProject().getExpiresAt())}
                         }
                 )
@@ -293,26 +331,37 @@ public class ExporterService {
         return convertToBase64String(result);
     }
 
-    private String generateExportStatusInBase64ForExporterRequest(ProjectBridgehead projectBridgehead) {
+    private String generateExportStatusInBase64ForExporterRequest(ProjectBridgeheadAndType projectBridgeheadAndType) {
         Map<String, String> result = Map.of(
-                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_ID, projectBridgehead.getExporterExecutionId()
+                ProjectManagerConst.EXPORTER_PARAM_QUERY_EXECUTION_ID, projectBridgeheadAndType.projectBridgehead()
+                        .fetchExecution(projectBridgeheadAndType.projectType())
+                        .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectBridgeheadAndType.projectType()))
+                        .getExporterExecutionId()
         );
         return convertToBase64String(result);
     }
 
-    private String generateExporterQueryInBase64ForExporterCreateQuery(ProjectBridgehead projectBridgehead)
+    private String generateExporterQueryInBase64ForExporterCreateQuery(ProjectBridgeheadAndType projectBridgeheadAndType)
             throws ExporterServiceException {
+        ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
+        ProjectType projectType = projectBridgeheadAndType.projectType();
         Query query = projectBridgehead.getProject().getQuery();
         Map<String, String> result = Stream.of(
                         new String[][]{
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY, query.getQuery()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_FORMAT, query.getQueryFormat().name()},
-                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, fetchLabel(projectBridgehead)},
+                                {ProjectManagerConst.EXPORTER_PARAM_QUERY_LABEL, fetchLabel(projectBridgeheadAndType)},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_DESCRIPTION, query.getDescription()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTEXT, generateQueryContextForExporter(query.getContext(), projectBridgehead.getProject().getCode())},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_CONTACT_ID, projectBridgehead.getProject().getCreatorEmail()},
-                                {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT, query.getOutputFormat().name()},
-                                {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query.getTemplateId()},
+                                {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_OUTPUT_FORMAT, query
+                                        .fetchOutput(projectType)
+                                        .orElseThrow(() -> new IllegalStateException("Missing output for " + projectType))
+                                        .getOutputFormat().name()},
+                                {ProjectManagerConst.EXPORTER_PARAM_DEFAULT_TEMPLATE_ID, query
+                                        .fetchOutput(projectType)
+                                        .orElseThrow(() -> new IllegalStateException("Missing output for " + projectType))
+                                        .getTemplateId()},
                                 {ProjectManagerConst.EXPORTER_PARAM_QUERY_EXPIRATION_DATE, convertToString(projectBridgehead.getProject().getExpiresAt())}
                         }
                 )
@@ -321,27 +370,37 @@ public class ExporterService {
         return convertToBase64String(result);
     }
 
-    private String fetchLabel(@NotNull ProjectBridgehead projectBridgehead) {
+    private String fetchLabel(@NotNull ProjectBridgeheadAndType projectBridgeheadAndType) {
+        ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
+        ProjectType projectType = projectBridgeheadAndType.projectType();
         String label = "[DRN: " + projectBridgehead.getProject().getCode() + "] " + projectBridgehead.getProject().getQuery().getLabel();
-        return (projectBridgehead.getExporterDispatchCounter() == 0) ? label : label + " (Attempt: " + (projectBridgehead.getExporterDispatchCounter() + 1) + ")";
+        return (projectBridgehead
+                .fetchExecution(projectType)
+                .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                .getExporterDispatchCounter() == 0) ?
+                label :
+                label + " (Attempt: " + (projectBridgehead
+                        .fetchExecution(projectType)
+                        .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                        .getExporterDispatchCounter() + 1) + ")";
     }
 
-    private BeamRequest generateFocusBody(ProjectBridgehead projectBridgehead, TaskType taskType) throws ExporterServiceException {
+    private BeamRequest generateFocusBody(ProjectBridgeheadAndType projectBridgeheadAndType, TaskType taskType) throws ExporterServiceException {
         try {
-            return generateFocusQueryWithoutExceptionHandling(projectBridgehead, taskType);
+            return generateFocusQueryWithoutExceptionHandling(projectBridgeheadAndType, taskType);
         } catch (BeamServiceException e) {
             throw new ExporterServiceException(e);
         }
     }
 
-    private BeamRequest generateFocusQueryWithoutExceptionHandling(ProjectBridgehead projectBridgehead, TaskType taskType) throws BeamServiceException {
+    private BeamRequest generateFocusQueryWithoutExceptionHandling(ProjectBridgeheadAndType projectBridgeheadAndType, TaskType taskType) throws BeamServiceException {
         String exporterQueryInBase64 = switch (taskType) {
-            case CREATE -> generateExporterQueryInBase64ForExporterCreateQuery(projectBridgehead);
-            case EXECUTE -> generateExportQueryInBase64ForExporterRequest(projectBridgehead);
-            case STATUS -> generateExportStatusInBase64ForExporterRequest(projectBridgehead);
+            case CREATE -> generateExporterQueryInBase64ForExporterCreateQuery(projectBridgeheadAndType);
+            case EXECUTE -> generateExportQueryInBase64ForExporterRequest(projectBridgeheadAndType);
+            case STATUS -> generateExportStatusInBase64ForExporterRequest(projectBridgeheadAndType);
             default -> null;
         };
-        return beamService.generateFocusBeamRequest(exporterQueryInBase64, taskType, projectBridgehead.getBridgehead());
+        return beamService.generateFocusBeamRequest(exporterQueryInBase64, taskType, projectBridgeheadAndType.projectBridgehead().getBridgehead());
     }
 
     private String convertToString(LocalDate date) {
@@ -356,17 +415,13 @@ public class ExporterService {
         return Base64Utils.encode(context);
     }
 
-    public Set<String> getExporterTemplates(@NotNull ProjectType projectType) {
-        return switch (projectType) {
-            case EXPORT -> exportTemplates;
-            case SAMPLES -> samplesTemplates;
-            case DATASHIELD -> datashieldTemplates;
-            case RESEARCH_ENVIRONMENT -> researchEnvironmentTemplates;
-        };
-    }
-
-    private void resetProjectBridgeheadDataShield(ProjectBridgehead projectBridgehead) {
-        if (projectBridgehead.getProject().getType() == ProjectType.DATASHIELD) {
+    private void resetProjectBridgeheadDataShield(ProjectBridgeheadAndType projectBridgeheadAndType) {
+        ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
+        ProjectType projectType = projectBridgeheadAndType.projectType();
+        if (projectBridgehead.getProject()
+                .fetchOutput(projectType)
+                .orElseThrow(() -> new IllegalStateException("Missing output for " + projectType))
+                .getProjectType() == ProjectType.DATASHIELD) {
             Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataSHIELD = this.projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead);
             ProjectBridgeheadDataShield result;
             if (projectBridgeheadInDataSHIELD.isEmpty()) {
@@ -380,8 +435,10 @@ public class ExporterService {
         }
     }
 
-    public Mono<ExporterServiceResult> checkIfQueryIsAlreadySentOrExecuted(ProjectBridgehead projectBridgehead) {
-        Optional<BeamRequest> focusQuery = extractFocusQuery(projectBridgehead);
+    public Mono<ExporterServiceResult> checkIfQueryIsAlreadySentOrExecuted(ProjectBridgeheadAndType projectBridgeheadAndType) {
+        Optional<BeamRequest> focusQuery = extractFocusQuery(projectBridgeheadAndType);
+        ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
+        ProjectType projectType = projectBridgeheadAndType.projectType();
         if (focusQuery.isEmpty()) {
             throw new RuntimeException("Focus Query not found for project " + projectBridgehead.getProject().getCode() + " and bridgehead " + projectBridgehead.getBridgehead());
         }
@@ -395,37 +452,46 @@ public class ExporterService {
                 .exchangeToMono(clientResponse -> {
                     log.debug("Received HTTP GET response with status {}", clientResponse.statusCode());
                     if (clientResponse.statusCode().equals(HttpStatus.OK) || clientResponse.statusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
-                        Optional<OperationType> operationType = switch (projectBridgehead.getQueryState()) {
+                        Optional<OperationType> operationType = switch (projectBridgehead
+                                .fetchExecution(projectType)
+                                .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                                .getQueryState()) {
                             case SENDING -> Optional.of(OperationType.CHECK_SEND_QUERY);
                             case SENDING_AND_EXECUTING -> Optional.of(OperationType.CHECK_SEND_AND_EXECUTE_QUERY);
                             default -> Optional.empty();
                         };
                         operationType.ifPresent(type -> createBridgeheadNotification(
-                                HttpStatus.OK, projectBridgehead, projectBridgehead.getExporterUser(),
+                                HttpStatus.OK, projectBridgehead, projectBridgehead
+                                        .fetchExecution(projectType)
+                                        .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                                        .getExporterUser(),
                                 type, "Checking if query is already sent or executed"));
                         return clientResponse.bodyToMono(BeamRequest[].class).filter(focusQueries -> focusQueries.length > 0).flatMap(newBeamRequest -> {
-                            if (projectBridgehead.getQueryState() == QueryState.EXPORT_RUNNING_2) {
+                            if (projectBridgehead
+                                    .fetchExecution(projectType)
+                                    .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                                    .getQueryState() == QueryState.EXPORT_RUNNING_2) {
                                 if (newBeamRequest[0].getBody() == null) {
                                     return Mono.empty();
                                 }
                                 Optional<String> decodedBody = Base64Utils.decodeIfNecessary(newBeamRequest[0].getBody());
                                 if (decodedBody.isEmpty() || !decodedBody.get().contains("OK")) {
                                     if (decodedBody.isEmpty() || decodedBody.get().contains("ERROR")) {
-                                        modifyProjectBridgeheadState(projectBridgehead, QueryState.ERROR);
+                                        modifyProjectBridgeheadState(projectBridgeheadAndType, QueryState.ERROR);
                                     } else {
-                                        modifyProjectBridgeheadState(projectBridgehead, QueryState.EXPORT_RUNNING_1);
+                                        modifyProjectBridgeheadState(projectBridgeheadAndType, QueryState.EXPORT_RUNNING_1);
                                     }
                                     return Mono.empty();
                                 }
                             }
-                            return Mono.just(new ExporterServiceResult(projectBridgehead, beamService.serializeFocusQuery(newBeamRequest[0])));
+                            return Mono.just(new ExporterServiceResult(projectBridgeheadAndType, beamService.serializeFocusQuery(newBeamRequest[0])));
                         });
                     } else {
                         log.error("Http Error {} checking task {} for project {} and bridgehead {}",
                                 clientResponse.statusCode(), extractTaskId(focusQuery.get()),
                                 projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
                         if (isQueryStateToBeChangedToError((HttpStatus) clientResponse.statusCode(), projectBridgehead)) {
-                            modifyProjectBridgeheadState(projectBridgehead, QueryState.ERROR);
+                            modifyProjectBridgeheadState(projectBridgeheadAndType, QueryState.ERROR);
                         }
                         return clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
                             logError(errorBody);
@@ -435,14 +501,17 @@ public class ExporterService {
                 });
     }
 
-    private void modifyProjectBridgeheadState(ProjectBridgehead projectBridgehead, QueryState newState) {
-        projectBridgehead.setQueryState(newState);
-        projectBridgehead.setModifiedAt(Instant.now());
-        if (newState == QueryState.ERROR) {
-            projectBridgehead.setExporterDispatchCounter(projectBridgehead.getExporterDispatchCounter() + 1);
-            sendEmail(projectBridgehead, EmailTemplateType.ERROR_WHILE_SAVING_QUERY_IN_EXPORTER);
-        }
-        projectBridgeheadRepository.save(projectBridgehead);
+    private void modifyProjectBridgeheadState(ProjectBridgeheadAndType projectBridgeheadAndType, QueryState newState) {
+        ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
+        projectBridgehead.fetchExecution(projectBridgeheadAndType.projectType()).ifPresent(execution -> {
+            execution.setQueryState(newState);
+            execution.setModifiedAt(Instant.now());
+            if (newState == QueryState.ERROR) {
+                execution.setExporterDispatchCounter(execution.getExporterDispatchCounter() + 1);
+                sendEmail(projectBridgehead, EmailTemplateType.ERROR_WHILE_SAVING_QUERY_IN_EXPORTER);
+            }
+            projectBridgeheadRepository.save(projectBridgehead);
+        });
     }
 
     private void sendEmail(ProjectBridgehead projectBridgehead, @SuppressWarnings("SameParameterValue") EmailTemplateType templateType) {
@@ -457,14 +526,12 @@ public class ExporterService {
         return (beamRequest.getId() != null) ? beamRequest.getId() : beamRequest.getTask();
     }
 
-    private Optional<BeamRequest> extractFocusQuery(ProjectBridgehead projectBridgehead) {
-        if (projectBridgehead.getExporterResponse() != null) {
-            BeamRequest[] focusQueries = beamService.deserializeFocusResponse(projectBridgehead.getExporterResponse());
-            if (focusQueries != null && focusQueries.length > 0) {
-                return Optional.of(focusQueries[0]);
-            }
-        }
-        return Optional.empty();
+    private Optional<BeamRequest> extractFocusQuery(ProjectBridgeheadAndType projectBridgeheadAndType) {
+        return projectBridgeheadAndType.projectBridgehead().fetchExecution(projectBridgeheadAndType.projectType())
+                .map(ProjectBridgeheadExecution::getExporterResponse)
+                .map(beamService::deserializeFocusResponse)
+                .filter(focusQueries -> focusQueries.length > 0)
+                .map(focusQueries -> focusQueries[0]);
     }
 
     private boolean isQueryStateToBeChangedToError(HttpStatus httpStatus, ProjectBridgehead projectBridgehead) {

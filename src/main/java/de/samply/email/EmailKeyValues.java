@@ -9,6 +9,7 @@ import de.samply.db.model.Query;
 import de.samply.db.repository.*;
 import de.samply.frontend.FrontendService;
 import de.samply.user.roles.ProjectRole;
+import de.samply.utils.ProjectUtils;
 import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -168,7 +169,7 @@ public class EmailKeyValues {
             addKeyValue(EmailContextKey.QUERY,
                     (project.getQuery().getHumanReadable()) != null ?
                             project.getQuery().getHumanReadable() : project.getQuery().getQuery());
-            addKeyValue(EmailContextKey.PROJECT_TYPE, () -> project.getType().toString());
+            addKeyValue(EmailContextKey.PROJECT_TYPE, () -> ProjectUtils.formatWithCommasAndAnd(project.fetchProjectTypes()));
             addKeyValue(EmailContextKey.PROJECT_RESULTS_URL, project.getResultsUrl());
             add(project.getQuery());
             addBridgeheads(project);

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-02-12]
+## [1.0.0 - 2026-03-23]
 ### Added
 - First version of the project
 - Spring Application
@@ -245,6 +245,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Log frontend config
 - SAMPLES project type
 - Project And Form Configuration
+- Multiple types pro project
+- Remove project output service
 
 
 ### Changed
@@ -259,7 +261,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add and rename forms instead of editing services
 - Notifications only for Project Manager Admin
 - Filter templates by selected forms
-- Samples project can generate exports not visible to researcher 
+- Samples project can generate exports not visible to researcher
+
 
 ### Removed
 - RStudio Keycloak Groups

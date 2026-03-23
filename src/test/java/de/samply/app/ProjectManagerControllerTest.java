@@ -4,7 +4,6 @@ import de.samply.annotations.FrontendAction;
 import de.samply.annotations.FrontendSiteModule;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
-import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectBridgeheadState;
@@ -31,7 +30,7 @@ class ProjectManagerControllerTest {
     public ResponseEntity<String> testCreateProject() throws ProjectEventActionsException {
         @SuppressWarnings("SpellCheckingInspection")
         String[] bridgeheads = {"david-j-develop", "frankfurt", "berlin"};
-        this.projectEventService.draft(bridgeheads, "myQuery", ProjectType.EXPORT);
+        this.projectEventService.draft(bridgeheads, "myQuery");
         return new ResponseEntity<>("Test 6", HttpStatus.OK);
     }
 
