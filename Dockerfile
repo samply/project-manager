@@ -1,4 +1,4 @@
-FROM eclipse-temurin:26-jre
+FROM eclipse-temurin:25-jre
 
 COPY target/project-manager.jar /app/
 
