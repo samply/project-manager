@@ -64,7 +64,7 @@ public class QueryService {
         tempQuery.setContext(queryContext);
         tempQuery = this.queryRepository.save(tempQuery);
         // Every Query should have at least one output:
-        addOutputToQuery(tempQuery, Optional.of(outputFormat), Optional.of(templateId), projectType);
+        addOutputToQuery(tempQuery, Optional.ofNullable(outputFormat), Optional.ofNullable(templateId), projectType);
         return tempQuery.getCode();
     }
 
