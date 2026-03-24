@@ -72,17 +72,19 @@ public class QueryService {
                                   Optional<OutputFormat> outputFormat,
                                   Optional<String> templateId,
                                   @NotNull ProjectType projectType) {
-        QueryOutput output = query.fetchOutput(projectType)
-                .orElseGet(() -> {
-                    QueryOutput newOutput = new QueryOutput();
-                    newOutput.setProjectType(projectType);
-                    query.addOutput(newOutput);
-                    return newOutput;
-                });
+        if (projectType != null) {
+            QueryOutput output = query.fetchOutput(projectType)
+                    .orElseGet(() -> {
+                        QueryOutput newOutput = new QueryOutput();
+                        newOutput.setProjectType(projectType);
+                        query.addOutput(newOutput);
+                        return newOutput;
+                    });
 
-        outputFormat.ifPresent(output::setOutputFormat);
-        templateId.ifPresent(output::setTemplateId);
-        queryRepository.save(query);
+            outputFormat.ifPresent(output::setOutputFormat);
+            templateId.ifPresent(output::setTemplateId);
+            queryRepository.save(query);
+        }
     }
 
     public void removeOutput(@NotNull String projectCode, @NotNull ProjectType projectType) {
