@@ -498,7 +498,7 @@ public class ProjectManagerController {
             // Project code needed for role constraints
             @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
-        return convertToResponseEntity(() -> exporterService.getExporterTemplates());
+        return convertToResponseEntity(exporterService::getExporterTemplates);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
@@ -899,7 +899,7 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
             @RequestParam(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
     ) {
-        return convertOptionalToResponseEntity(() -> emailService.createEmailMessageAndSubject(email, Optional.of(projectCode), Optional.of(bridgehead), projectRole, emailTemplateType));
+        return convertOptionalToResponseEntity(() -> emailService.createEmailMessageAndSubject(email, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), projectRole, emailTemplateType));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
@@ -1102,7 +1102,7 @@ public class ProjectManagerController {
             @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
-                projectCode, Optional.of(bridgehead), document, DocumentType.OTHERS, Optional.ofNullable(label)));
+                projectCode, Optional.ofNullable(bridgehead), document, DocumentType.OTHERS, Optional.ofNullable(label)));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER, OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
