@@ -38,7 +38,7 @@ CREATE TABLE samply.project
     archived_at           TIMESTAMP,
     modified_at           TIMESTAMP NOT NULL,
     query_id              BIGINT,
-    is_custom_config      BOOLEAN   NOT NULL,
+    is_custom_config      BOOLEAN,
     results_url           TEXT,
     creator_results_state TEXT      NOT NULL
 );
