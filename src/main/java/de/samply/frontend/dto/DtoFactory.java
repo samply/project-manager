@@ -72,7 +72,7 @@ public class DtoFactory {
         result.setArchivedAt(project.getArchivedAt());
         result.setModifiedAt(project.getModifiedAt());
         result.setState(project.getState());
-        result.setCustomConfigSelected(project.isCustomConfigSelected());
+        result.setIsCustomConfigSelected(project.getIsCustomConfigSelected());
         result.setQuery(project.getQuery().getQuery());
         result.setHumanReadable(project.getQuery().getHumanReadable());
         result.setQueryFormat(project.getQuery().getQueryFormat());

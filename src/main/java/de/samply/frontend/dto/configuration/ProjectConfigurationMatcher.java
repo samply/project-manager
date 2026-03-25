@@ -14,7 +14,7 @@ public class ProjectConfigurationMatcher {
 
     public static Map<String, ProjectAndForms> fetchMatchProjectConfiguration(ProjectAndForms runtime, Map<String, ProjectAndForms> config) {
 
-        if (runtime.project() != null && runtime.project().isCustomConfigSelected()) {
+        if (runtime.project() != null && isTrue(runtime.project().getIsCustomConfigSelected())) {
             return fetchCustomConfiguration(config);
         }
 
@@ -39,6 +39,10 @@ public class ProjectConfigurationMatcher {
                 .orElseGet(() -> fetchCustomConfiguration(config));
     }
 
+    private static boolean isTrue(Boolean value) {
+        return Boolean.TRUE.equals(value);
+    }
+
     private static Map<String, ProjectAndForms> fetchCustomConfiguration(
             Map<String, ProjectAndForms> config) {
 
@@ -50,7 +54,7 @@ public class ProjectConfigurationMatcher {
 
         // fallback minimal custom
         Project customProject = new Project();
-        customProject.setCustomConfigSelected(true);
+        customProject.setIsCustomConfigSelected(true);
 
         return Map.of(CUSTOM_KEY,
                 new ProjectAndForms(customProject, new Form[0], new FormField[0]));
@@ -76,7 +80,9 @@ public class ProjectConfigurationMatcher {
         if (runtime == null || template == null) return -1;
 
         // Check the project-level field
-        if (template.isCustomConfigSelected() && !runtime.isCustomConfigSelected()) return -1;
+        if (isTrue(template.getIsCustomConfigSelected()) && !isTrue(runtime.getIsCustomConfigSelected())) {
+            return -1;
+        }
 
         ProjectOutput[] templateOutputs = template.getOutputs();
         ProjectOutput[] runtimeOutputs = runtime.getOutputs();
@@ -86,7 +92,7 @@ public class ProjectConfigurationMatcher {
         if (runtimeOutputs == null || runtimeOutputs.length != templateOutputs.length) return -1;
 
         // Compute score using streams
-        return (template.isCustomConfigSelected() ? 1 : 0) +
+        return (isTrue(template.getIsCustomConfigSelected()) ? 1 : 0) +
                 IntStream.range(0, templateOutputs.length)
                         .map(i -> matchOutput(runtimeOutputs[i], templateOutputs[i]))
                         .filter(s -> s >= 0) // only count successful matches
