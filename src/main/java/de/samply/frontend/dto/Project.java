@@ -38,7 +38,7 @@ public class Project {
     @IgnoreProjectConfigurationMatch
     private String explorerUrl;
     private String queryContext;
-    private boolean isCustomConfig;
+    private boolean isCustomConfigSelected;
     @IgnoreProjectConfigurationMatch
     private UserProjectState creatorState;
     @IgnoreProjectConfigurationMatch

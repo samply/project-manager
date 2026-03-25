@@ -28,19 +28,19 @@ CREATE TABLE samply.query_output
 
 CREATE TABLE samply.project
 (
-    id                    SERIAL    NOT NULL PRIMARY KEY,
-    state_machine_key     TEXT      NOT NULL,
-    code                  TEXT      NOT NULL,
-    state                 TEXT      NOT NULL,
-    creator_email         TEXT      NOT NULL,
-    created_at            TIMESTAMP NOT NULL,
-    expires_at            DATE,
-    archived_at           TIMESTAMP,
-    modified_at           TIMESTAMP NOT NULL,
-    query_id              BIGINT,
-    is_custom_config      BOOLEAN,
-    results_url           TEXT,
-    creator_results_state TEXT      NOT NULL
+    id                        SERIAL    NOT NULL PRIMARY KEY,
+    state_machine_key         TEXT      NOT NULL,
+    code                      TEXT      NOT NULL,
+    state                     TEXT      NOT NULL,
+    creator_email             TEXT      NOT NULL,
+    created_at                TIMESTAMP NOT NULL,
+    expires_at                DATE,
+    archived_at               TIMESTAMP,
+    modified_at               TIMESTAMP NOT NULL,
+    query_id                  BIGINT,
+    is_custom_config_selected BOOLEAN,
+    results_url               TEXT,
+    creator_results_state     TEXT      NOT NULL
 );
 
 CREATE TABLE samply.project_bridgehead

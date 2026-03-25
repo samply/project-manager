@@ -333,7 +333,7 @@ public class ProjectService {
 
             // Synchronize Project
             Project project = DtoFactory.merge(projectAndForms.project(), projectOptional.get());
-            project.setCustomConfig(false);
+            project.setCustomConfigSelected(false);
             saveProject(project);
             this.queryRepository.save(project.getQuery());
 
@@ -345,8 +345,8 @@ public class ProjectService {
             // Synchronize Form Fields
             this.formService.editProjectFormFieldValues(Optional.ofNullable(projectAndForms.formFields()), projectCode);
 
-        } else if (!projectOptional.get().isCustomConfig()) {
-            projectOptional.get().setCustomConfig(true);
+        } else if (!projectOptional.get().isCustomConfigSelected()) {
+            projectOptional.get().setCustomConfigSelected(true);
             saveProject(projectOptional.get());
         }
     }

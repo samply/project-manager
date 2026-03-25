@@ -54,8 +54,8 @@ public class Project {
     @JoinColumn(name = "query_id")
     private Query query;
 
-    @Column(name = "is_custom_config")
-    private boolean isCustomConfig;
+    @Column(name = "is_custom_config_selected")
+    private boolean isCustomConfigSelected;
 
     @Column(name = "results_url")
     @Convert(converter = EncryptionConverter.class)
