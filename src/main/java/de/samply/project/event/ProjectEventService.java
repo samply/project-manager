@@ -10,7 +10,6 @@ import de.samply.db.repository.QueryRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
-import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
 import de.samply.user.UserService;
@@ -188,8 +187,6 @@ public class ProjectEventService implements ProjectEventActions {
         ProjectBridgehead projectBridgehead = new ProjectBridgehead();
         projectBridgehead.setBridgehead(bridgehead.toLowerCase());
         projectBridgehead.setProject(project);
-        projectBridgehead.setState(ProjectBridgeheadState.CREATED); // TODO: Replace with state machine
-        projectBridgehead.setModifiedAt(Instant.now());
         this.projectBridgeheadRepository.save(projectBridgehead);
     }
 
