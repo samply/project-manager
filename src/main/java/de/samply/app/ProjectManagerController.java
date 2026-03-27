@@ -184,7 +184,7 @@ public class ProjectManagerController {
             // Bridgehead required for role constraints
             @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
-        return convertToResponseEntity(() -> projectService.fetchProject(projectCode));
+        return convertToResponseEntity(() -> projectService.fetchDtoProject(projectCode));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)

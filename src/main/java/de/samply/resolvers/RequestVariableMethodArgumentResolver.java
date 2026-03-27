@@ -2,8 +2,9 @@ package de.samply.resolvers;
 
 import de.samply.annotations.RequestVariable;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.MethodParameter;
-import org.springframework.format.support.DefaultFormattingConversionService;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.ServletRequestBindingException;
@@ -45,11 +46,29 @@ import java.util.Map;
 @Component
 public class RequestVariableMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+    /**
+     * Lazily inject the global ConversionService to avoid a circular dependency.
+     * <p>
+     * Context:
+     * When this resolver is a @Component and we try to inject ConversionService eagerly,
+     * Spring attempts to instantiate beans in the following cycle:
+     * <p>
+     * projectManagerWebConfig -> requestVariableMethodArgumentResolver ->
+     * WebMvcAutoConfiguration.EnableWebMvcConfiguration -> ConversionService
+     * <p>
+     * This creates a circular reference and prevents application startup. By marking
+     * ConversionService as @Lazy, Spring delays its injection until the first time it is
+     * actually needed during argument resolution, breaking the cycle.
+     * <p>
+     * Functionally, this has no effect on the resolver itself: argument resolution only
+     * happens at request time, long after all beans are initialized.
+     */
+    private final ConversionService conversionService;
     private final RequestBodyCache requestBodyCache; // Injecting request-scoped bean
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public RequestVariableMethodArgumentResolver(RequestBodyCache requestBodyCache) {
+    public RequestVariableMethodArgumentResolver(@Lazy ConversionService conversionService, RequestBodyCache requestBodyCache) {
+        this.conversionService = conversionService;
         this.requestBodyCache = requestBodyCache;
     }
 
@@ -109,7 +128,7 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
 
         Class<?> targetType = parameter.getParameterType();
 
-        if (value instanceof String s) {
+        if (value instanceof String s && conversionService.canConvert(String.class, targetType)) {
             return conversionService.convert(s, targetType);
         }
 

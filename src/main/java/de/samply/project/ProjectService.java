@@ -31,15 +31,21 @@ import java.util.*;
 @Service
 public class ProjectService {
 
-    private final NotificationService notificationService;
-    private final ProjectRepository projectRepository;
-    private final QueryRepository queryRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+
     private final SessionUser sessionUser;
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
-    private final ProjectConfigurations projectConfigurations;
     private final DtoFactory dtoFactory;
+    private final ProjectConfigurations projectConfigurations;
+
+    // Services
+    private final NotificationService notificationService;
     private final FormService formService;
+
+    // Repositories
+    private final QueryRepository queryRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+
 
     public ProjectService(NotificationService notificationService,
                           ProjectRepository projectRepository,
@@ -61,7 +67,15 @@ public class ProjectService {
         this.formService = formService;
     }
 
-    public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
+    public Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectServiceException("Project " + projectCode + " not found");
+        }
+        return project.get();
+    }
+
+    public de.samply.frontend.dto.Project fetchDtoProject(@NotNull String projectCode) throws ProjectServiceException {
         Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
         if (projectOptional.isEmpty()) {
             throw new ProjectServiceException("Project " + projectCode + " not found");

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-03-25]
+## [1.0.0 - 2026-03-27]
 ### Added
 - First version of the project
 - Spring Application
@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project states and event states
 - Project Service
 - OAuth2 Security
-- OIDC <> Organisation Roles Mapping
+- OIDC <> Organization Roles Mapping
 - Session User Info
 - Session User Info email
 - Multi bridgehead user
@@ -106,7 +106,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Flag ENABLE_TOKEN_MANAGER
 - Content Disposition in exposed headers
 - Exists Votum and Application Form
-- Exists Script
+- Script exists
 - Explorer Redirect URI
 - User State in Frontend DTO
 - Fetch project configurations
@@ -162,8 +162,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Extend email context
 - Thymeleaf Dialect for email context variables
 - Combine first and last name in a name 
-- Replace email context variables in email subject
-- Default and Default var in html tags
+- Replace email context variables in the email subject
+- Default and Default var in HTML tags
 - Fetch human readable bridgehead for emails
 - Email context project bridgeheads variable
 - Decode Base64 values of email context
@@ -186,14 +186,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mailing Blacklist
 - Sort Mailing Blacklist by first and last name
 - Results
-- DRN in exporter label
+- DRN in the exporter label
 - Final User State in results
 - Create State in Frontend DTO's (for project and project bridgehead)
 - Fetch email message and subject HTTP endpoint
 - Send project results only if there are final users
 - User Project State in State Constraints
 - Bridgehead Admin info in the variables for the email templates
-- Results URL in frontend dto
+- Result URL in frontend dto
 - EmailContextKey enum
 - Votum for all
 - Configuration Site
@@ -245,8 +245,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Log frontend config
 - SAMPLES project type
 - Project And Form Configuration
-- Multiple types pro project
-- Remove project output service
+- Multiple types pro-project
+- Remove the project output service
+- Use global conversion service of spring
 
 
 ### Changed
@@ -254,15 +255,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update to Maven 4
 - Update to Java 25
 - Remove project bridgehead user with role creator
-- View also own created projects even if they don't belong to own bridgeheads
+- View also own-created projects even if they don't belong to own bridgeheads
 - View all project bridgeheads for creator
-- RequestVariableMethodArgumentResolver for complexer datatypes
+- RequestVariableMethodArgumentResolver for complex datatypes
 - Edit form instead of just adding forms to the project
 - Add and rename forms instead of editing services
 - Notifications only for Project Manager Admin
 - Filter templates by selected forms
 - Samples project can generate exports not visible to researcher
-- isCustomConfig in Project as nullable
+- there isCustomConfig in the Project as nullable
 
 
 ### Removed
