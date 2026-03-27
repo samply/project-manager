@@ -58,7 +58,7 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
      * <p>
      * This creates a circular reference and prevents application startup. By marking
      * ConversionService as @Lazy, Spring delays its injection until the first time it is
-     * actually needed during argument resolution, breaking the cycle.
+     * actually necessary during argument resolution, breaking the cycle.
      * <p>
      * Functionally, this has no effect on the resolver itself: argument resolution only
      * happens at request time, long after all beans are initialized.
@@ -128,16 +128,19 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
 
         Class<?> targetType = parameter.getParameterType();
 
-        if (value instanceof String s && conversionService.canConvert(String.class, targetType)) {
-            return conversionService.convert(s, targetType);
+        // 1️⃣ If the value is a String, try Spring's ConversionService first
+        if (value instanceof String s) {
+            if (conversionService.canConvert(String.class, targetType)) {
+                return conversionService.convert(s, targetType);
+            }
+            // fallback to ObjectMapper if ConversionService cannot convert
+            return objectMapper.convertValue(s, targetType);
         }
 
-        JavaType javaType =
-                objectMapper.getTypeFactory()
-                        .constructType(parameter.getGenericParameterType());
-
+        // 2️⃣ For non-String values (e.g., JSON Maps, Lists, Numbers), delegate to ObjectMapper
+        JavaType javaType = objectMapper.getTypeFactory()
+                .constructType(parameter.getGenericParameterType());
         return objectMapper.convertValue(value, javaType);
     }
-
 
 }
