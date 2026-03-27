@@ -141,10 +141,10 @@ public class ProjectManagerController {
 
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchActions(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
-            @RequestParam(name = ProjectManagerConst.SITE) String site
+            @RequestParameter(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(() ->
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), Optional.ofNullable(language), true));
@@ -152,10 +152,10 @@ public class ProjectManagerController {
 
     @GetMapping(value = ProjectManagerConst.ALL_ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchAllActions(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
-            @RequestParam(name = ProjectManagerConst.SITE) String site
+            @RequestParameter(name = ProjectManagerConst.SITE) String site
     ) {
         return convertToResponseEntity(() ->
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), Optional.ofNullable(language), false));
@@ -165,11 +165,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECTS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjects(
-            @RequestParam(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
-            @RequestParam(name = ProjectManagerConst.ARCHIVED, required = false) Boolean archived,
-            @RequestParam(name = ProjectManagerConst.LAST_MODIFIED_DESC, required = false, defaultValue = "true") boolean modifiedDescendant,
-            @RequestParam(name = ProjectManagerConst.PAGE) int page,
-            @RequestParam(name = ProjectManagerConst.PAGE_SIZE) int pageSize
+            @RequestParameter(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
+            @RequestParameter(name = ProjectManagerConst.ARCHIVED, required = false) Boolean archived,
+            @RequestParameter(name = ProjectManagerConst.LAST_MODIFIED_DESC, required = false, defaultValue = "true") boolean modifiedDescendant,
+            @RequestParameter(name = ProjectManagerConst.PAGE) int page,
+            @RequestParameter(name = ProjectManagerConst.PAGE_SIZE) int pageSize
     ) {
         return convertToResponseEntity(() -> projectService.fetchUserVisibleProjects(
                 Optional.ofNullable(projectState), Optional.ofNullable(archived), page, pageSize, modifiedDescendant));
@@ -180,9 +180,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // Bridgehead required for role constraints
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.fetchDtoProject(projectCode));
     }
@@ -192,7 +192,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_STATES_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_STATES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjectStates(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode
     ) {
         return convertToResponseEntity(() -> projectEventService.fetchAllProjectEvents(Optional.ofNullable(projectCode)));
     }
@@ -201,7 +201,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchVisibleProjectsBridgeheads(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.fetchUserVisibleProjectBridgeheads(projectCode));
     }
@@ -210,7 +210,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjectsBridgeheads(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.fetchProjectBridgeheads(projectCode));
     }
@@ -305,9 +305,9 @@ public class ProjectManagerController {
         }
         String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
                 Arrays.stream(explorerIds)
-                        .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
-                        .flatMap(Optional::stream)
-                        .toArray(String[]::new) : bridgeheads;
+                .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
+                .flatMap(Optional::stream)
+                .toArray(String[]::new) : bridgeheads;
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId,
                 projectType, humanReadable, explorerUrl, queryContext);
@@ -346,9 +346,9 @@ public class ProjectManagerController {
         if (bridgeheads != null) {
             String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
                     Arrays.stream(explorerIds)
-                            .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
-                            .flatMap(Optional::stream)
-                            .toArray(String[]::new) : bridgeheads;
+                    .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
+                    .flatMap(Optional::stream)
+                    .toArray(String[]::new) : bridgeheads;
             projectService.updateBridgeheads(projectCode, tempBridgeheads);
         }
         queryService.editQuery(projectCode, (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query : null, queryFormat, label, description,
@@ -378,8 +378,8 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TITLES)
     public ResponseEntity fetchProjectFormTitles(
             // Project code needed for role constraints
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language
     ) {
         return convertToResponseEntity(() -> formService.fetchProjectFormTitles(Optional.ofNullable(language)));
@@ -392,8 +392,8 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS)
     public ResponseEntity fetchProjectFormFields(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
             @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
     ) {
@@ -407,8 +407,8 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_SELECTED_PROJECT_FORMS)
     public ResponseEntity fetchSelectedProjectForms(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language
     ) {
         return convertToResponseEntity(() -> formService.fetchSelectedForms(projectCode, Optional.ofNullable(language)));
@@ -434,8 +434,8 @@ public class ProjectManagerController {
     @DeleteMapping(value = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM)
     public ResponseEntity removeSelectedProjectForm(
             // Project code needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.FORM_TITLE) String formTitle
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParameter(name = ProjectManagerConst.FORM_TITLE) String formTitle
     ) {
         return convertToResponseEntity(() -> formService.removeSelectedForm(projectCode, formTitle));
     }
@@ -461,10 +461,10 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_FORM_AS_PDF)
     public ResponseEntity downloadFormAsPdf(
             // Project code and bridgehead needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
-            @RequestParam(name = ProjectManagerConst.FORM_TEMPLATE) String formTemplate
+            @RequestParameter(name = ProjectManagerConst.FORM_TEMPLATE) String formTemplate
     ) {
         return convertToResponseEntity(() ->
                 ResponseEntity.ok()
@@ -482,8 +482,8 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TEMPLATES)
     public ResponseEntity fetchProjectFormTemplates(
             // Project code and bridgehead needed for role constraints
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language
     ) {
         return convertToResponseEntity(() -> formTemplateService.fetchTemplates(projectCode, Optional.ofNullable(language)));
@@ -496,7 +496,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES)
     public ResponseEntity fetchExporterTemplates(
             // Project code needed for role constraints
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(exporterService::getExporterTemplates);
     }
@@ -508,7 +508,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_QUERY_FORMATS)
     public ResponseEntity fetchQueryFormats(
             // Project code needed for role constraints
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(QueryFormat::values);
     }
@@ -527,8 +527,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ROLES_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_ROLES)
     public ResponseEntity fetchProjectRoles(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> userService.fetchProjectRoles(projectCode, Optional.ofNullable(bridgehead)));
     }
@@ -539,7 +539,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_OUTPUT_FORMATS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_OUTPUT_FORMATS)
     public ResponseEntity fetchOutputFormats(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> projectService.fetchOutputFormats(projectCode));
     }
@@ -550,8 +550,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL)
     public ResponseEntity fetchResearchEnvironmentUrl(
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(coderService::getResearchEnvironmentUrl);
     }
@@ -562,8 +562,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION)
     @GetMapping(value = ProjectManagerConst.EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE)
     public ResponseEntity existsUserResearchEnvironmentWorkspace(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> coderService.existsUserResearchEnvironmentWorkspace(projectCode, bridgehead));
     }
@@ -574,7 +574,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS)
     public ResponseEntity fetchProjectConfigurations(
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(this.frontendProjectConfigurations::getConfig);
     }
@@ -585,7 +585,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_CURRENT_PROJECT_CONFIGURATION)
     public ResponseEntity fetchCurrentProjectConfiguration(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> this.projectService.fetchCurrentProjectConfiguration(projectCode));
     }
@@ -609,7 +609,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_TYPES)
     public ResponseEntity fetchProjectTypes(
             // Project code needed for role constraints
-            @SuppressWarnings("unused") @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(ProjectType::values);
     }
@@ -713,7 +713,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION)
     @DeleteMapping(value = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST)
     public ResponseEntity removeUserFromMailingBlackList(
-            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email
+            @Email @RequestParameter(name = ProjectManagerConst.EMAIL) String email
     ) {
         return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, false));
     }
@@ -731,7 +731,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
     public ResponseEntity fetchUsersForAutocompleteInMailingBlackList(
-            @RequestParam(name = ProjectManagerConst.EMAIL, required = false) String partialEmail
+            @RequestParameter(name = ProjectManagerConst.EMAIL, required = false) String partialEmail
     ) {
         return convertToResponseEntity(() -> userService.fetchUsersForAutocompleteInMailingBlackList(partialEmail));
     }
@@ -757,8 +757,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_RESULTS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_RESULTS)
     public ResponseEntity fetchProjectResults(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> projectService.fetchResults(projectCode));
     }
@@ -770,8 +770,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS)
     public ResponseEntity fetchProjectBridgeheadResults(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> projectBridgeheadService.fetchResults(projectCode));
     }
@@ -783,8 +783,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD)
     public ResponseEntity fetchProjectBridgeheadResultsForOwnBridgehead(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> projectBridgeheadService.fetchResultsOfOwnBridgehead(projectCode, bridgehead));
     }
@@ -893,11 +893,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT)
     public ResponseEntity fetchEmailMessageAndSubject(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @Email @RequestParam(name = ProjectManagerConst.EMAIL) String email,
-            @RequestParam(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
-            @RequestParam(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @Email @RequestParameter(name = ProjectManagerConst.EMAIL) String email,
+            @RequestParameter(name = ProjectManagerConst.PROJECT_ROLE) ProjectRole projectRole,
+            @RequestParameter(name = ProjectManagerConst.EMAIL_TEMPLATE_TYPE) EmailTemplateType emailTemplateType
     ) {
         return convertOptionalToResponseEntity(() -> emailService.createEmailMessageAndSubject(email, Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), projectRole, emailTemplateType));
     }
@@ -1095,11 +1095,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT)
     public ResponseEntity uploadOtherDocument(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer, pilot, final user or bridgehead admin in role constraints
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.ofNullable(bridgehead), document, DocumentType.OTHERS, Optional.ofNullable(label)));
@@ -1112,9 +1112,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PUBLICATION_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_PUBLICATION)
     public ResponseEntity uploadPublication(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.empty(), document, DocumentType.PUBLICATION, Optional.ofNullable(label)));
@@ -1127,11 +1127,11 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_SCRIPT_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_SCRIPT)
     public ResponseEntity uploadScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.empty(), document, DocumentType.SCRIPT, Optional.ofNullable(label)));
@@ -1145,10 +1145,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_VOTUM_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM)
     public ResponseEntity uploadVotum(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.ofNullable(bridgehead), document, DocumentType.VOTUM, Optional.ofNullable(label)));
@@ -1162,10 +1162,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
     @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity uploadVotumForAllBridgeheads(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.LABEL, required = false) String label,
-            @RequestParam(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
                 projectCode, Optional.empty(), document, DocumentType.VOTUM, Optional.ofNullable(label)));
@@ -1209,9 +1209,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_SCRIPT)
     public ResponseEntity downloadScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, Optional.empty(), DocumentType.SCRIPT);
     }
@@ -1223,9 +1223,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_SCRIPT_DESCRIPTION_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_SCRIPT_DESCRIPTION)
     public ResponseEntity fetchScriptDescription(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.SCRIPT));
     }
@@ -1237,9 +1237,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EXISTS_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.EXISTS_SCRIPT)
     public ResponseEntity existsScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return existsProjectDocument(projectCode, Optional.empty(), DocumentType.SCRIPT);
     }
@@ -1251,8 +1251,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM)
     public ResponseEntity downloadVotum(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, Optional.of(bridgehead), DocumentType.VOTUM);
     }
@@ -1264,8 +1264,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity downloadVotumForAllBridgeheads(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, Optional.empty(), DocumentType.VOTUM);
     }
@@ -1277,8 +1277,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_DESCRIPTION_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_VOTUM_DESCRIPTION)
     public ResponseEntity fetchVotumDescription(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.ofNullable(bridgehead), DocumentType.VOTUM));
     }
@@ -1290,8 +1290,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION)
     public ResponseEntity fetchVotumDescriptionForAllBridgeheads(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> this.documentService.fetchLastDocumentOfThisTypeForFrontend(projectCode, Optional.empty(), DocumentType.VOTUM));
     }
@@ -1303,8 +1303,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EXISTS_VOTUM_ACTION)
     @GetMapping(value = ProjectManagerConst.EXISTS_VOTUM)
     public ResponseEntity existsVotum(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return existsProjectDocument(projectCode, Optional.of(bridgehead), DocumentType.VOTUM);
     }
@@ -1316,8 +1316,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity existsVotumForAllBridgeheads(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return existsProjectDocument(projectCode, Optional.empty(), DocumentType.VOTUM);
     }
@@ -1327,8 +1327,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PUBLICATION_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_PUBLICATION)
     public ResponseEntity downloadPublication(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @RequestParam(name = ProjectManagerConst.FILENAME) String filename
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @RequestParameter(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, null, filename, DocumentType.PUBLICATION);
     }
@@ -1338,7 +1338,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PUBLICATIONS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PUBLICATIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchPublications(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
     ) {
         return convertToResponseEntity(() -> documentService.fetchPublications(projectCode));
     }
@@ -1348,9 +1348,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT)
     public ResponseEntity downloadOtherProjectDocument(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.FILENAME) String filename
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
+            @RequestParameter(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
         return downloadProjectDocument(projectCode, bridgehead, filename, DocumentType.OTHERS);
     }
@@ -1360,8 +1360,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_OTHER_DOCUMENTS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_OTHER_DOCUMENTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchOtherDocuments(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> documentService.fetchOtherDocuments(projectCode, Optional.ofNullable(bridgehead)));
     }
@@ -1489,8 +1489,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_AUTHENTICATION_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_AUTHENTICATION_SCRIPT)
     public ResponseEntity fetchTokenScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" +
@@ -1505,8 +1505,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_DATASHIELD_STATUS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_DATASHIELD_STATUS)
     public ResponseEntity fetchDatashieldStatus(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.dataShieldTokenManagerService.fetchProjectStatus(projectCode, bridgehead).block());
     }
@@ -1518,8 +1518,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EXISTS_AUTHENTICATION_SCRIPT_ACTION)
     @GetMapping(value = ProjectManagerConst.EXISTS_AUTHENTICATION_SCRIPT)
     public ResponseEntity existsTokenScript(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.dataShieldTokenManagerService.existsAuthenticationScript(projectCode, bridgehead));
     }
@@ -1530,8 +1530,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_NOTIFICATIONS)
     public ResponseEntity fetchNotifications(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.notificationService.fetchUserVisibleNotifications(Optional.ofNullable(projectCode), Optional.ofNullable(bridgehead), projectService::fetchAllUserVisibleProjects));
     }
@@ -1561,9 +1561,9 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE)
     public ResponseEntity fetchUsersForAutocomplete(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
-            @RequestParam(name = ProjectManagerConst.PARTIAL_EMAIL) String partialEmail
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead,
+            @RequestParameter(name = ProjectManagerConst.PARTIAL_EMAIL) String partialEmail
     ) {
         return convertToResponseEntity(() -> this.userService.fetchUsersForAutocomplete(projectCode, partialEmail, bridgehead));
     }
@@ -1574,8 +1574,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_USERS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_USERS)
     public ResponseEntity fetchProjectUsers(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.userService.fetchProjectUsers(projectCode));
     }
@@ -1586,8 +1586,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_CURRENT_USER_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_CURRENT_USER)
     public ResponseEntity fetchCurrentUser(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertOptionalToResponseEntity(() -> this.userService.fetchCurrentUser(projectCode, bridgehead));
     }
@@ -1598,8 +1598,8 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.EXIST_INVITED_USERS_ACTION)
     @GetMapping(value = ProjectManagerConst.EXIST_INVITED_USERS)
     public ResponseEntity existInvitedUsers(
-            @ProjectCode @RequestParam(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
-            @SuppressWarnings("unused") @Bridgehead @RequestParam(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
         return convertToResponseEntity(() -> this.userService.existInvitedUsers(projectCode));
     }

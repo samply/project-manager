@@ -1,6 +1,9 @@
 package de.samply.resolvers;
 
+import de.samply.annotations.RequestParameter;
 import de.samply.annotations.RequestVariable;
+import de.samply.app.ProjectManagerConst;
+import de.samply.utils.ParamMetaUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Lazy;
@@ -20,32 +23,50 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * This class resolves method arguments annotated with {@link RequestVariable}.
- * It handles the extraction of parameter values either from HTTP request parameters
- * or the request body (JSON). It supports constraints such as 'required' and 'notEmpty'
- * for parameters and performs type conversion of the extracted values into the appropriate method argument type.
- * <p>
- * It first attempts to extract the parameter value from query parameters (via `@RequestParam`).
- * If the value is not found, it will then attempt to extract it from the JSON body of the request.
- * If both methods fail to find the value and the parameter is marked as required, an exception will be thrown.
- * <p>
- * It also ensures that parameters marked as 'notEmpty' contain a non-empty value. If a parameter is empty
- * when it should not be, a {@link ServletRequestBindingException} will be thrown.
- * <p>
- * The parameter value is then converted to the correct type using a {@link org.springframework.core.convert.ConversionService}.
+ * This class resolves method arguments annotated with either {@link RequestVariable} or {@link RequestParameter}.
  *
- * <p>Usage example:</p>
+ * <p>
+ * It handles the extraction of parameter values from HTTP request parameters (query or form parameters)
+ * and, for {@link RequestVariable}, optionally from the request body (JSON).
+ * </p>
+ *
+ * <p>
+ * For {@link RequestVariable}, the resolver supports the 'required' and 'notEmpty' constraints:
+ * <ul>
+ *     <li>If a required parameter is missing, a {@link ServletRequestBindingException} is thrown.</li>
+ *     <li>If a parameter marked 'notEmpty' is empty, a {@link ServletRequestBindingException} is thrown.</li>
+ * </ul>
+ * For {@link RequestParameter}, only query/form parameters are considered; the JSON body is ignored.
+ * </p>
+ *
+ * <p>
+ * After extraction, the value is converted to the target method argument type using
+ * {@link org.springframework.core.convert.ConversionService} and, if necessary, Jackson's {@link com.fasterxml.jackson.databind.ObjectMapper}.
+ * </p>
+ *
+ * <p>
+ * Additionally, resolved and raw parameter values are stored in the request-scoped
+ * {@link AnnotatedParametersWrapper}, which can be used by other components (e.g., converters)
+ * to access previously resolved objects or their raw values.
+ * </p>
+ *
+ * <p>Usage examples:</p>
  *
  * <pre>
+ * // Extracted from query parameters or JSON body
  * &#64;RequestVariable(name = "username", required = true, notEmpty = true)
  * String username;
+ *
+ * // Extracted only from query/form parameters
+ * &#64;RequestParameter(name = "page")
+ * Integer page;
  * </pre>
  *
- * <b>Important:</b> The value will be extracted either from request parameters (e.g., `username=JohnDoe`)
- * or the JSON body (e.g., `{"username": "JohnDoe"}`), depending on where the client provides it.
+ * <b>Important:</b> For {@link RequestVariable}, the value will be extracted from the JSON body
+ * if not present as a request parameter. For {@link RequestParameter}, the JSON body is ignored.
  */
 @Component
-public class RequestVariableMethodArgumentResolver implements HandlerMethodArgumentResolver {
+public class RequestVariableAndParameterMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     /**
      * Lazily inject the global ConversionService to avoid a circular dependency.
@@ -67,9 +88,10 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
     private final ConversionService conversionService;
     private final RequestBodyCache requestBodyCache; // Injecting request-scoped bean
     private final AnnotatedParametersWrapper annotatedParametersWrapper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public RequestVariableMethodArgumentResolver(
+    public RequestVariableAndParameterMethodArgumentResolver(
             @Lazy ConversionService conversionService,
             RequestBodyCache requestBodyCache,
             AnnotatedParametersWrapper annotatedParametersWrapper) {
@@ -80,7 +102,8 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.hasParameterAnnotation(RequestVariable.class);
+        return parameter.hasParameterAnnotation(RequestVariable.class)
+                || parameter.hasParameterAnnotation(RequestParameter.class);
     }
 
     @Override
@@ -91,34 +114,33 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
 
         annotatedParametersWrapper.initializeIfNeeded(parameter, webRequest);
 
-        RequestVariable requestVariable = parameter.getParameterAnnotation(RequestVariable.class);
-        assert requestVariable != null;
-        String paramName = requestVariable.name();
-        boolean required = requestVariable.required();
-        boolean notEmpty = requestVariable.notEmpty();
+        ParamMeta paramMeta = ParamMetaUtils.extractParamMeta(parameter);
+        assert paramMeta != null;
 
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-
         assert request != null;
-        Object value = request.getParameter(paramName);
 
-        // Try to get value from query parameters
-        if (value == null) {
-            // Try to get value from the JSON body
-            value = extractFromJsonBody(request, paramName);
+        Object value = request.getParameter(paramMeta.name());
+
+        // Only for @RequestVariable, try the JSON body
+        if (value == null && paramMeta.bodyLookup()) {
+            value = extractFromJsonBody(request, paramMeta.name());
         }
 
-        // Handle required constraint
-        if (required && value == null) {
-            throw new ServletRequestBindingException("Missing required parameter: " + paramName);
+        // Apply defaultValue if still null
+        if (value == null && !ProjectManagerConst.NOT_SET.equals(paramMeta.defaultValue())) {
+            value = paramMeta.defaultValue();
         }
 
-        // Handle notEmpty constraint
-        if (notEmpty && value instanceof String && !StringUtils.hasText((String) value)) {
-            throw new ServletRequestBindingException("Parameter '" + paramName + "' must not be empty.");
+        // Required / notEmpty checks
+        if (paramMeta.required() && value == null) {
+            throw new ServletRequestBindingException("Missing required parameter: " + paramMeta.name());
+        }
+        if (paramMeta.notEmpty() && value instanceof String s && !StringUtils.hasText(s)) {
+            throw new ServletRequestBindingException("Parameter '" + paramMeta.name() + "' must not be empty.");
         }
 
-        // Convert a value to a target type using ConversionService
+        // Convert and cache
         Object result = convertValue(value, parameter);
         annotatedParametersWrapper.putResolved(parameter, result);
 
@@ -139,7 +161,7 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
 
         Class<?> targetType = parameter.getParameterType();
 
-        // 1️⃣ If the value is a String, try Spring's ConversionService first
+        // If the value is a String, try Spring's ConversionService first
         if (value instanceof String s) {
             if (conversionService.canConvert(String.class, targetType)) {
                 return conversionService.convert(s, targetType);
@@ -148,7 +170,7 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
             return objectMapper.convertValue(s, targetType);
         }
 
-        // 2️⃣ For non-String values (e.g., JSON Maps, Lists, Numbers), delegate to ObjectMapper
+        // For non-String values (e.g., JSON Maps, Lists, Numbers), delegate to ObjectMapper
         JavaType javaType = objectMapper.getTypeFactory()
                 .constructType(parameter.getGenericParameterType());
         return objectMapper.convertValue(value, javaType);

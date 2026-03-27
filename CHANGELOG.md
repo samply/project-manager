@@ -249,6 +249,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Remove the project output service
 - Use global conversion service of spring
 - Annotated Parameter Wrapper
+- Request Parameter
 
 
 ### Changed

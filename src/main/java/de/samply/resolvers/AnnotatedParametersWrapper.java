@@ -1,6 +1,9 @@
 package de.samply.resolvers;
 
+import de.samply.annotations.RequestParameter;
 import de.samply.annotations.RequestVariable;
+import de.samply.app.ProjectManagerConst;
+import de.samply.utils.ParamMetaUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -24,7 +27,6 @@ public class AnnotatedParametersWrapper {
     private final Map<Class<? extends Annotation>, Object> rawValues = new HashMap<>();
 
     private final RequestBodyCache requestBodyCache;
-
     private boolean initialized = false;
 
     public AnnotatedParametersWrapper(RequestBodyCache requestBodyCache) {
@@ -35,9 +37,7 @@ public class AnnotatedParametersWrapper {
     // 🔹 INITIALIZATION (called once per request)
     // =========================================================
 
-    public void initializeIfNeeded(MethodParameter parameter,
-                                   NativeWebRequest webRequest) {
-
+    public void initializeIfNeeded(MethodParameter parameter, NativeWebRequest webRequest) {
         if (initialized) return;
 
         Method method = parameter.getMethod();
@@ -52,9 +52,7 @@ public class AnnotatedParametersWrapper {
         initialized = true;
     }
 
-    private void initialize(MethodParameter[] parameters,
-                            NativeWebRequest webRequest) {
-
+    private void initialize(MethodParameter[] parameters, NativeWebRequest webRequest) {
         HttpServletRequest servletRequest =
                 webRequest.getNativeRequest(HttpServletRequest.class);
 
@@ -72,20 +70,21 @@ public class AnnotatedParametersWrapper {
                 .forEach(param -> processParameter(param, webRequest, body));
     }
 
-    private void processParameter(MethodParameter param,
-                                  NativeWebRequest webRequest,
-                                  Map<String, Object> body) {
+    private void processParameter(MethodParameter param, NativeWebRequest webRequest, Map<String, Object> body) {
 
-        String name = extractRequestVariableName(param);
-        if (name == null) return;
+        ParamMeta meta = ParamMetaUtils.extractParamMeta(param);
+        if (meta == null) return;
 
-        Object value = Optional.ofNullable(webRequest.getParameter(name))
-                .orElseGet(() -> (String) body.get(name));
+        Object initialValue = Optional.ofNullable((Object) webRequest.getParameter(meta.name()))
+                .orElseGet(() -> meta.bodyLookup() ? body.get(meta.name()) : null);
 
-        if (value == null) return;
+        Object finalValue = (initialValue != null) ? initialValue
+                : (!ProjectManagerConst.NOT_SET.equals(meta.defaultValue()) ? meta.defaultValue() : null);
+
+        if (finalValue == null) return;
 
         extractRelevantAnnotations(param)
-                .forEach(annotation -> rawValues.put(annotation, value));
+                .forEach(annotation -> rawValues.put(annotation, finalValue));
     }
 
     // =========================================================
@@ -118,18 +117,10 @@ public class AnnotatedParametersWrapper {
     // =========================================================
 
     private List<Class<? extends Annotation>> extractRelevantAnnotations(MethodParameter parameter) {
-
         return Arrays.stream(parameter.getParameterAnnotations())
                 .map(a -> (Class<? extends Annotation>) a.annotationType())
-                .filter(annotation -> !annotation.equals(RequestVariable.class))
+                .filter(annotation -> !annotation.equals(RequestVariable.class) && !annotation.equals(RequestParameter.class))
                 .collect(Collectors.toList());
-    }
-
-    private String extractRequestVariableName(MethodParameter parameter) {
-
-        return Optional.ofNullable(parameter.getParameterAnnotation(RequestVariable.class))
-                .map(RequestVariable::name)
-                .orElse(null);
     }
 
 }
