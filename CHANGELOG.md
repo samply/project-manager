@@ -248,6 +248,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Multiple types pro-project
 - Remove the project output service
 - Use global conversion service of spring
+- Annotated Parameter Wrapper
 
 
 ### Changed

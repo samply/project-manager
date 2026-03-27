@@ -68,11 +68,11 @@ public class ProjectBridgeheadService {
         return project.get();
     }
 
-    private ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws ProjectBridgeheadServiceException {
+    public ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws ProjectBridgeheadServiceException {
         return fetchProjectBridgehead(fetchProject(projectCode), bridgehead);
     }
 
-    private ProjectBridgehead fetchProjectBridgehead(Project project, String bridgehead) throws ProjectBridgeheadServiceException {
+    public ProjectBridgehead fetchProjectBridgehead(Project project, String bridgehead) throws ProjectBridgeheadServiceException {
         Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project);
         if (projectBridgehead.isEmpty()) {
             throw new ProjectBridgeheadServiceException("Bridgehead " + bridgehead + " in project " + project.getCode() + " not found");

@@ -2,6 +2,7 @@ package de.samply.resolvers;
 
 import de.samply.annotations.RequestVariable;
 import jakarta.servlet.http.HttpServletRequest;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
@@ -65,11 +66,16 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
      */
     private final ConversionService conversionService;
     private final RequestBodyCache requestBodyCache; // Injecting request-scoped bean
+    private final AnnotatedParametersWrapper annotatedParametersWrapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public RequestVariableMethodArgumentResolver(@Lazy ConversionService conversionService, RequestBodyCache requestBodyCache) {
+    public RequestVariableMethodArgumentResolver(
+            @Lazy ConversionService conversionService,
+            RequestBodyCache requestBodyCache,
+            AnnotatedParametersWrapper annotatedParametersWrapper) {
         this.conversionService = conversionService;
         this.requestBodyCache = requestBodyCache;
+        this.annotatedParametersWrapper = annotatedParametersWrapper;
     }
 
     @Override
@@ -78,10 +84,12 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
     }
 
     @Override
-    public Object resolveArgument(MethodParameter parameter,
+    public Object resolveArgument(@NonNull MethodParameter parameter,
                                   ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest,
+                                  @NonNull NativeWebRequest webRequest,
                                   WebDataBinderFactory binderFactory) throws Exception {
+
+        annotatedParametersWrapper.initializeIfNeeded(parameter, webRequest);
 
         RequestVariable requestVariable = parameter.getParameterAnnotation(RequestVariable.class);
         assert requestVariable != null;
@@ -111,7 +119,10 @@ public class RequestVariableMethodArgumentResolver implements HandlerMethodArgum
         }
 
         // Convert a value to a target type using ConversionService
-        return convertValue(value, parameter);
+        Object result = convertValue(value, parameter);
+        annotatedParametersWrapper.putResolved(parameter, result);
+
+        return result;
     }
 
     private Object extractFromJsonBody(HttpServletRequest request, String key) throws IOException {
