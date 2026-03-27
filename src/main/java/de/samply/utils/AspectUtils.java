@@ -16,29 +16,34 @@ import java.util.Optional;
 public class AspectUtils {
 
     public static Optional<String> fetchBridgehead(JoinPoint joinPoint) {
-        return fetchStringParameterAnnotation(joinPoint, Bridgehead.class);
+        return fetchParameterAnnotation(joinPoint, Bridgehead.class, String.class);
     }
 
     public static Optional<String> fetchProjectCode(JoinPoint joinPoint) {
-        return fetchStringParameterAnnotation(joinPoint, ProjectCode.class);
+        return fetchParameterAnnotation(joinPoint, ProjectCode.class, String.class);
     }
 
     public static Optional<String> fetchEmail(JoinPoint joinPoint) {
-        return fetchStringParameterAnnotation(joinPoint, Email.class);
+        return fetchParameterAnnotation(joinPoint, Email.class, String.class);
     }
 
     public static Optional<String> fetchMessage(JoinPoint joinPoint) {
-        return fetchStringParameterAnnotation(joinPoint, Message.class);
+        return fetchParameterAnnotation(joinPoint, Message.class, String.class);
     }
 
-    private static Optional<String> fetchStringParameterAnnotation(JoinPoint joinPoint, Class<? extends Annotation> annotationClass) {
+    public static <T> Optional<T> fetchParameterAnnotation(
+            JoinPoint joinPoint,
+            Class<? extends Annotation> annotationClass,
+            Class<T> targetClass
+    ) {
         Annotation[][] parameterAnnotations = fetchMethod(joinPoint).getParameterAnnotations();
         Object[] args = joinPoint.getArgs();
+
         for (int i = 0; i < parameterAnnotations.length; i++) {
             for (Annotation annotation : parameterAnnotations[i]) {
                 if (annotation.annotationType() == annotationClass) {
-                    if (args[i] instanceof String) {
-                        return Optional.ofNullable((String) args[i]);
+                    if (targetClass.isInstance(args[i])) {
+                        return Optional.of(targetClass.cast(args[i]));
                     }
                 }
             }
