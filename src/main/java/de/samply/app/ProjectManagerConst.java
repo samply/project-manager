@@ -2,7 +2,7 @@ package de.samply.app;
 
 public class ProjectManagerConst {
 
-    public final static String APP_NAME = "Project Manager";
+    public final static String APP_NAME = "ProjectCode Manager";
 
     // Profiles
     public final static String EXTERNAL_EXECUTION_NOT_ALLOWED = "external-execution-not-allowed";
@@ -552,7 +552,7 @@ public class ProjectManagerConst {
     // Thymeleaf
     public final static int THYMELEAF_PROCESSOR_PRECEDENCE = 1000;
     public final static int THYMELEAF_DIALECT_PRECEDENCE = 1000;
-    public final static String THYMELEAF_DIALECT_NAME = "Project Manager";
+    public final static String THYMELEAF_DIALECT_NAME = "ProjectCode Manager";
     public final static String THYMELEAF_DIALECT_PREFIX = "pm";
 
     // Variable name placeholders

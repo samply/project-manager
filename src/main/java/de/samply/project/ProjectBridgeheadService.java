@@ -2,14 +2,14 @@ package de.samply.project;
 
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadDataShield;
+import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.frontend.dto.DtoFactory;
-import de.samply.frontend.dto.Results;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
@@ -18,106 +18,63 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class ProjectBridgeheadService {
 
+    // Services
     private final NotificationService notificationService;
-    private final ProjectRepository projectRepository;
+
+    // Repositories
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
+
     private final SessionUser sessionUser;
-    private final DtoFactory dtoFactory;
 
     public ProjectBridgeheadService(NotificationService notificationService,
-                                    ProjectRepository projectRepository,
                                     ProjectBridgeheadRepository projectBridgeheadRepository,
                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                                    SessionUser sessionUser,
-                                    DtoFactory dtoFactory) {
+                                    ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
+                                    SessionUser sessionUser) {
         this.notificationService = notificationService;
-        this.projectRepository = projectRepository;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.sessionUser = sessionUser;
-        this.dtoFactory = dtoFactory;
     }
 
-    public void acceptProject(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        changeProjectBridgeheadState(projectCode, bridgehead, ProjectBridgeheadState.ACCEPTED);
+    public void acceptProject(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
+        changeProjectBridgeheadState(project, bridgehead, ProjectBridgeheadState.ACCEPTED);
     }
 
-    public void rejectProject(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        changeProjectBridgeheadState(projectCode, bridgehead, ProjectBridgeheadState.REJECTED);
+    public void rejectProject(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
+        changeProjectBridgeheadState(project, bridgehead, ProjectBridgeheadState.REJECTED);
     }
 
-    private void changeProjectBridgeheadState(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectBridgeheadState state) throws ProjectBridgeheadServiceException {
-        ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
-        projectBridgehead.setState(state);
-        projectBridgeheadRepository.save(projectBridgehead);
-        this.notificationService.createNotification(projectCode, bridgehead, sessionUser.getEmail(), OperationType.CHANGE_PROJECT_STATE,
+    private void changeProjectBridgeheadState(@NotNull Project project, @NotNull ProjectBridgehead bridgehead, @NotNull ProjectBridgeheadState state) throws ProjectBridgeheadServiceException {
+        bridgehead.setState(state);
+        saveBridgehead(bridgehead);
+        this.notificationService.createNotification(project, bridgehead.getBridgehead(), sessionUser.getEmail(), OperationType.CHANGE_PROJECT_STATE,
                 "Set project bridgehead state to " + state, null, null);
     }
 
-    private Project fetchProject(String projectCode) throws ProjectBridgeheadServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
-        }
-        return project.get();
+    public Optional<ProjectBridgehead> fetchProjectBridgehead(String projectCode, String bridgehead) throws ProjectBridgeheadServiceException {
+        return projectBridgeheadRepository.findFirstByBridgeheadAndProject_Code(bridgehead, projectCode);
     }
 
-    public ProjectBridgehead fetchProjectBridgehead(String projectCode, String bridgehead) throws ProjectBridgeheadServiceException {
-        return fetchProjectBridgehead(fetchProject(projectCode), bridgehead);
-    }
-
-    public ProjectBridgehead fetchProjectBridgehead(Project project, String bridgehead) throws ProjectBridgeheadServiceException {
-        Optional<ProjectBridgehead> projectBridgehead = projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project);
-        if (projectBridgehead.isEmpty()) {
-            throw new ProjectBridgeheadServiceException("Bridgehead " + bridgehead + " in project " + project.getCode() + " not found");
-        }
-        return projectBridgehead.get();
-    }
-
-    public List<de.samply.frontend.dto.ProjectBridgehead> fetchUserVisibleProjectBridgeheads(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectBridgeheadServiceException("Project " + projectCode + " not found");
-        }
-        Set<ProjectBridgehead> projectBridgeheads = projectBridgeheadRepository.findByProject(project.get());
-        if (isProjectManagerAdmin()) {
-            return new ArrayList<>(projectBridgeheads).stream().map(dtoFactory::convert).toList();
-        }
-        Set<ProjectBridgehead> tempProjectBridgeheads = new HashSet<>();
-        projectBridgeheads.forEach(projectBridgehead -> {
-            if (isBridgeheadAdminOfProjectBridgehead(projectBridgehead) ||
-                    isUserOfProjectBridgehead(projectBridgehead) ||
-                    isUserCreatorOfProject(project.get())
-            ) {
-                tempProjectBridgeheads.add(projectBridgehead);
-            }
-        });
-        return new ArrayList<>(tempProjectBridgeheads).stream().map(dtoFactory::convert).toList();
-    }
-
-    public List<de.samply.frontend.dto.ProjectBridgehead> fetchProjectBridgeheads(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectBridgeheadServiceException("Project " + projectCode + " not found");
-        }
-        return projectBridgeheadRepository.findByProject(project.get()).stream().map(dtoFactory::convert).toList();
-    }
-
-    private boolean isProjectManagerAdmin() {
+    protected boolean isProjectManagerAdmin() {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
 
-    private boolean isBridgeheadAdminOfProjectBridgehead(ProjectBridgehead projectBridgehead) {
+    protected boolean isBridgeheadAdminOfProjectBridgehead(ProjectBridgehead projectBridgehead) {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.BRIDGEHEAD_ADMIN, Optional.of(projectBridgehead.getBridgehead()));
     }
 
-    private boolean isUserOfProjectBridgehead(ProjectBridgehead projectBridgehead) {
+    protected boolean isUserOfProjectBridgehead(ProjectBridgehead projectBridgehead) {
         if (projectBridgehead.getProject().getCreatorEmail().equals(sessionUser.getEmail())) {
             for (String bridgehead : sessionUser.getBridgeheads()) {
                 if (projectBridgehead.getBridgehead().equals(bridgehead)) {
@@ -128,68 +85,82 @@ public class ProjectBridgeheadService {
         return !projectBridgeheadUserRepository.getByEmailAndProjectBridgehead(sessionUser.getEmail(), projectBridgehead).isEmpty();
     }
 
-    private boolean isUserCreatorOfProject(Project project) {
+    protected boolean isUserCreatorOfProject(Project project) {
         return project.getCreatorEmail().equals(sessionUser.getEmail());
     }
 
-    public void scheduleSendQueryToBridgehead(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectType projectType) throws ProjectBridgeheadServiceException {
-        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT, projectType);
+    public void scheduleSendQueryToBridgehead(@NotNull ProjectBridgehead bridgehead, @NotNull ProjectType projectType) throws ProjectBridgeheadServiceException {
+        changeQueryState(bridgehead, QueryState.TO_BE_SENT, projectType);
     }
 
-    public void scheduleSendQueryToBridgeheadAndExecute(@NotNull String projectCode, @NotNull String bridgehead, @NotNull ProjectType projectType) throws ProjectBridgeheadServiceException {
-        changeQueryState(projectCode, bridgehead, QueryState.TO_BE_SENT_AND_EXECUTED, projectType);
+    public void scheduleSendQueryToBridgeheadAndExecute(@NotNull ProjectBridgehead bridgehead, @NotNull ProjectType projectType) throws ProjectBridgeheadServiceException {
+        changeQueryState(bridgehead, QueryState.TO_BE_SENT_AND_EXECUTED, projectType);
     }
 
-    private void changeQueryState(String projectCode, String bridgehead, QueryState queryState, ProjectType projectType) throws ProjectBridgeheadServiceException {
-        Project project = fetchProject(projectCode);
-        ProjectBridgehead projectBridgehead = fetchProjectBridgehead(project, bridgehead);
-        projectBridgehead.setModifiedAt(Instant.now());
-        projectBridgehead.addOrUpdateExecution(projectType, queryState, null, sessionUser.getEmail(), null, null);
-        projectBridgeheadRepository.save(projectBridgehead);
+    private void changeQueryState(ProjectBridgehead bridgehead, QueryState queryState, ProjectType projectType) throws ProjectBridgeheadServiceException {
+        bridgehead.addOrUpdateExecution(projectType, queryState, null, sessionUser.getEmail(), null, null);
+        saveBridgehead(bridgehead);
     }
 
-    public void addResultsUrl(@NotNull String projectCode, @NotNull String bridgehead, @NotNull String resultsUrl) throws ProjectBridgeheadServiceException {
-        ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
-        projectBridgehead.setResultsUrl(resultsUrl);
-        projectBridgehead.setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the results again
-        projectBridgeheadRepository.save(projectBridgehead);
+    public void addResultsUrl(@NotNull ProjectBridgehead bridgehead, @NotNull String resultsUrl) throws ProjectBridgeheadServiceException {
+        bridgehead.setResultsUrl(resultsUrl);
+        bridgehead.setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the results again
+        saveBridgehead(bridgehead);
     }
 
-    public void acceptResultsForCreator(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        changeCreatorResultsState(projectCode, bridgehead, UserProjectState.ACCEPTED);
+    public void acceptResultsForCreator(@NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
+        changeCreatorResultsState(bridgehead, UserProjectState.ACCEPTED);
     }
 
-    public void rejectResultsForCreator(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        changeCreatorResultsState(projectCode, bridgehead, UserProjectState.REJECTED);
+    public void rejectResultsForCreator(@NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
+        changeCreatorResultsState(bridgehead, UserProjectState.REJECTED);
     }
 
-    public void requestChangesInResultsForCreator(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        changeCreatorResultsState(projectCode, bridgehead, UserProjectState.REQUEST_CHANGES);
+    public void requestChangesInResultsForCreator(@NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
+        changeCreatorResultsState(bridgehead, UserProjectState.REQUEST_CHANGES);
     }
 
-    private void changeCreatorResultsState(@NotNull String projectCode, @NotNull String bridgehead, @NotNull UserProjectState state) throws ProjectBridgeheadServiceException {
-        ProjectBridgehead projectBridgehead = fetchProjectBridgehead(projectCode, bridgehead);
-        projectBridgehead.setCreatorResultsState(state);
-        projectBridgeheadRepository.save(projectBridgehead);
+    private void changeCreatorResultsState(@NotNull ProjectBridgehead bridgehead, @NotNull UserProjectState state) throws ProjectBridgeheadServiceException {
+        bridgehead.setCreatorResultsState(state);
+        saveBridgehead(bridgehead);
     }
 
-    public List<Results> fetchResults(@NotNull String projectCode) throws ProjectBridgeheadServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
-        }
-        return projectBridgeheadRepository.findByProject(project.orElseThrow())
-                .stream()
-                .map(dtoFactory::fetchResults)
-                .toList(); // Uses the modern `toList()` instead of `Collectors.toList()`
+    public void saveBridgehead(@NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
+        bridgehead.setModifiedAt(Instant.now());
+        projectBridgeheadRepository.save(bridgehead);
     }
 
-    public Optional<Results> fetchResultsOfOwnBridgehead(@NotNull String projectCode, @NotNull String bridgehead) throws ProjectBridgeheadServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectBridgeheadServiceException("Project not found: " + projectCode);
-        }
-        return projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project.get()).map(dtoFactory::fetchResults);
+    public Set<ProjectBridgehead> fetchBridgeheads(Project project) {
+        return projectBridgeheadRepository.findByProject(project);
     }
+
+    public Set<ProjectBridgehead> fetchBridgeheads(Project project, ProjectBridgeheadState projectBridgeheadState) {
+        return projectBridgeheadRepository.findByProjectAndState(project, projectBridgeheadState);
+    }
+
+    public Optional<ProjectBridgehead> fetchBridgehead(Project project, String bridgehead) {
+        return projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project);
+    }
+
+    public Optional<ProjectBridgeheadDataShield> fetchDataShield(ProjectBridgehead bridgehead) {
+        return projectBridgeheadDataShieldRepository.findByProjectBridgehead(bridgehead);
+    }
+
+    public void saveDataShield(ProjectBridgeheadDataShield dataShield) {
+        projectBridgeheadDataShieldRepository.save(dataShield);
+    }
+
+    public Set<ProjectBridgehead> fetchBridgeheads(QueryState queryState, Set<ProjectState> projectStates) {
+        return projectBridgeheadRepository.getByQueryStateAndProjectState(queryState, projectStates);
+    }
+
+    public void deleteBridgehead(ProjectBridgehead bridgehead) {
+        projectBridgeheadRepository.delete(bridgehead);
+    }
+
+    public List<ProjectBridgehead> fetchByProjectTypeAndNotProjectState(ProjectType projectType, Set<ProjectState> projectStates) {
+        return projectBridgeheadRepository.getByProjectTypeAndNotProjectState(projectType, projectStates);
+    }
+
 
 }

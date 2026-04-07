@@ -88,7 +88,7 @@ public class ProjectBridgehead {
                     execution.setModifiedAt(Instant.now());
                 },
                 () -> {
-                    throw new IllegalArgumentException("Project does not have output for project type " + projectType);
+                    throw new IllegalArgumentException("ProjectCode does not have output for project type " + projectType);
                 }
         );
 

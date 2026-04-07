@@ -1,14 +1,12 @@
 package de.samply.form.template;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.db.model.Project;
 import de.samply.form.DataType;
-import de.samply.form.FormService;
 import de.samply.form.pdf.FormPdfGeneratorFactory;
 import de.samply.form.pdf.FormTemplateServiceException;
-import de.samply.frontend.dto.DtoFactory;
-import de.samply.frontend.dto.Form;
-import de.samply.frontend.dto.FormField;
-import de.samply.frontend.dto.FormTemplate;
+import de.samply.frontend.dto.*;
+import de.samply.form.DtoFormService;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
 import de.samply.utils.DateUtils;
@@ -26,7 +24,7 @@ import java.util.stream.Stream;
 @Service
 public class FormTemplateService {
 
-    private final FormService formService;
+    private final DtoFormService dtoFormService;
     private final PdfGenerator pdfGenerator;
     private final String defaultLanguage;
     private final FormTemplateConfig formTemplateConfig;
@@ -36,7 +34,7 @@ public class FormTemplateService {
     private final ProjectContextFactory projectContextFactory;
 
 
-    public FormTemplateService(FormService formService,
+    public FormTemplateService(DtoFormService dtoFormService,
                                FormPdfGeneratorFactory pdfGeneratorFactory,
                                @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
                                @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
@@ -44,7 +42,7 @@ public class FormTemplateService {
                                DtoFactory dtoFactory,
                                @Value(ProjectManagerConst.FORM_TEMPLATE_DATE_PATTERN_SV) String datePattern,
                                ProjectContextFactory projectContextFactory) {
-        this.formService = formService;
+        this.dtoFormService = dtoFormService;
         this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
         this.defaultLanguage = defaultLanguage;
         this.formTemplateConfig = formTemplateConfig;
@@ -54,29 +52,29 @@ public class FormTemplateService {
         this.projectContextFactory = projectContextFactory;
     }
 
-    public String fetchFormFilename(@NotNull String projectCode, String formTemplate) {
+    public String fetchFormFilename(@NotNull Project project, String formTemplate) {
         return FormFilenameResolver.resolve(
                 formTemplateConfig.getTemplate(formTemplate)
                         .map(metadata -> metadata.getExtensionFilenameTemplateMap().get(FileExtension.PDF))
                         .orElse(defaultPdfFilename),
-                Map.of(FormFilenameKey.PROJECT_CODE.getText(), projectCode)
+                Map.of(FormFilenameKey.PROJECT_CODE.getText(), project.getCode())
         );
     }
 
-    public byte[] createFormAsPdf(@NotNull String projectCode, @NotNull String formTemplate, Optional<String> language) throws FormTemplateServiceException {
+    public byte[] createFormAsPdf(@NotNull Project project, @NotNull String formTemplate, Optional<String> language) throws FormTemplateServiceException {
         try {
             return pdfGenerator.generatePdf(
                     formTemplate,
-                    createContext(projectCode, formTemplate, LanguageUtils.normalize(language.orElse(defaultLanguage))));
+                    createContext(project, formTemplate, LanguageUtils.normalize(language.orElse(defaultLanguage))));
         } catch (PdfGeneratorException e) {
             throw new FormTemplateServiceException(e);
         }
     }
 
-    private Map<String, Object> createContext(String projectCode, String formTemplate, String language) {
+    private Map<String, Object> createContext(Project project, String formTemplate, String language) {
         Map<String, Object> result = new HashMap<>();
         // Add form fields
-        result.put(FormContextKey.FIELDS.getText(), fetchFormFields(projectCode, formTemplate, language));
+        result.put(FormContextKey.FIELDS.getText(), fetchFormFields(project, formTemplate, language));
         // Add form variables
         result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
         result.put(FormContextKey.DATA_TYPE_CLASS.getText(), DataType.class);
@@ -86,15 +84,15 @@ public class FormTemplateService {
     }
 
     public Map<String, FormField> fetchFormFields(
-            @NotNull String projectCode,
+            @NotNull Project project,
             @NotNull String formTemplate,
             @NotNull String language
     ) {
         FormTemplateMetadata template = resolveTemplateMetadata(formTemplate);
-        ProjectContext projectContext = projectContextFactory.createProjectContext(projectCode, language);
+        ProjectContext projectContext = projectContextFactory.createProjectContext(project, language);
 
         return Stream.concat(
-                        // 1️⃣ Project fields
+                        // 1️⃣ ProjectCode fields
                         Stream.ofNullable(template.getProjectFields())
                                 .flatMap(Arrays::stream)
                                 .map(projectContext::resolveProjectContext)
@@ -107,16 +105,16 @@ public class FormTemplateService {
 
                         // 2️⃣ Form fields from formService (raw, base + override)
                         Arrays.stream(template.getFormTitles())
-                                .flatMap(formTitle -> formService.fetchBaseAndOverrideFormFields(
-                                        formTitle, projectCode, Optional.of(language)))
+                                .flatMap(formTitle -> dtoFormService.fetchBaseAndOverrideFormFields(
+                                        formTitle, project, Optional.of(language)))
                 )
                 .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
                 .collect(FormFieldUtils.formFieldMapCollector());
     }
 
 
-    public List<FormTemplate> fetchTemplates(@NotNull String projectCode, Optional<String> language) {
-        Set<String> selectedFormTitles = formService.fetchSelectedForms(projectCode, language).stream()
+    public List<FormTemplate> fetchTemplates(@NotNull Project project, Optional<String> language) {
+        Set<String> selectedFormTitles = dtoFormService.fetchSelectedForms(project, language).stream()
                 .map(Form::title)
                 .collect(Collectors.toSet());
 

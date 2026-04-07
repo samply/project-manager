@@ -7,6 +7,7 @@ import de.samply.resolvers.AnnotatedParametersWrapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ public class ProjectConverter implements Converter<String, Project> {
 
     @Override
     public Project convert(@NonNull String projectCode) {
+        if (!StringUtils.hasText(projectCode)) return null;
         Optional<ProjectBridgehead> projectBridgeheadOptional =
                 annotatedParametersWrapper.getResolved(Bridgehead.class, ProjectBridgehead.class);
         return projectBridgeheadOptional

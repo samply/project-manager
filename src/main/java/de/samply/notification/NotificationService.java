@@ -4,10 +4,9 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Notification;
 import de.samply.db.model.NotificationUserAction;
 import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.repository.NotificationRepository;
 import de.samply.db.repository.NotificationUserActionRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.frontend.dto.DtoFactory;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
@@ -26,28 +25,22 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationUserActionRepository notificationUserActionRepository;
-    private final ProjectRepository projectRepository;
     private final SessionUser sessionUser;
-    private final DtoFactory dtoFactory;
+
 
     public NotificationService(NotificationRepository notificationRepository,
                                NotificationUserActionRepository notificationUserActionRepository,
-                               ProjectRepository projectRepository,
-                               SessionUser sessionUser,
-                               DtoFactory dtoFactory) {
+                               SessionUser sessionUser) {
         this.notificationRepository = notificationRepository;
         this.notificationUserActionRepository = notificationUserActionRepository;
-        this.projectRepository = projectRepository;
         this.sessionUser = sessionUser;
-        this.dtoFactory = dtoFactory;
     }
 
     @Async(ProjectManagerConst.ASYNC_NOTIFICATION_EXECUTOR)
-    public void createNotification(@NotNull String projectCode, String bridgehead, String email,
+    public void createNotification(@NotNull Project project, String bridgehead, String email,
                                    @NotNull OperationType operationType,
                                    @NotNull String details, String error, HttpStatus httpStatus
     ) throws NotificationServiceException {
-        Project project = fetchProject(projectCode);
         Notification notification = new Notification();
         notification.setProject(project);
         notification.setBridgehead(bridgehead);
@@ -59,32 +52,23 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    private Project fetchProject(String projectCode) throws NotificationServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new NotificationServiceException("Project " + projectCode + " not found");
-        }
-        return project.get();
-    }
-
     // We use a supplier of ProjectService.fetchAllUserVisibleProjects to remove interdependence
     // between the notification service and the project service.
-    public List<de.samply.frontend.dto.Notification> fetchUserVisibleNotifications(
-            Optional<String> projectCodeOptional, Optional<String> bridgheadOptional,
+    protected List<Notification> fetchUserVisibleNotifications(
+            Optional<Project> project, Optional<ProjectBridgehead> bridgehead,
             Supplier<List<Project>> allUserVisibleProjectFetcher) throws NotificationServiceException {
         List<Notification> result = new ArrayList<>();
-        List<Project> projects = projectCodeOptional.map(s -> List.of(fetchProject(s))).orElseGet(allUserVisibleProjectFetcher);
-        List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgheadOptional);
-        projects.forEach(project -> {
+        List<Project> projects = project.map(List::of).orElseGet(allUserVisibleProjectFetcher);
+        List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgehead.map(ProjectBridgehead::getBridgehead));
+        projects.forEach(tempProject -> {
             if (bridgeheads.isEmpty() && sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
-                result.addAll(notificationRepository.findByProjectOrderByTimestampDesc(project));
+                result.addAll(notificationRepository.findByProjectOrderByTimestampDesc(tempProject));
             } else {
-                bridgeheads.forEach(bridgehead -> result.addAll(
-                        notificationRepository.findByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(project, bridgehead)));
+                bridgeheads.forEach(tempBridgehead -> result.addAll(
+                        notificationRepository.findByProjectAndBridgeheadOrBridgeheadIsNullOrderByTimestampDesc(tempProject, tempBridgehead)));
             }
         });
-        return result.stream().map(notification ->
-                dtoFactory.convert(notification, () -> fetchNotificationUserAction(notification))).toList();
+        return result;
     }
 
     private List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {

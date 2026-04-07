@@ -21,7 +21,7 @@ public class ProjectConfigurationsFactory {
         try {
             return objectMapper.readValue(new File(frontendProjectConfigurationPath), ProjectConfigurations.class);
         } catch (IOException e) {
-            log.error("Project configuration file not found: {}", frontendProjectConfigurationPath);
+            log.error("ProjectCode configuration file not found: {}", frontendProjectConfigurationPath);
             throw new RuntimeException(e);
         }
     }

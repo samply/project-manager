@@ -5,14 +5,10 @@ import de.samply.db.model.ProjectForm;
 import de.samply.db.model.ProjectFormField;
 import de.samply.db.repository.ProjectFormFieldRepository;
 import de.samply.db.repository.ProjectFormRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.frontend.dto.DtoFactory;
-import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.FormField;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
-import de.samply.utils.FormFieldUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +17,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Service class responsible for handling operations related to forms and their associated configurations,
@@ -35,74 +30,34 @@ import java.util.stream.Stream;
 public class FormService {
 
     private final FormConfig formConfig;
-    private final ProjectRepository projectRepository;
     private final ProjectFormFieldRepository projectFormFieldRepository;
     private final ProjectFormRepository projectFormRepository;
     private final NotificationService notificationService;
     private final SessionUser sessionUser;
-    private final DtoFactory dtoFactory;
 
 
     public FormService(FormConfig formConfig,
-                       ProjectRepository projectRepository,
                        ProjectFormFieldRepository projectFormFieldRepository,
                        ProjectFormRepository projectFormRepository,
                        NotificationService notificationService,
-                       SessionUser sessionUser,
-                       DtoFactory dtoFactory) {
+                       SessionUser sessionUser) {
         this.formConfig = formConfig;
-        this.projectRepository = projectRepository;
         this.projectFormFieldRepository = projectFormFieldRepository;
         this.projectFormRepository = projectFormRepository;
         this.notificationService = notificationService;
         this.sessionUser = sessionUser;
-        this.dtoFactory = dtoFactory;
     }
 
-    public List<FormField> fetchProjectFormTitles(Optional<String> language) {
-        return formConfig.getFormTitleLabelFieldMap().keySet().stream()
-                .map(title -> dtoFactory.convert(
-                        title,
-                        Optional.empty(),
-                        Optional.empty(),
-                        language
-                ))
-                .collect(Collectors.toList());
-    }
-
-    public List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(@NotNull String formTitle, Optional<String> language) {
-        return formConfig.getFormTitleLabelFieldMap()
-                .getOrDefault(formTitle, Map.of())
-                .values()
-                .stream()
-                .map(field ->
-                        dtoFactory.convert(formTitle, field, Optional.empty(), language))
-                .toList();
-    }
-
-    public List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull String projectCode, Optional<String> language) {
-        return projectFormFieldRepository.findByProject_CodeAndFormTitle(projectCode, formTitle).stream()
-                .map(projectFormField -> dtoFactory.convert(projectFormField, language))
-                .toList();
-    }
-
-    public List<FormField> fetchProjectFormFields(Optional<String> formTitle, @NotNull String projectCode, Optional<String> language) {
-        return formTitle.map(Stream::of)
-                .orElseGet(() -> formConfig.getFormTitleLabelFieldMap().keySet().stream())
-                .flatMap(title -> fetchBaseAndOverrideFormFields(title, projectCode, language))
-                .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
-                .collect(FormFieldUtils.formFieldMapCollector())
-                .values()
-                .stream()
-                .toList();
+    protected List<ProjectFormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull Project project) {
+        return projectFormFieldRepository.findByProjectAndFormTitle(project, formTitle);
     }
 
     @Transactional
-    public void editProjectFormFieldValues(Optional<FormField[]> formFields, @NotNull String projectCode) {
+    public void editProjectFormFieldValues(Optional<FormField[]> formFields, @NotNull Project project) {
         if (formFields.isEmpty() || formFields.get().length == 0) {
             return;
         }
-        Map<String, ProjectFormField> labelFormMap = projectFormFieldRepository.findByProject_Code(projectCode).stream()
+        Map<String, ProjectFormField> labelFormMap = projectFormFieldRepository.findByProject(project).stream()
                 .collect(Collectors.toMap(ProjectFormField::getLabel, Function.identity()));
         Arrays.stream(formFields.get()).forEach(formField -> {
             ProjectFormField projectFormField = labelFormMap.get(formField.label());
@@ -113,15 +68,15 @@ public class FormService {
                 projectFormField.setLabel(formField.label());
                 projectFormField.setFormTitle(formField.title());
                 projectFormField.setValue(formField.value());
-                projectFormField.setProject(fetchProject(projectCode));
+                projectFormField.setProject(project);
                 isModified = true;
-                notificationService.createNotification(projectCode, null,
+                notificationService.createNotification(project, null,
                         sessionUser.getEmail(), OperationType.ADD_PROJECT_FORM_LABEL,
                         details, null, null);
             } else {
                 if (!projectFormField.getValue().equals(formField.value())) {
                     projectFormField.setValue(formField.value());
-                    notificationService.createNotification(projectCode, null,
+                    notificationService.createNotification(project, null,
                             sessionUser.getEmail(), OperationType.EDIT_PROJECT_FORM_LABEL,
                             details, null, null);
                     isModified = true;
@@ -134,33 +89,14 @@ public class FormService {
         });
     }
 
-    private Project fetchProject(@NotNull String projectCode) throws FormServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new FormServiceException("Project " + projectCode + " not found");
-        }
-        return project.get();
-    }
-
-
-    public Stream<FormField> fetchBaseAndOverrideFormFields(@NotNull String formTitle, @NotNull String projectCode, Optional<String> language
-    ) {
-        return Stream.concat(
-                fetchProjectFormFieldsDefinedInConfigWithoutValues(formTitle, language).stream(),
-                fetchProjectFormFieldsWithValues(formTitle, projectCode, language).stream()
-        );
-    }
-
-    public List<Form> fetchSelectedForms(@NotNull String projectCode, Optional<String> language) {
-        return projectFormRepository.findByProject_Code(projectCode).stream()
-                .map(projectForm -> dtoFactory.convert(projectForm, language))
-                .toList();
+    protected List<ProjectForm> fetchSelectedForms(@NotNull Project project) {
+        return projectFormRepository.findByProject(project);
     }
 
     @Transactional
-    public void addSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
+    public void addSelectedForm(@NotNull Project project, @NotNull String formTitle) {
         projectFormRepository
-                .findByProject_CodeAndFormTitle(projectCode, formTitle)
+                .findByProjectAndFormTitle(project, formTitle)
                 .ifPresentOrElse(
                         _ -> { /* already exists → do nothing */ },
                         () -> {
@@ -170,7 +106,7 @@ public class FormService {
 
                             ProjectForm projectForm = new ProjectForm();
                             projectForm.setFormTitle(formTitle);
-                            projectForm.setProject(fetchProject(projectCode));
+                            projectForm.setProject(project);
                             projectForm.setCreatedAt(Instant.now());
 
                             projectFormRepository.save(projectForm);
@@ -179,9 +115,9 @@ public class FormService {
     }
 
     @Transactional
-    public void removeSelectedForm(@NotNull String projectCode, @NotNull String formTitle) {
+    public void removeSelectedForm(@NotNull Project project, @NotNull String formTitle) {
         projectFormRepository
-                .findByProject_CodeAndFormTitle(projectCode, formTitle)
+                .findByProjectAndFormTitle(project, formTitle)
                 .ifPresent(projectForm -> {
                             if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
                                 throw new IllegalArgumentException("Form title not found: " + formTitle);
@@ -192,7 +128,7 @@ public class FormService {
     }
 
     @Transactional
-    public void syncSelectedForms(@NotNull String projectCode,
+    public void syncSelectedForms(@NotNull Project project,
                                   @NotNull Collection<String> formTitles) {
 
         // Validate input titles first
@@ -206,7 +142,7 @@ public class FormService {
 
         // Load existing forms from DB
         List<ProjectForm> existingForms =
-                projectFormRepository.findByProject_Code(projectCode);
+                projectFormRepository.findByProject(project);
 
         Set<String> existingTitles = existingForms.stream()
                 .map(ProjectForm::getFormTitle)
@@ -222,8 +158,6 @@ public class FormService {
         Set<String> toRemove = new HashSet<>(existingTitles);
         toRemove.removeAll(newTitles);
 
-        Project project = fetchProject(projectCode);
-
         // Add missing forms
         for (String title : toAdd) {
             ProjectForm projectForm = new ProjectForm();
@@ -237,6 +171,14 @@ public class FormService {
         existingForms.stream()
                 .filter(pf -> toRemove.contains(pf.getFormTitle()))
                 .forEach(projectFormRepository::delete);
+    }
+
+    public List<ProjectForm> fetchProjectForms(Project project) {
+        return projectFormRepository.findByProject(project);
+    }
+
+    public List<ProjectFormField> fetchProjectFormFields(Project project) {
+        return projectFormFieldRepository.findByProject(project);
     }
 
 

@@ -72,7 +72,7 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
             "(pbu.projectBridgehead.project.code = :projectCode AND pbu.projectBridgehead.project.state = 'FINAL' AND pbu.projectRole = 'FINAL'))")
     List<ProjectBridgeheadUser> getDistinctByEmailContainingAndProjectBridgehead_BridgeheadAndUserAlreadySetForThisProjectInThisRole(String email, String bridgehead, String projectCode);
 
-    List<ProjectBridgeheadUser> getDistinctByEmailContainingAndProjectBridgehead_Bridgehead(String email, String bridgehead);
+    List<ProjectBridgeheadUser> getDistinctByEmailContainingAndProjectBridgehead(String email, ProjectBridgehead projectBridgehead);
 
     @Query("SELECT pbu FROM ProjectBridgeheadUser pbu WHERE pbu.projectBridgehead = :projectBridgehead AND pbu.email = :email AND (" +
             "(pbu.projectBridgehead.project.state = 'DEVELOP' AND pbu.projectRole = 'DEVELOPER') OR " +
@@ -107,7 +107,7 @@ public interface ProjectBridgeheadUserRepository extends JpaRepository<ProjectBr
                       )
             """)
     List<ProjectBridgeheadUser>
-    getDistinctInValidaProjectStateByProjectTypeAndQueryStateAndProjectBridgeheadState(
+    getDistinctInValidProjectStateByProjectTypeAndQueryStateAndProjectBridgeheadState(
             ProjectType projectType,
             QueryState queryState,
             ProjectBridgeheadState projectBridgeheadState

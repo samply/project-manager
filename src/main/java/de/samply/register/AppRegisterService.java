@@ -1,8 +1,8 @@
 package de.samply.register;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.coder.CoderService;
 import de.samply.db.model.ProjectCoder;
-import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.utils.MessageStatus;
@@ -26,7 +26,7 @@ public class AppRegisterService {
 
     private WebClient webClient = null;
     private final NotificationService notificationService;
-    private final ProjectCoderRepository projectCoderRepository;
+    private final CoderService coderService;
     private String authorizationHeader = null;
     private final boolean appRegisterEnabled;
 
@@ -36,11 +36,11 @@ public class AppRegisterService {
             @Value(ProjectManagerConst.APP_REGISTER_AUTHORIZATION_FORMAT_SV) String authorizationFormat,
             @Value(ProjectManagerConst.ENABLE_APP_REGISTER_SV) boolean appRegisterEnabled,
             WebClientFactory webClientFactory,
-            NotificationService notificationService,
-            ProjectCoderRepository projectCoderRepository) {
+            CoderService coderService,
+            NotificationService notificationService) {
+        this.coderService = coderService;
         this.appRegisterEnabled = appRegisterEnabled;
         this.notificationService = notificationService;
-        this.projectCoderRepository = projectCoderRepository;
         if (appRegisterEnabled) {
             this.webClient = webClientFactory.createWebClient(appRegisterBaseUrl);
             this.authorizationHeader = fetchAuthorizationHeader(authorizationFormat, appRegisterApiKey);
@@ -71,7 +71,7 @@ public class AppRegisterService {
                 .doOnError(throwable -> {
                     MessageStatus messageStatus = MessageStatus.newInstance(throwable, "User app could not be registered in Beam");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.REGISTER_IN_APP_REGISTER,
@@ -83,13 +83,13 @@ public class AppRegisterService {
                 .doOnSuccess(response -> {
                     log.info("App registered");
                     projectCoder.setInAppRegister(true);
-                    projectCoderRepository.save(projectCoder);
+                    coderService.saveCoder(projectCoder);
                     String message = Optional.ofNullable(response)
                             .filter(r -> !r.isEmpty())
                             .map(r -> " (" + r + ")")
                             .orElse("");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.REGISTER_IN_APP_REGISTER,
@@ -124,7 +124,7 @@ public class AppRegisterService {
                 .doOnError(throwable -> {
                     MessageStatus messageStatus = MessageStatus.newInstance(throwable, "User app could not be unregistered in Beam");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.UNREGISTER_IN_APP_REGISTER,
@@ -136,13 +136,13 @@ public class AppRegisterService {
                 .doOnSuccess(response -> {
                     log.info("App unregistered");
                     projectCoder.setInAppRegister(false);
-                    projectCoderRepository.save(projectCoder);
+                    coderService.saveCoder(projectCoder);
                     String message = Optional.ofNullable(response)
                             .filter(r -> !r.isEmpty())
                             .map(r -> " (" + r + ")")
                             .orElse("");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.UNREGISTER_IN_APP_REGISTER,

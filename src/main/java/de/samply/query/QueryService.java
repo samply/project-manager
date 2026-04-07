@@ -6,11 +6,9 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
 import de.samply.db.model.QueryOutput;
-import de.samply.db.repository.ProjectRepository;
 import de.samply.db.repository.QueryRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
-import de.samply.project.ProjectServiceException;
 import de.samply.project.ProjectType;
 import de.samply.security.SessionUser;
 import de.samply.utils.Base64Utils;
@@ -35,17 +33,15 @@ public class QueryService {
     private final NotificationService notificationService;
     private final SessionUser sessionUser;
     private final QueryRepository queryRepository;
-    private final ProjectRepository projectRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public QueryService(NotificationService notificationService,
-                        SessionUser sessionUser,
-                        QueryRepository queryRepository,
-                        ProjectRepository projectRepository) {
+    public QueryService(
+            NotificationService notificationService,
+            SessionUser sessionUser,
+            QueryRepository queryRepository) {
         this.notificationService = notificationService;
         this.sessionUser = sessionUser;
         this.queryRepository = queryRepository;
-        this.projectRepository = projectRepository;
     }
 
     public String createQuery(
@@ -87,17 +83,11 @@ public class QueryService {
         }
     }
 
-    public void removeOutput(@NotNull String projectCode, @NotNull ProjectType projectType) {
-        this.projectRepository.findByCode(projectCode).ifPresentOrElse(project -> {
-                    project.getQuery().removeOutput(projectType);
-                    this.queryRepository.save(project.getQuery());
-                    this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
-                            OperationType.EDIT_PROJECT, "Removed output of type " + projectType.name(), null, null);
-                },
-                () -> {
-                    throw new ProjectServiceException("Project " + projectCode + " not found");
-                }
-        );
+    public void removeOutput(@NotNull Project project, @NotNull ProjectType projectType) {
+        project.getQuery().removeOutput(projectType);
+        this.queryRepository.save(project.getQuery());
+        this.notificationService.createNotification(project, null, sessionUser.getEmail(),
+                OperationType.EDIT_PROJECT, "Removed output of type " + projectType.name(), null, null);
     }
 
 
@@ -119,57 +109,56 @@ public class QueryService {
         return UUID.randomUUID().toString().replace("-", "").substring(0, ProjectManagerConst.QUERY_CODE_SIZE);
     }
 
-    public void editQuery(@NotNull String projectCode,
+    public void editQuery(@NotNull Project project,
                           String query, QueryFormat queryFormat, String label, String description,
                           OutputFormat outputFormat, String templateId, ProjectType projectType,
                           String humanReadable, String explorerUrl, String queryContext) {
-        Optional<Project> projectOptional = projectRepository.findByCode(projectCode);
-        if (projectOptional.isPresent()) {
-            Query projectQuery = projectOptional.get().getQuery();
-            if (projectQuery != null) {
-                Map<String, String> changedKeyValueMap = new HashMap<>();
-                if (query != null) {
-                    projectQuery.setQuery(query);
-                    changedKeyValueMap.put("query", query);
-                }
-                if (queryFormat != null) {
-                    projectQuery.setQueryFormat(queryFormat);
-                    changedKeyValueMap.put("query format", queryFormat.toString());
-                }
-                if (label != null) {
-                    projectQuery.setLabel(label);
-                    changedKeyValueMap.put("label", label);
-                }
-                if (description != null) {
-                    projectQuery.setDescription(description);
-                    changedKeyValueMap.put("description", description);
-                }
-                if (humanReadable != null) {
-                    Base64Utils.decodeIfNecessary(humanReadable).ifPresent(projectQuery::setHumanReadable);
-                    changedKeyValueMap.put("human readable", humanReadable);
-                }
-                if (explorerUrl != null) {
-                    projectQuery.setExplorerUrl(addProjectCodeToUrl(decodeUrlIfNecessary(explorerUrl), projectCode));
-                    changedKeyValueMap.put("explorer url", explorerUrl);
-                }
-                if (queryContext != null) {
-                    projectQuery.setContext(queryContext);
-                    changedKeyValueMap.put("query context", queryContext);
-                }
-                if (projectType != null && (outputFormat != null || templateId != null)) {
-                    Optional<OutputFormat> outputFormatOptional = Optional.ofNullable(outputFormat);
-                    Optional<String> templateIdOptional = Optional.ofNullable(templateId);
-                    addOutputToQuery(projectQuery, outputFormatOptional, templateIdOptional, projectType);
-                    outputFormatOptional.ifPresent(of -> changedKeyValueMap.put("output format for project type " + projectType, of.toString()));
-                    templateIdOptional.ifPresent(tid -> changedKeyValueMap.put("template id for project type " + projectType, tid));
-                }
-                if (!changedKeyValueMap.isEmpty()) {
-                    queryRepository.save(projectQuery);
-                    this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
-                            OperationType.EDIT_QUERY, printInOneLine(changedKeyValueMap), null, null);
-                }
+
+        Query projectQuery = project.getQuery();
+        if (projectQuery != null) {
+            Map<String, String> changedKeyValueMap = new HashMap<>();
+            if (query != null) {
+                projectQuery.setQuery(query);
+                changedKeyValueMap.put("query", query);
+            }
+            if (queryFormat != null) {
+                projectQuery.setQueryFormat(queryFormat);
+                changedKeyValueMap.put("query format", queryFormat.toString());
+            }
+            if (label != null) {
+                projectQuery.setLabel(label);
+                changedKeyValueMap.put("label", label);
+            }
+            if (description != null) {
+                projectQuery.setDescription(description);
+                changedKeyValueMap.put("description", description);
+            }
+            if (humanReadable != null) {
+                Base64Utils.decodeIfNecessary(humanReadable).ifPresent(projectQuery::setHumanReadable);
+                changedKeyValueMap.put("human readable", humanReadable);
+            }
+            if (explorerUrl != null) {
+                projectQuery.setExplorerUrl(addProjectCodeToUrl(decodeUrlIfNecessary(explorerUrl), project.getCode()));
+                changedKeyValueMap.put("explorer url", explorerUrl);
+            }
+            if (queryContext != null) {
+                projectQuery.setContext(queryContext);
+                changedKeyValueMap.put("query context", queryContext);
+            }
+            if (projectType != null && (outputFormat != null || templateId != null)) {
+                Optional<OutputFormat> outputFormatOptional = Optional.ofNullable(outputFormat);
+                Optional<String> templateIdOptional = Optional.ofNullable(templateId);
+                addOutputToQuery(projectQuery, outputFormatOptional, templateIdOptional, projectType);
+                outputFormatOptional.ifPresent(of -> changedKeyValueMap.put("output format for project type " + projectType, of.toString()));
+                templateIdOptional.ifPresent(tid -> changedKeyValueMap.put("template id for project type " + projectType, tid));
+            }
+            if (!changedKeyValueMap.isEmpty()) {
+                queryRepository.save(projectQuery);
+                this.notificationService.createNotification(project, null, sessionUser.getEmail(),
+                        OperationType.EDIT_QUERY, printInOneLine(changedKeyValueMap), null, null);
             }
         }
+
     }
 
     private String decodeUrlIfNecessary(String encodedUrl) {
@@ -187,6 +176,14 @@ public class QueryService {
             log.error(ExceptionUtils.getStackTrace(e));
             return null;
         }
+    }
+
+    public void saveQuery(Query query) {
+        this.queryRepository.save(query);
+    }
+
+    public Optional<Query> fetchQuery(String queryCode){
+        return this.queryRepository.findByCode(queryCode);
     }
 
 }

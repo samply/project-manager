@@ -5,11 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
+import de.samply.coder.CoderService;
 import de.samply.db.model.*;
-import de.samply.db.repository.BridgeheadAdminUserRepository;
-import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.email.EmailKeyValuesFactory;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
@@ -19,9 +16,11 @@ import de.samply.exporter.focus.BeamServiceException;
 import de.samply.exporter.focus.TaskType;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectType;
 import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
+import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.Base64Utils;
 import de.samply.utils.MessageStatus;
@@ -54,15 +53,21 @@ import java.util.stream.Stream;
 public class ExporterService {
 
 
-    private final BeamService beamService;
     private final WebClient webClient;
     private final SessionUser sessionUser;
-    private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final ProjectCoderRepository projectCoderRepository;
+    private final EmailKeyValuesFactory emailKeyValuesFactory;
+
+    // Services
+    private final BeamService beamService;
+    private final CoderService coderService;
     private final NotificationService notificationService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+    private final EmailService emailService;
+    private final UserService userService;
+
     @Getter
     private final Map<ProjectType, Set<String>> exporterTemplates = new HashMap<>();
+
     private final String focusProjectManagerId;
     private final String exporterApiKey;
     private final String coderBeamIdSuffix;
@@ -71,9 +76,7 @@ public class ExporterService {
     private final String beamWaitTime;
     private final String beamWaitCount;
     private final int maxTimeToWaitFocusTaskInMinutes;
-    private final EmailService emailService;
-    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
-    private final EmailKeyValuesFactory emailKeyValuesFactory;
+
     private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
@@ -84,7 +87,7 @@ public class ExporterService {
             @Value(ProjectManagerConst.EXPORT_TEMPLATES_SV) Set<String> exportTemplates,
             @Value(ProjectManagerConst.DATASHIELD_TEMPLATES_SV) Set<String> datashieldTemplates,
             @Value(ProjectManagerConst.RESEARCH_ENVIRONMENT_TEMPLATES_SV) Set<String> researchEnvironmentTemplates,
-            @Value(ProjectManagerConst.SAMPLES_TEMPLATES_SV) Set<String> samplesTemplates,
+            @Value(ProjectManagerConst.SAMPLES_TEMPLATES_SV) Set<String> samplesTemplates, CoderService coderService, ProjectBridgeheadService projectBridgeheadService,
             @Value(ProjectManagerConst.BEAM_TTL_SV) String beamWaitTime,
             @Value(ProjectManagerConst.BEAM_WAIT_COUNT_SV) String beamWaitCount,
             @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
@@ -92,14 +95,14 @@ public class ExporterService {
             @Value(ProjectManagerConst.CODER_TEST_FILE_BEAM_ID_SV) String testCoderFileBeamId,
             SessionUser sessionUser,
             BeamService beamService,
-            ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
             NotificationService notificationService,
             WebClientFactory webClientFactory,
-            ProjectBridgeheadRepository projectBridgeheadRepository,
-            ProjectCoderRepository projectCoderRepository,
             EmailService emailService,
-            BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
-            EmailKeyValuesFactory emailKeyValuesFactory) {
+            EmailKeyValuesFactory emailKeyValuesFactory,
+            UserService userService) {
+        this.coderService = coderService;
+        this.projectBridgeheadService = projectBridgeheadService;
+        this.userService = userService;
 
         this.exporterTemplates.put(ProjectType.EXPORT, exportTemplates);
         this.exporterTemplates.put(ProjectType.DATASHIELD, datashieldTemplates);
@@ -108,7 +111,6 @@ public class ExporterService {
 
         this.sessionUser = sessionUser;
         this.beamService = beamService;
-        this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.notificationService = notificationService;
         this.focusProjectManagerId = focusProjectManagerId;
         this.beamWaitTime = beamWaitTime;
@@ -116,13 +118,10 @@ public class ExporterService {
         this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
         this.coderBeamIdSuffix = coderBeamIdSuffix;
         this.testCoderFileBeamId = testCoderFileBeamId;
-        this.projectCoderRepository = projectCoderRepository;
         this.emailService = emailService;
-        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
         this.webClient = webClientFactory.createWebClient(focusUrl);
         this.exporterApiKey = exporterApiKey;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
 
     public Mono<ExporterServiceResult> sendQueryToBridgehead(ProjectBridgeheadAndType projectBridgeheadAndType) throws ExporterServiceException {
@@ -155,17 +154,17 @@ public class ExporterService {
 
     @Async()
     public void transferFileToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
-        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, sessionUser.getEmail());
+        List<ProjectCoder> projectCoder = coderService.fetchCoderOrderedByCreatedAtDesc(projectCode, bridgehead, sessionUser.getEmail());
         if (projectCoder.isEmpty()) {
-            throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
+            throw new ExporterServiceException("ProjectCode " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
         }
         transferFileToResearchEnvironment(projectCoder.getFirst()).block();
     }
 
     public boolean isExportFileTransferredToResearchEnvironment(@NotNull String projectCode, @NotNull String bridgehead) {
-        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, sessionUser.getEmail());
+        List<ProjectCoder> projectCoder = coderService.fetchCoderOrderedByCreatedAtDesc(projectCode, bridgehead, sessionUser.getEmail());
         if (projectCoder.isEmpty()) {
-            throw new ExporterServiceException("Project " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
+            throw new ExporterServiceException("ProjectCode " + projectCode + " for bridgehead " + bridgehead + " for user " + sessionUser.getEmail() + " not found");
         }
         return projectCoder.getFirst().isExportTransferred();
     }
@@ -190,7 +189,7 @@ public class ExporterService {
                                 .doOnError(throwable -> {
                                     MessageStatus messageStatus = MessageStatus.newInstance(throwable, "Error transferring file to Research Environment");
                                     notificationService.createNotification(
-                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                                             projectCoder.getProjectBridgeheadUser().getEmail(),
                                             OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
@@ -203,9 +202,9 @@ public class ExporterService {
                                 .doOnSuccess(_ -> {
                                     log.info("Files transferred correctly");
                                     projectCoder.setExportTransferred(true);
-                                    this.projectCoderRepository.save(projectCoder);
+                                    coderService.saveCoder(projectCoder);
                                     notificationService.createNotification(
-                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                                             projectCoder.getProjectBridgeheadUser().getEmail(),
                                             OperationType.TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
@@ -278,7 +277,7 @@ public class ExporterService {
     private void createBridgeheadNotification(
             HttpStatus status, ProjectBridgehead projectBridgehead, String email, OperationType operationType, String description) {
         notificationService.createNotification(
-                projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead(), email, operationType, description, null, status);
+                projectBridgehead.getProject(), projectBridgehead.getBridgehead(), email, operationType, description, null, status);
     }
 
     private Optional<OperationType> fetchBridgeheadOperationType(TaskType taskType) {
@@ -380,9 +379,9 @@ public class ExporterService {
                 .getExporterDispatchCounter() == 0) ?
                 label :
                 label + " (Attempt: " + (projectBridgehead
-                        .fetchExecution(projectType)
-                        .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
-                        .getExporterDispatchCounter() + 1) + ")";
+                                         .fetchExecution(projectType)
+                                         .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
+                                         .getExporterDispatchCounter() + 1) + ")";
     }
 
     private BeamRequest generateFocusBody(ProjectBridgeheadAndType projectBridgeheadAndType, TaskType taskType) throws ExporterServiceException {
@@ -422,7 +421,8 @@ public class ExporterService {
                 .fetchOutput(projectType)
                 .orElseThrow(() -> new IllegalStateException("Missing output for " + projectType))
                 .getProjectType() == ProjectType.DATASHIELD) {
-            Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataSHIELD = this.projectBridgeheadDataShieldRepository.findByProjectBridgehead(projectBridgehead);
+            Optional<ProjectBridgeheadDataShield> projectBridgeheadInDataSHIELD =
+                    projectBridgeheadService.fetchDataShield(projectBridgehead);
             ProjectBridgeheadDataShield result;
             if (projectBridgeheadInDataSHIELD.isEmpty()) {
                 result = new ProjectBridgeheadDataShield();
@@ -431,7 +431,7 @@ public class ExporterService {
                 result = projectBridgeheadInDataSHIELD.get();
             }
             result.setRemoved(false);
-            this.projectBridgeheadDataShieldRepository.save(result);
+            projectBridgeheadService.saveDataShield(result);
         }
     }
 
@@ -510,15 +510,19 @@ public class ExporterService {
                 execution.setExporterDispatchCounter(execution.getExporterDispatchCounter() + 1);
                 sendEmail(projectBridgehead, EmailTemplateType.ERROR_WHILE_SAVING_QUERY_IN_EXPORTER);
             }
-            projectBridgeheadRepository.save(projectBridgehead);
+            projectBridgeheadService.saveBridgehead(projectBridgehead);
         });
     }
 
     private void sendEmail(ProjectBridgehead projectBridgehead, @SuppressWarnings("SameParameterValue") EmailTemplateType templateType) {
-        bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdmin ->
-                emailService.sendEmail(bridgeheadAdmin.getEmail(),
-                        Optional.of(projectBridgehead.getProject().getCode()),
-                        Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN, templateType,
+        userService
+                .fetchBridgeheadAdmin(projectBridgehead)
+                .forEach(bridgeheadAdmin -> emailService.sendEmail(
+                        bridgeheadAdmin.getEmail(),
+                        Optional.of(projectBridgehead.getProject()),
+                        Optional.of(projectBridgehead),
+                        ProjectRole.BRIDGEHEAD_ADMIN,
+                        templateType,
                         emailKeyValuesFactory.newInstance().add(projectBridgehead)));
     }
 

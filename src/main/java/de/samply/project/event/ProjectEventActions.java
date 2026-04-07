@@ -1,24 +1,26 @@
 package de.samply.project.event;
 
+import de.samply.db.model.Project;
+
 @SuppressWarnings("unused")
 public interface ProjectEventActions {
 
     String draft(String[] bridgeheads, String queryCode) throws ProjectEventActionsException;
 
-    void create(String projectCode) throws ProjectEventActionsException;
+    void create(Project project) throws ProjectEventActionsException;
 
-    void accept(String projectCode) throws ProjectEventActionsException;
+    void accept(Project project) throws ProjectEventActionsException;
 
-    void reject(String projectCode) throws ProjectEventActionsException;
+    void reject(Project project) throws ProjectEventActionsException;
 
-    void archive(String projectCode) throws ProjectEventActionsException;
+    void archive(Project project) throws ProjectEventActionsException;
 
-    void startDevelopStage(String projectCode) throws ProjectEventActionsException;
+    void startDevelopStage(Project project) throws ProjectEventActionsException;
 
-    void startPilotStage(String projectCode) throws ProjectEventActionsException;
+    void startPilotStage(Project project) throws ProjectEventActionsException;
 
-    void startFinalStage(String projectCode) throws ProjectEventActionsException;
+    void startFinalStage(Project project) throws ProjectEventActionsException;
 
-    void finish(String projectCode) throws ProjectEventActionsException;
+    void finish(Project project) throws ProjectEventActionsException;
 
 }

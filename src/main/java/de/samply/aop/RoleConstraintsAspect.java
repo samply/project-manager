@@ -2,6 +2,8 @@ package de.samply.aop;
 
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
+import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
 import de.samply.utils.AspectUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -32,9 +34,9 @@ public class RoleConstraintsAspect {
     public Object aroundRoleConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<RoleConstraints> roleConstraints = fetchRoleConstrains(joinPoint);
         Optional<StateConstraints> stateConstraints = fetchStateConstrains(joinPoint);
-        Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
-        Optional<String> bridgehead = AspectUtils.fetchBridgehead(joinPoint);
-        Optional<ResponseEntity> result = this.constraintsService.checkRoleConstraints(roleConstraints, stateConstraints, projectCode, bridgehead);
+        Optional<Project> project = AspectUtils.fetchProject(joinPoint);
+        Optional<ProjectBridgehead> bridgehead = AspectUtils.fetchBridgehead(joinPoint);
+        Optional<ResponseEntity> result = this.constraintsService.checkRoleConstraints(roleConstraints, stateConstraints, project, bridgehead);
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 

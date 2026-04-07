@@ -17,6 +17,8 @@ import java.util.Set;
 @Repository
 public interface ProjectBridgeheadRepository extends JpaRepository<ProjectBridgehead, Long> {
 
+    Optional<ProjectBridgehead> findFirstByBridgeheadAndProject_Code(String bridgehead, String projectCode);
+
     Optional<ProjectBridgehead> findFirstByBridgeheadAndProject(String bridgehead, Project project);
 
     Set<ProjectBridgehead> findByProject(Project project);

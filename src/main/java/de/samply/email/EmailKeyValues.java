@@ -6,8 +6,10 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.Query;
-import de.samply.db.repository.*;
+import de.samply.document.DocumentService;
 import de.samply.frontend.FrontendService;
+import de.samply.project.ProjectBridgeheadService;
+import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.ProjectUtils;
 import de.samply.utils.UserUtils;
@@ -17,7 +19,6 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -27,31 +28,26 @@ public class EmailKeyValues {
     @Getter
     private final Map<String, String> keyValues = new HashMap<>();
     private final FrontendService frontendService;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
+    private final DocumentService documentService;
+    private final UserService userService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+
     private final BridgeheadConfiguration bridgeheadConfiguration;
-    private final ProjectDocumentRepository projectDocumentRepository;
-    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
 
 
     public EmailKeyValues(FrontendService frontendService,
                           EmailContext emailContext,
-                          ProjectBridgeheadRepository projectBridgeheadRepository,
-                          ProjectRepository projectRepository,
-                          UserRepository userRepository,
+                          DocumentService documentService,
+                          UserService userService,
                           BridgeheadConfiguration bridgeheadConfiguration,
-                          ProjectDocumentRepository projectDocumentRepository,
-                          BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
-                          String researchEnvironmentUrl
+                          String researchEnvironmentUrl,
+                          ProjectBridgeheadService projectBridgeheadService
     ) {
         this.frontendService = frontendService;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
+        this.documentService = documentService;
+        this.userService = userService;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
-        this.projectDocumentRepository = projectDocumentRepository;
-        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
+        this.projectBridgeheadService = projectBridgeheadService;
         keyValues.putAll(emailContext.getContext());
         addKeyValue(EmailContextKey.RESEARCH_ENVIRONMENT_URL, researchEnvironmentUrl);
     }
@@ -71,22 +67,14 @@ public class EmailKeyValues {
     }
 
     private void addProjectBridgeheadOrProject(EmailRecipient emailRecipient) {
-        AtomicReference<Optional<ProjectBridgehead>> projectBridgeheadOptional = new AtomicReference<>(Optional.empty());
-        AtomicReference<Optional<Project>> projectOptional = new AtomicReference<>(Optional.empty());
-        emailRecipient.getProjectCode().flatMap(projectRepository::findByCode).ifPresent(project ->
-                emailRecipient.getBridgehead().ifPresentOrElse(bridgehead ->
-                                projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project).ifPresentOrElse(projectBridgehead ->
-                                                projectBridgeheadOptional.set(Optional.of(projectBridgehead)),
-                                        () -> projectOptional.set(Optional.of(project))),
-                        () -> projectOptional.set(Optional.of(project))));
-        if (projectBridgeheadOptional.get().isPresent()) {
-            add(projectBridgeheadOptional.get().get());
-        } else if (projectOptional.get().isPresent()) {
-            add(projectOptional.get().get());
-        } else {
-            emailRecipient.getProjectCode().ifPresent(this::addProjectCode);
-            emailRecipient.getBridgehead().ifPresent(this::addBridgehead);
-        }
+        emailRecipient.getBridgehead()
+                .<Runnable>map(pb -> () -> add(pb))
+                .or(() -> emailRecipient.getProject().map(p -> () -> add(p)))
+                .orElse(() -> {
+                    emailRecipient.getProject().ifPresent(this::addProject);
+                    emailRecipient.getBridgehead().ifPresent(this::addBridgehead);
+                })
+                .run();
     }
 
     @SuppressWarnings("unused")
@@ -115,52 +103,55 @@ public class EmailKeyValues {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public EmailKeyValues addProjectCode(String projectCode) {
-        addKeyValue(EmailContextKey.PROJECT_CODE, projectCode);
+    public EmailKeyValues addProject(Project project) {
+        addKeyValue(EmailContextKey.PROJECT_CODE, project.getCode());
         addKeyValue(EmailContextKey.PROJECT_VIEW_URL,
                 this.frontendService.fetchUrl(ProjectManagerConst.PROJECT_VIEW_SITE,
-                        Map.of(ProjectManagerConst.PROJECT_CODE, projectCode)));
+                        Map.of(ProjectManagerConst.PROJECT_CODE, project.getCode())));
         return this;
     }
 
     public EmailKeyValues add(ProjectBridgehead projectBridgehead) {
         if (projectBridgehead != null) {
-            addBridgehead(projectBridgehead.getBridgehead());
+            addBridgehead(projectBridgehead);
             add(projectBridgehead.getProject());
             addKeyValue(EmailContextKey.PROJECT_BRIDGEHEAD_RESULTS_URL, projectBridgehead.getResultsUrl());
-            addBridgeheadAdmin(projectBridgehead.getBridgehead());
+            addBridgeheadAdmin(projectBridgehead);
         }
         return this;
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public EmailKeyValues addBridgeheadAdmin(String bridgehead) {
+    public EmailKeyValues addBridgeheadAdmin(ProjectBridgehead bridgehead) {
         if (bridgehead != null) {
-            this.bridgeheadAdminUserRepository.findFirstByBridgehead(bridgehead).ifPresent(bridgeheadAdminUser ->
-                    addEmailData(bridgeheadAdminUser.getEmail(),
-                            EmailContextKey.BRIDGEHEAD_ADMIN_EMAIL,
-                            EmailContextKey.BRIDGEHEAD_ADMIN_FIRST_NAME,
-                            EmailContextKey.BRIDGEHEAD_ADMIN_LAST_NAME,
-                            EmailContextKey.BRIDGEHEAD_ADMIN_NAME));
+            userService
+                    .fetchFirstBridgeheadAdmin(bridgehead)
+                    .ifPresent(bridgeheadAdminUser ->
+                            addEmailData(
+                                    bridgeheadAdminUser.getEmail(),
+                                    EmailContextKey.BRIDGEHEAD_ADMIN_EMAIL,
+                                    EmailContextKey.BRIDGEHEAD_ADMIN_FIRST_NAME,
+                                    EmailContextKey.BRIDGEHEAD_ADMIN_LAST_NAME,
+                                    EmailContextKey.BRIDGEHEAD_ADMIN_NAME));
         }
         return this;
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public EmailKeyValues addBridgehead(String bridgehead) {
+    public EmailKeyValues addBridgehead(ProjectBridgehead bridgehead) {
         addKeyValue(EmailContextKey.BRIDGEHEAD, fetchHumanReadableBridgehead(bridgehead));
         addBridgeheadAdmin(bridgehead);
         return this;
     }
 
-    private String fetchHumanReadableBridgehead(String bridgehead) {
-        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
-        return humanReadable.orElse(bridgehead);
+    private String fetchHumanReadableBridgehead(ProjectBridgehead bridgehead) {
+        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead.getBridgehead());
+        return humanReadable.orElse(bridgehead.getBridgehead());
     }
 
     public EmailKeyValues add(Project project) {
         if (project != null) {
-            addProjectCode(project.getCode());
+            addProject(project);
             addEmailData(project.getCreatorEmail(),
                     EmailContextKey.PROJECT_CREATOR_EMAIL,
                     EmailContextKey.PROJECT_CREATOR_FIRST_NAME,
@@ -180,13 +171,15 @@ public class EmailKeyValues {
 
     private void addBridgeheads(Project project) {
         addKeyValue(EmailContextKey.PROJECT_BRIDGEHEADS,
-                projectBridgeheadRepository.findByProject(project).stream()
-                        .map(projectBridgehead -> fetchHumanReadableBridgehead(projectBridgehead.getBridgehead()))
+                projectBridgeheadService
+                        .fetchBridgeheads(project)
+                        .stream()
+                        .map(this::fetchHumanReadableBridgehead)
                         .collect(Collectors.joining(", ")));
     }
 
     private void addLastDocument(Project project) {
-        projectDocumentRepository.findTopByProjectOrderByCreatedAtDesc(project).ifPresent(projectDocument -> {
+        documentService.fetchDocumentOrderByCreatedAtDesc(project).ifPresent(projectDocument -> {
             addKeyValue(EmailContextKey.LAST_DOCUMENT_LABEL, projectDocument::getLabel);
             addKeyValue(EmailContextKey.LAST_DOCUMENT_FILENAME, projectDocument::getOriginalFilename);
             addKeyValue(EmailContextKey.LAST_DOCUMENT_URL, projectDocument::getUrl);
@@ -230,7 +223,7 @@ public class EmailKeyValues {
     private void addEmailData(String email, @NotNull EmailContextKey emailKey, @NotNull EmailContextKey emailFirstNameKey, @NotNull EmailContextKey emailLastNameKey, @NotNull EmailContextKey emailNameKey) {
         if (email != null) {
             addKeyValue(emailKey, email);
-            userRepository.findByEmail(email).ifPresent(user -> {
+            userService.fetchUser(email).ifPresent(user -> {
                 addKeyValue(emailFirstNameKey, user::getFirstName);
                 addKeyValue(emailLastNameKey, user::getLastName);
                 addKeyValue(emailNameKey, () -> UserUtils.extractFullName(Optional.of(user)));

@@ -7,6 +7,7 @@ import de.samply.resolvers.AnnotatedParametersWrapper;
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -26,17 +27,19 @@ public class ProjectBridgeheadConverter implements Converter<String, ProjectBrid
     @Override
     public ProjectBridgehead convert(@NonNull String bridgehead) {
 
-        if (bridgehead.isEmpty()) return null;
+        if (!StringUtils.hasText(bridgehead)) return null;
 
-        // Get the resolved Project if available
+        // Get the resolved ProjectCode if available
         Optional<Project> projectOpt = annotatedParametersWrapper.getResolved(ProjectCode.class, Project.class);
 
-        // Get the raw project code if no Project is resolved
+        // Get the raw project code if no ProjectCode is resolved
         String projectCode = projectOpt.map(Project::getCode)
                 .or(() -> annotatedParametersWrapper.getRaw(ProjectCode.class, String.class))
-                .orElseThrow(() -> new IllegalArgumentException("Project code not found"));
+                .orElseThrow(() -> new IllegalArgumentException("ProjectCode code not found"));
 
-        return projectBridgeheadService.fetchProjectBridgehead(projectCode, bridgehead);
+        return projectBridgeheadService
+                .fetchProjectBridgehead(projectCode, bridgehead)
+                .orElseThrow(() -> new IllegalArgumentException("Bridgehead " + bridgehead + " not found for project " + projectCode));
     }
 
 }

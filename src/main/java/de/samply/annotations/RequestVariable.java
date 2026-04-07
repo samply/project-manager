@@ -59,7 +59,7 @@ import java.lang.annotation.Target;
  *     {@literal @}RequestVariable(name = "label", required = false) String label,
  *     {@literal @}RequestVariable(name = "description", required = false) String description
  * ) {
- *     return ResponseEntity.ok("Project created successfully!");
+ *     return ResponseEntity.ok("ProjectCode created successfully!");
  * }
  * }</pre>
  *

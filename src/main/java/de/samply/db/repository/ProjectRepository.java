@@ -22,7 +22,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p WHERE p.expiresAt < :expirationTime AND p.state IN :states")
     List<Project> findByExpiresAtBeforeAndStateIn(LocalDate expirationTime, Set<ProjectState> states);
 
-    /// /////// Project Manager Admins:
+    /// /////// ProjectCode Manager Admins:
 
     @Query("SELECT p FROM Project p WHERE p.state != 'DRAFT' ORDER BY p.modifiedAt DESC")
     Page<Project> findAllByOrderByModifiedAtDesc(Pageable pageable);

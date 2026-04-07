@@ -2,8 +2,8 @@ package de.samply.coder;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.exporter.ExporterService;
+import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.query.QueryState;
@@ -20,17 +20,18 @@ import java.util.List;
 @Component
 public class CoderJob {
 
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+    // Services
     private final CoderService coderService;
     private final ExporterService exporterService;
     private final AppRegisterService appRegisterService;
+    private final ProjectBridgeheadUserService projectBridgeheadUserService;
 
-    public CoderJob(ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                    CoderService coderService,
+    public CoderJob(CoderService coderService,
                     ExporterService exporterService,
-                    AppRegisterService appRegisterService
+                    AppRegisterService appRegisterService,
+                    ProjectBridgeheadUserService projectBridgeheadUserService
     ) {
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
+        this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.coderService = coderService;
         this.exporterService = exporterService;
         this.appRegisterService = appRegisterService;
@@ -56,7 +57,7 @@ public class CoderJob {
     }
 
     private List<ProjectBridgeheadUser> fetchActiveUsers() {
-        return projectBridgeheadUserRepository.getDistinctInValidaProjectStateByProjectTypeAndQueryStateAndProjectBridgeheadState(ProjectType.RESEARCH_ENVIRONMENT, QueryState.FINISHED, ProjectBridgeheadState.ACCEPTED);
+        return projectBridgeheadUserService.fetchUsersInValidProjectState(ProjectType.RESEARCH_ENVIRONMENT, QueryState.FINISHED, ProjectBridgeheadState.ACCEPTED);
     }
 
     public Mono<Void> manageCoderInactiveUsers() {
@@ -68,7 +69,7 @@ public class CoderJob {
     }
 
     private List<ProjectBridgeheadUser> fetchInactiveUsers() {
-        return projectBridgeheadUserRepository.getDistinctInInvalidProjectStateByProjectType(ProjectType.RESEARCH_ENVIRONMENT);
+        return projectBridgeheadUserService.fetchUsersInInvalidProjectState(ProjectType.RESEARCH_ENVIRONMENT);
     }
 
 }

@@ -2,7 +2,7 @@ package de.samply.utils;
 
 import de.samply.annotations.*;
 import de.samply.db.model.Project;
-import de.samply.db.repository.ProjectRepository;
+import de.samply.db.model.ProjectBridgehead;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,12 +15,12 @@ import java.util.Optional;
 
 public class AspectUtils {
 
-    public static Optional<String> fetchBridgehead(JoinPoint joinPoint) {
-        return fetchParameterAnnotation(joinPoint, Bridgehead.class, String.class);
+    public static Optional<ProjectBridgehead> fetchBridgehead(JoinPoint joinPoint) {
+        return fetchParameterAnnotation(joinPoint, Bridgehead.class, ProjectBridgehead.class);
     }
 
-    public static Optional<String> fetchProjectCode(JoinPoint joinPoint) {
-        return fetchParameterAnnotation(joinPoint, ProjectCode.class, String.class);
+    public static Optional<Project> fetchProject(JoinPoint joinPoint) {
+        return fetchParameterAnnotation(joinPoint, ProjectCode.class, Project.class);
     }
 
     public static Optional<String> fetchEmail(JoinPoint joinPoint) {
@@ -57,10 +57,6 @@ public class AspectUtils {
 
     public static <T extends Annotation> Optional<T> fetchT(JoinPoint joinPoint, Class<T> clazz) {
         return Optional.ofNullable(fetchMethod(joinPoint).getAnnotation(clazz));
-    }
-
-    public static Optional<Project> fetchProject(ProjectRepository projectRepository, Optional<String> projectCode) {
-        return (projectCode.isPresent()) ? projectRepository.findByCode(projectCode.get()) : Optional.empty();
     }
 
     public static String[] fetchRequestParamNames(Method method) {

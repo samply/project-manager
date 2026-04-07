@@ -1,6 +1,8 @@
 package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.user.UserService;
@@ -65,14 +67,16 @@ public class EmailService {
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
-    public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
+    public void sendEmail(@NotNull String emailTo, Optional<Project> project, Optional<ProjectBridgehead> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
         sendEmail(emailTo, project, bridgehead, role, type, this.emailKeyValuesFactory.newInstance());
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
-    public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, EmailKeyValues keyValues) throws EmailServiceException {
+    public void sendEmail(@NotNull String emailTo, Optional<Project> project,
+                          Optional<ProjectBridgehead> bridgehead, @NotNull ProjectRole role,
+                          @NotNull EmailTemplateType type, EmailKeyValues keyValues) throws EmailServiceException {
         if (enableEmails && !userService.isUserInMailingBlackList(emailTo)) {
-            project.ifPresent(keyValues::addProjectCode);
+            project.ifPresent(keyValues::addProject);
             bridgehead.ifPresent(keyValues::addBridgehead);
             Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues);
             if (messageSubject.isPresent()) {
@@ -83,7 +87,7 @@ public class EmailService {
                     if (message != null) {
                         details += " : " + message;
                     }
-                    notificationService.createNotification(project.get(), bridgehead.orElse(null),
+                    notificationService.createNotification(project.get(), bridgehead.map(ProjectBridgehead::getBridgehead).orElse(null),
                             ProjectManagerConst.EMAIL_SERVICE, OperationType.SEND_EMAIL, details, null, null);
                 }
             } else {
@@ -91,7 +95,8 @@ public class EmailService {
             }
         } else {
             log.info(enableEmails ? "SMTP Server not enabled." : "User Email in mailing blacklist");
-            log.info("Email to {} with role {} for bridgehead {} and type {} could not be sent", emailTo, role, bridgehead.orElse("NONE"), type);
+            log.info("Email to {} with role {} for bridgehead {} and type {} could not be sent", emailTo, role,
+                    bridgehead.map(ProjectBridgehead::getBridgehead).orElse("NONE"), type);
         }
     }
 
@@ -132,8 +137,13 @@ public class EmailService {
         return Optional.empty();
     }
 
-    public Optional<MessageSubject> createEmailMessageAndSubject(String emailTo, Optional<String> projectCode, Optional<String> bridgehead, ProjectRole projectRole, EmailTemplateType emailTemplateType) {
-        return createEmailMessageAndSubject(projectRole, emailTemplateType, emailKeyValuesFactory.newInstance().add(new EmailRecipient(emailTo, projectCode, bridgehead, projectRole)));
+    public Optional<MessageSubject> createEmailMessageAndSubject(String emailTo, Optional<Project> project, Optional<ProjectBridgehead> bridgehead, ProjectRole projectRole, EmailTemplateType emailTemplateType) {
+        return createEmailMessageAndSubject(
+                projectRole,
+                emailTemplateType,
+                emailKeyValuesFactory
+                        .newInstance()
+                        .add(new EmailRecipient(emailTo, project, bridgehead, projectRole)));
     }
 
     private Context createContext(EmailKeyValues keyValues) {
