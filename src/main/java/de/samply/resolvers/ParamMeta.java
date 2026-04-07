@@ -1,4 +1,7 @@
 package de.samply.resolvers;
 
-public record ParamMeta(String name, boolean required, boolean notEmpty, String defaultValue, boolean bodyLookup) {
+import org.springframework.core.MethodParameter;
+
+public record ParamMeta(MethodParameter parameter, String name, boolean required, boolean notEmpty,
+                        String defaultValue, boolean bodyLookup) {
 }

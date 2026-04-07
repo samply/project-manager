@@ -6,11 +6,11 @@ import de.samply.db.repository.ProjectRepository;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 public class AspectUtils {
@@ -66,10 +66,16 @@ public class AspectUtils {
     public static String[] fetchRequestParamNames(Method method) {
         return Arrays.stream(method.getParameters())
                 .flatMap(parameter -> Arrays.stream(parameter.getAnnotations())
-                        .filter(annotation -> annotation instanceof RequestParam || annotation instanceof RequestVariable)
-                        .map(annotation -> annotation instanceof RequestParam
-                                ? ((RequestParam) annotation).name()
-                                : ((RequestVariable) annotation).name()))
+                        .filter(
+                                annotation ->
+                                        annotation instanceof RequestVariable ||
+                                                annotation instanceof RequestParameter)
+                        .map(annotation -> switch (annotation) {
+                            case RequestParameter requestParameter -> requestParameter.name();
+                            case RequestVariable requestVariable -> requestVariable.name();
+                            default -> null;
+                        })
+                        .filter(Objects::nonNull))
                 .distinct()
                 .toArray(String[]::new);
     }

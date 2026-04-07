@@ -395,7 +395,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode,
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead,
             @Language String language,
-            @RequestVariable(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
+            @RequestParameter(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
     ) {
         return convertToResponseEntity(() -> formService.fetchProjectFormFields(Optional.ofNullable(formTitle), projectCode, Optional.ofNullable(language)));
     }
