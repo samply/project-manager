@@ -3,15 +3,17 @@ package de.samply.frontend.dto;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.*;
-import de.samply.db.repository.*;
 import de.samply.form.DisplayMetadata;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
+import de.samply.form.FormService;
 import de.samply.form.template.FormTemplateConfig;
 import de.samply.form.template.FormTemplateMetadata;
+import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.UserProjectState;
+import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LanguageUtils;
 import de.samply.utils.UserUtils;
@@ -32,31 +34,26 @@ import java.util.stream.Collectors;
 public class DtoFactory {
 
     private final BridgeheadConfiguration bridgeheadConfiguration;
-    private final UserRepository userRepository;
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
-    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
-    private final ProjectFormRepository projectFormRepository;
-    private final ProjectFormFieldRepository projectFormFieldRepository;
     private final FormConfig formConfig;
     private final FormTemplateConfig formTemplateConfig;
     private final String defaultLanguage;
 
+    // Services
+    private final FormService formService;
+    private final UserService userService;
+    private final ProjectBridgeheadUserService projectBridgeheadUserService;
+
 
     public DtoFactory(BridgeheadConfiguration bridgeheadConfiguration,
-                      UserRepository userRepository,
-                      ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                      BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
-                      ProjectFormRepository projectFormRepository,
-                      ProjectFormFieldRepository projectFormFieldRepository,
+                      FormService formService, UserService userService,
                       FormConfig formConfig,
                       FormTemplateConfig formTemplateConfig,
-                      @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
+                      @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
+                      ProjectBridgeheadUserService projectBridgeheadUserService) {
         this.bridgeheadConfiguration = bridgeheadConfiguration;
-        this.userRepository = userRepository;
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
-        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
-        this.projectFormRepository = projectFormRepository;
-        this.projectFormFieldRepository = projectFormFieldRepository;
+        this.userService = userService;
+        this.projectBridgeheadUserService = projectBridgeheadUserService;
+        this.formService = formService;
         this.formConfig = formConfig;
         this.formTemplateConfig = formTemplateConfig;
         this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
@@ -89,7 +86,7 @@ public class DtoFactory {
     }
 
     private String fetchEmailUserName(String email) {
-        return UserUtils.extractFullName(userRepository.findByEmail(email));
+        return UserUtils.extractFullName(userService.fetchUser(email));
     }
 
 
@@ -198,7 +195,7 @@ public class DtoFactory {
     }
 
     public User convert(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
-        Optional<de.samply.db.model.User> user = userRepository.findByEmail(projectBridgeheadUser.getEmail());
+        Optional<de.samply.db.model.User> user = userService.fetchUser(projectBridgeheadUser.getEmail());
         return new User(
                 projectBridgeheadUser.getEmail(),
                 user.map(de.samply.db.model.User::getFirstName).orElse(null),
@@ -211,7 +208,7 @@ public class DtoFactory {
     }
 
     public User convertFilteringProjectRoleAndState(@NotNull de.samply.db.model.ProjectBridgeheadUser projectBridgeheadUser) {
-        Optional<de.samply.db.model.User> user = userRepository.findByEmail(projectBridgeheadUser.getEmail());
+        Optional<de.samply.db.model.User> user = userService.fetchUser(projectBridgeheadUser.getEmail());
         return new User(
                 projectBridgeheadUser.getEmail(),
                 user.map(de.samply.db.model.User::getFirstName).orElse(null),
@@ -352,7 +349,7 @@ public class DtoFactory {
     }
 
     public Optional<Results> fetchResults(@NotNull de.samply.db.model.Project project) {
-        Set<ProjectBridgeheadUser> finalUsers = projectBridgeheadUserRepository.getDistinctByProjectRoleAndProjectCode(ProjectRole.FINAL, project.getCode());
+        Set<ProjectBridgeheadUser> finalUsers = projectBridgeheadUserService.fetchUsers(ProjectRole.FINAL, project);
         Optional<ProjectBridgeheadUser> finalUser = finalUsers.stream().filter(user -> user.getProjectState() == UserProjectState.ACCEPTED).findAny();
         AtomicReference<Optional<String>> email = new AtomicReference<>(Optional.empty());
         AtomicReference<Optional<String>> firstName = new AtomicReference<>(Optional.empty());
@@ -364,7 +361,7 @@ public class DtoFactory {
             finalUser = finalUsers.stream().findAny();
         }
         finalUser.ifPresent(user -> email.set(Optional.of(user.getEmail())));
-        email.get().flatMap(userRepository::findByEmail).ifPresent(tempUser -> {
+        email.get().flatMap(userService::fetchUser).ifPresent(tempUser -> {
             firstName.set(Optional.of(tempUser.getFirstName()));
             lastName.set(Optional.of(tempUser.getLastName()));
         });
@@ -380,9 +377,9 @@ public class DtoFactory {
     }
 
     public Results fetchResults(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
-        Optional<BridgeheadAdminUser> bridgeheadAdmin = bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).stream().findAny();
+        Optional<BridgeheadAdminUser> bridgeheadAdmin = userService.fetchBridgeheadAdmin(projectBridgehead).stream().findAny();
         AtomicReference<Optional<de.samply.db.model.User>> user = new AtomicReference<>(Optional.empty());
-        bridgeheadAdmin.ifPresent(tempUser -> user.set(userRepository.findByEmail(tempUser.getEmail())));
+        bridgeheadAdmin.ifPresent(tempUser -> user.set(userService.fetchUser(tempUser.getEmail())));
         AtomicReference<Optional<String>> humanReadableBridgehead = new AtomicReference<>(bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead()));
         return new Results(projectBridgehead.getBridgehead(),
                 fetchValue(humanReadableBridgehead),
@@ -399,8 +396,16 @@ public class DtoFactory {
     public ProjectAndForms convertToProjectAndForms(@NotNull de.samply.db.model.Project project, Optional<String> language) {
         return new ProjectAndForms(
                 convert(project),
-                projectFormRepository.findByProject_Code(project.getCode()).stream().map(f -> convert(f, language)).toArray(Form[]::new),
-                projectFormFieldRepository.findByProject_Code(project.getCode()).stream().map(f -> convert(f, language)).toArray(FormField[]::new)
+                formService
+                        .fetchProjectForms(project)
+                        .stream()
+                        .map(f -> convert(f, language))
+                        .toArray(Form[]::new),
+                formService
+                        .fetchProjectFormFields(project)
+                        .stream()
+                        .map(f -> convert(f, language))
+                        .toArray(FormField[]::new)
         );
     }
 

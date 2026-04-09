@@ -78,17 +78,15 @@ public class ProjectBridgehead {
                             });
 
                     // Update all provided fields
-                    execution.setQueryState(queryState);
-                    execution.setExporterResponse(exporterResponse);
-                    execution.setExporterUser(exporterUser);
-                    execution.setExporterExecutionId(exporterExecutionId);
-                    if (exporterDispatchCounter != null) {
-                        execution.setExporterDispatchCounter(exporterDispatchCounter);
-                    }
+                    Optional.ofNullable(queryState).ifPresent(execution::setQueryState);
+                    Optional.ofNullable(exporterResponse).ifPresent(execution::setExporterResponse);
+                    Optional.ofNullable(exporterUser).ifPresent(execution::setExporterUser);
+                    Optional.ofNullable(exporterExecutionId).ifPresent(execution::setExporterExecutionId);
+                    Optional.ofNullable(exporterDispatchCounter).ifPresent(execution::setExporterDispatchCounter);
                     execution.setModifiedAt(Instant.now());
                 },
                 () -> {
-                    throw new IllegalArgumentException("Project does not have output for project type " + projectType);
+                    throw new IllegalArgumentException("ProjectCode does not have output for project type " + projectType);
                 }
         );
 
@@ -99,6 +97,13 @@ public class ProjectBridgehead {
         return executions.stream()
                 .filter(e -> e.getQueryOutput().getProjectType().equals(projectType))
                 .findFirst();
+    }
+
+    @Transient
+    public void removeExecution(ProjectType projectType) {
+        executions.removeIf(e ->
+                e.getQueryOutput().getProjectType().equals(projectType)
+        );
     }
 
 }

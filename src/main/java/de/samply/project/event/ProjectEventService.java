@@ -4,13 +4,13 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.Query;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.db.repository.QueryRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.project.ProjectBridgeheadService;
+import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
+import de.samply.query.QueryService;
 import de.samply.security.SessionUser;
 import de.samply.user.UserService;
 import de.samply.utils.LogUtils;
@@ -36,90 +36,87 @@ import java.util.function.Consumer;
 @Service
 public class ProjectEventService implements ProjectEventActions {
 
+    // Services
     private final NotificationService notificationService;
-    private final ProjectRepository projectRepository;
-    private final QueryRepository queryRepository;
+    private final ProjectService projectService;
+    private final UserService userService;
+    private final QueryService queryService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+
+
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final SessionUser sessionUser;
+
     private final int projectExpirationTimeInDays;
-    private final UserService userService;
 
 
     public ProjectEventService(NotificationService notificationService,
-                               ProjectRepository projectRepository,
-                               QueryRepository queryRepository,
+                               ProjectService projectService,
                                StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory,
                                LogUtils logUtils,
-                               ProjectBridgeheadRepository projectBridgeheadRepository,
                                SessionUser sessionUser,
                                @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays,
-                               UserService userService) {
+                               UserService userService,
+                               QueryService queryService,
+                               ProjectBridgeheadService projectBridgeheadService) {
         this.notificationService = notificationService;
-        this.projectRepository = projectRepository;
-        this.queryRepository = queryRepository;
+        this.projectService = projectService;
+        this.queryService = queryService;
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.projectBridgeheadService = projectBridgeheadService;
         this.sessionUser = sessionUser;
         this.projectExpirationTimeInDays = projectExpirationTimeInDays;
         this.userService = userService;
     }
 
-    public void loadProject(String projectCode, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isPresent()) {
-            StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.get().getStateMachineKey());
-            stateMachine.stopReactively().subscribe(null, logUtils::logError,
-                    () -> stateMachine.getStateMachineAccessor().doWithAllRegions(stateMachineAccess -> {
-                        stateMachineAccess.addStateMachineInterceptor(new StateMachineInterceptorAdapter<>() {
-                            @Override
-                            public void postStateChange(State<ProjectState, ProjectEvent> state, Message<ProjectEvent> message, Transition<ProjectState, ProjectEvent> transition, StateMachine<ProjectState, ProjectEvent> stateMachine, StateMachine<ProjectState, ProjectEvent> rootStateMachine) {
-                                project.get().setState(state.getId());
-                                saveProject(project.get());
-                            }
-                        });
-                        stateMachineAccess.resetStateMachineReactively(new DefaultStateMachineContext<>(project.get().getState(), null, null, null))
-                                .subscribe(null, logUtils::logError,
-                                        () -> stateMachine.startReactively().subscribe(null, logUtils::logError,
-                                                () -> stateMachineConsumer.accept(stateMachine)));
-                    }));
-        }
+    public void loadProject(Project project, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
+        StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
+        stateMachine.stopReactively().subscribe(null, logUtils::logError,
+                () -> stateMachine.getStateMachineAccessor().doWithAllRegions(stateMachineAccess -> {
+                    stateMachineAccess.addStateMachineInterceptor(new StateMachineInterceptorAdapter<>() {
+                        @Override
+                        public void postStateChange(State<ProjectState, ProjectEvent> state, Message<ProjectEvent> message, Transition<ProjectState, ProjectEvent> transition, StateMachine<ProjectState, ProjectEvent> stateMachine, StateMachine<ProjectState, ProjectEvent> rootStateMachine) {
+                            project.setState(state.getId());
+                            saveProject(project);
+                        }
+                    });
+                    stateMachineAccess.resetStateMachineReactively(new DefaultStateMachineContext<>(project.getState(), null, null, null))
+                            .subscribe(null, logUtils::logError,
+                                    () -> stateMachine.startReactively().subscribe(null, logUtils::logError,
+                                            () -> stateMachineConsumer.accept(stateMachine)));
+                }));
     }
 
     private Project saveProject(@NotNull Project project) {
-        project.setModifiedAt(Instant.now());
-        projectRepository.save(project);
+        projectService.saveProject(project);
         return project;
     }
 
-    private void changeEvent(String projectCode, ProjectEvent projectEvent) throws ProjectEventActionsException {
-        changeEvent(projectCode, projectEvent, Optional.empty());
+    private void changeEvent(Project project, ProjectEvent projectEvent) throws ProjectEventActionsException {
+        changeEvent(project, projectEvent, Optional.empty());
     }
 
-    private void changeEvent(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) throws ProjectEventActionsException {
+    private void changeEvent(Project project, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) throws ProjectEventActionsException {
         try {
-            changeEventWithoutExceptionHandling(projectCode, projectEvent, consumerAfterSuccessfulChangeEvent);
+            changeEventWithoutExceptionHandling(project, projectEvent, consumerAfterSuccessfulChangeEvent);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private void changeEventWithoutExceptionHandling(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) {
-        loadProject(projectCode, stateMachine -> {
+    private void changeEventWithoutExceptionHandling(Project project, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) {
+        loadProject(project, stateMachine -> {
             Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
             stateMachine.sendEvent(Mono.just(createEventMessage)).subscribe(null, logUtils::logError, () -> {
-                Optional<Project> project = this.projectRepository.findByCode(projectCode);
-                if (project.isPresent()) {
-                    project.get().setState(stateMachine.getState().getId());
-                    project.get().setModifiedAt(Instant.now());
-                    saveProject(project.get());
-                    this.notificationService.createNotification(projectCode, null, fetchSessionUserEmailIfSessionIsActive(),
-                            OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
-                    consumerAfterSuccessfulChangeEvent.ifPresent(projectConsumer ->
-                            projectConsumer.accept(project.get()));
-                }
+                project.setState(stateMachine.getState().getId());
+                project.setModifiedAt(Instant.now());
+                saveProject(project);
+                this.notificationService.createNotification(project, null, fetchSessionUserEmailIfSessionIsActive(),
+                        OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
+                consumerAfterSuccessfulChangeEvent.ifPresent(projectConsumer ->
+                        projectConsumer.accept(project));
             });
         });
     }
@@ -142,7 +139,7 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     private String draftWithoutExceptionHandling(@NotNull String[] bridgeheads, @NotNull String queryCode) throws ProjectEventActionsException {
-        Optional<Query> queryOptional = this.queryRepository.findByCode(queryCode);
+        Optional<Query> queryOptional = queryService.fetchQuery(queryCode);
         if (queryOptional.isEmpty()) {
             throw new ProjectEventActionsException("Query not found");
         }
@@ -174,7 +171,7 @@ public class ProjectEventService implements ProjectEventActions {
             project.setState(stateMachine.getState().getId());
             projectConsumer.accept(saveProject(project));
             userService.addCreatorIfNotExists();
-            this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+            this.notificationService.createNotification(project, null, sessionUser.getEmail(),
                     OperationType.CHANGE_PROJECT_STATE, "Design project", null, null);
         });
     }
@@ -187,56 +184,56 @@ public class ProjectEventService implements ProjectEventActions {
         ProjectBridgehead projectBridgehead = new ProjectBridgehead();
         projectBridgehead.setBridgehead(bridgehead.toLowerCase());
         projectBridgehead.setProject(project);
-        this.projectBridgeheadRepository.save(projectBridgehead);
+        projectBridgeheadService.saveBridgehead(projectBridgehead);
     }
 
     @Override
-    public void create(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.CREATE);
+    public void create(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.CREATE);
     }
 
     @Override
-    public void accept(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.ACCEPT);
+    public void accept(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.ACCEPT);
     }
 
     @Override
-    public void reject(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.REJECT);
+    public void reject(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.REJECT);
     }
 
     @Override
-    public void archive(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.ARCHIVE, Optional.of(project -> {
-            project.setArchivedAt(project.getModifiedAt());
-            saveProject(project);
+    public void archive(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.ARCHIVE, Optional.of(tempProject -> {
+            tempProject.setArchivedAt(tempProject.getModifiedAt());
+            saveProject(tempProject);
         }));
     }
 
     @Override
-    public void startDevelopStage(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.START_DEVELOP);
+    public void startDevelopStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_DEVELOP);
     }
 
     @Override
-    public void startPilotStage(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.START_PILOT);
+    public void startPilotStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_PILOT);
     }
 
     @Override
-    public void startFinalStage(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.START_FINAL);
+    public void startFinalStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_FINAL);
     }
 
     @Override
-    public void finish(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.FINISH);
+    public void finish(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.FINISH);
     }
 
-    public ProjectState[] fetchAllProjectEvents(Optional<String> projectCode) {
-        return projectCode
-                .flatMap(projectRepository::findByCode)
-                .map(project -> statesFor(project.fetchProjectTypes()))
+    public ProjectState[] fetchAllProjectEvents(Optional<Project> project) {
+        return project
+                .map(Project::fetchProjectTypes)
+                .map(this::statesFor)
                 .orElseGet(ProjectState::values);
     }
 

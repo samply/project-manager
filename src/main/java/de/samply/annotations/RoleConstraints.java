@@ -19,7 +19,7 @@ public @interface RoleConstraints {
      */
     OrganisationRole[] organisationRoles() default {};
 
-    // Project Role are checked in ProjectRoleConstraintAspects
+    // ProjectCode Role are checked in ProjectRoleConstraintAspects
     ProjectRole[] projectRoles() default {};
 
 

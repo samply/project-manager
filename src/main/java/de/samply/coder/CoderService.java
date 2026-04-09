@@ -4,6 +4,8 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.coder.request.CreateRequestBody;
 import de.samply.coder.request.Response;
 import de.samply.coder.request.TransitionRequestBody;
+import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.ProjectCoder;
 import de.samply.db.repository.ProjectCoderRepository;
@@ -94,7 +96,7 @@ public class CoderService {
                 return createWorkspace(projectCoder, createRequestBody).flatMap(response -> {
                     projectCoder.setWorkspaceId(response.getLatestBuild().getWorkspaceId());
                     projectCoderRepository.save(projectCoder);
-                    notificationService.createNotification(projectBridgeheadUser.getProjectBridgehead().getProject().getCode(),
+                    notificationService.createNotification(projectBridgeheadUser.getProjectBridgehead().getProject(),
                             projectBridgeheadUser.getProjectBridgehead().getBridgehead(), projectBridgeheadUser.getEmail(),
                             OperationType.CREATE_CODER_WORKSPACE,
                             "Created workspace " + projectCoder.getWorkspaceId(), null, null);
@@ -160,7 +162,7 @@ public class CoderService {
             return deleteWorkspaceInCoder(projectCoder).doOnSuccess(_ -> {
                 projectCoder.setDeletedAt(Instant.now());
                 projectCoderRepository.save(projectCoder);
-                notificationService.createNotification(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                notificationService.createNotification(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                         projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(), projectCoder.getProjectBridgeheadUser().getEmail(), OperationType.DELETE_CODER_WORKSPACE,
                         "Deleted workspace " + projectCoder.getWorkspaceId(), null, null);
             }).flatMap(_ -> Mono.just(projectCoder));
@@ -241,8 +243,9 @@ public class CoderService {
         return email.substring(0, email.indexOf("@")).replace(".", "");
     }
 
-    public boolean existsUserResearchEnvironmentWorkspace(@NotNull String projectCode, @NotNull String bridgehead) {
-        List<ProjectCoder> projectCoder = this.projectCoderRepository.findByBridgeheadAndProjectCodeOrderedByCreatedAtDesc(bridgehead, projectCode);
+    public boolean existsUserResearchEnvironmentWorkspace(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) {
+        List<ProjectCoder> projectCoder = this.projectCoderRepository
+                .findByBridgeheadAndProjectCodeOrderedByCreatedAtDesc(bridgehead.getBridgehead(), project.getCode());
         return !projectCoder.isEmpty() && projectCoder.getFirst().getDeletedAt() == null;
     }
 
@@ -250,6 +253,14 @@ public class CoderService {
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         List<ProjectCoder> projectCoders = this.projectCoderRepository.findByProjectBridgeheadUserOrderByCreatedAtDesc(projectBridgeheadUser);
         return !projectCoders.isEmpty() && projectCoders.getFirst().getDeletedAt() == null;
+    }
+
+    public List<ProjectCoder> fetchCoderOrderedByCreatedAtDesc(String projectCode, String bridgehead, String email) {
+        return projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, email);
+    }
+
+    public void saveCoder(ProjectCoder projectCoder) {
+        projectCoderRepository.save(projectCoder);
     }
 
 }

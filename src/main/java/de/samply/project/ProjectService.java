@@ -3,14 +3,10 @@ package de.samply.project;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
-import de.samply.db.repository.QueryRepository;
 import de.samply.form.FormService;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.Form;
-import de.samply.frontend.dto.Results;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
@@ -18,6 +14,7 @@ import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
 import de.samply.query.OutputFormat;
+import de.samply.query.QueryService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
@@ -26,70 +23,84 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
 public class ProjectService {
 
-    private final NotificationService notificationService;
-    private final ProjectRepository projectRepository;
-    private final QueryRepository queryRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+
     private final SessionUser sessionUser;
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectConfigurations projectConfigurations;
-    private final DtoFactory dtoFactory;
+
+    // Services
+    private final NotificationService notificationService;
     private final FormService formService;
+    private final QueryService queryService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+    private final ProjectBridgeheadUserService projectBridgeheadUserService;
+
+    // Repositories
+    private final ProjectRepository projectRepository;
+
 
     public ProjectService(NotificationService notificationService,
                           ProjectRepository projectRepository,
-                          QueryRepository queryRepository,
-                          ProjectBridgeheadRepository projectBridgeheadRepository,
                           SessionUser sessionUser,
-                          ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                           ProjectConfigurations projectConfigurations,
-                          DtoFactory dtoFactory,
-                          FormService formService) {
+                          FormService formService,
+                          QueryService queryService,
+                          ProjectBridgeheadService projectBridgeheadService,
+                          ProjectBridgeheadUserService projectBridgeheadUserService) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
-        this.queryRepository = queryRepository;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.queryService = queryService;
+        this.projectBridgeheadService = projectBridgeheadService;
         this.sessionUser = sessionUser;
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectConfigurations = projectConfigurations;
-        this.dtoFactory = dtoFactory;
         this.formService = formService;
+        this.projectBridgeheadUserService = projectBridgeheadUserService;
     }
 
-    public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
+    public Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectServiceException("ProjectCode " + projectCode + " not found");
         }
-        return dtoFactory.convert(projectOptional.get());
+        return project.get();
     }
 
-
-    private void saveProject(@NotNull Project project) {
+    public void saveProject(@NotNull Project project) {
         project.setModifiedAt(Instant.now());
         projectRepository.save(project);
     }
 
-    public void updateBridgeheads(String projectCode, String[] bridgeheads) {
-        this.projectRepository.findByCode(projectCode).ifPresent(project -> {
-            Set<String> editionBridgeheads = Set.of(bridgeheads);
-            // Remove bridgeheads that are no longer present
-            projectBridgeheadRepository.findByProject(project).stream().filter(projectBridgehead ->
-                    !editionBridgeheads.contains(projectBridgehead.getBridgehead())).forEach(projectBridgeheadRepository::delete);
-            // Add new bridgeheads
-            Set<String> oldBridgeheads = new HashSet<>(projectBridgeheadRepository.findByProject(project).stream().
-                    map(ProjectBridgehead::getBridgehead).toList());
-            editionBridgeheads.stream().filter(bridgehead -> !oldBridgeheads.contains(bridgehead)).forEach(bridgehead ->
-                    createProjectBridgehead(project, bridgehead));
-            this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
-                    OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + Arrays.toString(bridgeheads)), null, null);
+    public void updateBridgeheads(Project project, String[] bridgeheads) {
+        Set<String> editionBridgeheads = Set.of(bridgeheads);
 
-        });
+        // Remove bridgeheads that are no longer present
+        projectBridgeheadService
+                .fetchBridgeheads(project)
+                .stream()
+                .filter(projectBridgehead ->
+                        !editionBridgeheads.contains(projectBridgehead.getBridgehead()))
+                .forEach(projectBridgeheadService::deleteBridgehead);
+
+        // Add new bridgeheads
+        Set<String> oldBridgeheads = new HashSet<>(projectBridgeheadService
+                .fetchBridgeheads(project)
+                .stream()
+                .map(ProjectBridgehead::getBridgehead)
+                .toList());
+
+        editionBridgeheads
+                .stream()
+                .filter(bridgehead -> !oldBridgeheads.contains(bridgehead))
+                .forEach(bridgehead -> createProjectBridgehead(project, bridgehead));
+
+        this.notificationService.createNotification(project, null, sessionUser.getEmail(),
+                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + Arrays.toString(bridgeheads)), null, null);
+
     }
 
     private void createProjectBridgehead(Project project, String bridgehead) {
@@ -97,8 +108,7 @@ public class ProjectService {
         projectBridgehead.setBridgehead(bridgehead);
         projectBridgehead.setProject(project);
         projectBridgehead.setState(ProjectBridgeheadState.CREATED);
-        projectBridgehead.setModifiedAt(Instant.now());
-        projectBridgeheadRepository.save(projectBridgehead);
+        projectBridgeheadService.saveBridgehead(projectBridgehead);
     }
 
     public List<Project> fetchAllUserVisibleProjects() {
@@ -113,29 +123,14 @@ public class ProjectService {
             return projectRepository.findByBridgeheadsOrCreator(sessionUser.getEmail(), bridgeheads);
         }
         // Fetch projects as a researcher
-        return projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
+        return projectBridgeheadUserService.fetchProjects(sessionUser.getEmail());
     }
 
-    public Page<de.samply.frontend.dto.Project> fetchUserVisibleProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize,
-            boolean modifiedDescendant) {
-        PageRequest pageRequest = PageRequest.of(page, pageSize);
-        if (isProjectManagerAdmin()) {
-            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
-        }
-        Set<String> bridgeheads = sessionUser.getBridgeheads();
-        // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
-        if (isBridgeheadAdmin()) {
-            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
-        }
-        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
-    }
-
-    private boolean isProjectManagerAdmin() {
+    protected boolean isProjectManagerAdmin() {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
 
-    private boolean isBridgeheadAdmin() {
+    protected boolean isBridgeheadAdmin() {
         for (String bridgehead : sessionUser.getBridgeheads()) {
             if (sessionUser.getUserOrganisationRoles()
                     .getBridgeheadRoles(bridgehead).contains(OrganisationRole.BRIDGEHEAD_ADMIN)) {
@@ -145,7 +140,7 @@ public class ProjectService {
         return false;
     }
 
-    private Page<Project> fetchProjectManagerAdminProjects(
+    protected Page<Project> fetchProjectManagerAdminProjects(
             Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest,
             boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
@@ -195,7 +190,7 @@ public class ProjectService {
         }
     }
 
-    private Page<Project> fetchBridgeheadAdminProjects(
+    protected Page<Project> fetchBridgeheadAdminProjects(
             Set<String> bridgeheads, Optional<ProjectState> projectState, Optional<Boolean> archived,
             PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
@@ -245,9 +240,9 @@ public class ProjectService {
         }
     }
 
-    private Page<Project> fetchResearcherProjects(String
-                                                          email, Set<String> bridgeheads, Optional<ProjectState> projectState,
-                                                  Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
+    protected Page<Project> fetchResearcherProjects(String
+                                                            email, Set<String> bridgeheads, Optional<ProjectState> projectState,
+                                                    Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
@@ -295,13 +290,9 @@ public class ProjectService {
         }
     }
 
-    public Map<ProjectType, List<OutputFormat>> fetchOutputFormats(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
+    public Map<ProjectType, List<OutputFormat>> fetchOutputFormats(@NotNull Project project) throws ProjectServiceException {
         Map<ProjectType, List<OutputFormat>> result = new HashMap<>();
-        projectOptional.get().fetchProjectTypes().forEach(projectType ->
+        project.fetchProjectTypes().forEach(projectType ->
                 result.put(projectType, fetchOutputFormats(projectType)));
         return result;
     }
@@ -312,82 +303,57 @@ public class ProjectService {
                 Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toList();
     }
 
-    public Map<String, de.samply.frontend.dto.ProjectAndForms> fetchCurrentProjectConfiguration(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        return this.projectConfigurations.fetchCurrentProjectConfiguration(dtoFactory.convertToProjectAndForms(projectOptional.get(), Optional.empty()));
-    }
-
-    public void setProjectConfiguration(@NotNull String projectCode, @NotNull String projectConfigurationName) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
+    public void setProjectConfiguration(@NotNull Project project, @NotNull String projectConfigurationName) throws ProjectServiceException {
         if (!projectConfigurationName.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
             de.samply.frontend.dto.ProjectAndForms projectAndForms = this.projectConfigurations.getConfig().get(projectConfigurationName);
             if (projectAndForms == null) {
-                throw new ProjectServiceException("Project configuration " + projectConfigurationName + " not found");
+                throw new ProjectServiceException("ProjectCode configuration " + projectConfigurationName + " not found");
             }
 
-            // Synchronize Project
-            Project project = DtoFactory.merge(projectAndForms.project(), projectOptional.get());
-            project.setIsCustomConfigSelected(false);
-            saveProject(project);
-            this.queryRepository.save(project.getQuery());
+            Project mergedProject = DtoFactory.merge(projectAndForms.project(), project);
+            mergedProject.setIsCustomConfigSelected(false);
+            saveProject(mergedProject);
+            queryService.saveQuery(mergedProject.getQuery());
 
             // Synchronize Forms
             if (projectAndForms.forms() != null && projectAndForms.forms().length > 0) {
-                this.formService.syncSelectedForms(projectCode, Arrays.stream(projectAndForms.forms()).map(Form::title).toList());
+                this.formService.syncSelectedForms(project, Arrays.stream(projectAndForms.forms()).map(Form::title).toList());
             }
 
             // Synchronize Form Fields
-            this.formService.editProjectFormFieldValues(Optional.ofNullable(projectAndForms.formFields()), projectCode);
+            this.formService.editProjectFormFieldValues(Optional.ofNullable(projectAndForms.formFields()), project);
 
-        } else if (!Boolean.TRUE.equals(projectOptional.get().getIsCustomConfigSelected())) {
-            projectOptional.get().setIsCustomConfigSelected(true);
-            saveProject(projectOptional.get());
+        } else if (!Boolean.TRUE.equals(project.getIsCustomConfigSelected())) {
+            project.setIsCustomConfigSelected(true);
+            saveProject(project);
         }
     }
 
-    public void addProjectResultUrl(@NotNull String projectCode, @NotNull String resultUrl) throws ProjectServiceException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        project.get().setResultsUrl(resultUrl);
-        project.get().setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the new results again
-        saveProject(project.get());
+    public void addProjectResultUrl(@NotNull Project project, @NotNull String resultUrl) throws ProjectServiceException {
+        project.setResultsUrl(resultUrl);
+        project.setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the new results again
+        saveProject(project);
     }
 
-    public void acceptResultsByCreator(@NotNull String projectCode) throws ProjectServiceException {
-        changeCreatorResultsState(projectCode, UserProjectState.ACCEPTED);
+    public void acceptResultsByCreator(@NotNull Project project) throws ProjectServiceException {
+        changeCreatorResultsState(project, UserProjectState.ACCEPTED);
     }
 
-    public void rejectResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
-        changeCreatorResultsState(projectCode, UserProjectState.REJECTED);
+    public void rejectResultsForCreator(@NotNull Project project) throws ProjectServiceException {
+        changeCreatorResultsState(project, UserProjectState.REJECTED);
     }
 
-    public void requestChangesInResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
-        changeCreatorResultsState(projectCode, UserProjectState.REQUEST_CHANGES);
+    public void requestChangesInResultsForCreator(@NotNull Project project) throws ProjectServiceException {
+        changeCreatorResultsState(project, UserProjectState.REQUEST_CHANGES);
     }
 
-    private void changeCreatorResultsState(@NotNull String projectCode, UserProjectState state) throws ProjectServiceException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        project.get().setCreatorResultsState(state);
-        saveProject(project.get());
+    private void changeCreatorResultsState(@NotNull Project project, UserProjectState state) throws ProjectServiceException {
+        project.setCreatorResultsState(state);
+        saveProject(project);
     }
 
-    public Optional<Results> fetchResults(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        return dtoFactory.fetchResults(project.get());
+    public List<Project> findProjectByExpiresAtBeforeAndStateIn(LocalDate expirationTime, Set<ProjectState> states) {
+        return projectRepository.findByExpiresAtBeforeAndStateIn(expirationTime, states);
     }
 
 }

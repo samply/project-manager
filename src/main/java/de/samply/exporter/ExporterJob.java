@@ -3,13 +3,13 @@ package de.samply.exporter;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadExecution;
-import de.samply.db.repository.BridgeheadAdminUserRepository;
-import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.email.EmailKeyValuesFactory;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
+import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryState;
+import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -29,25 +28,29 @@ import java.util.function.Function;
 public class ExporterJob {
 
     private final boolean enabled;
-    private final ExporterService exporterService;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
     private final Set<ProjectState> activeStates = Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL);
+
+    // Services
+    private final ExporterService exporterService;
     private final EmailService emailService;
-    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
+    private final UserService userService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+
     private final EmailKeyValuesFactory emailKeyValuesFactory;
+
 
     public ExporterJob(
             @Value(ProjectManagerConst.ENABLE_EXPORTER_SV) boolean enabled,
             ExporterService exporterService,
-            ProjectBridgeheadRepository projectBridgeheadRepository,
             EmailService emailService,
-            BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
+            UserService userService,
+            ProjectBridgeheadService projectBridgeheadService,
             EmailKeyValuesFactory emailKeyValuesFactory) {
         this.enabled = enabled;
         this.exporterService = exporterService;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.projectBridgeheadService = projectBridgeheadService;
         this.emailService = emailService;
-        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
+        this.userService = userService;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
     }
 
@@ -121,8 +124,8 @@ public class ExporterJob {
                                     Optional<Consumer<ExporterServiceResult>> exporterServiceResultConsumer,
                                     Optional<EmailTemplateType> emailTemplateType) {
         return Flux.fromStream(
-                        projectBridgeheadRepository
-                                .getByQueryStateAndProjectState(initialQueryState, activeStates)
+                        projectBridgeheadService
+                                .fetchBridgeheads(initialQueryState, activeStates)
                                 .stream()
                                 .flatMap(ProjectBridgeheadAndType::from)
                 )
@@ -136,18 +139,25 @@ public class ExporterJob {
                     log.debug("Setting final query state and updating exporter response for project {} and bridgehead {}", projectBridgehead.getProject().getCode(), projectBridgehead.getBridgehead());
                     execution.setQueryState(finalQueryState);
                     execution.setExporterResponse(exporterServiceResult.result());
-                    execution.setModifiedAt(Instant.now());
                     if (finalQueryState == QueryState.FINISHED) {
                         execution.setExporterDispatchCounter(execution.getExporterDispatchCounter() + 1);
                     }
-                    projectBridgeheadRepository.save(projectBridgehead);
+                    projectBridgeheadService.saveBridgehead(projectBridgehead);
                     emailTemplateType.ifPresent(type -> sendEmail(projectBridgehead, type));
                 })
                 .then();
     }
 
     private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {
-        bridgeheadAdminUserRepository.findByBridgehead(projectBridgehead.getBridgehead()).forEach(bridgeheadAdmin -> emailService.sendEmail(bridgeheadAdmin.getEmail(), Optional.of(projectBridgehead.getProject().getCode()), Optional.of(projectBridgehead.getBridgehead()), ProjectRole.BRIDGEHEAD_ADMIN, templateType, emailKeyValuesFactory.newInstance().add(projectBridgehead)));
+        userService.fetchBridgeheadAdmin(projectBridgehead)
+                .forEach(bridgeheadAdmin ->
+                        emailService.sendEmail(
+                                bridgeheadAdmin.getEmail(),
+                                Optional.of(projectBridgehead.getProject()),
+                                Optional.of(projectBridgehead),
+                                ProjectRole.BRIDGEHEAD_ADMIN,
+                                templateType,
+                                emailKeyValuesFactory.newInstance().add(projectBridgehead)));
     }
 
 }

@@ -1,5 +1,8 @@
 package de.samply.annotations;
 
+import de.samply.app.ProjectManagerConst;
+import de.samply.resolvers.RequestVariableAndParameterMethodArgumentResolver;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,7 +37,7 @@ import java.lang.annotation.Target;
  * <p>In the above example:</p>
  * <ul>
  *   <li>{@code query}: The SQL query string passed in the JSON body</li>
- *   <li>{@code queryFormat}: The format of the query (e.g. SQL)</li>
+ *   <li>{@code queryFormat}: The format of the query (e.g., SQL)</li>
  *   <li>{@code label}: Optional label</li>
  *   <li>{@code description}: Optional description</li>
  * </ul>
@@ -56,7 +59,7 @@ import java.lang.annotation.Target;
  *     {@literal @}RequestVariable(name = "label", required = false) String label,
  *     {@literal @}RequestVariable(name = "description", required = false) String description
  * ) {
- *     return ResponseEntity.ok("Project created successfully!");
+ *     return ResponseEntity.ok("ProjectCode created successfully!");
  * }
  * }</pre>
  *
@@ -67,7 +70,7 @@ import java.lang.annotation.Target;
  *   <li>{@code label} and {@code description} are optional.</li>
  * </ul>
  *
- * @see de.samply.resolvers.RequestVariableMethodArgumentResolver
+ * @see RequestVariableAndParameterMethodArgumentResolver
  */
 
 
@@ -79,4 +82,6 @@ public @interface RequestVariable {
     boolean required() default true;
 
     boolean notEmpty() default false;
+
+    String defaultValue() default ProjectManagerConst.NOT_SET;
 }
