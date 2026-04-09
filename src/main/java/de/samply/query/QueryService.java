@@ -15,6 +15,7 @@ import de.samply.utils.Base64Utils;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -30,18 +31,27 @@ import java.util.UUID;
 @Slf4j
 public class QueryService {
 
-    private final NotificationService notificationService;
     private final SessionUser sessionUser;
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    // Services
+    private final NotificationService notificationService;
+
+    // Repositories
     private final QueryRepository queryRepository;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     public QueryService(
             NotificationService notificationService,
             SessionUser sessionUser,
-            QueryRepository queryRepository) {
+            QueryRepository queryRepository,
+            ApplicationEventPublisher applicationEventPublisher) {
         this.notificationService = notificationService;
         this.sessionUser = sessionUser;
         this.queryRepository = queryRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public String createQuery(
@@ -58,9 +68,9 @@ public class QueryService {
         Base64Utils.decodeIfNecessary(humanReadable).ifPresent(tempQuery::setHumanReadable);
         tempQuery.setExplorerUrl(decodeUrlIfNecessary(explorerUrl));
         tempQuery.setContext(queryContext);
-        tempQuery = this.queryRepository.save(tempQuery);
         // Every Query should have at least one output:
         addOutputToQuery(tempQuery, Optional.ofNullable(outputFormat), Optional.ofNullable(templateId), projectType);
+        tempQuery = saveQuery(tempQuery);
         return tempQuery.getCode();
     }
 
@@ -79,13 +89,12 @@ public class QueryService {
 
             outputFormat.ifPresent(output::setOutputFormat);
             templateId.ifPresent(output::setTemplateId);
-            queryRepository.save(query);
         }
     }
 
     public void removeOutput(@NotNull Project project, @NotNull ProjectType projectType) {
         project.getQuery().removeOutput(projectType);
-        this.queryRepository.save(project.getQuery());
+        saveQuery(project.getQuery());
         this.notificationService.createNotification(project, null, sessionUser.getEmail(),
                 OperationType.EDIT_PROJECT, "Removed output of type " + projectType.name(), null, null);
     }
@@ -95,7 +104,7 @@ public class QueryService {
         queryRepository.findByCode(queryCode).ifPresent(query -> {
             if (query.getExplorerUrl() != null) {
                 query.setExplorerUrl(addProjectCodeToUrl(query.getExplorerUrl(), projectCode));
-                this.queryRepository.save(query);
+                saveQuery(query);
             }
         });
     }
@@ -153,7 +162,7 @@ public class QueryService {
                 templateIdOptional.ifPresent(tid -> changedKeyValueMap.put("template id for project type " + projectType, tid));
             }
             if (!changedKeyValueMap.isEmpty()) {
-                queryRepository.save(projectQuery);
+                saveQuery(projectQuery);
                 this.notificationService.createNotification(project, null, sessionUser.getEmail(),
                         OperationType.EDIT_QUERY, printInOneLine(changedKeyValueMap), null, null);
             }
@@ -178,11 +187,13 @@ public class QueryService {
         }
     }
 
-    public void saveQuery(Query query) {
-        this.queryRepository.save(query);
+    public Query saveQuery(Query query) {
+        Query result = this.queryRepository.save(query);
+        applicationEventPublisher.publishEvent(new QueryChangedEvent(query));
+        return result;
     }
 
-    public Optional<Query> fetchQuery(String queryCode){
+    public Optional<Query> fetchQuery(String queryCode) {
         return this.queryRepository.findByCode(queryCode);
     }
 

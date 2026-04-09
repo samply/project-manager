@@ -11,10 +11,12 @@ import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
+import de.samply.query.QueryChangedEvent;
 import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -57,7 +59,7 @@ public class ProjectBridgeheadService {
 
     private void changeProjectBridgeheadState(@NotNull Project project, @NotNull ProjectBridgehead bridgehead, @NotNull ProjectBridgeheadState state) throws ProjectBridgeheadServiceException {
         bridgehead.setState(state);
-        saveBridgehead(bridgehead);
+        setModifiedAtAndSaveBridgehead(bridgehead);
         this.notificationService.createNotification(project, bridgehead.getBridgehead(), sessionUser.getEmail(), OperationType.CHANGE_PROJECT_STATE,
                 "Set project bridgehead state to " + state, null, null);
     }
@@ -99,13 +101,13 @@ public class ProjectBridgeheadService {
 
     private void changeQueryState(ProjectBridgehead bridgehead, QueryState queryState, ProjectType projectType) throws ProjectBridgeheadServiceException {
         bridgehead.addOrUpdateExecution(projectType, queryState, null, sessionUser.getEmail(), null, null);
-        saveBridgehead(bridgehead);
+        setModifiedAtAndSaveBridgehead(bridgehead);
     }
 
     public void addResultsUrl(@NotNull ProjectBridgehead bridgehead, @NotNull String resultsUrl) throws ProjectBridgeheadServiceException {
         bridgehead.setResultsUrl(resultsUrl);
         bridgehead.setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the results again
-        saveBridgehead(bridgehead);
+        setModifiedAtAndSaveBridgehead(bridgehead);
     }
 
     public void acceptResultsForCreator(@NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
@@ -122,10 +124,15 @@ public class ProjectBridgeheadService {
 
     private void changeCreatorResultsState(@NotNull ProjectBridgehead bridgehead, @NotNull UserProjectState state) throws ProjectBridgeheadServiceException {
         bridgehead.setCreatorResultsState(state);
-        saveBridgehead(bridgehead);
+        setModifiedAtAndSaveBridgehead(bridgehead);
     }
 
     public void saveBridgehead(@NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
+        addAllExecutions(bridgehead);
+        setModifiedAtAndSaveBridgehead(bridgehead);
+    }
+
+    private void setModifiedAtAndSaveBridgehead(@NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
         bridgehead.setModifiedAt(Instant.now());
         projectBridgeheadRepository.save(bridgehead);
     }
@@ -160,6 +167,47 @@ public class ProjectBridgeheadService {
 
     public List<ProjectBridgehead> fetchByProjectTypeAndNotProjectState(ProjectType projectType, Set<ProjectState> projectStates) {
         return projectBridgeheadRepository.getByProjectTypeAndNotProjectState(projectType, projectStates);
+    }
+
+    private void addAllExecutions(ProjectBridgehead bridgehead) {
+        bridgehead
+                .getProject()
+                .getQuery()
+                .fetchProjectTypes()
+                .forEach(projectType -> addOrUpdateExecution(bridgehead, projectType));
+    }
+
+    private void addOrUpdateExecution(ProjectBridgehead bridgehead, ProjectType projectType) {
+        bridgehead.addOrUpdateExecution(
+                projectType,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    @EventListener
+    public void onQueryChanged(QueryChangedEvent event) {
+        projectBridgeheadRepository
+                .findByProject_Query(event.query())
+                .forEach(this::updateQueryInBridgehead);
+    }
+
+    private void updateQueryInBridgehead(ProjectBridgehead bridgehead) {
+        Set<ProjectType> expectedTypes = bridgehead.getProject().fetchProjectTypes();
+
+        // ADD missing executions
+        expectedTypes.forEach(type -> addOrUpdateExecution(bridgehead, type));
+
+        // REMOVE obsolete executions
+        bridgehead.getExecutions().removeIf(exec ->
+                !expectedTypes.contains(
+                        exec.getQueryOutput().getProjectType()
+                )
+        );
+        setModifiedAtAndSaveBridgehead(bridgehead);
     }
 
 

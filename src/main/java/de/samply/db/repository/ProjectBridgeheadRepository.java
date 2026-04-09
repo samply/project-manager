@@ -52,4 +52,6 @@ public interface ProjectBridgeheadRepository extends JpaRepository<ProjectBridge
             Set<ProjectState> projectStates
     );
 
+    List<ProjectBridgehead> findByProject_Query(de.samply.db.model.Query query);
+
 }
