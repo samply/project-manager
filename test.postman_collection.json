@@ -143,7 +143,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/actions?site=project-view&project-code=7ac24acc738644d186f8&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/actions?site=project-view&project-code=634859e4dc3947ce92ea&bridgehead=jurassic-park",
           "protocol": "http",
           "host": [
             "localhost"
@@ -159,12 +159,11 @@
             },
             {
               "key": "project-code",
-              "value": "7ac24acc738644d186f8"
+              "value": "634859e4dc3947ce92ea"
             },
             {
               "key": "bridgehead",
-              "value": "jurassic-park",
-              "type": "text"
+              "value": "jurassic-park"
             }
           ]
         }
@@ -438,6 +437,124 @@
       "response": []
     },
     {
+      "name": "Create query and design project (Researcher) - Ohne Authorization (nur JSESSIONID Cookie) without PROJECT TYPE",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "KGdlbmRlciA9IG1hbGUp"
+            },
+            {
+              "key": "bridgeheads",
+              "value": "star-wars,jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create ast query and design project (Researcher) - Ohne Authorization (nur JSESSIONID Cookie) without PROJECT TYPE",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiYXN0IiwicGF5bG9hZCI6ImV5SmhjM1FpT25zaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSkJUa1FpTENKamFHbHNaSEpsYmlJNlczc2lhMlY1SWpvaVoyeHBiMjFmWVd4c1gyZHliM1Z3Y3lJc0ltOXdaWEpoYm1RaU9pSlBVaUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKSGJHbHZiU0F0SUVkeVlXUWdTU0lzSW05d1pYSmhibVFpT2lKQlRrUWlMQ0pqYUdsc1pISmxiaUk2VzNzaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSlBVaUlzSW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKa2FXRm5ibTl6YVhNaUxDSjBlWEJsSWpvaVJWRlZRVXhUSWl3aWRtRnNkV1VpT2lKRU5ETWlmU3g3SW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW5SNWNHVWlPaUpGVVZWQlRGTWlMQ0oyWVd4MVpTSTZJa1EwTXk0eEluMHNleUpyWlhraU9pSmthV0ZuYm05emFYTWlMQ0owZVhCbElqb2lSVkZWUVV4VElpd2lkbUZzZFdVaU9pSkVORE11TWlKOUxIc2lhMlY1SWpvaVpHbGhaMjV2YzJseklpd2lkSGx3WlNJNklrVlJWVUZNVXlJc0luWmhiSFZsSWpvaVJEUXpMakFpZlN4N0ltdGxlU0k2SW1ScFlXZHViM05wY3lJc0luUjVjR1VpT2lKRlVWVkJURk1pTENKMllXeDFaU0k2SWtRME15NHpJbjBzZXlKclpYa2lPaUprYVdGbmJtOXphWE1pTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUpFTkRNdU5DSjlMSHNpYTJWNUlqb2laR2xoWjI1dmMybHpJaXdpZEhsd1pTSTZJa1ZSVlVGTVV5SXNJblpoYkhWbElqb2lSRFF6TGpjaWZTeDdJbXRsZVNJNkltUnBZV2R1YjNOcGN5SXNJblI1Y0dVaU9pSkZVVlZCVEZNaUxDSjJZV3gxWlNJNklrUTBNeTQ1SW4xZGZWMTlMSHNpYjNCbGNtRnVaQ0k2SWs5U0lpd2lZMmhwYkdSeVpXNGlPbHQ3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnekx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXprMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TkRJeEx6RWlmVjE5WFgxZGZWMTlYWDBzSW1sa0lqb2laREZrWm1NME16a3RZalJtT0MwMFltWmhMV0UxTmpjdFltRTFZelkzWVdKa01XVTJJbjA9In0=\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&query-format=AST_DATA&human-readable=KCgoZGlhZ25vc2lzIEVRVUFMUyBENDMpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4xKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuMikgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjApIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4zKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuNCkgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjcpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My45KSkgQU5EICgobW9ycGhvbG9neSBFUVVBTFMgOTM4My8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM4NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM5NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTQyMS8xKSkpCg==&bridgeheads=star-wars,jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "query-format",
+              "value": "AST_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "KCgoZGlhZ25vc2lzIEVRVUFMUyBENDMpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4xKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuMikgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjApIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4zKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuNCkgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjcpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My45KSkgQU5EICgobW9ycGhvbG9neSBFUVVBTFMgOTM4My8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM4NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM5NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTQyMS8xKSkpCg=="
+            },
+            {
+              "key": "bridgeheads",
+              "value": "star-wars,jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Create query and design project (Researcher) [e260-ccp-req]",
       "request": {
         "auth": {
@@ -503,6 +620,40 @@
               "key": "project-type",
               "value": "EXPORT"
             }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create query and design project (Researcher) [requests.dktk.dkfz.de]",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"query\": \"eyJsYW5nIjoiYXN0IiwicGF5bG9hZCI6ImV5SmhjM1FpT25zaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSkJUa1FpTENKamFHbHNaSEpsYmlJNlczc2lhMlY1SWpvaVoyeHBiMjFmWVd4c1gyZHliM1Z3Y3lJc0ltOXdaWEpoYm1RaU9pSlBVaUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKSGJHbHZiU0F0SUVkeVlXUWdTU0lzSW05d1pYSmhibVFpT2lKQlRrUWlMQ0pqYUdsc1pISmxiaUk2VzNzaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSlBVaUlzSW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKa2FXRm5ibTl6YVhNaUxDSjBlWEJsSWpvaVJWRlZRVXhUSWl3aWRtRnNkV1VpT2lKRU5ETWlmU3g3SW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW5SNWNHVWlPaUpGVVZWQlRGTWlMQ0oyWVd4MVpTSTZJa1EwTXk0eEluMHNleUpyWlhraU9pSmthV0ZuYm05emFYTWlMQ0owZVhCbElqb2lSVkZWUVV4VElpd2lkbUZzZFdVaU9pSkVORE11TWlKOUxIc2lhMlY1SWpvaVpHbGhaMjV2YzJseklpd2lkSGx3WlNJNklrVlJWVUZNVXlJc0luWmhiSFZsSWpvaVJEUXpMakFpZlN4N0ltdGxlU0k2SW1ScFlXZHViM05wY3lJc0luUjVjR1VpT2lKRlVWVkJURk1pTENKMllXeDFaU0k2SWtRME15NHpJbjBzZXlKclpYa2lPaUprYVdGbmJtOXphWE1pTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUpFTkRNdU5DSjlMSHNpYTJWNUlqb2laR2xoWjI1dmMybHpJaXdpZEhsd1pTSTZJa1ZSVlVGTVV5SXNJblpoYkhWbElqb2lSRFF6TGpjaWZTeDdJbXRsZVNJNkltUnBZV2R1YjNOcGN5SXNJblI1Y0dVaU9pSkZVVlZCVEZNaUxDSjJZV3gxWlNJNklrUTBNeTQ1SW4xZGZWMTlMSHNpYjNCbGNtRnVaQ0k2SWs5U0lpd2lZMmhwYkdSeVpXNGlPbHQ3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnekx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXprMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TkRJeEx6RWlmVjE5WFgxZGZWMTlYWDBzSW1sa0lqb2lZelJqWkRRNVpqVXRZV1V5T0MwMFl6TmxMV0V4WVRjdE5XTXpNamM1TnpabVlqbGxJbjA9In0=\",\r\n    \"explorer-ids\": \"lens-dktk-test,lens-freiburg,lens-berlin,lens-dresden\",\r\n    \"query-format\": \"AST_DATA\",\r\n    \"human-readable\": \"(((diagnosis EQUALS D43) OR (diagnosis EQUALS D43.1) OR (diagnosis EQUALS D43.2) OR (diagnosis EQUALS D43.0) OR (diagnosis EQUALS D43.3) OR (diagnosis EQUALS D43.4) OR (diagnosis EQUALS D43.7) OR (diagnosis EQUALS D43.9)) AND ((morphology EQUALS 9383/1) OR (morphology EQUALS 9384/1) OR (morphology EQUALS 9394/1) OR (morphology EQUALS 9421/1)))\",\r\n    \"explorer-url\": \"https://demo.lens.samply.de/?collections=&query=W1t7ImlkIjoiMDVlOTVlODEtMGZiYi00ZDczLWE1YzgtZDYyOTg3ZmYzMzg5Iiwia2V5IjoiZ2xpb21fYWxsX2dyb3VwcyIsIm5hbWUiOiJHbGlvbWUsIGFsbGUgR3J1cHBlbiIsInR5cGUiOiJFUVVBTFMiLCJ2YWx1ZXMiOlt7Im5hbWUiOiJHbGlvbSAtIEdyYWQgSSIsInZhbHVlIjpbW3sidmFsdWUiOiJkaWFnbm9zaXMiLCJuYW1lIjoiRDQzLiUifV0sW3sidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODMvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzOTQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6Ijk0MjEvMSJ9XV0sInF1ZXJ5QmluZElkIjoiM2FiMTM1ZjctYzI3NC00YWFlLWI5YjQtYmFhNDc2OWRkZjcxIn1dfV1d\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://requests.dktk.dkfz.de/project-manager-api/create-query-and-design-project",
+          "protocol": "https",
+          "host": [
+            "requests",
+            "dktk",
+            "dkfz",
+            "de"
+          ],
+          "path": [
+            "project-manager-api",
+            "create-query-and-design-project"
           ]
         }
       },
@@ -1920,7 +2071,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project/configurations?project-code=a004d11ade614e2b871b",
+          "raw": "http://localhost:8097/project/configurations?project-code=277ec717a5b540b28adc",
           "protocol": "http",
           "host": [
             "localhost"
@@ -1933,7 +2084,7 @@
           "query": [
             {
               "key": "project-code",
-              "value": "a004d11ade614e2b871b"
+              "value": "277ec717a5b540b28adc"
             }
           ]
         }
