@@ -18,7 +18,7 @@ public enum ProjectContextKey {
     PROJECT_TITLE("project-title"),
     PROJECT_DESCRIPTION("project-description"),
     PROJECT_CREATION_DATE("project-creation-date"),
-    ETHICAL_APPROVAL("ethical-approval"),;
+    ETHICAL_APPROVAL("ethical-approval");
 
     private final String text;
 
