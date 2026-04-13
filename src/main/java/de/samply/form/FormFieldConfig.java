@@ -21,6 +21,9 @@ public class FormFieldConfig extends DisplayMetadata {
     @JsonProperty("data_type")
     private DataType dataType;
 
+    @JsonProperty("allowed_values")
+    private String[] allowedValues;
+
     private boolean mandatory;
 
     private String[] groups;

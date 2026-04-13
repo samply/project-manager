@@ -268,6 +268,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Samples project can generate exports not visible to researcher
 - there isCustomConfig in the Project as nullable
 - Ethical Approval in Project Context
+- Data Type Enum for Form Config
 
 
 ### Removed
