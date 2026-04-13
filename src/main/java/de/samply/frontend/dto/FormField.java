@@ -13,7 +13,7 @@ public record FormField(
         String labelDescription,
         FormFieldGroup[] groups,
         DataType type,
-        String[] allowedValues,
+        FormFieldValue[] allowedValues,
         Boolean mandatory,
         Integer order,
         String value

@@ -254,7 +254,7 @@ public class DtoFactory {
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getGroups)
-                        .map(groups -> convert(groups, language))
+                        .map(groups -> convertGroups(groups, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
@@ -263,6 +263,7 @@ public class DtoFactory {
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getAllowedValues)
+                        .map(values -> convert(values, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
@@ -273,7 +274,20 @@ public class DtoFactory {
         );
     }
 
-    private FormFieldGroup[] convert(String[] groups, Optional<String> language) {
+    private FormFieldValue[] convert(de.samply.form.FormFieldValue[] values, Optional<String> language) {
+        return Optional.ofNullable(values)
+                .map(Arrays::stream)
+                .map(stream -> stream
+                        .map(v -> new FormFieldValue(
+                                v.getLabel(),
+                                fetchValue(v.getDisplayName(), language),
+                                fetchValue(v.getDescription(), language)
+                        ))
+                        .toArray(FormFieldValue[]::new))
+                .orElse(null);
+    }
+
+    private FormFieldGroup[] convertGroups(String[] groups, Optional<String> language) {
         if (groups == null) {
             return null;
         }
@@ -316,9 +330,9 @@ public class DtoFactory {
                 formFieldConfig.getLabel(),
                 fetchValue(formFieldConfig.getDisplayName(), language),
                 fetchValue(formFieldConfig.getDescription(), language),
-                convert(formFieldConfig.getGroups(), language),
+                convertGroups(formFieldConfig.getGroups(), language),
                 formFieldConfig.getDataType(),
-                formFieldConfig.getAllowedValues(),
+                convert(formFieldConfig.getAllowedValues(), language),
                 formFieldConfig.isMandatory(),
                 fetchFormFieldOrder(title, formFieldConfig.getLabel()),
                 value.orElse(null)

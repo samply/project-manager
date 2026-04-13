@@ -22,7 +22,7 @@ public class FormFieldConfig extends DisplayMetadata {
     private DataType dataType;
 
     @JsonProperty("allowed_values")
-    private String[] allowedValues;
+    private FormFieldValue[] allowedValues;
 
     private boolean mandatory;
 
