@@ -1,5 +1,6 @@
 package de.samply.frontend.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.form.DataType;
 
@@ -18,4 +19,19 @@ public record FormField(
         Integer order,
         String value
 ) {
+
+    // It can be used in the thymeleaf templates for the forms.
+    @JsonIgnore
+    @SuppressWarnings("unused")
+    public String fetchDisplayValue() {
+        if (allowedValues != null) {
+            for (FormFieldValue v : allowedValues) {
+                if (v.label() != null && v.label().equals(value)) {
+                    return v.displayName();
+                }
+            }
+        }
+        return value;
+    }
+
 }

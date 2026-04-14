@@ -278,12 +278,18 @@ public class DtoFactory {
         return Optional.ofNullable(values)
                 .map(Arrays::stream)
                 .map(stream -> stream
-                        .map(v -> new FormFieldValue(
-                                v.getLabel(),
-                                fetchValue(v.getDisplayName(), language),
-                                fetchValue(v.getDescription(), language)
-                        ))
+                        .map(value -> convert(value, language))
                         .toArray(FormFieldValue[]::new))
+                .orElse(null);
+    }
+
+    private FormFieldValue convert(de.samply.form.FormFieldValue value, Optional<String> language) {
+        return Optional.ofNullable(value)
+                .map(v -> new FormFieldValue(
+                        v.getLabel(),
+                        fetchValue(v.getDisplayName(), language),
+                        fetchValue(v.getDescription(), language)
+                ))
                 .orElse(null);
     }
 
