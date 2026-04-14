@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.form.DataType;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record FormField(
         String title,
@@ -24,14 +28,14 @@ public record FormField(
     @JsonIgnore
     @SuppressWarnings("unused")
     public String fetchDisplayValue() {
-        if (allowedValues != null) {
-            for (FormFieldValue v : allowedValues) {
-                if (v.label() != null && v.label().equals(value)) {
-                    return v.displayName();
-                }
-            }
-        }
-        return value;
+        return Optional
+                .ofNullable(allowedValues)
+                .stream()
+                .flatMap(Arrays::stream)
+                .filter(v -> Objects.equals(v.label(), value))
+                .map(FormFieldValue::displayName)
+                .findFirst()
+                .orElse(value);
     }
 
 }
