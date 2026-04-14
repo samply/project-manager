@@ -4,30 +4,39 @@ import de.samply.db.model.Project;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.FormField;
+import de.samply.project.DtoProjectService;
 import de.samply.utils.FormFieldUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class DtoFormService {
 
+    // Services
     private final FormService formService;
+    private final DtoProjectService dtoProjectService;
+
     private final DtoFactory dtoFactory;
     private final FormConfig formConfig;
+
 
     public DtoFormService(
             FormService formService,
             DtoFactory dtoFactory,
-            FormConfig formConfig) {
+            FormConfig formConfig,
+            DtoProjectService dtoProjectService) {
         this.formService = formService;
         this.dtoFactory = dtoFactory;
         this.formConfig = formConfig;
+        this.dtoProjectService = dtoProjectService;
     }
 
     public List<FormField> fetchProjectFormTitles(Optional<String> language) {
@@ -64,10 +73,26 @@ public class DtoFormService {
     }
 
     public List<Form> fetchSelectedForms(@NotNull Project project, Optional<String> language) {
-        return formService
-                .fetchSelectedForms(project)
+        return Stream.concat(
+                        // Fetch forms selected explicitly
+                        formService.fetchSelectedForms(project)
+                                .stream()
+                                .map(projectForm -> dtoFactory.convert(projectForm, language)),
+                        // Fetch forms that should be selected according to the current configuration.
+                        // This is particularly important if the current configuration is CUSTOM
+                        dtoProjectService.fetchCurrentProjectConfiguration(project)
+                                .values()
+                                .stream()
+                                .flatMap(projectAndForms -> Arrays.stream(projectAndForms.forms()))
+                )
+                // Remove duplicates
+                .collect(Collectors.toMap(
+                        Form::title,
+                        Function.identity(),
+                        (existing, _) -> existing
+                ))
+                .values()
                 .stream()
-                .map(projectForm -> dtoFactory.convert(projectForm, language))
                 .toList();
     }
 

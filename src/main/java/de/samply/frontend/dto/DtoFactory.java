@@ -354,13 +354,17 @@ public class DtoFactory {
     }
 
     public Form convert(@NotNull ProjectForm projectForm, Optional<String> language) {
+        return convertForm(projectForm.getFormTitle(), language);
+    }
+
+    public Form convertForm(@NotNull String formTitle, Optional<String> language) {
         return new Form(
-                projectForm.getFormTitle(),
-                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(projectForm.getFormTitle()))
+                formTitle,
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(formTitle))
                         .map(DisplayMetadata::getDisplayName)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
-                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(projectForm.getFormTitle()))
+                Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(formTitle))
                         .map(DisplayMetadata::getDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null)
