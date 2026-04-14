@@ -5,6 +5,7 @@ import de.samply.form.FormFieldConfig;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ProjectContext {
 
@@ -21,6 +22,16 @@ public class ProjectContext {
             return original;
         }
         return original.toBuilder().projectValue(resolvePlaceholders(original.getProjectValue())).build();
+    }
+
+    public Map<String, String> fetchContext() {
+        return context
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey().getText(),
+                        Map.Entry::getValue
+                ));
     }
 
     private String resolvePlaceholders(String input) {

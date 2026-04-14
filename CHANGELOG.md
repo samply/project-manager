@@ -251,6 +251,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Annotated Parameter Wrapper
 - Request Parameter
 - Synchronization between query outputs and bridgehead executions
+- Project context in form template context
 
 
 ### Changed

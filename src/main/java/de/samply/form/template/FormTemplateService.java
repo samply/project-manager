@@ -3,10 +3,13 @@ package de.samply.form.template;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.form.DataType;
+import de.samply.form.DtoFormService;
 import de.samply.form.pdf.FormPdfGeneratorFactory;
 import de.samply.form.pdf.FormTemplateServiceException;
-import de.samply.frontend.dto.*;
-import de.samply.form.DtoFormService;
+import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Form;
+import de.samply.frontend.dto.FormField;
+import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
 import de.samply.utils.DateUtils;
@@ -72,9 +75,11 @@ public class FormTemplateService {
     }
 
     private Map<String, Object> createContext(Project project, String formTemplate, String language) {
-        Map<String, Object> result = new HashMap<>();
+        ProjectContext projectContext = projectContextFactory.createProjectContext(project, language);
+        //Add project context
+        Map<String, Object> result = new HashMap<>(projectContext.fetchContext());
         // Add form fields
-        result.put(FormContextKey.FIELDS.getText(), fetchFormFields(project, formTemplate, language));
+        result.put(FormContextKey.FIELDS.getText(), fetchFormFields(project, formTemplate, language, projectContext));
         // Add form variables
         result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
         result.put(FormContextKey.DATA_TYPE_CLASS.getText(), DataType.class);
@@ -86,10 +91,10 @@ public class FormTemplateService {
     public Map<String, FormField> fetchFormFields(
             @NotNull Project project,
             @NotNull String formTemplate,
-            @NotNull String language
+            @NotNull String language,
+            @NotNull ProjectContext projectContext
     ) {
         FormTemplateMetadata template = resolveTemplateMetadata(formTemplate);
-        ProjectContext projectContext = projectContextFactory.createProjectContext(project, language);
 
         return Stream.concat(
                         // 1️⃣ ProjectCode fields
