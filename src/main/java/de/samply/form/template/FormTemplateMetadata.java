@@ -18,8 +18,13 @@ import java.util.Map;
 public class FormTemplateMetadata {
 
     private String template;
+    @JsonProperty("template_file")
+    // Input template file
+    // Without extension: Currently, only HTML files are supported
+    private String templateFile;
     @JsonProperty("form_titles")
     private String[] formTitles;
+    // Output filenames
     @JsonProperty("filename_templates")
     private Map<FileExtension, String> extensionFilenameTemplateMap;
     @JsonProperty("variables")

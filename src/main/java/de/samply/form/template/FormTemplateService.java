@@ -66,8 +66,11 @@ public class FormTemplateService {
 
     public byte[] createFormAsPdf(@NotNull Project project, @NotNull String formTemplate, Optional<String> language) throws FormTemplateServiceException {
         try {
+            String templateFile = formTemplateConfig
+                    .fetchTemplateFile(formTemplate)
+                    .orElseThrow(() -> new RuntimeException("Template not found: " + formTemplate));
             return pdfGenerator.generatePdf(
-                    formTemplate,
+                    templateFile,
                     createContext(project, formTemplate, LanguageUtils.normalize(language.orElse(defaultLanguage))));
         } catch (PdfGeneratorException e) {
             throw new FormTemplateServiceException(e);

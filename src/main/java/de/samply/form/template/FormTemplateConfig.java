@@ -102,7 +102,7 @@ public class FormTemplateConfig {
                             }
                             Map<String, Integer> labelOrder = new HashMap<>();
                             for (int i = 0; i < fields.length; i++) {
-                                // last element = -1, first element = -length
+                                // last element = -1, first element = length
                                 labelOrder.put(fields[i].getLabel(), i - fields.length);
                             }
                             return labelOrder;
@@ -155,6 +155,11 @@ public class FormTemplateConfig {
                         Map.Entry::getKey,
                         Map.Entry::getValue
                 ));
+    }
+
+    public Optional<String> fetchTemplateFile(String formTemplate){
+        return Optional.ofNullable(templateMetadataMap.get(formTemplate))
+                .map(FormTemplateMetadata::getTemplateFile);
     }
 
 

@@ -17,9 +17,9 @@ public class PdfGenerator {
         this.pdfConverter = pdfConverter;
     }
 
-    public byte[] generatePdf(String template, Map<String, Object> context) throws PdfGeneratorException {
+    public byte[] generatePdf(String templateFilename, Map<String, Object> context) throws PdfGeneratorException {
         try {
-            return pdfConverter.convert(templateEngine.process(template, createContext(context)));
+            return pdfConverter.convert(templateEngine.process(templateFilename, createContext(context)));
         } catch (PdfConverterException e) {
             throw new PdfGeneratorException(e);
         }
