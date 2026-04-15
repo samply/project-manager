@@ -59,6 +59,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -1450,9 +1451,14 @@ public class ProjectManagerController {
     public ResponseEntity saveQueryInBridgehead(
             @SuppressWarnings("unused") @NotEmpty @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) List<ProjectType> projectType
     ) {
-        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgehead(bridgehead, projectType));
+        return convertToResponseEntity(() -> Optional
+                .ofNullable(projectType)
+                .ifPresent(types -> types
+                        .forEach(type ->
+                                this.projectBridgeheadService.scheduleSendQueryToBridgehead(bridgehead, type))));
+
     }
 
 
@@ -1471,9 +1477,13 @@ public class ProjectManagerController {
     public ResponseEntity saveAndExecuteQueryInBridgehead(
             @SuppressWarnings("unused") @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) List<ProjectType> projectType
     ) {
-        return convertToResponseEntity(() -> this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(bridgehead, projectType));
+        return convertToResponseEntity(() -> Optional
+                .ofNullable(projectType)
+                .ifPresent(types -> types
+                        .forEach(type ->
+                                this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(bridgehead, type))));
     }
 
 

@@ -2243,6 +2243,45 @@
       "response": []
     },
     {
+      "name": "Send query to bridgehead (bk-admin) Multi-Project Type",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/bridgehead/query/save?project-code=edc0372212c343d1ba04&bridgehead=jurassic-park&project-type=EXPORT,SAMPLES",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "bridgehead",
+            "query",
+            "save"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "edc0372212c343d1ba04"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "project-type",
+              "value": "EXPORT,SAMPLES"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Send query to bridgehead and execute (bk-admin)",
       "request": {
         "auth": {

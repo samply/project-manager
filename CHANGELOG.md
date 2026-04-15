@@ -253,6 +253,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Synchronization between query outputs and bridgehead executions
 - Project context in form template context
 - Template Filename
+- Send a query with different project types to bridgehead
 
 
 ### Changed
