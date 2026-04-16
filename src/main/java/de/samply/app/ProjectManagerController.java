@@ -512,6 +512,20 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> formTemplateService.fetchTemplates(project, Optional.ofNullable(language)));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_BEST_PROJECT_FORM_TEMPLATES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_BEST_PROJECT_FORM_TEMPLATES)
+    public ResponseEntity fetchBestProjectFormTemplates(
+            // ProjectCode code and bridgehead needed for role constraints
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead,
+            @Language String language
+    ) {
+        return convertToResponseEntity(() -> formTemplateService.fetchBestTemplates(project, Optional.ofNullable(language)));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)

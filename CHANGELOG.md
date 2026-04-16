@@ -254,7 +254,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project context in form template context
 - Template Filename
 - Send a query with different project types to bridgehead
-- List parameters in controller
+- List parameters in a controller
+- Fetch best form templates
 
 
 ### Changed

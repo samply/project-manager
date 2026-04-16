@@ -120,16 +120,51 @@ public class FormTemplateService {
                 .collect(FormFieldUtils.formFieldMapCollector());
     }
 
+    private List<FormTemplateMetadata> fetchValidMetadata(Project project, Optional<String> language) {
 
-    public List<FormTemplate> fetchTemplates(@NotNull Project project, Optional<String> language) {
+        // Fetch all selected forms for the project and extract their titles into a Set
+        // A Set is used for O(1) lookup when checking if a title is contained
         Set<String> selectedFormTitles = dtoFormService.fetchSelectedForms(project, language).stream()
                 .map(Form::title)
                 .collect(Collectors.toSet());
 
+        // From all available template metadata:
+        // Keep only those templates where *all* required form titles
+        // are present in the selected forms of the project
         return formTemplateConfig.getTemplateMetadataMap().values().stream()
                 .filter(metadata -> Arrays.stream(metadata.getFormTitles())
                         .allMatch(selectedFormTitles::contains)
                 )
+                .toList();
+    }
+
+    public List<FormTemplate> fetchTemplates(@NotNull Project project, Optional<String> language) {
+
+        // Convert all valid metadata objects into DTOs (FormTemplate)
+        // This method returns ALL matching templates without ranking
+        return fetchValidMetadata(project, language).stream()
+                .map(metadata -> dtoFactory.convert(metadata, language))
+                .toList();
+    }
+
+    public List<FormTemplate> fetchBestTemplates(@NotNull Project project, Optional<String> language) {
+
+        // Step 1: Get all templates that fully match the selected forms
+        List<FormTemplateMetadata> validTemplates = fetchValidMetadata(project, language);
+
+        // Step 2: Compute the "score" of each template
+        // Here, the score is simply the number of form titles the template requires
+        // (this works because we already ensured all titles are present via allMatch)
+        int maxScore = validTemplates.stream()
+                .mapToInt(metadata -> metadata.getFormTitles().length)
+                .max()
+                .orElse(0); // fallback if list is empty
+
+        // Step 3: Keep only templates that have the maximum score
+        // → i.e., the most specific / most complete templates
+        return validTemplates.stream()
+                .filter(metadata -> metadata.getFormTitles().length == maxScore)
+                // Step 4: Convert the remaining metadata into DTOs for output
                 .map(metadata -> dtoFactory.convert(metadata, language))
                 .toList();
     }
