@@ -372,7 +372,9 @@ public class ExporterService {
     private String fetchLabel(@NotNull ProjectBridgeheadAndType projectBridgeheadAndType) {
         ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
         ProjectType projectType = projectBridgeheadAndType.projectType();
-        String label = "[DRN: " + projectBridgehead.getProject().getCode() + "] " + projectBridgehead.getProject().getQuery().getLabel();
+        String label = "[" + projectType.name() + "-"
+                + projectBridgehead.getProject().getCode().substring(0, 5) + "] "
+                + projectBridgehead.getProject().getQuery().getLabel();
         return (projectBridgehead
                 .fetchExecution(projectType)
                 .orElseThrow(() -> new IllegalStateException("Missing execution for " + projectType))
