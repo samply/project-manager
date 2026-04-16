@@ -1451,10 +1451,11 @@ public class ProjectManagerController {
     public ResponseEntity saveQueryInBridgehead(
             @SuppressWarnings("unused") @NotEmpty @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) List<ProjectType> projectType
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) List<ProjectType> projectTypes
     ) {
+        System.out.println("Hello");
         return convertToResponseEntity(() -> Optional
-                .ofNullable(projectType)
+                .ofNullable(projectTypes)
                 .ifPresent(types -> types
                         .forEach(type ->
                                 this.projectBridgeheadService.scheduleSendQueryToBridgehead(bridgehead, type))));
@@ -1477,10 +1478,10 @@ public class ProjectManagerController {
     public ResponseEntity saveAndExecuteQueryInBridgehead(
             @SuppressWarnings("unused") @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
-            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) List<ProjectType> projectType
+            @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) List<ProjectType> projectTypes
     ) {
         return convertToResponseEntity(() -> Optional
-                .ofNullable(projectType)
+                .ofNullable(projectTypes)
                 .ifPresent(types -> types
                         .forEach(type ->
                                 this.projectBridgeheadService.scheduleSendQueryToBridgeheadAndExecute(bridgehead, type))));

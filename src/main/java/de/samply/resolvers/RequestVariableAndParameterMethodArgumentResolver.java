@@ -20,6 +20,9 @@ import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -163,6 +166,16 @@ public class RequestVariableAndParameterMethodArgumentResolver implements Handle
 
         // If the value is a String, try Spring's ConversionService first
         if (value instanceof String s) {
+
+            // Check if the element is a list (e.g., param=val1,val2)
+            if (List.class.isAssignableFrom(targetType)) {
+                Class<?> elementType = getListElementType(parameter);
+                return Arrays.stream(s.split(","))
+                        .map(String::trim)
+                        .map(v -> conversionService.convert(v, elementType))
+                        .toList();
+            }
+
             if (conversionService.canConvert(String.class, targetType)) {
                 return conversionService.convert(s, targetType);
             }
@@ -174,6 +187,11 @@ public class RequestVariableAndParameterMethodArgumentResolver implements Handle
         JavaType javaType = objectMapper.getTypeFactory()
                 .constructType(parameter.getGenericParameterType());
         return objectMapper.convertValue(value, javaType);
+    }
+
+    private Class<?> getListElementType(MethodParameter parameter) {
+        ParameterizedType type = (ParameterizedType) parameter.getGenericParameterType();
+        return (Class<?>) type.getActualTypeArguments()[0];
     }
 
 }
