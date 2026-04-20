@@ -16,7 +16,6 @@ public class QueryOutput {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,13 +26,16 @@ public class QueryOutput {
 
     @Column(name = "project_type", nullable = false)
     @Enumerated(EnumType.STRING)
+    @EqualsAndHashCode.Include
     private ProjectType projectType;
 
     @Column(name = "template_id")
+    @EqualsAndHashCode.Include
     private String templateId;
 
     @Column(name = "output_format")
     @Enumerated(EnumType.STRING)
+    @EqualsAndHashCode.Include
     private OutputFormat outputFormat;
 
 }
