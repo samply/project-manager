@@ -256,6 +256,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send a query with different project types to bridgehead
 - List parameters in a controller
 - Fetch best form templates
+- Description document and related services
 
 
 ### Changed

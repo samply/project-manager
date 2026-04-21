@@ -1192,6 +1192,24 @@ public class ProjectManagerController {
                 project, Optional.ofNullable(bridgehead), document, DocumentType.VOTUM, Optional.ofNullable(label)));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @EmailSender(templateType = EmailTemplateType.NEW_VOTUM, recipients = {EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_DESCRIPTION_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_DESCRIPTION)
+    public ResponseEntity uploadDescription(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                project, Optional.ofNullable(bridgehead), document, DocumentType.DESCRIPTION, Optional.ofNullable(label)));
+    }
+
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @EmailSender(templateType = EmailTemplateType.NEW_VOTUM_FOR_ALL_BRIDGEHEADS, recipients = {EmailRecipientType.ALL_BRIDGEHEAD_ADMINS, EmailRecipientType.CREATOR, EmailRecipientType.PROJECT_MANAGER_ADMIN})
@@ -1298,6 +1316,19 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_DESCRIPTION_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_DESCRIPTION)
+    public ResponseEntity downloadDescription(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(project, Optional.of(bridgehead), DocumentType.DESCRIPTION);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
@@ -1345,6 +1376,19 @@ public class ProjectManagerController {
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return existsProjectDocument(project, Optional.of(bridgehead), DocumentType.VOTUM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_DESCRIPTION_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXISTS_DESCRIPTION)
+    public ResponseEntity existsDescription(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return existsProjectDocument(project, Optional.of(bridgehead), DocumentType.DESCRIPTION);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
