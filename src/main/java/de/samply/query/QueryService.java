@@ -15,7 +15,6 @@ import de.samply.utils.Base64Utils;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,10 +31,10 @@ import java.util.UUID;
 public class QueryService {
 
     private final SessionUser sessionUser;
-    private final ApplicationEventPublisher applicationEventPublisher;
 
     // Services
     private final NotificationService notificationService;
+    private final QueryPersistenceService queryPersistenceService;
 
     // Repositories
     private final QueryRepository queryRepository;
@@ -46,12 +45,12 @@ public class QueryService {
     public QueryService(
             NotificationService notificationService,
             SessionUser sessionUser,
-            QueryRepository queryRepository,
-            ApplicationEventPublisher applicationEventPublisher) {
+            QueryPersistenceService queryPersistenceService,
+            QueryRepository queryRepository) {
         this.notificationService = notificationService;
         this.sessionUser = sessionUser;
+        this.queryPersistenceService = queryPersistenceService;
         this.queryRepository = queryRepository;
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public String createQuery(
@@ -70,7 +69,7 @@ public class QueryService {
         tempQuery.setContext(queryContext);
         // Every Query should have at least one output:
         addOutputToQuery(tempQuery, Optional.ofNullable(outputFormat), Optional.ofNullable(templateId), projectType);
-        tempQuery = saveQuery(tempQuery);
+        tempQuery = queryPersistenceService.saveQuery(tempQuery);
         return tempQuery.getCode();
     }
 
@@ -94,7 +93,7 @@ public class QueryService {
 
     public void removeOutput(@NotNull Project project, @NotNull ProjectType projectType) {
         project.getQuery().removeOutput(projectType);
-        saveQuery(project.getQuery());
+        queryPersistenceService.saveQuery(project.getQuery());
         this.notificationService.createNotification(project, null, sessionUser.getEmail(),
                 OperationType.EDIT_PROJECT, "Removed output of type " + projectType.name(), null, null);
     }
@@ -104,7 +103,7 @@ public class QueryService {
         queryRepository.findByCode(queryCode).ifPresent(query -> {
             if (query.getExplorerUrl() != null) {
                 query.setExplorerUrl(addProjectCodeToUrl(query.getExplorerUrl(), projectCode));
-                saveQuery(query);
+                queryPersistenceService.saveQuery(query);
             }
         });
     }
@@ -162,7 +161,7 @@ public class QueryService {
                 templateIdOptional.ifPresent(tid -> changedKeyValueMap.put("template id for project type " + projectType, tid));
             }
             if (!changedKeyValueMap.isEmpty()) {
-                saveQuery(projectQuery);
+                queryPersistenceService.saveQuery(projectQuery);
                 this.notificationService.createNotification(project, null, sessionUser.getEmail(),
                         OperationType.EDIT_QUERY, printInOneLine(changedKeyValueMap), null, null);
             }
@@ -185,12 +184,6 @@ public class QueryService {
             log.error(ExceptionUtils.getStackTrace(e));
             return null;
         }
-    }
-
-    public Query saveQuery(Query query) {
-        Query result = this.queryRepository.save(query);
-        applicationEventPublisher.publishEvent(new QueryChangedEvent(query));
-        return result;
     }
 
     public Optional<Query> fetchQuery(String queryCode) {

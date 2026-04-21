@@ -3,6 +3,7 @@ package de.samply.project;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadDataShield;
+import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
@@ -11,13 +12,12 @@ import de.samply.notification.OperationType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
-import de.samply.query.QueryChangedEvent;
 import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -188,10 +188,10 @@ public class ProjectBridgeheadService {
         );
     }
 
-    @EventListener
-    public void onQueryChanged(QueryChangedEvent event) {
+    @Transactional
+    public void handleChange(Query query) {
         projectBridgeheadRepository
-                .findByProject_Query(event.query())
+                .findByProject_Query(query)
                 .forEach(this::updateQueryInBridgehead);
     }
 
@@ -207,7 +207,7 @@ public class ProjectBridgeheadService {
                         exec.getQueryOutput().getProjectType()
                 )
         );
-        setModifiedAtAndSaveBridgehead(bridgehead);
+        bridgehead.setModifiedAt(Instant.now());
     }
 
 

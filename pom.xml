@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.4</version>
+        <version>4.0.5</version>
         <relativePath/> <!-- lookup parent from a repository -->
     </parent>
     <groupId>de.samply</groupId>
@@ -18,10 +18,12 @@
         <openapi.version>3.0.0</openapi.version>
         <spring-statemachine-core.version>4.0.1</spring-statemachine-core.version>
         <lombok.version>1.18.42</lombok.version>
-        <maven-model.version>3.9.12</maven-model.version>
+        <maven-model.version>3.9.15</maven-model.version>
         <netty-transport-native-epoll.version>5.0.0.Alpha2</netty-transport-native-epoll.version>
         <openhtmltopdf-pdfbox.version>1.1.36</openhtmltopdf-pdfbox.version>
         <spring-boot-starter-aop.version>4.0.0-M2</spring-boot-starter-aop.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
     </properties>
     <dependencies>
         <dependency>
@@ -114,6 +116,19 @@
             <version>${openhtmltopdf-pdfbox.version}</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${mapstruct.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -122,7 +137,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -131,6 +146,11 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

@@ -14,7 +14,7 @@ import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
 import de.samply.query.OutputFormat;
-import de.samply.query.QueryService;
+import de.samply.query.QueryPersistenceService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
@@ -36,7 +36,7 @@ public class ProjectService {
     // Services
     private final NotificationService notificationService;
     private final FormService formService;
-    private final QueryService queryService;
+    private final QueryPersistenceService queryPersistenceService;
     private final ProjectBridgeheadService projectBridgeheadService;
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
 
@@ -49,12 +49,12 @@ public class ProjectService {
                           SessionUser sessionUser,
                           ProjectConfigurations projectConfigurations,
                           FormService formService,
-                          QueryService queryService,
+                          QueryPersistenceService queryPersistenceService,
                           ProjectBridgeheadService projectBridgeheadService,
                           ProjectBridgeheadUserService projectBridgeheadUserService) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
-        this.queryService = queryService;
+        this.queryPersistenceService = queryPersistenceService;
         this.projectBridgeheadService = projectBridgeheadService;
         this.sessionUser = sessionUser;
         this.projectConfigurations = projectConfigurations;
@@ -313,7 +313,7 @@ public class ProjectService {
             Project mergedProject = DtoFactory.merge(projectAndForms.project(), project);
             mergedProject.setIsCustomConfigSelected(false);
             saveProject(mergedProject);
-            queryService.saveQuery(mergedProject.getQuery());
+            queryPersistenceService.saveQuery(mergedProject.getQuery());
 
             // Synchronize Forms
             if (projectAndForms.forms() != null && projectAndForms.forms().length > 0) {

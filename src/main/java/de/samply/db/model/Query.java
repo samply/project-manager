@@ -84,4 +84,5 @@ public class Query {
         outputs.removeIf(queryOutput -> queryOutput.getProjectType() == projectType);
     }
 
+
 }
