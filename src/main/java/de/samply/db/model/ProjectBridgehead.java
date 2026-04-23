@@ -71,8 +71,8 @@ public class ProjectBridgehead {
                             .findFirst()
                             .orElseGet(() -> {
                                 ProjectBridgeheadExecution newExec = new ProjectBridgeheadExecution();
-                                newExec.setProjectBridgehead(this);
                                 newExec.setQueryOutput(queryOutput);
+                                newExec.setProjectBridgehead(this);
                                 executions.add(newExec);
                                 return newExec;
                             });

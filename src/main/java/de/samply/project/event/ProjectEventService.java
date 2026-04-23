@@ -280,6 +280,7 @@ public class ProjectEventService implements ProjectEventActions {
             ProjectState.DRAFT,
             ProjectState.REVIEW,
             ProjectState.APPROVAL,
+            ProjectState.FINAL,
             ProjectState.FINISHED
     };
 

@@ -14,9 +14,14 @@ public class QueryEventService {
         this.projectBridgeheadService = projectBridgeheadService;
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
+    /**
+     * Listens for query changes after the modifying transaction has successfully committed,
+     * ensuring we only react to the persisted state. AFTER_COMMIT (not AFTER_COMPLETION) guarantees
+     * we don't run on rollback. No @Transactional here — handleChange opens its own transaction.
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onQueryChanged(QueryChangedEvent event) {
-        projectBridgeheadService.handleChange(event.query());
+        projectBridgeheadService.handleChange(event.queryId());
     }
 
 }

@@ -3,7 +3,6 @@ package de.samply.project;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadDataShield;
-import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectBridgeheadDataShieldRepository;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.db.repository.ProjectBridgeheadUserRepository;
@@ -17,6 +16,7 @@ import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -188,10 +188,15 @@ public class ProjectBridgeheadService {
         );
     }
 
-    @Transactional
-    public void handleChange(Query query) {
+    /**
+     * REQUIRES_NEW is mandatory because this method is called after the original transaction
+     * has already committed — there is no active transaction to join, so Spring must open a
+     * fresh one to allow JPA dirty-checking and orphanRemoval to work correctly.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleChange(Long queryId) {
         projectBridgeheadRepository
-                .findByProject_Query(query)
+                .findByProject_Query_Id(queryId)
                 .forEach(this::updateQueryInBridgehead);
     }
 
@@ -200,7 +205,6 @@ public class ProjectBridgeheadService {
 
         // ADD missing executions
         expectedTypes.forEach(type -> addOrUpdateExecution(bridgehead, type));
-
         // REMOVE obsolete executions
         bridgehead.getExecutions().removeIf(exec ->
                 !expectedTypes.contains(

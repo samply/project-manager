@@ -112,7 +112,7 @@ public class QueryPersistenceService {
                                new RuntimeException("Query with code " + query.getCode() + " does not exist")
                   );
 
-        applicationEventPublisher.publishEvent(new QueryChangedEvent(result));
+        applicationEventPublisher.publishEvent(new QueryChangedEvent(result.getId()));
 
         return result;
     }
