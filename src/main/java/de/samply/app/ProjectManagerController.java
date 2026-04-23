@@ -439,7 +439,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> dtoFormService.fetchSelectedForms(project, Optional.ofNullable(language)));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM_ACTION)
@@ -466,7 +466,7 @@ public class ProjectManagerController {
     }
 
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS_ACTION)
@@ -629,7 +629,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> this.dtoProjectService.fetchCurrentProjectConfiguration(project));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PROJECT_CONFIGURATION_ACTION)
