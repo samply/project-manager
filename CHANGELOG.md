@@ -257,7 +257,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - List parameters in a controller
 - Fetch best form templates
 - Description document and related services
-- Cohort definition in query
+- Cohort definition in a query
 
 
 ### Changed
