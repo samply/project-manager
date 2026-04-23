@@ -1509,7 +1509,6 @@ public class ProjectManagerController {
             @NotEmpty @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
             @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) List<ProjectType> projectTypes
     ) {
-        System.out.println("Hello");
         return convertToResponseEntity(() -> Optional
                 .ofNullable(projectTypes)
                 .ifPresent(types -> types
