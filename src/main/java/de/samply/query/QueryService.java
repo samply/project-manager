@@ -120,7 +120,7 @@ public class QueryService {
     public void editQuery(@NotNull Project project,
                           String query, QueryFormat queryFormat, String label, String description,
                           OutputFormat outputFormat, String templateId, ProjectType projectType,
-                          String humanReadable, String explorerUrl, String queryContext) {
+                          String humanReadable, String explorerUrl, String queryContext, String cohortDefinition) {
 
         Query projectQuery = project.getQuery();
         if (projectQuery != null) {
@@ -140,6 +140,10 @@ public class QueryService {
             if (description != null) {
                 projectQuery.setDescription(description);
                 changedKeyValueMap.put("description", description);
+            }
+            if (cohortDefinition != null) {
+                projectQuery.setCohortDefinition(cohortDefinition);
+                changedKeyValueMap.put("cohort definition", cohortDefinition);
             }
             if (humanReadable != null) {
                 Base64Utils.decodeIfNecessary(humanReadable).ifPresent(projectQuery::setHumanReadable);

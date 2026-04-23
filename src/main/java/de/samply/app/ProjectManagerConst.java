@@ -273,6 +273,7 @@ public class ProjectManagerConst {
     public final static String FORM_FIELDS = "form-fields";
     public final static String FORM_TEMPLATE = "form-template";
     public final static String DESCRIPTION = "description";
+    public final static String COHORT_DEFINITION = "cohort-definition";
     public final static String OUTPUT_FORMAT = "output-format";
     public final static String TEMPLATE_ID = "template-id";
     public final static String HUMAN_READABLE = "human-readable";

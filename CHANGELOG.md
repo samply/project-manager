@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-04-21]
+## [1.0.0 - 2026-04-23]
 ### Added
 - First version of the project
 - Spring Application
@@ -257,6 +257,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - List parameters in a controller
 - Fetch best form templates
 - Description document and related services
+- Cohort definition in query
 
 
 ### Changed

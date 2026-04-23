@@ -358,6 +358,7 @@ public class ProjectManagerController {
             @RequestVariable(name = ProjectManagerConst.EXPLORER_IDS, required = false) String[] explorerIds,
             @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestVariable(name = ProjectManagerConst.DESCRIPTION, required = false) String description,
+            @RequestVariable(name = ProjectManagerConst.COHORT_DEFINITION, required = false) String cohortDefinition,
             @RequestVariable(name = ProjectManagerConst.OUTPUT_FORMAT, required = false) OutputFormat outputFormat,
             @RequestVariable(name = ProjectManagerConst.TEMPLATE_ID, required = false) String templateId,
             @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE, required = false) ProjectType projectType,
@@ -374,8 +375,9 @@ public class ProjectManagerController {
                     .toArray(String[]::new) : bridgeheads;
             projectService.updateBridgeheads(project, tempBridgeheads);
         }
-        queryService.editQuery(project, (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query : null, queryFormat, label, description,
-                outputFormat, templateId, projectType, humanReadable, explorerUrl, queryContext);
+        queryService.editQuery(project, (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query :
+                        null, queryFormat, label, description, outputFormat, templateId, projectType, humanReadable,
+                explorerUrl, queryContext, cohortDefinition);
         return convertToResponseEntity(() -> this.frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
                 Map.of(ProjectManagerConst.PROJECT_CODE, project.getCode())

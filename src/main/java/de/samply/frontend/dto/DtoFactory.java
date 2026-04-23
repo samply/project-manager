@@ -79,6 +79,7 @@ public class DtoFactory {
         result.setQueryContext(project.getQuery().getContext());
         result.setCreatorState(project.getCreatorResultsState());
         result.setResultsUrl(project.getResultsUrl());
+        result.setCohortDefinition(project.getQuery().getCohortDefinition());
         result.setOutputs(project.getQuery().getOutputs().stream().map(queryOutput ->
                 new ProjectOutput(queryOutput.getProjectType(), queryOutput.getOutputFormat(), queryOutput.getTemplateId())
         ).toArray(ProjectOutput[]::new));

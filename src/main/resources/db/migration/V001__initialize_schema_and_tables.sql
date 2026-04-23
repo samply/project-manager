@@ -5,16 +5,17 @@ SET
 
 CREATE TABLE samply.query
 (
-    id             SERIAL PRIMARY KEY,
-    code           TEXT      NOT NULL,
-    query          TEXT      NOT NULL,
-    query_format   TEXT      NOT NULL,
-    created_at     TIMESTAMP NOT NULL,
-    human_readable TEXT,
-    explorer_url   TEXT,
-    label          TEXT,
-    description    TEXT,
-    context        TEXT
+    id                SERIAL PRIMARY KEY,
+    code              TEXT      NOT NULL,
+    query             TEXT      NOT NULL,
+    query_format      TEXT      NOT NULL,
+    created_at        TIMESTAMP NOT NULL,
+    human_readable    TEXT,
+    explorer_url      TEXT,
+    label             TEXT,
+    description       TEXT,
+    context           TEXT,
+    cohort_definition TEXT
 );
 
 CREATE TABLE samply.query_output

@@ -40,6 +40,9 @@ public class Query {
     @Enumerated(EnumType.STRING)
     private QueryFormat queryFormat;
 
+    @Column(name = "cohort_definition")
+    private String cohortDefinition;
+
     @Column(name = "label")
     private String label;
 

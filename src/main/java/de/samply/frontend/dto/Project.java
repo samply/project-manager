@@ -36,6 +36,8 @@ public class Project {
     @IgnoreProjectConfigurationMatch
     private String description;
     @IgnoreProjectConfigurationMatch
+    private String cohortDefinition;
+    @IgnoreProjectConfigurationMatch
     private String explorerUrl;
     private String queryContext;
     private Boolean isCustomConfigSelected;
