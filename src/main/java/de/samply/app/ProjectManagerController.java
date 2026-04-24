@@ -1363,7 +1363,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
-        return convertOptionalToResponseEntity(() -> this.dtoDocumentService.fetchLastDocumentOfThisTypeForFrontend(project, Optional.empty(), DocumentType.VOTUM));
+        return convertOptionalToResponseEntity(() -> this.dtoDocumentService.fetchLastDocumentOfThisTypeForFrontend(project, Optional.empty(), DocumentType.DESCRIPTION));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
