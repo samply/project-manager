@@ -1203,12 +1203,12 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.UPLOAD_DESCRIPTION)
     public ResponseEntity uploadDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
             @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
             @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
     ) {
         return convertToResponseEntity(() -> this.documentService.uploadDocument(
-                project, Optional.ofNullable(bridgehead), document, DocumentType.DESCRIPTION, Optional.ofNullable(label)));
+                project, Optional.empty(), document, DocumentType.DESCRIPTION, Optional.ofNullable(label)));
     }
 
 
@@ -1322,9 +1322,9 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_DESCRIPTION)
     public ResponseEntity downloadDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, Optional.of(bridgehead), DocumentType.DESCRIPTION);
+        return downloadProjectDocument(project, Optional.empty(), DocumentType.DESCRIPTION);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
