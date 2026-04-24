@@ -1386,9 +1386,9 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.EXISTS_DESCRIPTION)
     public ResponseEntity existsDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
-        return existsProjectDocument(project, Optional.of(bridgehead), DocumentType.DESCRIPTION);
+        return existsProjectDocument(project, Optional.empty(), DocumentType.DESCRIPTION);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
