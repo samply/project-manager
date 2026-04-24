@@ -59,6 +59,7 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_VOTUM_ACTION = "DOWNLOAD_VOTUM";
     public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String FETCH_VOTUM_DESCRIPTION_ACTION = "FETCH_VOTUM_DESCRIPTION";
+    public final static String FETCH_DESCRIPTION_ACTION = "FETCH_DESCRIPTION";
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION = "FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION";
     public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
     public final static String EXISTS_DESCRIPTION_ACTION = "EXISTS_DESCRIPTION";
@@ -193,6 +194,7 @@ public class ProjectManagerConst {
     public final static String DOWNLOAD_DESCRIPTION = "/project/description/download";
     public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/download";
     public final static String FETCH_VOTUM_DESCRIPTION = "/votum/description";
+    public final static String FETCH_DESCRIPTION = "/project/description";
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION = "/all-bridgeheads/votum/description";
     public final static String EXISTS_VOTUM = "/votum/exists";
     public final static String EXISTS_DESCRIPTION = "/project/description/exists";
@@ -460,7 +462,6 @@ public class ProjectManagerConst {
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY + BOTTOM_SV;
-    @SuppressWarnings("SpellCheckingInspection")
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMdd-HHmmss" + BOTTOM_SV;
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =
@@ -595,7 +596,6 @@ public class ProjectManagerConst {
     public final static String PRIMARY_MAIL_SENDER = "primaryJavaMailSender";
     public final static String TEST_MAIL_SENDER = "testJavaMailSender";
     public final static String NOT_AUTHORIZED = "Not authorized yet";
-    @SuppressWarnings("SpellCheckingInspection")
     public final static String FORM_FILENAME_TIMESTAMP_FORMAT = "yyyyMMdd-HHmm";
     public final static String FORM_FILENAME_TIMESTAMP_ZONE = "UTC";
     public final static String FORM_PROJECT_FIELDS_TITLE_PREFIX = "_project_fields";
