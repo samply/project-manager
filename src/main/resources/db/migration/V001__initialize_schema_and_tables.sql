@@ -3,6 +3,15 @@ CREATE SCHEMA IF NOT EXISTS samply;
 SET
     search_path TO samply;
 
+CREATE TABLE samply.shedlock
+(
+    name       VARCHAR(64)  NOT NULL,
+    lock_until TIMESTAMP    NOT NULL,
+    locked_at  TIMESTAMP    NOT NULL,
+    locked_by  VARCHAR(255) NOT NULL,
+    PRIMARY KEY (name)
+);
+
 CREATE TABLE samply.query
 (
     id                SERIAL PRIMARY KEY,

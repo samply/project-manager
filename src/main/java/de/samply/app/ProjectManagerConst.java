@@ -441,6 +441,8 @@ public class ProjectManagerConst {
     public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
     public final static String FORM_TEMPLATE_DATE_PATTERN = "FORM_TEMPLATE_DATE_PATTERN";
 
+    public final static String SHED_LOCK_MAX_TIME = "SHED_LOCK_MAX_TIME";
+
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
@@ -551,6 +553,7 @@ public class ProjectManagerConst {
     public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV = HEAD_SV + FORM_TEMPLATE_DEFAULT_PDF_FILENAME + ":form.pdf" + BOTTOM_SV;
     public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;
     public final static String FORM_TEMPLATE_DATE_PATTERN_SV = HEAD_SV + FORM_TEMPLATE_DATE_PATTERN + ":d. MMMM yyyy" + BOTTOM_SV;
+    public final static String SHED_LOCK_MAX_TIME_SV = HEAD_SV + SHED_LOCK_MAX_TIME + ":PT5M" + BOTTOM_SV;
 
 
     // Async Configuration
@@ -593,6 +596,7 @@ public class ProjectManagerConst {
     public final static String FORM_FILENAME_TIMESTAMP_ZONE = "UTC";
     public final static String FORM_PROJECT_FIELDS_TITLE_PREFIX = "_project_fields";
     public final static String NOT_SET = "__NOT_SET__";
+    public final static String EXPORTER_JOB_NAME = "exporterJob";
 
 
 }

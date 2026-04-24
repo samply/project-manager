@@ -15,6 +15,7 @@ import de.samply.query.QueryState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,17 +37,20 @@ public class ProjectBridgeheadService {
     private final ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository;
 
     private final SessionUser sessionUser;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public ProjectBridgeheadService(NotificationService notificationService,
                                     ProjectBridgeheadRepository projectBridgeheadRepository,
                                     ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                                     ProjectBridgeheadDataShieldRepository projectBridgeheadDataShieldRepository,
-                                    SessionUser sessionUser) {
+                                    SessionUser sessionUser,
+                                    ApplicationEventPublisher applicationEventPublisher) {
         this.notificationService = notificationService;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
         this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectBridgeheadDataShieldRepository = projectBridgeheadDataShieldRepository;
         this.sessionUser = sessionUser;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public void acceptProject(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) throws ProjectBridgeheadServiceException {
@@ -102,6 +106,7 @@ public class ProjectBridgeheadService {
     private void changeQueryState(ProjectBridgehead bridgehead, QueryState queryState, ProjectType projectType) throws ProjectBridgeheadServiceException {
         bridgehead.addOrUpdateExecution(projectType, queryState, null, sessionUser.getEmail(), null, null);
         setModifiedAtAndSaveBridgehead(bridgehead);
+        applicationEventPublisher.publishEvent(new SendQueryToBridgeheadEvent());
     }
 
     public void addResultsUrl(@NotNull ProjectBridgehead bridgehead, @NotNull String resultsUrl) throws ProjectBridgeheadServiceException {

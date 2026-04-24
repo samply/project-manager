@@ -12,6 +12,7 @@ import de.samply.query.QueryState;
 import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,7 @@ public class ExporterJob {
     }
 
     @Scheduled(cron = ProjectManagerConst.EXPORTER_CRON_EXPRESSION_SV)
+    @SchedulerLock(name = ProjectManagerConst.EXPORTER_JOB_NAME)
     public void checkExports() {
         if (enabled) {
             log.debug("Exporter Job started");

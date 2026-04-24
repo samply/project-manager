@@ -258,6 +258,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch best form templates
 - Description document and related services
 - Cohort definition in a query
+- Send Query To Bridgehead Event
 
 
 ### Changed
