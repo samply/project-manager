@@ -597,6 +597,7 @@ public class ProjectManagerConst {
     public final static String FORM_PROJECT_FIELDS_TITLE_PREFIX = "_project_fields";
     public final static String NOT_SET = "__NOT_SET__";
     public final static String EXPORTER_JOB_NAME = "exporterJob";
+    public final static String SHEDLOCK_TABLE_NAME = "samply.shedlock";
 
 
 }
