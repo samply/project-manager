@@ -74,6 +74,7 @@ public class DtoFactory {
         result.setHumanReadable(project.getQuery().getHumanReadable());
         result.setQueryFormat(project.getQuery().getQueryFormat());
         result.setLabel(project.getQuery().getLabel());
+        result.setQueryDetails(project.getQuery().getDetails());
         result.setDescription(project.getQuery().getDescription());
         result.setExplorerUrl(project.getQuery().getExplorerUrl());
         result.setQueryContext(project.getQuery().getContext());

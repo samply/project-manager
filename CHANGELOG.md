@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-04-27]
+## [1.0.0 - 2026-05-05]
 ### Added
 - First version of the project
 - Spring Application
@@ -279,6 +279,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Ethical Approval in Project Context
 - Data Type Enum for Form Config
 - Fetch selected forms returns also preconfigured titles
+- Query Details
 
 
 ### Removed

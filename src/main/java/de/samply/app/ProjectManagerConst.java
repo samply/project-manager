@@ -280,6 +280,7 @@ public class ProjectManagerConst {
     public final static String TEMPLATE_ID = "template-id";
     public final static String HUMAN_READABLE = "human-readable";
     public final static String REDIRECT_EXPLORER_URL = "explorer-url";
+    public final static String QUERY_DETAILS = "query-details";
     public final static String QUERY_CONTEXT = "query-context";
     public final static String RESULTS_URL = "results-url";
     public final static String PROJECT_ROLE = "project-role";

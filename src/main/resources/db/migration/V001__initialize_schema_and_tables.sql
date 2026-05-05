@@ -23,6 +23,7 @@ CREATE TABLE samply.query
     explorer_url      TEXT,
     label             TEXT,
     description       TEXT,
+    details           TEXT,
     context           TEXT,
     cohort_definition TEXT
 );

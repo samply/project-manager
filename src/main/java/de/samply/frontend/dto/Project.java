@@ -32,6 +32,8 @@ public class Project {
     private String humanReadable;
     private QueryFormat queryFormat;
     @IgnoreProjectConfigurationMatch
+    private String queryDetails;
+    @IgnoreProjectConfigurationMatch
     private String label;
     @IgnoreProjectConfigurationMatch
     private String description;

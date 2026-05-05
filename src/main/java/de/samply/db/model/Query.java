@@ -49,6 +49,9 @@ public class Query {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "details")
+    private String details;
+
     @Column(name = "explorer_url")
     private String explorerUrl;
 
