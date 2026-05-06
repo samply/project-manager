@@ -1573,6 +1573,20 @@ public class ProjectManagerController {
 
   @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
       ProjectRole.PROJECT_MANAGER_ADMIN})
+  @StateConstraints(projectStates = {ProjectState.FINISHED, ProjectState.ARCHIVED,
+      ProjectState.REJECTED})
+  @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+  @FrontendAction(action = ProjectManagerConst.EXISTS_PUBLICATION_ACTION)
+  @GetMapping(value = ProjectManagerConst.EXISTS_PUBLICATION)
+  public ResponseEntity existsPublication(
+      @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+      @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+  ) {
+    return existsProjectDocument(project, Optional.empty(), DocumentType.PUBLICATION);
+  }
+
+  @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+      ProjectRole.PROJECT_MANAGER_ADMIN})
   @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
   @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
   @FrontendAction(action = ProjectManagerConst.EXISTS_DESCRIPTION_ACTION)

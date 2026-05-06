@@ -280,6 +280,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Data Type Enum for Form Config
 - Fetch selected forms returns also preconfigured titles
 - Query Details
+- Exists Publication
 
 
 ### Removed

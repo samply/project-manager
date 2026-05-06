@@ -62,6 +62,7 @@ public class ProjectManagerConst {
     public final static String FETCH_DESCRIPTION_ACTION = "FETCH_DESCRIPTION";
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION = "FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION";
     public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
+    public final static String EXISTS_PUBLICATION_ACTION = "EXISTS_PUBLICATION";
     public final static String EXISTS_DESCRIPTION_ACTION = "EXISTS_DESCRIPTION";
     public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String EXISTS_SCRIPT_ACTION = "EXISTS_SCRIPT";
@@ -197,6 +198,7 @@ public class ProjectManagerConst {
     public final static String FETCH_DESCRIPTION = "/project/description";
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION = "/all-bridgeheads/votum/description";
     public final static String EXISTS_VOTUM = "/votum/exists";
+    public final static String EXISTS_PUBLICATION = "/publication/exists";
     public final static String EXISTS_DESCRIPTION = "/project/description/exists";
     public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/exists";
     public final static String DOWNLOAD_PUBLICATION = "/publication/download";
