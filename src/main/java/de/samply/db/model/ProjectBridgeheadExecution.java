@@ -19,19 +19,18 @@ public class ProjectBridgeheadExecution {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "project_bridgehead_id", nullable = false)
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
+    @EqualsAndHashCode.Include
     private ProjectBridgehead projectBridgehead;
 
     @ManyToOne
     @JoinColumn(name = "query_output_id", nullable = false)
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
+    @EqualsAndHashCode.Include
     private QueryOutput queryOutput;
 
     @Column(name = "query_state", nullable = false)
