@@ -164,7 +164,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Combine first and last name in a name 
 - Replace email context variables in the email subject
 - Default and Default var in HTML tags
-- Fetch human readable bridgehead for emails
+- Fetch human-readable bridgehead for emails
 - Email context project bridgeheads variable
 - Decode Base64 values of email context
 - Enable minus in variables of email context
@@ -282,7 +282,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Data Type Enum for Form Config
 - Fetch selected forms returns also preconfigured titles
 - Query Details
-- Exists Publication
+- There Exists Publication
 
 
 ### Removed
