@@ -261,6 +261,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send Query To Bridgehead Event
 - Send Query To Bridgehead Event scheduled job
 - Send attachments in emails
+- Final report services
 
 
 ### Changed

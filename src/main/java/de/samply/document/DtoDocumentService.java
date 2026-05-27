@@ -24,6 +24,10 @@ public class DtoDocumentService {
         return convertToDto(documentService.fetchDocuments(project, Optional.empty(), DocumentType.PUBLICATION));
     }
 
+    public List<de.samply.frontend.dto.ProjectDocument> fetchFinalReports(Project project) {
+        return convertToDto(documentService.fetchDocuments(project, Optional.empty(), DocumentType.FINAL_REPORT));
+    }
+
     public List<de.samply.frontend.dto.ProjectDocument> fetchOtherDocuments(Project project, Optional<ProjectBridgehead> bridgehead) {
         return convertToDto(documentService.fetchDocuments(project, bridgehead, DocumentType.OTHERS));
     }

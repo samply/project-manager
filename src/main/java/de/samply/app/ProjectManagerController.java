@@ -1277,6 +1277,23 @@ public class ProjectManagerController {
                 project, Optional.empty(), document, DocumentType.PUBLICATION, Optional.ofNullable(label)));
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @EmailSender(templateType = EmailTemplateType.NEW_FINAL_REPORT, recipients = {
+            EmailRecipientType.PROJECT_ALL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_FINAL_REPORT_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_FINAL_REPORT)
+    public ResponseEntity uploadFinalReport(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                project, Optional.empty(), document, DocumentType.FINAL_REPORT, Optional.ofNullable(label)));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
@@ -1372,6 +1389,26 @@ public class ProjectManagerController {
     ) {
         return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
                 project, Optional.empty(), documentUrl, DocumentType.PUBLICATION,
+                Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+            ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @EmailSender(templateType = EmailTemplateType.NEW_FINAL_REPORT, recipients = {
+            EmailRecipientType.PROJECT_ALL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_FINAL_REPORT_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_FINAL_REPORT_URL)
+    public ResponseEntity addFinalReportUrl(
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            // bridgehead required for identifying bridgehead admin in role constraints
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead,
+            @RequestVariable(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
+            @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label
+    ) {
+        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
+                project, Optional.empty(), documentUrl, DocumentType.FINAL_REPORT,
                 Optional.ofNullable(label)));
     }
 
@@ -1567,6 +1604,20 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINISHED, ProjectState.ARCHIVED,
+            ProjectState.REJECTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_FINAL_REPORT_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXISTS_FINAL_REPORT)
+    public ResponseEntity existsFinalReport(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return existsProjectDocument(project, Optional.empty(), DocumentType.FINAL_REPORT);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+            ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_DESCRIPTION_ACTION)
@@ -1605,6 +1656,18 @@ public class ProjectManagerController {
         return downloadProjectDocument(project, null, filename, DocumentType.PUBLICATION);
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FINAL_REPORT_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_FINAL_REPORT)
+    public ResponseEntity downloadFinalReport(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @RequestParameter(name = ProjectManagerConst.FILENAME) String filename
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(project, null, filename, DocumentType.FINAL_REPORT);
+    }
+
     @StateConstraints(projectStates = {ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PUBLICATIONS_ACTION)
@@ -1613,6 +1676,16 @@ public class ProjectManagerController {
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
     ) {
         return convertToResponseEntity(() -> dtoDocumentService.fetchPublications(project));
+    }
+
+    @StateConstraints(projectStates = {ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_FINAL_REPORTS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_FINAL_REPORTS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity fetchFinalReports(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
+    ) {
+        return convertToResponseEntity(() -> dtoDocumentService.fetchFinalReports(project));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,

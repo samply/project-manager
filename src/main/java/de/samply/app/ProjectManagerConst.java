@@ -51,9 +51,11 @@ public class ProjectManagerConst {
     public final static String UPLOAD_DESCRIPTION_ACTION = "UPLOAD_DESCRIPTION";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String UPLOAD_PUBLICATION_ACTION = "UPLOAD_PUBLICATION";
+    public final static String UPLOAD_FINAL_REPORT_ACTION = "UPLOAD_FINAL_REPORT";
     public final static String UPLOAD_SCRIPT_ACTION = "UPLOAD_SCRIPT";
     public final static String UPLOAD_OTHER_DOCUMENT_ACTION = "UPLOAD_OTHER_DOCUMENT";
     public final static String ADD_PUBLICATION_URL_ACTION = "ADD_PUBLICATION_URL";
+    public final static String ADD_FINAL_REPORT_URL_ACTION = "ADD_FINAL_REPORT_URL";
     public final static String ADD_OTHER_DOCUMENT_URL_ACTION = "ADD_OTHER_DOCUMENT_URL";
     public final static String DOWNLOAD_DESCRIPTION_ACTION = "DOWNLOAD_DESCRIPTION";
     public final static String DOWNLOAD_VOTUM_ACTION = "DOWNLOAD_VOTUM";
@@ -63,10 +65,12 @@ public class ProjectManagerConst {
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION = "FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION";
     public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
     public final static String EXISTS_PUBLICATION_ACTION = "EXISTS_PUBLICATION";
+    public final static String EXISTS_FINAL_REPORT_ACTION = "EXISTS_FINAL_REPORT";
     public final static String EXISTS_DESCRIPTION_ACTION = "EXISTS_DESCRIPTION";
     public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String EXISTS_SCRIPT_ACTION = "EXISTS_SCRIPT";
     public final static String DOWNLOAD_PUBLICATION_ACTION = "DOWNLOAD_PUBLICATION";
+    public final static String DOWNLOAD_FINAL_REPORT_ACTION = "DOWNLOAD_FINAL_REPORT";
     public final static String DOWNLOAD_SCRIPT_ACTION = "DOWNLOAD_SCRIPT";
     public final static String FETCH_SCRIPT_DESCRIPTION_ACTION = "FETCH_SCRIPT_DESCRIPTION";
     public final static String DOWNLOAD_OTHER_DOCUMENT_ACTION = "DOWNLOAD_OTHER_DOCUMENT";
@@ -79,6 +83,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_TYPES_ACTION = "FETCH_PROJECT_TYPES";
     public final static String FETCH_PROJECTS_ACTION = "FETCH_PROJECTS";
     public final static String FETCH_PUBLICATIONS_ACTION = "FETCH_PUBLICATIONS";
+    public final static String FETCH_FINAL_REPORTS_ACTION = "FETCH_FINAL_REPORTS";
     public final static String FETCH_OTHER_DOCUMENTS_ACTION = "FETCH_OTHER_DOCUMENTS";
     public final static String ACCEPT_PROJECT_RESULTS_ACTION = "ACCEPT_PROJECT_RESULTS";
     public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
@@ -187,9 +192,11 @@ public class ProjectManagerConst {
     public final static String UPLOAD_DESCRIPTION = "/project/description/upload";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/upload";
     public final static String UPLOAD_PUBLICATION = "/publication/upload";
+    public final static String UPLOAD_FINAL_REPORT = "/report/upload";
     public final static String UPLOAD_SCRIPT = "/script/upload";
     public final static String UPLOAD_OTHER_DOCUMENT = "/other-document/upload";
     public final static String ADD_PUBLICATION_URL = "/publication/url";
+    public final static String ADD_FINAL_REPORT_URL = "/report/url";
     public final static String ADD_OTHER_DOCUMENT_URL = "/document/url";
     public final static String DOWNLOAD_VOTUM = "/votum/download";
     public final static String DOWNLOAD_DESCRIPTION = "/project/description/download";
@@ -199,9 +206,11 @@ public class ProjectManagerConst {
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION = "/all-bridgeheads/votum/description";
     public final static String EXISTS_VOTUM = "/votum/exists";
     public final static String EXISTS_PUBLICATION = "/publication/exists";
+    public final static String EXISTS_FINAL_REPORT = "/report/exists";
     public final static String EXISTS_DESCRIPTION = "/project/description/exists";
     public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/exists";
     public final static String DOWNLOAD_PUBLICATION = "/publication/download";
+    public final static String DOWNLOAD_FINAL_REPORT = "/report/download";
     public final static String DOWNLOAD_SCRIPT = "/script/download";
     public final static String FETCH_SCRIPT_DESCRIPTION = "/script/description";
     public final static String EXISTS_SCRIPT = "/script/exists";
@@ -214,6 +223,7 @@ public class ProjectManagerConst {
     public final static String EXISTS_AUTHENTICATION_SCRIPT = "/authentication-script/exists";
     public final static String FETCH_DATASHIELD_STATUS = "/datashield-status";
     public final static String FETCH_PUBLICATIONS = "/publications";
+    public final static String FETCH_FINAL_REPORTS = "/reports";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
     public final static String FETCH_NOTIFICATIONS = "/notifications";
     public final static String SET_NOTIFICATION_AS_READ = "/notification/read";

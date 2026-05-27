@@ -5,5 +5,6 @@ public enum DocumentType {
     SCRIPT,
     PUBLICATION,
     DESCRIPTION,
+    FINAL_REPORT,
     OTHERS
 }
