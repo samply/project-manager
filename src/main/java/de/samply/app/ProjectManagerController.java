@@ -1441,7 +1441,7 @@ public class ProjectManagerController {
             // bridgehead required for identifying developer user or bridgehead admin in role constraints
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, Optional.empty(), DocumentType.SCRIPT);
+        return downloadProjectDocument(project, Optional.empty(), Optional.empty(), DocumentType.SCRIPT);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL,
@@ -1490,7 +1490,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, Optional.of(bridgehead), DocumentType.VOTUM);
+        return downloadProjectDocument(project, Optional.of(bridgehead), Optional.empty(), DocumentType.VOTUM);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
@@ -1503,7 +1503,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, Optional.empty(), DocumentType.DESCRIPTION);
+        return downloadProjectDocument(project, Optional.empty(), Optional.empty(), DocumentType.DESCRIPTION);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
@@ -1518,7 +1518,7 @@ public class ProjectManagerController {
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, Optional.empty(), DocumentType.VOTUM);
+        return downloadProjectDocument(project, Optional.empty(), Optional.empty(), DocumentType.VOTUM);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
@@ -1651,9 +1651,9 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_PUBLICATION)
     public ResponseEntity downloadPublication(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @RequestParameter(name = ProjectManagerConst.FILENAME) String filename
+            @RequestParameter(name = ProjectManagerConst.FILENAME, required = false) String filename
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, null, filename, DocumentType.PUBLICATION);
+        return downloadProjectDocument(project, Optional.empty(), Optional.ofNullable(filename), DocumentType.PUBLICATION);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -1663,9 +1663,9 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_FINAL_REPORT)
     public ResponseEntity downloadFinalReport(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @RequestParameter(name = ProjectManagerConst.FILENAME) String filename
+            @RequestParameter(name = ProjectManagerConst.FILENAME, required = false) String filename
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, null, filename, DocumentType.FINAL_REPORT);
+        return downloadProjectDocument(project, Optional.empty(), Optional.ofNullable(filename), DocumentType.FINAL_REPORT);
     }
 
     @StateConstraints(projectStates = {ProjectState.FINISHED})
@@ -1698,7 +1698,7 @@ public class ProjectManagerController {
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead,
             @RequestParameter(name = ProjectManagerConst.FILENAME) String filename
     ) throws DocumentServiceException {
-        return downloadProjectDocument(project, bridgehead, filename, DocumentType.OTHERS);
+        return downloadProjectDocument(project, Optional.ofNullable(bridgehead), Optional.of(filename), DocumentType.OTHERS);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
@@ -1715,10 +1715,19 @@ public class ProjectManagerController {
     }
 
     private ResponseEntity downloadProjectDocument(Project project,
-                                                   Optional<ProjectBridgehead> bridgehead, DocumentType documentType)
-            throws DocumentServiceException {
-        return downloadProjectDocument(
-                this.documentService.fetchLastDocumentOfThisType(project, bridgehead, documentType));
+                                                   Optional<ProjectBridgehead> bridgehead,
+                                                   Optional<String> filename,
+                                                   DocumentType documentType) throws DocumentServiceException {
+        Optional<ProjectDocument> projectDocument = filename.isPresent()
+                ? this.documentService.fetchProjectDocument(project, bridgehead, filename.get())
+                : this.documentService.fetchLastDocumentOfThisType(project, bridgehead, documentType);
+
+        if (filename.isPresent() && projectDocument.isPresent()
+                && projectDocument.get().getDocumentType() != documentType) {
+            return createMethodNotAllowedResponse("Requested document is not of allowed type: " + documentType);
+        }
+
+        return downloadProjectDocument(projectDocument);
     }
 
     private ResponseEntity existsProjectDocument(Project project,
@@ -1726,17 +1735,6 @@ public class ProjectManagerController {
         return convertToResponseEntity(
                 () -> this.documentService.fetchLastDocumentOfThisType(project, bridgehead, documentType)
                         .isPresent());
-    }
-
-
-    private ResponseEntity downloadProjectDocument(Project project, ProjectBridgehead bridgehead,
-                                                   String filename, DocumentType allowedType) throws DocumentServiceException {
-        Optional<ProjectDocument> projectDocument = this.documentService.fetchProjectDocument(project,
-                Optional.ofNullable(bridgehead), filename);
-        return (projectDocument.isPresent() && projectDocument.get().getDocumentType() != allowedType) ?
-                createMethodNotAllowedResponse("Requested document is not of allowed type: " + allowedType)
-                :
-                downloadProjectDocument(projectDocument);
     }
 
     private ResponseEntity createMethodNotAllowedResponse(String errorMessage) {
