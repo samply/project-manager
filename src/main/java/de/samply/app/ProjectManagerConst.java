@@ -103,6 +103,7 @@ public class ProjectManagerConst {
     public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
     public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT";
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
+    public final static String FETCH_VISIBLE_PROJECT_STATES_ACTION = "FETCH_VISIBLE_PROJECT_STATES";
     public final static String FETCH_FRONTEND_VARIABLES_ACTION = "FETCH_FRONTEND_VARIABLES";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
@@ -115,7 +116,7 @@ public class ProjectManagerConst {
     public final static String EXISTS_AUTHENTICATION_SCRIPT_ACTION = "EXISTS_AUTHENTICATION_SCRIPT";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
     public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
-    public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_PROJECT_BRIDGEHEADS";
+    public final static String FETCH_VISIBLE_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_BRIDGEHEADS";
     public final static String FETCH_FEASIBILITY_ACTION = "FETCH_FEASIBILITY";
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
@@ -150,6 +151,8 @@ public class ProjectManagerConst {
     public final static String FETCH_SELECTED_PROJECT_FORMS_ACTION = "FETCH_SELECTED_PROJECT_FORMS";
     public final static String ADD_SELECTED_PROJECT_FORM_ACTION = "ADD_SELECTED_PROJECT_FORM";
     public final static String REMOVE_SELECTED_PROJECT_FORM_ACTION = "REMOVE_SELECTED_PROJECT_FORM";
+    public final static String FETCH_PROJECT_CREATORS_ACTION = "FETCH_PROJECT_CREATORS";
+
 
 
     // REST Services
@@ -193,10 +196,11 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT_ANALYSIS = "/project/analysis/reject";
     public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS = "/project/analysis/request-changes";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project/bridgeheads";
-    public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS = "/project/bridgeheads/visible";
+    public final static String FETCH_VISIBLE_BRIDGEHEADS = "/bridgeheads/visible";
     public final static String FETCH_FEASIBILITY = "/project/bridgehead/feasibility";
     public final static String FETCH_PROJECT = "/project";
     public final static String FETCH_PROJECT_STATES = "/project/states";
+    public final static String FETCH_VISIBLE_PROJECT_STATES = "/project/states/visible";
     public final static String FETCH_FRONTEND_VARIABLES = "/frontend/variables";
     public final static String ARCHIVE_PROJECT = "/project/archive";
     public final static String START_DEVELOP_STAGE = "/project/start-develop";
@@ -283,10 +287,13 @@ public class ProjectManagerConst {
     public final static String FETCH_SELECTED_PROJECT_FORMS = "/project/forms/selected";
     public final static String ADD_SELECTED_PROJECT_FORM = "/project/forms/selected";
     public final static String REMOVE_SELECTED_PROJECT_FORM = "/project/forms/selected";
+    public final static String FETCH_PROJECT_CREATORS = "/project/creators";
+
 
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
+    public final static String PROJECT_CREATOR = "project-creator";
     public final static String PROJECT_CONFIGURATION = "project-configuration";
     public final static String PROJECT_CONFIGURATION_SEPARATOR = ",";
     public final static String NOTIFICATION_ID = "notification-id";
@@ -306,6 +313,8 @@ public class ProjectManagerConst {
     public final static String PAGE = "page";
     public final static String PAGE_SIZE = "page-size";
     public final static String LAST_MODIFIED_DESC = "modified-desc";
+    public final static String SORT_BY = "sort-by";
+    public final static String SORT_DESC = "sort-desc";
     public final static String DOCUMENT = "document";
     public final static String DOCUMENT_URL = "document-url";
     public final static String FILENAME = "filename";

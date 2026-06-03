@@ -1,13 +1,7 @@
 package de.samply.project;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.db.model.Project;
-import de.samply.db.model.Project_;
-import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.model.ProjectBridgehead_;
-import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.db.model.ProjectBridgeheadUser_;
-import de.samply.db.model.Query;
+import de.samply.db.model.*;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.form.FormService;
 import de.samply.frontend.dto.DtoFactory;
@@ -22,17 +16,14 @@ import de.samply.query.OutputFormat;
 import de.samply.query.QueryPersistenceService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.criteria.*;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -150,6 +141,16 @@ public class ProjectService {
         return projectBridgeheadUserService.fetchProjects(sessionUser.getEmail());
     }
 
+    public ProjectState[] fetchVisibleProjectStates() {
+        boolean projectManagerAdmin = isProjectManagerAdmin();
+        return fetchAllUserVisibleProjects().stream()
+                .map(Project::getState)
+                .filter(Objects::nonNull)
+                .filter(state -> !projectManagerAdmin || state != ProjectState.DRAFT)
+                .distinct()
+                .toArray(ProjectState[]::new);
+    }
+
     protected boolean isProjectManagerAdmin() {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
@@ -169,24 +170,65 @@ public class ProjectService {
      * current user. Filtering and authorization are executed in the database as one query.
      */
     protected Page<Project> fetchUserVisibleProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest) {
-        // Paging, sorting, filtering, and visibility are applied by a single database query.
-        return projectRepository.findAll(
-                buildUserVisibleProjectsSpecification(projectState, archived), pageRequest);
+            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest,
+            Optional<String> projectCreator, Optional<String> bridgehead) {
+        Specification<Project> specification =
+                buildUserVisibleProjectsSpecification(projectState, archived, projectCreator, bridgehead);
+        return projectRepository.findAll(specification, pageRequest);
     }
 
     /**
      * Combines the independent state, archive, and user-visibility rules into one specification.
      */
     private Specification<Project> buildUserVisibleProjectsSpecification(
-            Optional<ProjectState> projectState, Optional<Boolean> archived) {
+            Optional<ProjectState> projectState, Optional<Boolean> archived,
+            Optional<String> projectCreator, Optional<String> bridgehead) {
         boolean isProjectManagerAdmin = isProjectManagerAdmin();
         // allOf combines the independent specifications with a logical AND.
         return Specification.allOf(List.of(
                 buildProjectStateSpecification(projectState, isProjectManagerAdmin),
                 buildArchivedStatusSpecification(archived),
-                buildUserVisibilitySpecification(isProjectManagerAdmin)
+                buildUserVisibilitySpecification(isProjectManagerAdmin),
+                buildProjectCreatorSpecification(projectCreator),
+                buildBridgeheadSpecification(bridgehead)
         ));
+    }
+
+    private Specification<Project> buildProjectCreatorSpecification(Optional<String> projectCreator) {
+        return (project, query, criteriaBuilder) -> projectCreator
+                .filter(StringUtils::hasText)
+                .map(filter -> {
+                    String pattern = "%" + filter.toLowerCase(Locale.ROOT) + "%";
+                    Predicate emailMatch = criteriaBuilder.like(
+                            criteriaBuilder.lower(project.get(Project_.creatorEmail)), pattern);
+
+                    Subquery<Long> userQuery = query.subquery(Long.class);
+                    Root<User> user = userQuery.from(User.class);
+                    Predicate sameEmail = criteriaBuilder.equal(
+                            criteriaBuilder.lower(user.get(User_.email)),
+                            criteriaBuilder.lower(project.get(Project_.creatorEmail)));
+                    Predicate nameMatch = criteriaBuilder.or(
+                            criteriaBuilder.like(criteriaBuilder.lower(user.get(User_.firstName)), pattern),
+                            criteriaBuilder.like(criteriaBuilder.lower(user.get(User_.lastName)), pattern));
+                    return criteriaBuilder.or(emailMatch,
+                            criteriaBuilder.exists(userQuery.select(user.get(User_.id)).where(sameEmail, nameMatch)));
+                })
+                .orElseGet(criteriaBuilder::conjunction);
+    }
+
+    private Specification<Project> buildBridgeheadSpecification(Optional<String> bridgehead) {
+        return (project, query, criteriaBuilder) -> bridgehead
+                .filter(StringUtils::hasText)
+                .map(filter -> {
+                    String pattern = "%" + filter.toLowerCase(Locale.ROOT) + "%";
+                    Subquery<Long> bridgeheadQuery = query.subquery(Long.class);
+                    Root<ProjectBridgehead> projectBridgehead = bridgeheadQuery.from(ProjectBridgehead.class);
+                    return criteriaBuilder.exists(bridgeheadQuery.select(projectBridgehead.get(ProjectBridgehead_.id)).where(
+                            criteriaBuilder.equal(projectBridgehead.get(ProjectBridgehead_.project), project),
+                            criteriaBuilder.like(criteriaBuilder.lower(
+                                    projectBridgehead.get(ProjectBridgehead_.bridgehead)), pattern)));
+                })
+                .orElseGet(criteriaBuilder::conjunction);
     }
 
     /**
@@ -196,7 +238,7 @@ public class ProjectService {
      */
     private Specification<Project> buildProjectStateSpecification(
             Optional<ProjectState> projectState, boolean isProjectManagerAdmin) {
-        // Criterion: match the requested state, or exclude DRAFT by default for admins.
+        // Criterion: match the requested state or exclude DRAFT by default for admins.
         return (project, _, criteriaBuilder) -> projectState
                 .map(state ->
                         criteriaBuilder.equal(project.get(Project_.state), state))
@@ -262,7 +304,7 @@ public class ProjectService {
             predicates.addAll(buildResearcherVisibilityPredicates(
                     bridgeheadQuery, projectBridgehead, criteriaBuilder, email));
         }
-        // EXISTS only needs a matching row, so select the constant 1 and apply the visibility criteria.
+        // EXISTS only needs a matching row, so select constant 1 and apply the visibility criteria.
         return bridgeheadQuery.select(criteriaBuilder.literal(1))
                 .where(predicates.toArray(Predicate[]::new));
     }

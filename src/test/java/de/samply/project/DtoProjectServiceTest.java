@@ -24,20 +24,23 @@ class DtoProjectServiceTest {
     @ParameterizedTest
     @CsvSource({"true,DESC", "false,ASC"})
     void delegatesFilteringAndAppliesRequestedSort(
-            boolean modifiedDescendant, Sort.Direction expectedDirection) {
+            boolean sortDesc, Sort.Direction expectedDirection) {
         ProjectService projectService = mock(ProjectService.class);
         DtoFactory dtoFactory = mock(DtoFactory.class);
         DtoProjectService service = new DtoProjectService(
                 projectService, dtoFactory, mock(ProjectConfigurations.class));
         Optional<ProjectState> state = Optional.of(ProjectState.REVIEW);
         Optional<Boolean> archived = Optional.of(false);
-        when(projectService.fetchUserVisibleProjects(eq(state), eq(archived), any(PageRequest.class)))
+        when(projectService.fetchUserVisibleProjects(eq(state), eq(archived), any(PageRequest.class),
+                eq(Optional.empty()), eq(Optional.empty())))
                 .thenReturn(Page.empty());
 
-        service.fetchUserVisibleProjects(state, archived, 2, 25, modifiedDescendant);
+        service.fetchUserVisibleProjects(state, archived, 2, 25, ProjectSortField.MODIFIED_AT, sortDesc,
+                Optional.empty(), Optional.empty());
 
         ArgumentCaptor<PageRequest> pageRequest = ArgumentCaptor.forClass(PageRequest.class);
-        verify(projectService).fetchUserVisibleProjects(eq(state), eq(archived), pageRequest.capture());
+        verify(projectService).fetchUserVisibleProjects(eq(state), eq(archived), pageRequest.capture(),
+                eq(Optional.empty()), eq(Optional.empty()));
         assertThat(pageRequest.getValue().getPageNumber()).isEqualTo(2);
         assertThat(pageRequest.getValue().getPageSize()).isEqualTo(25);
         assertThat(pageRequest.getValue().getSort().getOrderFor("modifiedAt"))

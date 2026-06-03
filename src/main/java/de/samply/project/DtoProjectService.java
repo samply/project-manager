@@ -1,6 +1,7 @@
 package de.samply.project;
 
 import de.samply.db.model.Project_;
+import de.samply.db.model.Query_;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.Project;
 import de.samply.frontend.dto.ProjectAndForms;
@@ -38,11 +39,20 @@ public class DtoProjectService {
 
     public Page<Project> fetchUserVisibleProjects(
             Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize,
-            boolean modifiedDescendant) {
-        Sort.Direction direction = modifiedDescendant ? Sort.Direction.DESC : Sort.Direction.ASC;
+            ProjectSortField sortBy, boolean sortDesc, Optional<String> projectCreator, Optional<String> bridgehead) {
+        Sort.Direction direction = sortDesc ? Sort.Direction.DESC : Sort.Direction.ASC;
+        String sortProperty = switch (sortBy) {
+            case TITLE -> Project_.QUERY + "." + Query_.LABEL;
+            case REQUEST_ID -> Project_.CODE;
+            case PROJECT_CREATOR -> Project_.CREATOR_EMAIL;
+            case STATUS -> Project_.STATE;
+            case CREATED -> Project_.CREATED_AT;
+            case MODIFIED_AT -> Project_.MODIFIED_AT;
+        };
         PageRequest pageRequest = PageRequest.of(
-                page, pageSize, Sort.by(direction, Project_.MODIFIED_AT));
-        return projectService.fetchUserVisibleProjects(projectState, archived, pageRequest)
+                page, pageSize, Sort.by(direction, sortProperty));
+        return projectService.fetchUserVisibleProjects(
+                        projectState, archived, pageRequest, projectCreator, bridgehead)
                 .map(dtoFactory::convert);
     }
 

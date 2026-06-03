@@ -7,37 +7,40 @@ import de.samply.frontend.dto.Results;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class DtoProjectBridgeheadService {
 
+    // Services
+    private final ProjectService projectService;
     private final ProjectBridgeheadService projectBridgeheadService;
+
     private final DtoFactory dtoFactory;
 
-    public DtoProjectBridgeheadService(ProjectBridgeheadService projectBridgeheadService, DtoFactory dtoFactory) {
+
+    public DtoProjectBridgeheadService(ProjectBridgeheadService projectBridgeheadService, DtoFactory dtoFactory,
+                                      ProjectService projectService) {
         this.projectBridgeheadService = projectBridgeheadService;
         this.dtoFactory = dtoFactory;
+        this.projectService = projectService;
     }
 
-    public List<de.samply.frontend.dto.ProjectBridgehead> fetchUserVisibleProjectBridgeheads(@NotNull Project project) throws ProjectBridgeheadServiceException {
-        Set<ProjectBridgehead> projectBridgeheads = projectBridgeheadService.fetchBridgeheads(project);
-        if (projectBridgeheadService.isProjectManagerAdmin()) {
-            return new ArrayList<>(projectBridgeheads).stream().map(dtoFactory::convert).toList();
-        }
-        Set<ProjectBridgehead> tempProjectBridgeheads = new HashSet<>();
-        projectBridgeheads.forEach(projectBridgehead -> {
-            if (projectBridgeheadService.isBridgeheadAdminOfProjectBridgehead(projectBridgehead) ||
-                    projectBridgeheadService.isUserOfProjectBridgehead(projectBridgehead) ||
-                    projectBridgeheadService.isUserCreatorOfProject(project)
-            ) {
-                tempProjectBridgeheads.add(projectBridgehead);
-            }
-        });
-        return new ArrayList<>(tempProjectBridgeheads).stream().map(dtoFactory::convert).toList();
+    public List<de.samply.frontend.dto.ProjectBridgehead> fetchUserVisibleProjectBridgeheads(Optional<Project> projectOptional)
+            throws ProjectBridgeheadServiceException {
+        Map<String, ProjectBridgehead> bridgeheads = projectOptional.map(List::of)
+                .orElseGet(projectService::fetchAllUserVisibleProjects).stream()
+                .flatMap(currentProject -> projectBridgeheadService.fetchBridgeheads(currentProject).stream()
+                        .filter(bridgehead -> projectBridgeheadService.isProjectManagerAdmin()
+                                || projectBridgeheadService.isBridgeheadAdminOfProjectBridgehead(bridgehead)
+                                || projectBridgeheadService.isUserOfProjectBridgehead(bridgehead)
+                                || projectBridgeheadService.isUserCreatorOfProject(currentProject)))
+                .collect(Collectors.toMap(ProjectBridgehead::getBridgehead, Function.identity(), (first, ignored) -> first));
+        return bridgeheads.values().stream().map(dtoFactory::convert).toList();
     }
 
     public List<Results> fetchResults(@NotNull Project project) throws ProjectBridgeheadServiceException {

@@ -47,6 +47,15 @@ public class DtoUserService {
         return convert(userService.fetchProjectUsers(project));
     }
 
+    public Set<User> fetchProjectCreators(Optional<Project> project) {
+        return userService.fetchProjectCreators(project).stream()
+                .map(email -> userService.fetchUser(email)
+                        .map(DtoFactory::convert)
+                        .orElseGet(() -> new User(email, null, null, null, null, null, null)))
+                .sorted(Comparator.comparing(this::sortValue, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
     public List<User> fetchMailingBlackList() {
         return userService
                 .fetchMailingBlackList()
@@ -66,6 +75,13 @@ public class DtoUserService {
 
     private Set<User> convert(Collection<ProjectBridgeheadUser> users) {
         return users.stream().map(dtoFactory::convert).collect(Collectors.toSet());
+    }
+
+    private String sortValue(User user) {
+        String firstName = user.firstName() == null ? "" : user.firstName();
+        String lastName = user.lastName() == null ? "" : user.lastName();
+        String name = (firstName + " " + lastName).trim();
+        return name.isBlank() ? user.email() : name;
     }
 
 }

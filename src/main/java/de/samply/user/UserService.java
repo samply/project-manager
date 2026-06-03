@@ -9,6 +9,8 @@ import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectBridgeheadUserService;
+import de.samply.project.ProjectService;
+import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -32,6 +34,7 @@ public class UserService {
 
     // Services
     private final NotificationService notificationService;
+    private final ProjectService projectService;
     private final ProjectBridgeheadService projectBridgeheadService;
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
 
@@ -50,7 +53,8 @@ public class UserService {
                        SessionUser sessionUser,
                        OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
                        ProjectBridgeheadService projectBridgeheadService,
-                       ProjectBridgeheadUserService projectBridgeheadUserService) {
+                       ProjectBridgeheadUserService projectBridgeheadUserService,
+                       ProjectService projectService) {
         this.notificationService = notificationService;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
@@ -60,6 +64,7 @@ public class UserService {
         this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
         this.projectBridgeheadService = projectBridgeheadService;
         this.projectBridgeheadUserService = projectBridgeheadUserService;
+        this.projectService = projectService;
     }
 
     public void createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
@@ -131,6 +136,16 @@ public class UserService {
 
     protected Optional<ProjectBridgeheadUser> fetchCurrentUser(@NotNull ProjectBridgehead bridgehead) {
         return projectBridgeheadUserService.fetchFirstValidUser(sessionUser.getEmail(), bridgehead);
+    }
+
+    protected Set<String> fetchProjectCreators(Optional<Project> project) {
+        return project
+                .map(value -> Optional.ofNullable(value.getCreatorEmail()).stream().collect(Collectors.toSet()))
+                .orElseGet(() -> projectService.fetchAllUserVisibleProjects().stream()
+                        .filter(value -> value.getState() != ProjectState.DRAFT)
+                        .map(Project::getCreatorEmail)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()));
     }
 
     public List<ProjectBridgeheadUser> fetchProjectUsers(ProjectBridgehead projectBridgehead) throws UserServiceException {

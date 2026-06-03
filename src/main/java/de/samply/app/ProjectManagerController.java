@@ -212,13 +212,17 @@ public class ProjectManagerController {
     public ResponseEntity fetchProjects(
             @RequestParameter(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
             @RequestParameter(name = ProjectManagerConst.ARCHIVED, required = false) Boolean archived,
-            @RequestParameter(name = ProjectManagerConst.LAST_MODIFIED_DESC, required = false, defaultValue = "true") boolean modifiedDescendant,
+            @RequestParameter(name = ProjectManagerConst.SORT_BY, required = false, defaultValue = "created") String sortBy,
+            @RequestParameter(name = ProjectManagerConst.SORT_DESC, required = false, defaultValue = "true") boolean sortDesc,
             @RequestParameter(name = ProjectManagerConst.PAGE) int page,
-            @RequestParameter(name = ProjectManagerConst.PAGE_SIZE) int pageSize
+            @RequestParameter(name = ProjectManagerConst.PAGE_SIZE) int pageSize,
+            @RequestParameter(name = ProjectManagerConst.PROJECT_CREATOR, required = false) String projectCreator,
+            @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> dtoProjectService.fetchUserVisibleProjects(
                 Optional.ofNullable(projectState), Optional.ofNullable(archived), page, pageSize,
-                modifiedDescendant));
+                ProjectSortField.fromValue(sortBy), sortDesc,
+                Optional.ofNullable(projectCreator), Optional.ofNullable(bridgehead)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
@@ -245,14 +249,22 @@ public class ProjectManagerController {
                 () -> projectEventService.fetchAllProjectEvents(Optional.ofNullable(project)));
     }
 
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_PROJECT_STATES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_PROJECT_STATES, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity fetchVisibleProjectStates() {
+        return convertToResponseEntity(projectService::fetchVisibleProjectStates);
+    }
+
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
-    @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION)
-    @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity fetchVisibleProjectsBridgeheads(
-            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_BRIDGEHEADS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity fetchVisibleBridgeheads(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project
     ) {
         return convertToResponseEntity(
-                () -> dtoProjectBridgeheadService.fetchUserVisibleProjectBridgeheads(project));
+                () -> dtoProjectBridgeheadService.fetchUserVisibleProjectBridgeheads(Optional.ofNullable(project)));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
@@ -2132,6 +2144,7 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
             OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity fetchAllRegisteredBridgeheads() {
@@ -2166,6 +2179,18 @@ public class ProjectManagerController {
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(() -> this.dtoUserService.fetchProjectUsers(project));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CREATORS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CREATORS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity fetchProjectCreators(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project
+    ) {
+        return convertToResponseEntity(
+                () -> dtoUserService.fetchProjectCreators(Optional.ofNullable(project)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
