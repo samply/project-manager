@@ -348,9 +348,15 @@ public class DtoFactory {
     }
 
     private int fetchFormFieldOrder(String title, String label) {
-        return formTemplateConfig.isProjectFormFieldTitle(title) ?
-                formTemplateConfig.fetchProjectFormFieldOrder(title, label) :
-                formConfig.getFormTitleLabelOrderMap().get(title).get(label);
+        if (formTemplateConfig.isProjectFormFieldTitle(title)) {
+            return formTemplateConfig.fetchProjectFormFieldOrder(title, label);
+        }
+        Map<String, Integer> orderMap = formConfig.getFormTitleLabelOrderMap().get(title);
+        if (orderMap == null) {
+            return Integer.MAX_VALUE;
+        }
+        Integer order = orderMap.get(label);
+        return order != null ? order : Integer.MAX_VALUE;
     }
 
     public FormField convert(@NotNull ProjectFormField projectFormField, Optional<String> language) {
