@@ -59,6 +59,7 @@ public class DtoFormService {
                 .getOrDefault(formTitle, Map.of())
                 .values()
                 .stream()
+                .filter(field -> !field.isArchived())
                 .map(field ->
                         dtoFactory.convert(formTitle, field, Optional.empty(), language))
                 .toList();
@@ -113,7 +114,15 @@ public class DtoFormService {
                 .collect(FormFieldUtils.formFieldMapCollector())
                 .values()
                 .stream()
+                .filter(field -> !isArchivedInConfig(field.title(), field.label()))
                 .toList();
+    }
+
+    private boolean isArchivedInConfig(String title, String label) {
+        return Optional.ofNullable(formConfig.getFormTitleLabelFieldMap().get(title))
+                .map(m -> m.get(label))
+                .map(FormFieldConfig::isArchived)
+                .orElse(false);
     }
 
 

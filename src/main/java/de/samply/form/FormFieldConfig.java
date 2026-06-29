@@ -33,4 +33,7 @@ public class FormFieldConfig extends DisplayMetadata {
     @JsonProperty("value")
     private String projectValue;
 
+    // When true, the field is hidden from the UI even if a value exists in the database.
+    private boolean archived;
+
 }
