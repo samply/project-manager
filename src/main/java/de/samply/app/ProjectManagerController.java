@@ -1351,6 +1351,62 @@ public class ProjectManagerController {
                 project, Optional.empty(), document, DocumentType.DESCRIPTION, Optional.ofNullable(label)));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_ETHICS_APPROVAL_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_ETHICS_APPROVAL)
+    public ResponseEntity uploadEthicsApproval(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                project, Optional.empty(), document, DocumentType.VOTUM, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_ETHICS_APPROVAL_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_ETHICS_APPROVAL)
+    public ResponseEntity downloadEthicsApproval(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(project, Optional.empty(), Optional.empty(), DocumentType.VOTUM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_ETHICS_APPROVAL_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXISTS_ETHICS_APPROVAL)
+    public ResponseEntity existsEthicsApproval(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return existsProjectDocument(project, Optional.empty(), DocumentType.VOTUM);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_ETHICS_APPROVAL_DESCRIPTION_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_ETHICS_APPROVAL_DESCRIPTION)
+    public ResponseEntity fetchEthicsApprovalDescription(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return convertOptionalToResponseEntity(
+                () -> this.dtoDocumentService.fetchLastDocumentOfThisTypeForFrontend(project,
+                        Optional.empty(), DocumentType.VOTUM));
+    }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,

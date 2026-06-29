@@ -49,6 +49,7 @@ public class ProjectManagerConst {
     public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
     public final static String UPLOAD_VOTUM_ACTION = "UPLOAD_VOTUM";
     public final static String UPLOAD_DESCRIPTION_ACTION = "UPLOAD_DESCRIPTION";
+    public final static String UPLOAD_ETHICS_APPROVAL_ACTION = "UPLOAD_ETHICS_APPROVAL";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String UPLOAD_PUBLICATION_ACTION = "UPLOAD_PUBLICATION";
     public final static String UPLOAD_FINAL_REPORT_ACTION = "UPLOAD_FINAL_REPORT";
@@ -58,6 +59,9 @@ public class ProjectManagerConst {
     public final static String ADD_FINAL_REPORT_URL_ACTION = "ADD_FINAL_REPORT_URL";
     public final static String ADD_OTHER_DOCUMENT_URL_ACTION = "ADD_OTHER_DOCUMENT_URL";
     public final static String DOWNLOAD_DESCRIPTION_ACTION = "DOWNLOAD_DESCRIPTION";
+    public final static String DOWNLOAD_ETHICS_APPROVAL_ACTION = "DOWNLOAD_ETHICS_APPROVAL";
+    public final static String EXISTS_ETHICS_APPROVAL_ACTION = "EXISTS_ETHICS_APPROVAL";
+    public final static String FETCH_ETHICS_APPROVAL_DESCRIPTION_ACTION = "FETCH_ETHICS_APPROVAL_DESCRIPTION";
     public final static String DOWNLOAD_VOTUM_ACTION = "DOWNLOAD_VOTUM";
     public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String FETCH_VOTUM_DESCRIPTION_ACTION = "FETCH_VOTUM_DESCRIPTION";
@@ -190,6 +194,10 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_TYPES = "/project/types";
     public final static String UPLOAD_VOTUM = "/votum/upload";
     public final static String UPLOAD_DESCRIPTION = "/project/description/upload";
+    public final static String UPLOAD_ETHICS_APPROVAL = "/project/ethics-approval/upload";
+    public final static String DOWNLOAD_ETHICS_APPROVAL = "/project/ethics-approval/download";
+    public final static String EXISTS_ETHICS_APPROVAL = "/project/ethics-approval/exists";
+    public final static String FETCH_ETHICS_APPROVAL_DESCRIPTION = "/project/ethics-approval/description";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/upload";
     public final static String UPLOAD_PUBLICATION = "/publication/upload";
     public final static String UPLOAD_FINAL_REPORT = "/report/upload";
