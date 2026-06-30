@@ -1,6 +1,10 @@
 package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
+import de.samply.email.attachment.AttachmentFileService;
+import de.samply.email.attachment.FilenameAndFileContent;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.user.UserService;
@@ -13,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -35,10 +40,13 @@ public class EmailService {
     private final Optional<JavaMailSender> testMailSender;
     private final TemplateEngine templateEngine;
     private final EmailTemplates emailTemplates;
-    private final NotificationService notificationService;
     private final EmailKeyValuesFactory emailKeyValuesFactory;
     private final List<String> testMailDomains;
+
+    // Services
     private final UserService userService;
+    private final NotificationService notificationService;
+    private final AttachmentFileService attachmentFileService;
 
 
     public EmailService(
@@ -51,7 +59,8 @@ public class EmailService {
             NotificationService notificationService,
             EmailKeyValuesFactory emailKeyValuesFactory,
             @Value(ProjectManagerConst.TEST_EMAIL_DOMAINS_SV) List<String> testMailDomains,
-            UserService userService) {
+            UserService userService,
+            AttachmentFileService attachmentFileService) {
         this.emailFrom = emailFrom;
         this.mailSender = mailSender;
         this.testMailSender = testMailSender;
@@ -62,28 +71,32 @@ public class EmailService {
         this.emailKeyValuesFactory = emailKeyValuesFactory;
         this.testMailDomains = testMailDomains;
         this.userService = userService;
+        this.attachmentFileService = attachmentFileService;
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
-    public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
+    public void sendEmail(@NotNull String emailTo, Optional<Project> project, Optional<ProjectBridgehead> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type) throws EmailServiceException {
         sendEmail(emailTo, project, bridgehead, role, type, this.emailKeyValuesFactory.newInstance());
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
-    public void sendEmail(@NotNull String emailTo, Optional<String> project, Optional<String> bridgehead, @NotNull ProjectRole role, @NotNull EmailTemplateType type, EmailKeyValues keyValues) throws EmailServiceException {
+    public void sendEmail(@NotNull String emailTo, Optional<Project> project,
+                          Optional<ProjectBridgehead> bridgehead, @NotNull ProjectRole role,
+                          @NotNull EmailTemplateType type, EmailKeyValues keyValues) throws EmailServiceException {
         if (enableEmails && !userService.isUserInMailingBlackList(emailTo)) {
-            project.ifPresent(keyValues::addProjectCode);
+            project.ifPresent(keyValues::addProject);
             bridgehead.ifPresent(keyValues::addBridgehead);
             Optional<MessageSubject> messageSubject = createEmailMessageAndSubject(role, type, keyValues);
             if (messageSubject.isPresent()) {
-                sendEmail(emailTo, messageSubject.get());
+                List<FilenameAndFileContent> attachments = fetchAttachments(project, type);
+                sendEmail(emailTo, messageSubject.get(), attachments);
                 if (project.isPresent()) {
                     String details = "Email to " + emailTo + " (" + role + ") of type " + type.toString();
                     String message = keyValues.getKeyValues().get(EmailContextKey.MESSAGE.getValue());
                     if (message != null) {
                         details += " : " + message;
                     }
-                    notificationService.createNotification(project.get(), bridgehead.isPresent() ? bridgehead.get() : null,
+                    notificationService.createNotification(project.get(), bridgehead.map(ProjectBridgehead::getBridgehead).orElse(null),
                             ProjectManagerConst.EMAIL_SERVICE, OperationType.SEND_EMAIL, details, null, null);
                 }
             } else {
@@ -91,37 +104,84 @@ public class EmailService {
             }
         } else {
             log.info(enableEmails ? "SMTP Server not enabled." : "User Email in mailing blacklist");
-            log.info("Email to " + emailTo + " with role " + role + " for bridgehead " +
-                    (bridgehead.isPresent() ? bridgehead.get() : "NONE") + " and type " + type + " could not be sent");
+            log.info("Email to {} with role {} for bridgehead {} and type {} could not be sent", emailTo, role,
+                    bridgehead.map(ProjectBridgehead::getBridgehead).orElse("NONE"), type);
         }
     }
 
-    private void sendEmail(String emailTo, MessageSubject messageSubject) {
+    private List<FilenameAndFileContent> fetchAttachments(Optional<Project> project, EmailTemplateType type) {
+        return project
+                .map(tempProject -> emailTemplates
+                        .getAttachmentFiles(type)
+                        .stream()
+                        .flatMap(attachmentFile -> attachmentFileService
+                                .fetchAttachmentFilenameAndContent(
+                                        tempProject,
+                                        attachmentFile,
+                                        Optional.empty()
+                                )
+                                .stream()
+                        )
+                        .toList()
+                )
+                .orElseGet(List::of);
+    }
+
+    private void sendEmail(String emailTo, MessageSubject messageSubject, List<FilenameAndFileContent> attachments) {
         try {
-            fetchMailSender(emailTo).send(createMimeMessage(emailTo, emailFrom, messageSubject));
+            fetchMailSender(emailTo).send(createMimeMessage(emailTo, emailFrom, messageSubject, attachments));
         } catch (MailException | EmailServiceException e) {
             log.error("Failed to send email");
             log.error(ExceptionUtils.getStackTrace(e));
         }
     }
 
-    private MimeMessage createMimeMessage(String emailTo, String emailFrom, MessageSubject messageSubject) throws EmailServiceException {
+    private MimeMessage createMimeMessage(
+            String emailTo,
+            String emailFrom,
+            MessageSubject messageSubject,
+            List<FilenameAndFileContent> attachments) throws EmailServiceException {
         try {
-            return createMimeMessageWithoutHandlingException(emailTo, emailFrom, messageSubject);
+            return createMimeMessageWithoutHandlingException(emailTo, emailFrom, messageSubject, attachments);
         } catch (MessagingException e) {
             throw new EmailServiceException(e);
         }
     }
 
-    private MimeMessage createMimeMessageWithoutHandlingException(String emailTo, String emailFrom, MessageSubject messageSubject) throws MessagingException {
+    private MimeMessage createMimeMessageWithoutHandlingException(
+            String emailTo,
+            String emailFrom,
+            MessageSubject messageSubject,
+            List<FilenameAndFileContent> attachments
+    ) throws MessagingException {
+
         MimeMessage message = fetchMailSender(emailTo).createMimeMessage();
-        MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
-        message.setHeader("Content-Type", "text/html; charset=UTF-8");
-        messageHelper.setTo(emailTo);
-        message.setFrom(emailFrom);
-        message.setSubject(messageSubject.subject(), StandardCharsets.UTF_8.name());
-        message.setContent(messageSubject.message(), "text/html; charset=UTF-8");
+
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                !attachments.isEmpty(), // multipart only if needed
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(emailTo);
+        helper.setFrom(emailFrom);
+        helper.setSubject(messageSubject.subject());
+
+        // Use helper, not message.setContent(...)
+        helper.setText(
+                messageSubject.message(),
+                true // HTML
+        );
+
+        for (FilenameAndFileContent attachment : attachments) {
+            helper.addAttachment(
+                    attachment.filename(),
+                    new ByteArrayResource(attachment.fileContent())
+            );
+        }
+
         return message;
+
     }
 
     public Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type, EmailKeyValues keyValues) {
@@ -133,19 +193,24 @@ public class EmailService {
         return Optional.empty();
     }
 
-    public Optional<MessageSubject> createEmailMessageAndSubject(String emailTo, Optional<String> projectCode, Optional<String> bridgehead, ProjectRole projectRole, EmailTemplateType emailTemplateType) {
-        return createEmailMessageAndSubject(projectRole, emailTemplateType, emailKeyValuesFactory.newInstance().add(new EmailRecipient(emailTo, projectCode, bridgehead, projectRole)));
+    public Optional<MessageSubject> createEmailMessageAndSubject(String emailTo, Optional<Project> project, Optional<ProjectBridgehead> bridgehead, ProjectRole projectRole, EmailTemplateType emailTemplateType) {
+        return createEmailMessageAndSubject(
+                projectRole,
+                emailTemplateType,
+                emailKeyValuesFactory
+                        .newInstance()
+                        .add(new EmailRecipient(emailTo, project, bridgehead, projectRole)));
     }
 
     private Context createContext(EmailKeyValues keyValues) {
         Context context = new Context();
-        keyValues.getKeyValues().forEach((key, value) -> context.setVariable(key, value));
+        keyValues.getKeyValues().forEach(context::setVariable);
         // Remove hyphens ("-") and convert keys to camel case to ensure Thymeleaf can process variables correctly.
-        // For example: "my-variable" -> "myVariable".
+        // For example, "my-variable" -> "myVariable".
         // In Thymeleaf templates, we can use <my-variable/> to reference the variable directly.
         // However, when using the standard Thymeleaf processor, we need to use <span th:text="${myVariable}">
         // because Thymeleaf does not support hyphens ("-") in variable names (e.g., ${my-variable} is invalid).
-        KeyTransformer.transformMapKeys(keyValues.getKeyValues()).forEach((key, value) -> context.setVariable(key, value));
+        KeyTransformer.transformMapKeys(keyValues.getKeyValues()).forEach(context::setVariable);
         return context;
     }
 

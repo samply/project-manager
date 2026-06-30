@@ -2,10 +2,9 @@ package de.samply.document;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectDocument;
 import de.samply.db.repository.ProjectDocumentRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.frontend.dto.DtoFactory;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
@@ -20,8 +19,8 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,35 +30,23 @@ public class DocumentService {
 
     private final NotificationService notificationService;
     private final ProjectDocumentRepository projectDocumentRepository;
-    private final ProjectRepository projectRepository;
     private final Path documentsDirectory;
-    private final Path publicDocumentsDirectory;
-    private final String applicationFormFile;
     private final String timestampFormat;
     private final SessionUser sessionUser;
-    private final DtoFactory dtoFactory;
 
     public DocumentService(NotificationService notificationService,
                            ProjectDocumentRepository projectDocumentRepository,
-                           ProjectRepository projectRepository,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_SV) String documentsDirectory,
-                           @Value(ProjectManagerConst.PUBLIC_DOCUMENTS_DIRECTORY_SV) String publicDocumentsDirectory,
-                           @Value(ProjectManagerConst.APPLICATION_FORM_FILENAME_SV) String applicationFormFile,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV) String timestampFormat,
-                           SessionUser sessionUser,
-                           DtoFactory dtoFactory) throws IOException {
+                           SessionUser sessionUser) throws IOException {
         this.notificationService = notificationService;
         this.projectDocumentRepository = projectDocumentRepository;
-        this.projectRepository = projectRepository;
         this.documentsDirectory = fetchPathDirectory(documentsDirectory);
-        this.publicDocumentsDirectory = Path.of(publicDocumentsDirectory);
-        this.applicationFormFile = applicationFormFile;
         this.timestampFormat = timestampFormat;
         this.sessionUser = sessionUser;
-        this.dtoFactory = dtoFactory;
     }
 
-    public void uploadDocument(String projectCode, Optional<String> bridgeheadOptional, MultipartFile document, DocumentType documentType, Optional<String> labelOptional) throws DocumentServiceException {
+    public void uploadDocument(Project projectCode, Optional<ProjectBridgehead> bridgeheadOptional, MultipartFile document, DocumentType documentType, Optional<String> labelOptional) throws DocumentServiceException {
         String bridgehead = fetchBridgeheadForSearch(bridgeheadOptional);
         FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer = project -> {
             String originalFilename = document.getOriginalFilename();
@@ -74,55 +61,47 @@ public class DocumentService {
             return Optional.empty();
         };
         ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> {
-            projectDocument.setOriginalFilename(document.getOriginalFilename().trim());
+            projectDocument.setOriginalFilename(Objects.requireNonNull(document.getOriginalFilename()).trim());
             Path documentPath = writeDocumentInDirectory(document);
             projectDocument.setFilePath(documentPath.toAbsolutePath().toString());
         };
         addDocument(projectCode, bridgehead, documentType, labelOptional, documentInitializer, documentSetter);
     }
 
-    public void addDocumentUrl(String projectCode, Optional<String> bridgeheadOptional, String url, DocumentType documentType, Optional<String> labelOptional) throws DocumentServiceException {
+    public void addDocumentUrl(Project project, Optional<ProjectBridgehead> bridgeheadOptional, String url, DocumentType documentType, Optional<String> labelOptional) throws DocumentServiceException {
         String bridgehead = fetchBridgeheadForSearch(bridgeheadOptional);
-        FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer = project -> {
-            return this.projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project, bridgehead, url);
-        };
-        ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> {
-            projectDocument.setUrl(url);
-        };
-        addDocument(projectCode, bridgehead, documentType, labelOptional, documentInitializer, documentSetter);
+        FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer = testProject -> this.projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(testProject, bridgehead, url);
+        ConsumerWithException<ProjectDocument> documentSetter = projectDocument -> projectDocument.setUrl(url);
+        addDocument(project, bridgehead, documentType, labelOptional, documentInitializer, documentSetter);
     }
 
 
-    private String fetchBridgeheadForSearch(Optional<String> bridgehead) {
-        return (bridgehead.isPresent()) ? bridgehead.get() : ProjectManagerConst.NO_BRIDGEHEAD;
+    private String fetchBridgeheadForSearch(Optional<ProjectBridgehead> bridgehead) {
+        return bridgehead.map(ProjectBridgehead::getBridgehead).orElse(ProjectManagerConst.NO_BRIDGEHEAD);
     }
 
-    private void addDocument(String projectCode,
+    private void addDocument(Project project,
                              String bridgehead,
                              DocumentType documentType,
                              Optional<String> labelOptional,
                              FunctionWithException<Project, Optional<ProjectDocument>> documentInitializer,
                              ConsumerWithException<ProjectDocument> documentSetter) throws DocumentServiceException {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new DocumentServiceException("Project not found");
-        }
         ProjectDocument projectDocument;
-        Optional<ProjectDocument> projectDocumentOptional = documentInitializer.apply(project.get());
+        Optional<ProjectDocument> projectDocumentOptional = documentInitializer.apply(project);
         if (projectDocumentOptional.isPresent()) {
             projectDocument = projectDocumentOptional.get();
         } else {
             projectDocument = new ProjectDocument();
-            projectDocument.setProject(project.get());
+            projectDocument.setProject(project);
             projectDocument.setBridgehead(bridgehead);
         }
-        labelOptional.ifPresent(label -> projectDocument.setLabel(label));
+        labelOptional.ifPresent(projectDocument::setLabel);
         projectDocument.setDocumentType(documentType);
         projectDocument.setCreatedAt(Instant.now());
         projectDocument.setCreatorEmail(sessionUser.getEmail());
         documentSetter.accept(projectDocument);
         this.projectDocumentRepository.save(projectDocument);
-        this.notificationService.createNotification(projectCode, bridgehead, sessionUser.getEmail(), OperationType.ADD_DOCUMENT,
+        this.notificationService.createNotification(project, bridgehead, sessionUser.getEmail(), OperationType.ADD_DOCUMENT,
                 "Add document of type " + documentType + ": " + projectDocument.getOriginalFilename(), null, null);
     }
 
@@ -175,56 +154,19 @@ public class DocumentService {
         }
     }
 
-    public Optional<ProjectDocument> fetchProjectDocument(String projectCode, Optional<String> bridgeheadOptional, String filename) {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            return Optional.empty();
-        }
+    public Optional<ProjectDocument> fetchProjectDocument(Project project, Optional<ProjectBridgehead> bridgeheadOptional, String filename) {
         String bridgehead = fetchBridgeheadForSearch(bridgeheadOptional);
-        Optional<ProjectDocument> projectDocument = projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project.get(), bridgehead, filename);
+        Optional<ProjectDocument> projectDocument = projectDocumentRepository.findFirstByProjectAndBridgeheadAndOriginalFilename(project, bridgehead, filename);
         if (projectDocument.isEmpty()) {
-            projectDocument = projectDocumentRepository.findFirstByProjectAndOriginalFilename(project.get(), filename);
-        }
-        if (projectDocument.isEmpty()) {
-            return Optional.empty();
+            projectDocument = projectDocumentRepository.findFirstByProjectAndOriginalFilename(project, filename);
         }
         return projectDocument;
     }
 
-    public Optional<Path> fetchPublicDocument(String documentFilename) {
-        if (documentFilename == null) {
-            return Optional.empty();
-        }
-        Path path = publicDocumentsDirectory.resolve(documentFilename);
-        return (Files.exists(path)) ? Optional.of(path) : Optional.empty();
-    }
-
-    public Optional<Path> fetchApplicationForm() {
-        return fetchPublicDocument(applicationFormFile);
-    }
-
-    public List<de.samply.frontend.dto.ProjectDocument> fetchPublications(String projectCode) {
-        return convertToDto(fetchDocuments(projectCode, Optional.empty(), DocumentType.PUBLICATION));
-
-    }
-
-    private List<de.samply.frontend.dto.ProjectDocument> convertToDto(List<ProjectDocument> projectDocumentList) {
-        return projectDocumentList.stream().map(dtoFactory::convert).toList();
-    }
-
-    public List<de.samply.frontend.dto.ProjectDocument> fetchOtherDocuments(String projectCode, Optional<String> bridgehead) {
-        return convertToDto(fetchDocuments(projectCode, bridgehead, DocumentType.OTHERS));
-    }
-
-
-    private List<ProjectDocument> fetchDocuments(String projectCode, Optional<String> bridgehead, DocumentType documentType) {
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            return new ArrayList<>();
-        }
+    public List<ProjectDocument> fetchDocuments(Project project, Optional<ProjectBridgehead> bridgehead, DocumentType documentType) {
         return (bridgehead.isPresent()) ?
-                projectDocumentRepository.findAllByBridgeheadAndProjectAndDocumentTypeOrderByLabelAsc(bridgehead.get(), project.get(), documentType) :
-                projectDocumentRepository.findAllByProjectAndDocumentTypeOrderByLabelAsc(project.get(), documentType);
+                projectDocumentRepository.findAllByBridgeheadAndProjectAndDocumentTypeOrderByLabelAsc(bridgehead.get().getBridgehead(), project, documentType) :
+                projectDocumentRepository.findAllByProjectAndDocumentTypeOrderByLabelAsc(project, documentType);
     }
 
 
@@ -236,19 +178,13 @@ public class DocumentService {
         R apply(T t) throws DocumentServiceException;
     }
 
-    public Optional<de.samply.frontend.dto.ProjectDocument> fetchLastDocumentOfThisTypeForFrontend(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
-        Optional<ProjectDocument> projectDocument = fetchLastDocumentOfThisType(projectCode, bridgeheadOptional, type);
-        return (projectDocument.isEmpty()) ? Optional.empty() : Optional.of(dtoFactory.convert(projectDocument.get()));
-
+    public Optional<ProjectDocument> fetchLastDocumentOfThisType(Project project, Optional<ProjectBridgehead> bridgeheadOptional, DocumentType type) {
+        return projectDocumentRepository.findFirstByProjectAndDocumentTypeAndBridgeheadOrderByCreatedAtDesc(
+                project, type, fetchBridgeheadForSearch(bridgeheadOptional));
     }
 
-    public Optional<ProjectDocument> fetchLastDocumentOfThisType(String projectCode, Optional<String> bridgeheadOptional, DocumentType type) {
-        Optional<Project> projectOptional = projectRepository.findByCode(projectCode);
-        if (projectOptional.isPresent()) {
-            return projectDocumentRepository.findFirstByProjectAndDocumentTypeAndBridgeheadOrderByCreatedAtDesc(
-                    projectOptional.get(), type, fetchBridgeheadForSearch(bridgeheadOptional));
-        }
-        return Optional.empty();
+    public Optional<ProjectDocument> fetchDocumentOrderByCreatedAtDesc(Project project) {
+        return projectDocumentRepository.findTopByProjectOrderByCreatedAtDesc(project);
     }
 
 }

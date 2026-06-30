@@ -5,8 +5,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.1</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>4.0.5</version>
+        <relativePath/> <!-- lookup parent from a repository -->
     </parent>
     <groupId>de.samply</groupId>
     <artifactId>project-manager</artifactId>
@@ -14,13 +14,17 @@
     <name>project-manager</name>
     <description>Samply Project Manager</description>
     <properties>
-        <java.version>21</java.version>
-        <openapi.version>2.2.0</openapi.version>
-        <spring-statemachine-core.version>3.2.1</spring-statemachine-core.version>
-        <lombok.version>1.18.30</lombok.version>
-        <maven-model.version>3.9.6</maven-model.version>
-        <spring-aop.version>6.1.1</spring-aop.version>
-        <byte-buddy.version>1.14.11</byte-buddy.version>
+        <java.version>25</java.version>
+        <openapi.version>3.0.0</openapi.version>
+        <spring-statemachine-core.version>4.0.1</spring-statemachine-core.version>
+        <lombok.version>1.18.42</lombok.version>
+        <maven-model.version>3.9.15</maven-model.version>
+        <netty-transport-native-epoll.version>5.0.0.Alpha2</netty-transport-native-epoll.version>
+        <openhtmltopdf-pdfbox.version>1.1.36</openhtmltopdf-pdfbox.version>
+        <spring-boot-starter-aop.version>4.0.0-M2</spring-boot-starter-aop.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <shedlock-spring.version>7.7.0</shedlock-spring.version>
     </properties>
     <dependencies>
         <dependency>
@@ -46,6 +50,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+            <version>${spring-boot-starter-aop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -61,8 +66,13 @@
             <version>${openapi.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.statemachine</groupId>
@@ -80,6 +90,11 @@
             <artifactId>maven-model</artifactId>
             <version>${maven-model.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-native-epoll</artifactId>
+            <version>${netty-transport-native-epoll.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -96,16 +111,69 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>${openhtmltopdf-pdfbox.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${mapstruct.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+            <version>${shedlock-spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <version>${shedlock-spring.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
         <finalName>project-manager</finalName>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
+
 
 </project>

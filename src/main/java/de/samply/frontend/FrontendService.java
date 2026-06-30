@@ -7,12 +7,11 @@ import de.samply.app.ProjectManagerController;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
-import de.samply.db.repository.ProjectRepository;
+import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.RolesExtractor;
 import de.samply.utils.AspectUtils;
+import de.samply.utils.LanguageUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
@@ -25,45 +24,40 @@ import java.util.*;
 @Service
 public class FrontendService {
 
+    // Services
     private final ConstraintsService constraintsService;
+    private final ProjectBridgeheadUserService projectBridgeheadUserService;
+
     private final FrontendConfiguration frontendConfiguration;
-    private final String explorerUrlRedirectUriParameter;
     private final ActionExplanations actionExplanations;
-    private final String defaultLanguage;
     private final SessionUser sessionUser;
-    private final ProjectRepository projectRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
+
+    private final String explorerUrlRedirectUriParameter;
+    private final String defaultLanguage;
+
 
     public FrontendService(
-            ConstraintsService constraintsService,
+            ConstraintsService constraintsService, ProjectBridgeheadUserService projectBridgeheadUserService,
             FrontendConfiguration frontendConfiguration,
             ActionExplanations actionExplanations,
             SessionUser sessionUser,
-            ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-            ProjectRepository projectRepository,
-            ProjectBridgeheadRepository projectBridgeheadRepository,
             @Value(ProjectManagerConst.EXPLORER_REDIRECT_URI_PARAMETER_SV) String explorerUrlRedirectUriParameter,
             @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
         this.constraintsService = constraintsService;
+        this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.frontendConfiguration = frontendConfiguration;
         this.explorerUrlRedirectUriParameter = explorerUrlRedirectUriParameter;
         this.actionExplanations = actionExplanations;
-        this.defaultLanguage = defaultLanguage;
+        this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
         this.sessionUser = sessionUser;
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
-        this.projectRepository = projectRepository;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
 
-    public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<String> projectCode,
-                                                                     Optional<String> bridgehead, Optional<String> language, boolean withConstraints) {
+    public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<Project> project,
+                                                                     Optional<ProjectBridgehead> bridgehead, Optional<String> language, boolean withConstraints) {
         Map<String, Map<String, Action>> moduleActionMap = new HashMap<>();
         String rootPath = RolesExtractor.getRootPath();
-        String tempLanguage = (language.isPresent()) ? language.get() : defaultLanguage;
-        Optional<Project> project = fetchProject(projectCode);
-        Optional<ProjectBridgehead> projectBridgehead = fetchProjectBridgehead(project, bridgehead);
-        Optional<ProjectBridgeheadUser> projectBridgeheadUser = fetchProjectBridgeheadUser(projectBridgehead);
+        String tempLanguage = language.orElse(defaultLanguage);
+        Optional<ProjectBridgeheadUser> projectBridgeheadUser = fetchProjectBridgeheadUser(bridgehead);
         Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
             FrontendSiteModules frontendSiteModules = method.getAnnotation(FrontendSiteModules.class);
             FrontendSiteModule frontendSiteModule = method.getAnnotation(FrontendSiteModule.class);
@@ -78,34 +72,38 @@ public class FrontendService {
             }
             frontendSiteModuleList.forEach(tempFrontendSiteModule ->
                     fetchModuleActionsPackages(moduleActionMap, rootPath, path, tempFrontendSiteModule, frontendAction,
-                            site, projectCode, project, projectBridgehead, projectBridgeheadUser, tempLanguage, bridgehead, method, withConstraints));
+                            site, project, bridgehead, projectBridgeheadUser, tempLanguage, method, withConstraints));
         });
         return moduleActionMap;
     }
 
+    @SuppressWarnings("rawtypes") // For Optional<ResponseEntity>. Otherwise, it would be too complex
     private void fetchModuleActionsPackages(Map<String, Map<String, Action>> moduleActionsMap,
-                                            String rootPath, Optional<String> path,
-                                            FrontendSiteModule frontendSiteModule, FrontendAction frontendAction,
-                                            String site, Optional<String> projectCode,
+                                            String rootPath,
+                                            Optional<String> path,
+                                            FrontendSiteModule frontendSiteModule,
+                                            FrontendAction frontendAction,
+                                            String site,
                                             Optional<Project> project,
-                                            Optional<ProjectBridgehead> projectBridgehead,
+                                            Optional<ProjectBridgehead> bridgehead,
                                             Optional<ProjectBridgeheadUser> projectBridgeheadUser,
-                                            String language, Optional<String> bridgehead, Method method,
+                                            String language,
+                                            Method method,
                                             boolean withConstraints) {
         if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
             Optional<RoleConstraints> roleConstraints = Optional.ofNullable(method.getAnnotation(RoleConstraints.class));
             Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
-            Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, stateConstraints, projectCode, bridgehead);
+            Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, stateConstraints, project, bridgehead);
             if (responseEntity.isEmpty()) {
-                responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, projectCode, bridgehead);
+                responseEntity = this.constraintsService.checkStateConstraints(stateConstraints, project, bridgehead);
             }
             if (responseEntity.isEmpty()) {
                 Optional<ProjectConstraints> projectConstraints = Optional.ofNullable(method.getAnnotation(ProjectConstraints.class));
-                responseEntity = this.constraintsService.checkProjectConstraints(projectConstraints, projectCode);
+                responseEntity = this.constraintsService.checkProjectConstraints(projectConstraints, project);
             }
             if (responseEntity.isEmpty() || !withConstraints) { // If there are no restrictions
                 addAction(moduleActionsMap, frontendSiteModule, frontendAction, rootPath, path, method,
-                        project, projectBridgehead, projectBridgeheadUser, language);
+                        project, bridgehead, projectBridgeheadUser, language);
             }
         }
     }
@@ -115,22 +113,21 @@ public class FrontendService {
                            String rootPath, Optional<String> path, Method method,
                            Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
                            Optional<ProjectBridgeheadUser> projectBridgeheadUser, String language) {
-        Map<String, Action> actionNameActionsMap = moduleActionsMap.get(frontendSiteModule.module());
-        if (actionNameActionsMap == null) {
-            actionNameActionsMap = new HashMap<>();
-            moduleActionsMap.put(frontendSiteModule.module(), actionNameActionsMap);
-        }
+        Map<String, Action> actionNameActionsMap = moduleActionsMap.computeIfAbsent(frontendSiteModule.module(), _ -> new HashMap<>());
         Optional<Pair<String, Integer>> explanationPriority = actionExplanations.fetchExplanationAndPriority(frontendAction.action(), frontendSiteModule.module(),
                 language, project, projectBridgehead, projectBridgeheadUser, sessionUser);
-        String explanation = explanationPriority.isPresent() ? explanationPriority.get().getFirst() : null;
-        Integer priority = explanationPriority.isPresent() ? explanationPriority.get().getSecond() : null;
+        String explanation = explanationPriority.map(Pair::getFirst).orElse(null);
+        Integer priority = explanationPriority.map(Pair::getSecond).orElse(null);
+        String resolvedPath = path.orElseThrow(
+                () -> new IllegalStateException("Path must be present for action " + frontendAction.action())
+        );
         actionNameActionsMap.put(frontendAction.action(),
-                new Action(rootPath + path.get(), fetchHttpMethod(method), fetchHttpParams(method), explanation, priority));
+                new Action(rootPath + resolvedPath, fetchHttpMethod(method), fetchHttpParams(method), explanation, priority));
     }
 
     private String fetchHttpMethod(Method method) {
         Optional<String> result = AspectUtils.fetchHttpMethod(method);
-        return result.isPresent() ? result.get() : null;
+        return result.orElse(null);
     }
 
     private String[] fetchHttpParams(Method method) {
@@ -138,12 +135,10 @@ public class FrontendService {
     }
 
     public String fetchUrl(String site, Map<String, String> parameters) {
-        UriComponentsBuilder result = UriComponentsBuilder.fromHttpUrl(frontendConfiguration.getBaseUrl());
+        UriComponentsBuilder result = UriComponentsBuilder.fromUriString(frontendConfiguration.getBaseUrl());
         if (site != null) {
             Optional<String> sitePath = frontendConfiguration.getSitePath(site);
-            if (sitePath.isPresent()) {
-                result.path(sitePath.get());
-            }
+            sitePath.ifPresent(result::path);
         }
         if (parameters != null && !parameters.isEmpty()) {
             parameters.keySet().forEach(parameter ->
@@ -158,21 +153,10 @@ public class FrontendService {
         return result;
     }
 
-    private Optional<Project> fetchProject(Optional<String> projectCode) {
-        return (projectCode.isPresent()) ? projectRepository.findByCode(projectCode.get()) : Optional.empty();
-    }
-
-    private Optional<ProjectBridgehead> fetchProjectBridgehead(Optional<Project> project, Optional<String> bridgehead) {
-        return (project.isPresent() && bridgehead.isPresent()) ?
-                projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead.get(), project.get()) :
-                Optional.empty();
-    }
-
     private Optional<ProjectBridgeheadUser> fetchProjectBridgeheadUser(Optional<ProjectBridgehead> projectBridgehead) {
         return (projectBridgehead.isPresent()) ?
-                projectBridgeheadUserRepository.getFirstByEmailAndProjectBridgeheadOrderByModifiedAtDesc(sessionUser.getEmail(), projectBridgehead.get()) :
+                projectBridgeheadUserService.fetchFirstUsersOrderByModifiedAtDesc(sessionUser.getEmail(), projectBridgehead.get()) :
                 Optional.empty();
     }
-
 
 }

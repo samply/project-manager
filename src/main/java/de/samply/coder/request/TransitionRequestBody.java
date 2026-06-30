@@ -12,6 +12,7 @@ public class TransitionRequestBody {
     @JsonProperty("orphan")
     private boolean orphan = false;
 
+    @SuppressWarnings("unused")
     public TransitionRequestBody() {
     }
 

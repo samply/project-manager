@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -22,7 +23,7 @@ public class GrantedAuthoritiesExtractor {
     public Collection<GrantedAuthority> extractAuthoritiesFromGroups(Collection<String> groups) throws OAuth2AuthenticationException {
         return groups.stream()
                 .map(groupToRoleMapper::getRoleFromGroup)
-                .filter(role -> role != null)
+                .filter(Objects::nonNull)
                 .map(role -> new SimpleGrantedAuthority(role.name()))// change me
                 .collect(Collectors.toList());
     }

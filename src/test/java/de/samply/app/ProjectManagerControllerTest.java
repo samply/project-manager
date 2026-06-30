@@ -4,7 +4,6 @@ import de.samply.annotations.FrontendAction;
 import de.samply.annotations.FrontendSiteModule;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
-import de.samply.project.ProjectType;
 import de.samply.project.event.ProjectEventActionsException;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectBridgeheadState;
@@ -21,15 +20,17 @@ class ProjectManagerControllerTest {
 
     private final ProjectEventService projectEventService;
 
-    public ProjectManagerControllerTest(ProjectEventService projectEventService) {
+    @SuppressWarnings("unused")
+    ProjectManagerControllerTest(ProjectEventService projectEventService) {
         this.projectEventService = projectEventService;
     }
 
     @GetMapping(value = "/testCreateProject")
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
     public ResponseEntity<String> testCreateProject() throws ProjectEventActionsException {
+        @SuppressWarnings("SpellCheckingInspection")
         String[] bridgeheads = {"david-j-develop", "frankfurt", "berlin"};
-        this.projectEventService.draft(bridgeheads, "myQuery", ProjectType.EXPORT);
+        this.projectEventService.draft(bridgeheads, "myQuery");
         return new ResponseEntity<>("Test 6", HttpStatus.OK);
     }
 
@@ -99,7 +100,7 @@ class ProjectManagerControllerTest {
     }
 
     @GetMapping(value = "/test8")
-    @StateConstraints(projectStates = {ProjectState.CREATED})
+    @StateConstraints(projectStates = {ProjectState.REVIEW})
     @FrontendSiteModule(site = "Site_2", module = "Module_2")
     @FrontendAction(action = "test_8")
     public ResponseEntity<String> test8() {

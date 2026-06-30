@@ -1,14 +1,5 @@
 server:
   port: ${APPLICATION_PORT:8097}
-#  ssl:
-#    key-store: ${KEYSTORE}
-#    key-store-password: ${KEYSTORE_PASSWORD}
-#    key-store-type: PKCS12
-#    key-alias: tomcat
-#    trust-all: true
-#    trust-store-type: JKS
-#    trust-store: ${TRUST_STORE}
-#    trust-store-password: ${TRUST_STORE_PASSWORD}
 
   servlet:
     session:
@@ -23,6 +14,9 @@ logging:
 
 spring:
 
+  profiles:
+    active: external-execution-not-allowed
+
   flyway:
     locations: classpath:db/migration
     enabled: ${PROJECT_MANAGER_DB_FLYWAY_MIGRATION_ENABLED:true}
@@ -36,28 +30,46 @@ spring:
     username: ${PROJECT_MANAGER_DB_USER:project_manager}
     password: ${PROJECT_MANAGER_DB_PASSWORD:project_manager}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000        # Close idle connections after the 30s
+      connection-timeout: 30000  # Fail after the 30s if no connection is available
+      max-lifetime: 1800000      # Close connections after 30 min
+      keepalive-time: 30000      # Prevents premature connection closure by PostgreSQL
+      leak-detection-threshold: 2000  # Log warnings if a connection is not released within 2s
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
 
   jpa:
     hibernate:
       ddl-auto: none
-      naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 30
+          order_inserts: true
+          order_updates: true
     database: postgresql
     show-sql: ${HIBERNATE_LOG:false}
+    open-in-view: false  # Avoid memory leaks
 
   security:
     oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_URL}
       client:
         provider:
           oidc:
-            issuer-uri: ${OIDC_URL}/realms/${OIDC_REALM}
-            authorization-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/auth
-            token-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/token
-            user-info-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/userinfo
-            jwk-set-uri: ${spring.security.oauth2.client.provider.oidc.issuer-uri}/protocol/openid-connect/certs
+            issuer-uri: ${OIDC_URL}
             user-name-attribute: email
         registration:
           oidc:
@@ -75,36 +87,3 @@ spring:
       max-file-size: ${MAX_FILE_SIZE:10MB}
       max-request-size: ${MAX_REQEST_SIZE:10MB}
 
-#  mail:
-#    host: ${SMTP_HOST}
-#    port: ${SMTP_PORT}
-#    username: ${SMTP_USER}
-#    password: ${SMTP_PASSWORD}
-  #    properties:
-  #      mail:
-  #        smtp:
-  #          auth: true
-  #          starttls:
-  #            enable: true
-  #          smtp:
-  #            proxy:
-  #              host: ${PROXY_HOST}
-  #              port: ${PROXY_PORT}
-
-
-#bridgeheads:
-#  config:
-#    frankfurt:
-#      explorer-code: frankfurt123
-#      exporter-url: http://frankfurt-bridgehead.com/ccp-exporter
-#      exporter-api-key: asdfkjalsdkjasfldkj
-#    berlin:
-#      explorer-code: berlin456
-#      exporter-url: http://berlin-bridgehead.com/ccp-exporter
-#      exporter-api-key: erewrtwwenbmtvwnbvetnbvter
-
-#frontend:
-#  base-url: "http://localhost:8099"
-#  sites:
-#    project-dashboard: "/project-dashboard"
-#    project-view: "/project-view"

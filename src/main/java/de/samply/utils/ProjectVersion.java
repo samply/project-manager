@@ -21,7 +21,7 @@ public class ProjectVersion {
         try {
             return getProjectVersion_WithoutManagementException();
         } catch (IOException | XmlPullParserException e) {
-            log.error("Error getting project version: " + ExceptionUtils.getStackTrace(e));
+            log.error("Error getting project version: {}", ExceptionUtils.getStackTrace(e));
             return ProjectManagerConst.APP_NAME;
         }
     }

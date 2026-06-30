@@ -2,50 +2,47 @@ package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
-import de.samply.db.repository.*;
+import de.samply.document.DocumentService;
 import de.samply.frontend.FrontendService;
+import de.samply.project.ProjectBridgeheadService;
+import de.samply.user.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EmailKeyValuesFactory {
 
+    // Services
     private final FrontendService frontendService;
+    private final DocumentService documentService;
+    private final UserService userService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+
     private final EmailContext emailContext;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
     private final BridgeheadConfiguration bridgeheadConfiguration;
-    private final ProjectDocumentRepository projectDocumentRepository;
-    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
 
     private final String researchEnvironmentUrl;
 
-    public EmailKeyValuesFactory(FrontendService frontendService,
+    public EmailKeyValuesFactory(FrontendService frontendService, DocumentService documentService,
                                  EmailContext emailContext,
-                                 ProjectBridgeheadRepository projectBridgeheadRepository,
-                                 ProjectRepository projectRepository,
-                                 UserRepository userRepository,
+                                 UserService userService, ProjectBridgeheadService projectBridgeheadService,
                                  BridgeheadConfiguration bridgeheadConfiguration,
-                                 ProjectDocumentRepository projectDocumentRepository,
-                                 BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
                                  @Value(ProjectManagerConst.CODER_BASE_URL_SV) String researchEnvironmentUrl) {
         this.frontendService = frontendService;
+        this.documentService = documentService;
         this.emailContext = emailContext;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
+        this.projectBridgeheadService = projectBridgeheadService;
         this.bridgeheadConfiguration = bridgeheadConfiguration;
-        this.projectDocumentRepository = projectDocumentRepository;
-        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.researchEnvironmentUrl = researchEnvironmentUrl;
     }
 
     public EmailKeyValues newInstance() {
         return new EmailKeyValues(
-                frontendService, emailContext, projectBridgeheadRepository, projectRepository,
-                userRepository, bridgeheadConfiguration, projectDocumentRepository,
-                bridgeheadAdminUserRepository, researchEnvironmentUrl);
+                frontendService, emailContext, documentService,
+                userService, bridgeheadConfiguration,
+                researchEnvironmentUrl,
+                projectBridgeheadService);
     }
 
 }

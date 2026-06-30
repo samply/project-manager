@@ -1,7 +1,6 @@
 package de.samply.project;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.db.repository.ProjectRepository;
 import de.samply.project.event.ProjectEventService;
 import de.samply.project.state.ProjectState;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,21 +12,20 @@ import java.util.Set;
 @Component
 public class CheckExpiredActiveProjectsJob {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
     private final ProjectEventService projectEventService;
 
-    public CheckExpiredActiveProjectsJob(ProjectRepository projectRepository,
+    public CheckExpiredActiveProjectsJob(ProjectService projectService,
                                          ProjectEventService projectEventService) {
-        this.projectRepository = projectRepository;
+        this.projectService = projectService;
         this.projectEventService = projectEventService;
     }
 
     @Scheduled(cron = ProjectManagerConst.CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION_SV)
     public void checkExpiredActiveProjects() {
-        projectRepository.findByExpiresAtBeforeAndStateIn(LocalDate.now(),
-                Set.of(ProjectState.CREATED, ProjectState.ACCEPTED, ProjectState.DEVELOP,
-                        ProjectState.PILOT, ProjectState.FINAL)).forEach(expiredActiveProject ->
-                projectEventService.archive(expiredActiveProject.getCode()));
+        projectService.findProjectByExpiresAtBeforeAndStateIn(LocalDate.now(),
+                Set.of(ProjectState.REVIEW, ProjectState.APPROVAL, ProjectState.DEVELOP,
+                        ProjectState.PILOT, ProjectState.FINAL)).forEach(projectEventService::archive);
     }
 
 }

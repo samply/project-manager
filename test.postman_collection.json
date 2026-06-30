@@ -1,0 +1,3595 @@
+{
+  "info": {
+    "_postman_id": "19b131eb-4c5b-452f-aeb3-9edc8cbe0e2c",
+    "name": "Project Manager",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24652658"
+  },
+  "item": [
+    {
+      "name": "Token Public with user researcher",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "password",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "bridgehead-test",
+              "type": "text"
+            },
+            {
+              "key": "username",
+              "value": "researcher",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "researcher",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://login.verbis.dkfz.de/realms/test-realm-01/protocol/openid-connect/token",
+          "protocol": "https",
+          "host": [
+            "login",
+            "verbis",
+            "dkfz",
+            "de"
+          ],
+          "path": [
+            "realms",
+            "test-realm-01",
+            "protocol",
+            "openid-connect",
+            "token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Info",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/info",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "info"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Actions Project Dashboard",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/actions?site=project-dashboard",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "actions"
+          ],
+          "query": [
+            {
+              "key": "site",
+              "value": "project-dashboard"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Actions Navigation",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/actions?site=nav-bar",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "actions"
+          ],
+          "query": [
+            {
+              "key": "site",
+              "value": "nav-bar"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Actions Project View",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/actions?site=project-view&project-code=634859e4dc3947ce92ea&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "actions"
+          ],
+          "query": [
+            {
+              "key": "site",
+              "value": "project-view"
+            },
+            {
+              "key": "project-code",
+              "value": "634859e4dc3947ce92ea"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "All Actions (Project View)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/all-actions?site=project-view&project-code=413148c5791a430e9dc7",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "all-actions"
+          ],
+          "query": [
+            {
+              "key": "site",
+              "value": "project-view"
+            },
+            {
+              "key": "project-code",
+              "value": "413148c5791a430e9dc7"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "All Actions (Project Dashboard)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/all-actions?site=project-dashboard",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "all-actions"
+          ],
+          "query": [
+            {
+              "key": "site",
+              "value": "project-dashboard"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create CQL Query (Researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/query?label=Test2&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=(gender = male)",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "query"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test2"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "template-id",
+              "value": "ccp"
+            },
+            {
+              "key": "output-format",
+              "value": "EXCEL"
+            },
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "(gender = male)"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create query and design project (Researcher) - Mit Bearer Authorization",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJnbUlXWjB3MmpjZ2h0UGphUnBRaXYxWVNlOGU0cVVMem15YVVlTmdUa1VFIn0.eyJleHAiOjE3MTA0NDU1MTIsImlhdCI6MTcxMDQ0NTIxMiwianRpIjoiMWU2Yzc3MTMtZGM3OC00ZjExLTkzMzItZmE5Y2EwYmVhYTNkIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi52ZXJiaXMuZGtmei5kZS9yZWFsbXMvdGVzdC1yZWFsbS0wMSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIyM2VmYTJiMS1iM2NhLTQ3ZWQtYTI2My03ZDUxNjA5OTA1YTgiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJicmlkZ2VoZWFkLXRlc3QiLCJzZXNzaW9uX3N0YXRlIjoiZmM0NjBjYTItZTUzMy00NmM1LWJhYWUtMDNhNTExMGI1ZjcxIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0Ojg0ODAiLCJodHRwOi8vbG9jYWxob3N0OjgwOTciLCJodHRwczovL2xvY2FsaG9zdDo4MDk3IiwiaHR0cHM6Ly9sb2NhbGhvc3Q6ODA5OSIsImh0dHA6Ly9sb2NhbGhvc3Q6ODc4NyIsImh0dHA6Ly9sb2NhbGhvc3Q6ODA5OSIsImh0dHA6Ly9sb2NhbGhvc3Q6OTAwMCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy10ZXN0LXJlYWxtLTAxIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCBvcGVuaWQgYWRtaW4iLCJzaWQiOiJmYzQ2MGNhMi1lNTMzLTQ2YzUtYmFhZS0wM2E1MTEwYjVmNzEiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZ3JvdXBzMiI6WyIvREtUS19DQ1BfSnVyYXNzaWMtcGFyayIsIi9EYXRhU0hJRUxEIl0sIm5hbWUiOiJBbGFuIEdyYW50IiwiZ3JvdXBzIjpbIkRLVEtfQ0NQX0p1cmFzc2ljLXBhcmsiLCJEYXRhU0hJRUxEIl0sInByZWZlcnJlZF91c2VybmFtZSI6InJlc2VhcmNoZXIiLCJnaXZlbl9uYW1lIjoiQWxhbiIsImZhbWlseV9uYW1lIjoiR3JhbnQiLCJlbWFpbCI6InJlc2VhcmNoZXJAdGVzdC5ka2Z6LmRlIn0.Ibrv8gw5Z_w-fcfOVOczYMWOL_nIp7zS4qGIrJa7TqFrUd9jRPIViffFH-x1Me0jP6FhOkgJt9pooMjEAItdcsrVzIcwhG-jI9un460A0piLSYl3ljz3CSv3n4yP2behQOBRMLf6Uv8Z-4KOxGrgDgUJTqWSUJwDp1JIF-o6W8D688pPKzIEHV7ETCZyY2WNEBU2BDNSMp9t_YMx4pOE2-OHTx4m3ncOVakMa6cwRwqdZDYnnQOB0dGLulF9Cg5yWD5LZUvaDLyN65Bv3dsisNs7IVOrq_G8OCmZ_wSR8CB1xzAXOF2qFYS3czRAh2dYnjnyIRHxZUbyA8lO2URVmQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park&project-type=EXPORT",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "template-id",
+              "value": "ccp"
+            },
+            {
+              "key": "output-format",
+              "value": "EXCEL"
+            },
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "KGdlbmRlciA9IG1hbGUp"
+            },
+            {
+              "key": "bridgeheads",
+              "value": "star-wars,jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "project-type",
+              "value": "EXPORT"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create query and design project (Researcher) - Ohne Authorization (nur JSESSIONID Cookie)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park&project-type=EXPORT",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "template-id",
+              "value": "ccp"
+            },
+            {
+              "key": "output-format",
+              "value": "EXCEL"
+            },
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "KGdlbmRlciA9IG1hbGUp"
+            },
+            {
+              "key": "bridgeheads",
+              "value": "star-wars,jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "project-type",
+              "value": "EXPORT"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create query and design project (Researcher) - Ohne Authorization (nur JSESSIONID Cookie) without PROJECT TYPE",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=star-wars,jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "KGdlbmRlciA9IG1hbGUp"
+            },
+            {
+              "key": "bridgeheads",
+              "value": "star-wars,jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create ast query and design project (Researcher) - Ohne Authorization (nur JSESSIONID Cookie) without PROJECT TYPE",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiYXN0IiwicGF5bG9hZCI6ImV5SmhjM1FpT25zaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSkJUa1FpTENKamFHbHNaSEpsYmlJNlczc2lhMlY1SWpvaVoyeHBiMjFmWVd4c1gyZHliM1Z3Y3lJc0ltOXdaWEpoYm1RaU9pSlBVaUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKSGJHbHZiU0F0SUVkeVlXUWdTU0lzSW05d1pYSmhibVFpT2lKQlRrUWlMQ0pqYUdsc1pISmxiaUk2VzNzaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSlBVaUlzSW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKa2FXRm5ibTl6YVhNaUxDSjBlWEJsSWpvaVJWRlZRVXhUSWl3aWRtRnNkV1VpT2lKRU5ETWlmU3g3SW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW5SNWNHVWlPaUpGVVZWQlRGTWlMQ0oyWVd4MVpTSTZJa1EwTXk0eEluMHNleUpyWlhraU9pSmthV0ZuYm05emFYTWlMQ0owZVhCbElqb2lSVkZWUVV4VElpd2lkbUZzZFdVaU9pSkVORE11TWlKOUxIc2lhMlY1SWpvaVpHbGhaMjV2YzJseklpd2lkSGx3WlNJNklrVlJWVUZNVXlJc0luWmhiSFZsSWpvaVJEUXpMakFpZlN4N0ltdGxlU0k2SW1ScFlXZHViM05wY3lJc0luUjVjR1VpT2lKRlVWVkJURk1pTENKMllXeDFaU0k2SWtRME15NHpJbjBzZXlKclpYa2lPaUprYVdGbmJtOXphWE1pTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUpFTkRNdU5DSjlMSHNpYTJWNUlqb2laR2xoWjI1dmMybHpJaXdpZEhsd1pTSTZJa1ZSVlVGTVV5SXNJblpoYkhWbElqb2lSRFF6TGpjaWZTeDdJbXRsZVNJNkltUnBZV2R1YjNOcGN5SXNJblI1Y0dVaU9pSkZVVlZCVEZNaUxDSjJZV3gxWlNJNklrUTBNeTQ1SW4xZGZWMTlMSHNpYjNCbGNtRnVaQ0k2SWs5U0lpd2lZMmhwYkdSeVpXNGlPbHQ3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnekx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXprMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TkRJeEx6RWlmVjE5WFgxZGZWMTlYWDBzSW1sa0lqb2laREZrWm1NME16a3RZalJtT0MwMFltWmhMV0UxTmpjdFltRTFZelkzWVdKa01XVTJJbjA9In0=\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&query-format=AST_DATA&human-readable=KCgoZGlhZ25vc2lzIEVRVUFMUyBENDMpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4xKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuMikgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjApIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4zKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuNCkgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjcpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My45KSkgQU5EICgobW9ycGhvbG9neSBFUVVBTFMgOTM4My8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM4NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM5NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTQyMS8xKSkpCg==&bridgeheads=star-wars,jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "query-format",
+              "value": "AST_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "KCgoZGlhZ25vc2lzIEVRVUFMUyBENDMpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4xKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuMikgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjApIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4zKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuNCkgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjcpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My45KSkgQU5EICgobW9ycGhvbG9neSBFUVVBTFMgOTM4My8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM4NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM5NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTQyMS8xKSkpCg=="
+            },
+            {
+              "key": "bridgeheads",
+              "value": "star-wars,jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create query and design project (Researcher) [e260-ccp-req]",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDoyOTI0ZTA1MC1mNmZlLTQ2YjUtYjcwMi0xNWE5ZWVjNzQ0M2MiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2dwRVMxUkxYMU5VVWtGVVgwZEZUa1JGVWw5VFZGSkJWRWxHU1VWU0NncEVTMVJMWDFOVVVrRlVYMUJTU1UxQlVsbGZSRWxCUjA1UFUwbFRYMDVQWDFOUFVsUmZVMVJTUVZSSlJrbEZVZ3BFUzFSTFgxTlVVa0ZVWDBGSFJWOURURUZUVTE5VFZGSkJWRWxHU1VWU0NncEVTMVJMWDFOVVVrRlVYMFJGUTBWQlUwVkVYMU5VVWtGVVNVWkpSVklLQ2tSTFZFdGZVMVJTUVZSZlJFbEJSMDVQVTBsVFgxTlVVa0ZVU1VaSlJWSUtDa1JMVkV0ZlUxUlNRVlJmVTFCRlEwbE5SVTVmVTFSU1FWUkpSa2xGVWdvS1JFdFVTMTlUVkZKQlZGOVFVazlEUlVSVlVrVmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5TlJVUkpRMEZVU1U5T1gxTlVVa0ZVU1VaSlJWSUtDaUFnUkV0VVMxOVRWRkpCVkY5SVNWTlVUMHhQUjFsZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOjEwMDNlNGMzLWRkZDctNGE2NC1hMmNlLTE5ODBiMmJkOGEyNCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6MjkyNGUwNTAtZjZmZS00NmI1LWI3MDItMTVhOWVlYzc0NDNjIiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfSx7ImNvZGUiOnsidGV4dCI6Ikhpc3RvIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiT2JzZXJ2YXRpb24ifV0sInBvcHVsYXRpb24iOlt7ImNvZGUiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vdGVybWlub2xvZ3kuaGw3Lm9yZy9Db2RlU3lzdGVtL21lYXN1cmUtcG9wdWxhdGlvbiIsImNvZGUiOiJpbml0aWFsLXBvcHVsYXRpb24ifV19LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiSGlzdG8ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJIaXN0b2xvZ2llcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiSGlzdG9sb2d5In19XX1dfX0=\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://e260-ccp-req/project-manager-api/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=ccp&output-format=EXCEL&query-format=CQL_DATA&human-readable=KGdlbmRlciA9IG1hbGUp&bridgeheads=mannheim,dktk-test,dktk-datashield-test&project-type=EXPORT",
+          "protocol": "https",
+          "host": [
+            "e260-ccp-req"
+          ],
+          "path": [
+            "project-manager-api",
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "template-id",
+              "value": "ccp"
+            },
+            {
+              "key": "output-format",
+              "value": "EXCEL"
+            },
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "KGdlbmRlciA9IG1hbGUp"
+            },
+            {
+              "key": "bridgeheads",
+              "value": "mannheim,dktk-test,dktk-datashield-test"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "project-type",
+              "value": "EXPORT"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create query and design project (Researcher) [requests.dktk.dkfz.de]",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"query\": \"eyJsYW5nIjoiYXN0IiwicGF5bG9hZCI6ImV5SmhjM1FpT25zaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSkJUa1FpTENKamFHbHNaSEpsYmlJNlczc2lhMlY1SWpvaVoyeHBiMjFmWVd4c1gyZHliM1Z3Y3lJc0ltOXdaWEpoYm1RaU9pSlBVaUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKSGJHbHZiU0F0SUVkeVlXUWdTU0lzSW05d1pYSmhibVFpT2lKQlRrUWlMQ0pqYUdsc1pISmxiaUk2VzNzaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSlBVaUlzSW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKa2FXRm5ibTl6YVhNaUxDSjBlWEJsSWpvaVJWRlZRVXhUSWl3aWRtRnNkV1VpT2lKRU5ETWlmU3g3SW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW5SNWNHVWlPaUpGVVZWQlRGTWlMQ0oyWVd4MVpTSTZJa1EwTXk0eEluMHNleUpyWlhraU9pSmthV0ZuYm05emFYTWlMQ0owZVhCbElqb2lSVkZWUVV4VElpd2lkbUZzZFdVaU9pSkVORE11TWlKOUxIc2lhMlY1SWpvaVpHbGhaMjV2YzJseklpd2lkSGx3WlNJNklrVlJWVUZNVXlJc0luWmhiSFZsSWpvaVJEUXpMakFpZlN4N0ltdGxlU0k2SW1ScFlXZHViM05wY3lJc0luUjVjR1VpT2lKRlVWVkJURk1pTENKMllXeDFaU0k2SWtRME15NHpJbjBzZXlKclpYa2lPaUprYVdGbmJtOXphWE1pTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUpFTkRNdU5DSjlMSHNpYTJWNUlqb2laR2xoWjI1dmMybHpJaXdpZEhsd1pTSTZJa1ZSVlVGTVV5SXNJblpoYkhWbElqb2lSRFF6TGpjaWZTeDdJbXRsZVNJNkltUnBZV2R1YjNOcGN5SXNJblI1Y0dVaU9pSkZVVlZCVEZNaUxDSjJZV3gxWlNJNklrUTBNeTQ1SW4xZGZWMTlMSHNpYjNCbGNtRnVaQ0k2SWs5U0lpd2lZMmhwYkdSeVpXNGlPbHQ3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnekx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXprMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TkRJeEx6RWlmVjE5WFgxZGZWMTlYWDBzSW1sa0lqb2lZelJqWkRRNVpqVXRZV1V5T0MwMFl6TmxMV0V4WVRjdE5XTXpNamM1TnpabVlqbGxJbjA9In0=\",\r\n    \"explorer-ids\": \"lens-dktk-test,lens-freiburg,lens-berlin,lens-dresden\",\r\n    \"query-format\": \"AST_DATA\",\r\n    \"human-readable\": \"(((diagnosis EQUALS D43) OR (diagnosis EQUALS D43.1) OR (diagnosis EQUALS D43.2) OR (diagnosis EQUALS D43.0) OR (diagnosis EQUALS D43.3) OR (diagnosis EQUALS D43.4) OR (diagnosis EQUALS D43.7) OR (diagnosis EQUALS D43.9)) AND ((morphology EQUALS 9383/1) OR (morphology EQUALS 9384/1) OR (morphology EQUALS 9394/1) OR (morphology EQUALS 9421/1)))\",\r\n    \"explorer-url\": \"https://demo.lens.samply.de/?collections=&query=W1t7ImlkIjoiMDVlOTVlODEtMGZiYi00ZDczLWE1YzgtZDYyOTg3ZmYzMzg5Iiwia2V5IjoiZ2xpb21fYWxsX2dyb3VwcyIsIm5hbWUiOiJHbGlvbWUsIGFsbGUgR3J1cHBlbiIsInR5cGUiOiJFUVVBTFMiLCJ2YWx1ZXMiOlt7Im5hbWUiOiJHbGlvbSAtIEdyYWQgSSIsInZhbHVlIjpbW3sidmFsdWUiOiJkaWFnbm9zaXMiLCJuYW1lIjoiRDQzLiUifV0sW3sidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODMvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzOTQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6Ijk0MjEvMSJ9XV0sInF1ZXJ5QmluZElkIjoiM2FiMTM1ZjctYzI3NC00YWFlLWI5YjQtYmFhNDc2OWRkZjcxIn1dfV1d\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://requests.dktk.dkfz.de/project-manager-api/create-query-and-design-project",
+          "protocol": "https",
+          "host": [
+            "requests",
+            "dktk",
+            "dkfz",
+            "de"
+          ],
+          "path": [
+            "project-manager-api",
+            "create-query-and-design-project"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Lens: Create Query",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJnbUlXWjB3MmpjZ2h0UGphUnBRaXYxWVNlOGU0cVVMem15YVVlTmdUa1VFIn0.eyJleHAiOjE3MTIwNTYxOTIsImlhdCI6MTcxMjA1NTg5MiwianRpIjoiOTE4MjBkMDItNmI0ZS00NDQxLWFjNGEtOTEzNDk5Zjg1NWFjIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi52ZXJiaXMuZGtmei5kZS9yZWFsbXMvdGVzdC1yZWFsbS0wMSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIyM2VmYTJiMS1iM2NhLTQ3ZWQtYTI2My03ZDUxNjA5OTA1YTgiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJicmlkZ2VoZWFkLXRlc3QiLCJzZXNzaW9uX3N0YXRlIjoiYzJiNzZhMmUtMmE0Ny00ZjE2LTk4OGEtYTBlN2RmOGZhYjE4IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0Ojg0ODAiLCJodHRwOi8vbG9jYWxob3N0OjgwOTciLCJodHRwczovL2xvY2FsaG9zdDo4MDk3IiwiaHR0cHM6Ly9sb2NhbGhvc3Q6ODA5OSIsImh0dHA6Ly9sb2NhbGhvc3Q6ODc4NyIsImh0dHA6Ly9sb2NhbGhvc3Q6ODA5OSIsImh0dHA6Ly9sb2NhbGhvc3Q6OTAwMCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy10ZXN0LXJlYWxtLTAxIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCBvcGVuaWQgYWRtaW4iLCJzaWQiOiJjMmI3NmEyZS0yYTQ3LTRmMTYtOTg4YS1hMGU3ZGY4ZmFiMTgiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZ3JvdXBzMiI6WyIvREtUS19DQ1BfSnVyYXNzaWMtcGFyayIsIi9EYXRhU0hJRUxEIl0sIm5hbWUiOiJBbGFuIEdyYW50IiwiZ3JvdXBzIjpbIkRLVEtfQ0NQX0p1cmFzc2ljLXBhcmsiLCJEYXRhU0hJRUxEIl0sInByZWZlcnJlZF91c2VybmFtZSI6InJlc2VhcmNoZXIiLCJnaXZlbl9uYW1lIjoiQWxhbiIsImZhbWlseV9uYW1lIjoiR3JhbnQiLCJlbWFpbCI6InJlc2VhcmNoZXJAdGVzdC5ka2Z6LmRlIn0.vhN2IWS9bVv03JRR0uuNDuCjBI5foE8WaSWRl1CsiKyB2EhOlpYz1H8vkQBTi8ZCEEVrBFdOkKNm1d0pmL0NpTSmfWEXtDrpjNTL70BSHfDwJ2UyU9sO-WiDor3eNQ3oAOp60x7ETb0TUKaFQSThsx6AchxlPR4oxMrsG1bsOfLdhsgQKqedEqHKKuJ3BhqwaUja41-rlTTHfvrJas5fu1WTBZXKAJuOk5osTN4Mc0QaF1rZfvoerzP_lNCzNeODasIzG9pvdv3WFVn3srfzEJbOhwwSBbNlYNMXPXdmHE5rB36tUrri7HAc2wc-90BmRPD5rQbPbwJfMOG75fm16Q",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?query-format=CQL_DATA&human-readable=(gender = male)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "(gender = male)"
+            },
+            {
+              "key": "explorer-ids",
+              "value": "lens-star-wars,lens-jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create query and design project with explorerIds (Researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&template-id=opal-ccp&output-format=OPAL&query-format=CQL_DATA&human-readable=(gender = male)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-type=DATASHIELD",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "create-query-and-design-project"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test"
+            },
+            {
+              "key": "description",
+              "value": "This is a test query for CCP"
+            },
+            {
+              "key": "template-id",
+              "value": "opal-ccp"
+            },
+            {
+              "key": "output-format",
+              "value": "OPAL"
+            },
+            {
+              "key": "query-format",
+              "value": "CQL_DATA"
+            },
+            {
+              "key": "human-readable",
+              "value": "(gender = male)"
+            },
+            {
+              "key": "explorer-ids",
+              "value": "lens-star-wars,lens-jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345"
+            },
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit query and project (Researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/project/edit?label=Test2 changed&description=I could change the query&template-id=opal-ccp&output-format=OPAL&human-readable=(gender = male) and (vitalstatus = lebend)&bridgeheads=jurassic-park,frankfurt&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884&project-type=DATASHIELD",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "edit"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test2 changed"
+            },
+            {
+              "key": "description",
+              "value": "I could change the query"
+            },
+            {
+              "key": "template-id",
+              "value": "opal-ccp"
+            },
+            {
+              "key": "output-format",
+              "value": "OPAL"
+            },
+            {
+              "key": "query-format",
+              "value": "FHIR_SEARCH",
+              "disabled": true
+            },
+            {
+              "key": "human-readable",
+              "value": "(gender = male) and (vitalstatus = lebend)"
+            },
+            {
+              "key": "bridgeheads",
+              "value": "jurassic-park,frankfurt"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345"
+            },
+            {
+              "key": "project-code",
+              "value": "2dfcd1bf620241f9b884"
+            },
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit query and project with explorer ids (Researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/project/edit?label=Test2 changed&description=I could change the query&template-id=opal-ccp&output-format=OPAL&human-readable=(gender = male) and (vitalstatus = lebend)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884&query-context=key1=value1;key2=value2&project-type=DATASHIELD",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "edit"
+          ],
+          "query": [
+            {
+              "key": "label",
+              "value": "Test2 changed"
+            },
+            {
+              "key": "description",
+              "value": "I could change the query"
+            },
+            {
+              "key": "template-id",
+              "value": "opal-ccp"
+            },
+            {
+              "key": "output-format",
+              "value": "OPAL"
+            },
+            {
+              "key": "query-format",
+              "value": "FHIR_SEARCH",
+              "disabled": true
+            },
+            {
+              "key": "human-readable",
+              "value": "(gender = male) and (vitalstatus = lebend)"
+            },
+            {
+              "key": "explorer-ids",
+              "value": "lens-star-wars,lens-jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345"
+            },
+            {
+              "key": "project-code",
+              "value": "2dfcd1bf620241f9b884"
+            },
+            {
+              "key": "query-context",
+              "value": "key1=value1;key2=value2"
+            },
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Output",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/project/output?project-type=DATASHIELD&project-code=e650191ea08143b5bb11",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "output"
+          ],
+          "query": [
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            },
+            {
+              "key": "project-code",
+              "value": "e650191ea08143b5bb11"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Output",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/edit?project-type=EXPORT&project-code=e650191ea08143b5bb11&output-format=EXCEL&template-id=ccp",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "edit"
+          ],
+          "query": [
+            {
+              "key": "project-type",
+              "value": "EXPORT"
+            },
+            {
+              "key": "project-code",
+              "value": "e650191ea08143b5bb11"
+            },
+            {
+              "key": "output-format",
+              "value": "EXCEL"
+            },
+            {
+              "key": "template-id",
+              "value": "ccp"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Lens: Edit Query",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"query\": \"eyJsYW5nIjoiY3FsIiwibGliIjp7InJlc291cmNlVHlwZSI6IkxpYnJhcnkiLCJ1cmwiOiJ1cm46dXVpZDpiOTRkMTAwYy0zN2NkLTRiZDAtODgyNy01MzJiODRiZWE2NDgiLCJzdGF0dXMiOiJhY3RpdmUiLCJ0eXBlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9saWJyYXJ5LXR5cGUiLCJjb2RlIjoibG9naWMtbGlicmFyeSJ9XX0sImNvbnRlbnQiOlt7ImNvbnRlbnRUeXBlIjoidGV4dC9jcWwiLCJkYXRhIjoiYkdsaWNtRnllU0JTWlhSeWFXVjJaUXAxYzJsdVp5QkdTRWxTSUhabGNuTnBiMjRnSnpRdU1DNHdKd3BwYm1Oc2RXUmxJRVpJU1ZKSVpXeHdaWEp6SUhabGNuTnBiMjRnSnpRdU1DNHdKd29LWTI5a1pYTjVjM1JsYlNCc2IybHVZem9nSjJoMGRIQTZMeTlzYjJsdVl5NXZjbWNuQ2dwamIyNTBaWGgwSUZCaGRHbGxiblFLQ2tSTFZFdGZVMVJTUVZSZlIwVk9SRVZTWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZRVWRGWDFOVVVrRlVTVVpKUlZJS0NrUkxWRXRmVTFSU1FWUmZSRVZEUlVGVFJVUmZVMVJTUVZSSlJrbEZVZ29LUkV0VVMxOVRWRkpCVkY5RVNVRkhUazlUU1ZOZlUxUlNRVlJKUmtsRlVnb0tSRXRVUzE5VFZGSkJWRjlUVUVWRFNVMUZUbDlUVkZKQlZFbEdTVVZTQ2dwRVMxUkxYMU5VVWtGVVgxQlNUME5GUkZWU1JWOVRWRkpCVkVsR1NVVlNDZ3BFUzFSTFgxTlVVa0ZVWDAxRlJFbERRVlJKVDA1ZlUxUlNRVlJKUmtsRlVncEVTMVJMWDFOVVVrRlVYMFJGUmw5SlRsOUpUa2xVU1VGTVgxQlBVRlZNUVZSSlQwNVFZWFJwWlc1MExtZGxibVJsY2lBOUlDZHRZV3hsSnc9PSJ9XX0sIm1lYXN1cmUiOnsicmVzb3VyY2VUeXBlIjoiTWVhc3VyZSIsInVybCI6InVybjp1dWlkOmFjMDQwNmMxLTBlYjEtNDU4YS05ZmE4LTQ3MTZiZjhmMTBhOCIsInN0YXR1cyI6ImFjdGl2ZSIsInN1YmplY3RDb2RlYWJsZUNvbmNlcHQiOnsiY29kaW5nIjpbeyJzeXN0ZW0iOiJodHRwOi8vaGw3Lm9yZy9maGlyL3Jlc291cmNlLXR5cGVzIiwiY29kZSI6IlBhdGllbnQifV19LCJsaWJyYXJ5IjoidXJuOnV1aWQ6Yjk0ZDEwMGMtMzdjZC00YmQwLTg4MjctNTMyYjg0YmVhNjQ4Iiwic2NvcmluZyI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1zY29yaW5nIiwiY29kZSI6ImNvaG9ydCJ9XX0sImdyb3VwIjpbeyJjb2RlIjp7InRleHQiOiJwYXRpZW50cyJ9LCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkluSW5pdGlhbFBvcHVsYXRpb24ifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJHZW5kZXIifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJHZW5kZXIifX0seyJjb2RlIjp7InRleHQiOiI3NTE4Ni03In0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiRGVjZWFzZWQifX0seyJjb2RlIjp7InRleHQiOiJBZ2UifSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbCIsImV4cHJlc3Npb24iOiJBZ2VDbGFzcyJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoiZGlhZ25vc2lzIn0sImV4dGVuc2lvbiI6W3sidXJsIjoiaHR0cDovL2hsNy5vcmcvZmhpci91cy9jcWZtZWFzdXJlcy9TdHJ1Y3R1cmVEZWZpbml0aW9uL2NxZm0tcG9wdWxhdGlvbkJhc2lzIiwidmFsdWVDb2RlIjoiQ29uZGl0aW9uIn1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6IkRpYWdub3NpcyJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6ImRpYWdub3NpcyJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsLWlkZW50aWZpZXIiLCJleHByZXNzaW9uIjoiRGlhZ25vc2lzQ29kZSJ9fV19LHsiY29kZSI6eyJ0ZXh0Ijoic3BlY2ltZW4ifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJTcGVjaW1lbiJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJTcGVjaW1lbiJ9fV0sInN0cmF0aWZpZXIiOlt7ImNvZGUiOnsidGV4dCI6InNhbXBsZV9raW5kIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiU2FtcGxlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoicHJvY2VkdXJlcyJ9LCJleHRlbnNpb24iOlt7InVybCI6Imh0dHA6Ly9obDcub3JnL2ZoaXIvdXMvY3FmbWVhc3VyZXMvU3RydWN0dXJlRGVmaW5pdGlvbi9jcWZtLXBvcHVsYXRpb25CYXNpcyIsInZhbHVlQ29kZSI6IlByb2NlZHVyZSJ9XSwicG9wdWxhdGlvbiI6W3siY29kZSI6eyJjb2RpbmciOlt7InN5c3RlbSI6Imh0dHA6Ly90ZXJtaW5vbG9neS5obDcub3JnL0NvZGVTeXN0ZW0vbWVhc3VyZS1wb3B1bGF0aW9uIiwiY29kZSI6ImluaXRpYWwtcG9wdWxhdGlvbiJ9XX0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwtaWRlbnRpZmllciIsImV4cHJlc3Npb24iOiJQcm9jZWR1cmUifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJQcm9jZWR1cmVUeXBlIn0sImNyaXRlcmlhIjp7Imxhbmd1YWdlIjoidGV4dC9jcWwiLCJleHByZXNzaW9uIjoiUHJvY2VkdXJlVHlwZSJ9fV19LHsiY29kZSI6eyJ0ZXh0IjoibWVkaWNhdGlvblN0YXRlbWVudHMifSwiZXh0ZW5zaW9uIjpbeyJ1cmwiOiJodHRwOi8vaGw3Lm9yZy9maGlyL3VzL2NxZm1lYXN1cmVzL1N0cnVjdHVyZURlZmluaXRpb24vY3FmbS1wb3B1bGF0aW9uQmFzaXMiLCJ2YWx1ZUNvZGUiOiJNZWRpY2F0aW9uU3RhdGVtZW50In1dLCJwb3B1bGF0aW9uIjpbeyJjb2RlIjp7ImNvZGluZyI6W3sic3lzdGVtIjoiaHR0cDovL3Rlcm1pbm9sb2d5LmhsNy5vcmcvQ29kZVN5c3RlbS9tZWFzdXJlLXBvcHVsYXRpb24iLCJjb2RlIjoiaW5pdGlhbC1wb3B1bGF0aW9uIn1dfSwiY3JpdGVyaWEiOnsibGFuZ3VhZ2UiOiJ0ZXh0L2NxbC1pZGVudGlmaWVyIiwiZXhwcmVzc2lvbiI6Ik1lZGljYXRpb25TdGF0ZW1lbnQifX1dLCJzdHJhdGlmaWVyIjpbeyJjb2RlIjp7InRleHQiOiJNZWRpY2F0aW9uVHlwZSJ9LCJjcml0ZXJpYSI6eyJsYW5ndWFnZSI6InRleHQvY3FsIiwiZXhwcmVzc2lvbiI6IlByb2NlZHVyZVR5cGUifX1dfV19fQ==\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/project/edit?human-readable=(gender = male) and (vitalstatus = lebend)&explorer-ids=lens-star-wars,lens-jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&project-code=2dfcd1bf620241f9b884",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "edit"
+          ],
+          "query": [
+            {
+              "key": "human-readable",
+              "value": "(gender = male) and (vitalstatus = lebend)"
+            },
+            {
+              "key": "explorer-ids",
+              "value": "lens-star-wars,lens-jurassic-park"
+            },
+            {
+              "key": "explorer-url",
+              "value": "https://data.dktk.dkfz.de/redirect/12345"
+            },
+            {
+              "key": "project-code",
+              "value": "2dfcd1bf620241f9b884"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Design project (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/design?bridgeheads=david-j-develop,jurassic-park&query-code=c66cbbee57a941ddac12&project-type=DATASHIELD",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "design"
+          ],
+          "query": [
+            {
+              "key": "bridgeheads",
+              "value": "david-j-develop,jurassic-park"
+            },
+            {
+              "key": "query-code",
+              "value": "c66cbbee57a941ddac12"
+            },
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create project (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project?project-code=7e5b829f25224090b7b8",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "7e5b829f25224090b7b8"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Form Titles",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/titles?project-code=a1ba86d4574e45dd9962",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "titles"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a1ba86d4574e45dd9962"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch all form fields",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/fields?project-code=a1ba86d4574e45dd9962",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "fields"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a1ba86d4574e45dd9962"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch form fields",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/fields?project-code=a1ba86d4574e45dd9962&form-title=sample_data",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "fields"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a1ba86d4574e45dd9962"
+            },
+            {
+              "key": "form-title",
+              "value": "sample_data"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch selected project forms",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/selected?project-code=8424df248c9a412b9d39",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "selected"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "8424df248c9a412b9d39"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Selected Project Form",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/selected?project-code=8424df248c9a412b9d39&form-title=sample_data",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "selected"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "8424df248c9a412b9d39"
+            },
+            {
+              "key": "form-title",
+              "value": "sample_data"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Selected Project Form",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/selected?project-code=8424df248c9a412b9d39&form-title=sample_data",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "selected"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "8424df248c9a412b9d39"
+            },
+            {
+              "key": "form-title",
+              "value": "sample_data"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit form fields",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"form-fields\": [\r\n        {\r\n            \"title\": \"sample_data\",\r\n            \"label\": \"slide_sufficiency_staining\",\r\n            \"value\": \"true\"\r\n        },\r\n        {\r\n            \"title\": \"sample_data\",\r\n            \"label\": \"donor\",\r\n            \"value\": \"my donor\"\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/project/forms/fields?project-code=a1ba86d4574e45dd9962",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "fields"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a1ba86d4574e45dd9962"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch form templates",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/templates?project-code=a1ba86d4574e45dd9962",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "templates"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a1ba86d4574e45dd9962"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download Form (Samples)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/download-form-as-pdf?project-code=a1ba86d4574e45dd9962&form-template=samples",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "download-form-as-pdf"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a1ba86d4574e45dd9962"
+            },
+            {
+              "key": "form-template",
+              "value": "samples"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download Form (Clinical Data)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/download-form-as-pdf?project-code=4786deeb2c3c459c9e33&form-template=clinical-data&language=de",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "download-form-as-pdf"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "4786deeb2c3c459c9e33"
+            },
+            {
+              "key": "form-template",
+              "value": "clinical-data"
+            },
+            {
+              "key": "language",
+              "value": "de"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project Roles (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/roles?project-code=9cb4eef8063441d8a820&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "roles"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "9cb4eef8063441d8a820"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project?project-code=7ac24acc738644d186f8&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "7ac24acc738644d186f8",
+              "type": "text"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Projects (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/projects?page=0&page-size=4",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "projects"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "page-size",
+              "value": "4"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project States (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/states",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "states"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch registered bridgeheads",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/bridgeheads",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "bridgeheads"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project Bridgehead (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/bridgeheads?project-code=2bb9caf3c03a4d8296a0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "bridgeheads"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Script Description",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/script/description?project-code=ce573ab8dd1a4a53bce7&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "script",
+            "description"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "ce573ab8dd1a4a53bce7"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Votum Description",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/votum/description?project-code=ce573ab8dd1a4a53bce7&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "votum",
+            "description"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "ce573ab8dd1a4a53bce7"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Projects Modified asc(any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/projects?page=0&page-size=2&modified-desc=false",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "projects"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "page-size",
+              "value": "2"
+            },
+            {
+              "key": "modified-desc",
+              "value": "false",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Projects with project-state (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/projects?page=0&page-size=2&project-state=DRAFT",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "projects"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "page-size",
+              "value": "2"
+            },
+            {
+              "key": "project-state",
+              "value": "DRAFT",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Projects with project-state and archived (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/projects?page=0&page-size=2&project-state=DRAFT&archived=true",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "projects"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "page-size",
+              "value": "2"
+            },
+            {
+              "key": "project-state",
+              "value": "DRAFT"
+            },
+            {
+              "key": "archived",
+              "value": "true",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Projects with project-state and not archived (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/projects?page=0&page-size=2&project-state=DRAFT&archived=false",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "projects"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "page-size",
+              "value": "2"
+            },
+            {
+              "key": "project-state",
+              "value": "DRAFT"
+            },
+            {
+              "key": "archived",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Projects archived (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/projects?page=0&page-size=2&archived=true",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "projects"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "page-size",
+              "value": "2"
+            },
+            {
+              "key": "archived",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Projects not archived (any user)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/projects?page=0&page-size=2&archived=false",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "projects"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "page-size",
+              "value": "2"
+            },
+            {
+              "key": "archived",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Export Templates (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/exporter/templates?project-code=e650191ea08143b5bb11",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "exporter",
+            "templates"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "e650191ea08143b5bb11"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch DataSHIELD Templates (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/exporter/templates?project-code=5e632908aac4412a892e&project-type=DATASHIELD",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "exporter",
+            "templates"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "5e632908aac4412a892e"
+            },
+            {
+              "key": "project-type",
+              "value": "DATASHIELD"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Query Formats (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/query/formats?project-code=5c8bb65ffcf3405c8b3a",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "query",
+            "formats"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "5c8bb65ffcf3405c8b3a"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Output Formats (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/output/formats?project-code=c319ad0b3d7d463cab5a",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "output",
+            "formats"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "c319ad0b3d7d463cab5a"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project Configurations (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/configurations?project-code=277ec717a5b540b28adc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "configurations"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "277ec717a5b540b28adc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Current Project Configuration (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/configuration?project-code=a004d11ade614e2b871b",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "configuration"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "a004d11ade614e2b871b"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project Types (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/types?project-code=eca876afe8fb46f0ad03",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "types"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "eca876afe8fb46f0ad03"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Accept project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/accept?project-code=7e5b829f25224090b7b8",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "accept"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "7e5b829f25224090b7b8"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Archive project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/archive?project-code=9e1e43f738c840788f11",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "archive"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "9e1e43f738c840788f11"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send query to bridgehead (bk-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/bridgehead/query/save?project-code=14ed087fb7994c84a564&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "bridgehead",
+            "query",
+            "save"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "14ed087fb7994c84a564"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send query to bridgehead (bk-admin) Multi-Project Type",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/bridgehead/query/save?project-code=edc0372212c343d1ba04&bridgehead=jurassic-park&project-type=EXPORT,SAMPLES",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "bridgehead",
+            "query",
+            "save"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "edc0372212c343d1ba04"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "project-type",
+              "value": "EXPORT,SAMPLES"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send query to bridgehead and execute (bk-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/bridgehead/query/save-execute?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "bridgehead",
+            "query",
+            "save-execute"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2dfcd1bf620241f9b884"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Start develop stage for project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/start-develop?project-code=7e5b829f25224090b7b8",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "start-develop"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "7e5b829f25224090b7b8"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add developer to project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/developer?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park&email=developer@test.dkfz.de",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "developer"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2dfcd1bf620241f9b884"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "email",
+              "value": "developer@test.dkfz.de"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Accept project bridgehead (bk-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/bridgehead/accept?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "bridgehead",
+            "accept"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2dfcd1bf620241f9b884"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject project bridgehead (bk-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/bridgehead/reject?project-code=eca876afe8fb46f0ad03&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "bridgehead",
+            "reject"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "eca876afe8fb46f0ad03"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Accept script (developer)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/script/accept?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "script",
+            "accept"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "168d35c773a845c3beab"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject script (developer)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/script/reject?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "script",
+            "reject"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "168d35c773a845c3beab"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Request changes in script (developer)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/script/request-changes?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "script",
+            "request-changes"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "168d35c773a845c3beab"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Accept project results (final)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/results/accept?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "results",
+            "accept"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "168d35c773a845c3beab"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject project results (final)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/results/reject?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "results",
+            "reject"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "168d35c773a845c3beab"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Request changes in project (final)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/request-changes?project-code=168d35c773a845c3beab&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "request-changes"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "168d35c773a845c3beab"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Start pilot stage for project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/start-pilot?project-code=9e1e43f738c840788f11",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "start-pilot"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "9e1e43f738c840788f11"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add pilot user to project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/pilot-user?project-code=3b0a76b850864fc7916e&bridgehead=jurassic-park&email=pilot@test.dkfz.de",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "pilot-user"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "3b0a76b850864fc7916e"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "email",
+              "value": "pilot@test.dkfz.de"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Start final stage for project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/start-final?project-code=2bb9caf3c03a4d8296a0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "start-final"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add final user to project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/final-user?project-code=6491e451354c42b48e67&bridgehead=jurassic-park&email=final@test.dkfz.de",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "final-user"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "6491e451354c42b48e67"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "email",
+              "value": "final@test.dkfz.de"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Finish project (pm-admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/finish?project-code=2bb9caf3c03a4d8296a0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "finish"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Votum (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "votum.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/votum/upload?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park&label=This is a votum",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "votum",
+            "upload"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "label",
+              "value": "This is a votum"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download Votum (researcher)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "application-form.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/votum/download?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "votum",
+            "download"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Exists Votum (researcher)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "application-form.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/votum/exists?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "votum",
+            "exists"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Script (developer)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "script.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/script/upload?project-code=2bb9caf3c03a4d8296a0&label=This is a script&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "script",
+            "upload"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "label",
+              "value": "This is a script"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download Script (developer)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "application-form.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/script/download?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "script",
+            "download"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Publication (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "publication2.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/publication/upload?project-code=2bb9caf3c03a4d8296a0&label=This is a publication",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "publication",
+            "upload"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "label",
+              "value": "This is a publication"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download Publication (any)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "application-form.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/publication/download?project-code=2bb9caf3c03a4d8296a0&filename=publication.txt",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "publication",
+            "download"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "filename",
+              "value": "publication.txt"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Other document (developer)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "other-file.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/other-document/upload?project-code=2bb9caf3c03a4d8296a0&label=This is a script&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "other-document",
+            "upload"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "label",
+              "value": "This is a script"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download other document (developer)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "application-form.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/other-document/download?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park&filename=other-file.txt",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "other-document",
+            "download"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "filename",
+              "value": "other-file.txt"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add publication URL (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/publication/url?project-code=2bb9caf3c03a4d8296a0&document-url=https://escholarship.org/uc/item/5d08883v&label=A methane seep from the deep-marine, late Eocene Keasey Formation, Rock Creek, Columbia County, Oregon",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "publication",
+            "url"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park",
+              "disabled": true
+            },
+            {
+              "key": "document-url",
+              "value": "https://escholarship.org/uc/item/5d08883v"
+            },
+            {
+              "key": "label",
+              "value": "A methane seep from the deep-marine, late Eocene Keasey Formation, Rock Creek, Columbia County, Oregon"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add other documetn URL (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/document/url?project-code=2bb9caf3c03a4d8296a0&document-url=https://escholarship.org/uc/item/49c1b8zb&label=Acanthodian fauna from the Early Devonian (Emsian) of Death Valley, California",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "document",
+            "url"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park",
+              "disabled": true
+            },
+            {
+              "key": "document-url",
+              "value": "https://escholarship.org/uc/item/49c1b8zb"
+            },
+            {
+              "key": "label",
+              "value": "Acanthodian fauna from the Early Devonian (Emsian) of Death Valley, California"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch publications (researcher)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "application-form.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/publications?project-code=2bb9caf3c03a4d8296a0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "publications"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch other documents (researcher)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document",
+              "type": "file",
+              "src": "application-form.txt"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8097/other-documents?project-code=2bb9caf3c03a4d8296a0&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "other-documents"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2bb9caf3c03a4d8296a0"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch notifications (researcher)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/notifications?project-code=e32e15c3c016467a8dbc&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "notifications"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "e32e15c3c016467a8dbc"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Set notification as read",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/notification/read?notification-id=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "notification",
+            "read"
+          ],
+          "query": [
+            {
+              "key": "notification-id",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch DataSHIELD Status",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/datashield-status?project-code=413148c5791a430e9dc7&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "datashield-status"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "413148c5791a430e9dc7"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Download Authentication Script",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/authentication-script/download?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "authentication-script",
+            "download"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "2dfcd1bf620241f9b884"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Users for Autocomplete",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/autocomplete-users?project-code=7e5b829f25224090b7b8&bridgehead=jurassic-park&partial-email=vel",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "autocomplete-users"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "7e5b829f25224090b7b8"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            },
+            {
+              "key": "partial-email",
+              "value": "vel"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project Users (PM-Admin)",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/users?project-code=6491e451354c42b48e67&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "users"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "6491e451354c42b48e67"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

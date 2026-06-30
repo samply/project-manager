@@ -1,6 +1,7 @@
 package de.samply.aop;
 
 import de.samply.annotations.ProjectConstraints;
+import de.samply.db.model.Project;
 import de.samply.utils.AspectUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -22,6 +23,7 @@ public class ProjectConstraintsAspect {
         this.constraintsService = constraintsService;
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(de.samply.annotations.ProjectConstraints)")
     public void projectConstraintsPointcut() {
     }
@@ -29,8 +31,8 @@ public class ProjectConstraintsAspect {
     @Around("projectConstraintsPointcut()")
     public Object aroundProjectConstraints(ProceedingJoinPoint joinPoint) throws Throwable {
         Optional<ProjectConstraints> projectConstraints = fetchProjectConstrains(joinPoint);
-        Optional<String> projectCode = AspectUtils.fetchProjectCode(joinPoint);
-        Optional<ResponseEntity> result = this.constraintsService.checkProjectConstraints(projectConstraints, projectCode);
+        Optional<Project> project = AspectUtils.fetchProject(joinPoint);
+        @SuppressWarnings("rawtypes") Optional<ResponseEntity> result = this.constraintsService.checkProjectConstraints(projectConstraints, project);
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 

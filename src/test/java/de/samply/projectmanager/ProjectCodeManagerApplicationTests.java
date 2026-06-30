@@ -6,8 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @Disabled
 @SpringBootTest
-class ProjectManagerApplicationTests {
+class ProjectCodeManagerApplicationTests {
 
+	@SuppressWarnings("EmptyMethod")
 	@Test
 	void contextLoads() {
 	}

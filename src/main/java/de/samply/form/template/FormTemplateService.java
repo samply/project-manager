@@ -1,0 +1,179 @@
+package de.samply.form.template;
+
+import de.samply.app.ProjectManagerConst;
+import de.samply.db.model.Project;
+import de.samply.form.DataType;
+import de.samply.form.DtoFormService;
+import de.samply.form.pdf.FormPdfGeneratorFactory;
+import de.samply.form.pdf.FormTemplateServiceException;
+import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Form;
+import de.samply.frontend.dto.FormField;
+import de.samply.frontend.dto.FormTemplate;
+import de.samply.pdf.PdfGenerator;
+import de.samply.pdf.PdfGeneratorException;
+import de.samply.utils.DateUtils;
+import de.samply.utils.FileExtension;
+import de.samply.utils.FormFieldUtils;
+import de.samply.utils.LanguageUtils;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Service
+public class FormTemplateService {
+
+    private final DtoFormService dtoFormService;
+    private final PdfGenerator pdfGenerator;
+    private final String defaultLanguage;
+    private final FormTemplateConfig formTemplateConfig;
+    private final String defaultPdfFilename;
+    private final DtoFactory dtoFactory;
+    private final String datePattern;
+    private final ProjectContextFactory projectContextFactory;
+
+
+    public FormTemplateService(DtoFormService dtoFormService,
+                               FormPdfGeneratorFactory pdfGeneratorFactory,
+                               @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
+                               @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
+                               FormTemplateConfig formTemplateConfig,
+                               DtoFactory dtoFactory,
+                               @Value(ProjectManagerConst.FORM_TEMPLATE_DATE_PATTERN_SV) String datePattern,
+                               ProjectContextFactory projectContextFactory) {
+        this.dtoFormService = dtoFormService;
+        this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
+        this.defaultLanguage = defaultLanguage;
+        this.formTemplateConfig = formTemplateConfig;
+        this.defaultPdfFilename = defaultPdfFilename;
+        this.dtoFactory = dtoFactory;
+        this.datePattern = datePattern;
+        this.projectContextFactory = projectContextFactory;
+    }
+
+    public String fetchFormFilename(@NotNull Project project, String formTemplate) {
+        return FormFilenameResolver.resolve(
+                formTemplateConfig.getTemplate(formTemplate)
+                        .map(metadata -> metadata.getExtensionFilenameTemplateMap().get(FileExtension.PDF))
+                        .orElse(defaultPdfFilename),
+                Map.of(FormFilenameKey.PROJECT_CODE.getText(), project.getCode())
+        );
+    }
+
+    public byte[] createFormAsPdf(@NotNull Project project, @NotNull String formTemplate, Optional<String> language) throws FormTemplateServiceException {
+        try {
+            String templateFile = formTemplateConfig
+                    .fetchTemplateFile(formTemplate)
+                    .orElseThrow(() -> new RuntimeException("Template not found: " + formTemplate));
+            return pdfGenerator.generatePdf(
+                    templateFile,
+                    createContext(project, formTemplate, LanguageUtils.normalize(language.orElse(defaultLanguage))));
+        } catch (PdfGeneratorException e) {
+            throw new FormTemplateServiceException(e);
+        }
+    }
+
+    private Map<String, Object> createContext(Project project, String formTemplate, String language) {
+        ProjectContext projectContext = projectContextFactory.createProjectContext(project, language);
+        //Add project context
+        Map<String, Object> result = new HashMap<>(projectContext.fetchContext());
+        // Add form fields
+        result.put(FormContextKey.FIELDS.getText(), fetchFormFields(project, formTemplate, language, projectContext));
+        // Add form variables
+        result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
+        result.put(FormContextKey.DATA_TYPE_CLASS.getText(), DataType.class);
+        result.put(FormContextKey.CURRENT_DATE.getText(), DateUtils.fetchCurrentDate(datePattern, language));
+
+        return result;
+    }
+
+    public Map<String, FormField> fetchFormFields(
+            @NotNull Project project,
+            @NotNull String formTemplate,
+            @NotNull String language,
+            @NotNull ProjectContext projectContext
+    ) {
+        FormTemplateMetadata template = resolveTemplateMetadata(formTemplate);
+
+        return Stream.concat(
+                        // 1️⃣ ProjectCode fields
+                        Stream.ofNullable(template.getProjectFields())
+                                .flatMap(Arrays::stream)
+                                .map(projectContext::resolveProjectContext)
+                                .map(field -> dtoFactory.convert(
+                                        formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
+                                        field,
+                                        Optional.ofNullable(field.getProjectValue()),
+                                        Optional.of(language)
+                                )),
+
+                        // 2️⃣ Form fields from formService (raw, base + override)
+                        Arrays.stream(template.getFormTitles())
+                                .flatMap(formTitle -> dtoFormService.fetchBaseAndOverrideFormFields(
+                                        formTitle, project, Optional.of(language)))
+                )
+                .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
+                .collect(FormFieldUtils.formFieldMapCollector());
+    }
+
+    private List<FormTemplateMetadata> fetchValidMetadata(Project project, Optional<String> language) {
+
+        // Fetch all selected forms for the project and extract their titles into a Set
+        // A Set is used for O(1) lookup when checking if a title is contained
+        Set<String> selectedFormTitles = dtoFormService.fetchSelectedForms(project, language).stream()
+                .map(Form::title)
+                .collect(Collectors.toSet());
+
+        // From all available template metadata:
+        // Keep only those templates where *all* required form titles
+        // are present in the selected forms of the project
+        return formTemplateConfig.getTemplateMetadataMap().values().stream()
+                .filter(metadata -> Arrays.stream(metadata.getFormTitles())
+                        .allMatch(selectedFormTitles::contains)
+                )
+                .toList();
+    }
+
+    public List<FormTemplate> fetchTemplates(@NotNull Project project, Optional<String> language) {
+
+        // Convert all valid metadata objects into DTOs (FormTemplate)
+        // This method returns ALL matching templates without ranking
+        return fetchValidMetadata(project, language).stream()
+                .map(metadata -> dtoFactory.convert(metadata, language))
+                .toList();
+    }
+
+    public List<FormTemplate> fetchBestTemplates(@NotNull Project project, Optional<String> language) {
+
+        // Step 1: Get all templates that fully match the selected forms
+        List<FormTemplateMetadata> validTemplates = fetchValidMetadata(project, language);
+
+        // Step 2: Compute the "score" of each template
+        // Here, the score is simply the number of form titles the template requires
+        // (this works because we already ensured all titles are present via allMatch)
+        int maxScore = validTemplates.stream()
+                .mapToInt(metadata -> metadata.getFormTitles().length)
+                .max()
+                .orElse(0); // fallback if list is empty
+
+        // Step 3: Keep only templates that have the maximum score
+        // → i.e., the most specific / most complete templates
+        return validTemplates.stream()
+                .filter(metadata -> metadata.getFormTitles().length == maxScore)
+                // Step 4: Convert the remaining metadata into DTOs for output
+                .map(metadata -> dtoFactory.convert(metadata, language))
+                .toList();
+    }
+
+    private FormTemplateMetadata resolveTemplateMetadata(String formTemplate) {
+        return formTemplateConfig.getTemplate(formTemplate)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Template not found: " + formTemplate));
+    }
+
+
+}

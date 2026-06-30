@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +28,7 @@ public class ProxyConfiguration {
     private String noProxyPattern;
 
     // Convenience method to get noProxy as a List
+    @SuppressWarnings("unused")
     public List<String> getNoProxyList() {
         return noProxy != null ? Arrays.asList(noProxy.split(",")) : List.of();
     }
@@ -34,7 +36,7 @@ public class ProxyConfiguration {
     @PostConstruct
     public void init() throws MalformedURLException {
         if (StringUtils.hasText(this.url)) {
-            URL url = new URL(this.url);
+            URL url = URI.create(this.url).toURL();
             this.schema = url.getProtocol();
             this.host = url.getHost();
             this.port = url.getPort();
@@ -45,14 +47,14 @@ public class ProxyConfiguration {
         }
         if (isConfigured()) {
             String schema = (this.schema != null) ? this.schema : "";
-            log.info(schema + " proxy configured:");
-            log.info("\t-Host: " + this.host);
-            log.info("\t-Port: " + this.port);
+            log.info("{} proxy configured:", schema);
+            log.info("\t-Host: {}", this.host);
+            log.info("\t-Port: {}", this.port);
             if (username != null && password != null) {
-                log.info("\t-Username: " + username);
+                log.info("\t-Username: {}", username);
             }
             if (noProxy != null) {
-                log.info("\t-NoProxy: " + noProxy);
+                log.info("\t-NoProxy: {}", noProxy);
             }
         }
     }

@@ -4,28 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2025-02-11]
+## [1.0.0 - 2026-05-27]
 ### Added
 - First version of the project
 - Spring Application
-- State Machine for project
+- State Machine for a project
 - Project states and event states
 - Project Service
 - OAuth2 Security
-- OIDC <> Organisation Roles Mapping
+- OIDC <> Organization Roles Mapping
 - Session User Info
 - Session User Info email
 - Multi bridgehead user
-- Test user if security disabled
+- Test user if security is disabled
 - Bridgehead configuration
 - User Service
 - Project Role Constraints Aspect
 - Extract path roles map for Security Configuration
 - Project State Constraints Aspect
 - Frontend service
-- Set user as developer, pilot or final
-- REST Services: Design and Create project
-- REST Service: Accept, reject, archive, start develop, start pilot, start final, finish
+- Set the user as a developer, pilot or final
+- REST Services: Design and Create a project
+- REST Service: Accept, reject, archive, start developer, start pilot, start final, finish
 - Project Query and Query Format
 - REST Services: Create Query and Create CQL DATA Query
 - Document Service
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Type
 - HTTP Method for every endpoint in Security Configuration
 - IS_TEST_ENVIRONMENT variable disables CSRF
-- Create CREATOR user after creating project
+- Create CREATOR user after creating a project
 - Send and execute query REST Services
 - Label, description, template-id and output-format in Query
 - Token Manager Service
@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Exporter Service implementation
 - Bridgehead configuration with explorer and exporter mapping
 - Bridgehead Operation
-- Create query and draft project (Lens)
+- Create a query and draft a project (Lens)
 - humanReadable in Bridgehead Config
 - Email Service
 - Email Templates
@@ -55,29 +55,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Module names
 - Http Method and Params for Actions
 - Test endpoint
-- Download application form
+- Download the application form
 - Edit project and query
 - Fetch output format, query format and templates
 - Query Context
-- Download document rights to developer, pilot and final users
+- Download document rights to a developer, pilot and final users
 - Fetch Projects
-- Modified Desc as parameter of fetch projects
+- Modified Desc as a parameter of fetch projects
 - Upload and download documents by document type
 - Fetch publications and other documents
 - Fetch project types
 - Accept and reject project bridgehead
 - Fetch project bridgeheads
-- Accept, reject and request changes in script
+- Accept, reject and request changes in a script
 - Fetch all actions
 - Accept, Reject and request changes in project results
 - Notification Service
 - Token Manager services
 - Integration in Focus and Beam
 - Frontend DTO
-- Email as Mime message
+- Email as a Mime message
 - EmailSenderIfError annotation
 - Frontend DTO converters
-- Fetch all user visible notifications
+- Fetch all user-visible notifications
 - Accepted state requirement for setting user as developer or pilot
 - Notification User Action
 - Replace Bridgehead Operation through Notification
@@ -89,16 +89,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add notifications for services: document, project bridgehead, project event, project, query, user
 - DataSHIELD Token Manager Job
 - Check Expired Active Projects Job
-- Check if session scope is active before creating a notification for changing project state
-- Fetch token status and project status of token manager
-- New email if authentication script for DataSHIELD has changed
+- Check if the session scope is active before creating a notification for changing the project state
+- Fetch token status and project status of a token manager
+- New email if an authentication script for DataSHIELD has changed
 - Explorer URL in CORS
 - Oauth2 Resource Server configuration
 - Allow required headers
 - Project Constraints: Project Type
-- Email template for Accept/Reject/Request changes in project
+- Email template for Accept/Reject/Request changes in a project
 - User Autocomplete
-- Explorer Ids to create and edit query
+- Explorer Ids to create and edit a query
 - Decode redirect explorer URL
 - Fetch project users
 - rejectProject state constraints
@@ -106,14 +106,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Flag ENABLE_TOKEN_MANAGER
 - Content Disposition in exposed headers
 - Exists Votum and Application Form
-- Exists Script
+- Script exists
 - Explorer Redirect URI
 - User State in Frontend DTO
 - Fetch project configurations
-- Exists authentication script
+- There exists an authentication script
 - Remove inactive projects in Opal
 - Project Bridgehead DataSHIELD info
-- Set project bridgehead datashield removed to false while sending query of DATASHIELD project to exporter
+- Set project bridgehead datashield removed to false while sending a query of a DATASHIELD project to exporter
 - Fetch current project configuration
 - Custom project configuration
 - Fetch visible bridgeheads and fetch project bridgeheads
@@ -121,50 +121,50 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch Project Roles
 - Email Types: NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
 - Email config for types NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
-- Fetch label of application form, label and script
+- Fetch label of an application form, label and script
 - Service exist invited users
 - R-Studio Group Manager
 - Email Sender: ALL_DEVELOP, ALL_PILOT, ALL_FINAL
 - Send email to all involved users after a publication has been uploaded
 - Project and project view url in email context
-- Create notification after sending an email
-- Send message while requesting changes in script or project
-- Send message while rejecting a project
+- Create a notification after sending an email
+- Send a message while requesting changes in a script or project
+- Send a message while rejecting a project
 - Exporter Job
 - Check Queries in Exporter Job
-- Max time to wait focus task in minutes
+- Max time to wait a focus task in minutes
 - Check export execution status
 - Coder Service
 - RStudio in Coder
 - Research environment project type
 - Upload file to Coder
 - Delete Coder workspace job
-- Resend export files to research environment
+- Resend export files to a research environment
 - Query Code in Explorer URL
-- Decode human readable in base 64
-- Log bridgeheads at start
-- Replace hypen in bridgeheads
+- Decode human-readable in base 64
+- Log bridgeheads at the start
+- Replace hype in bridgeheads
 - Log bridgeheads sorted
 - Replace hyphen in frontend sites
 - Human Readable Bridgehead for frontend dto
 - Http proxy configuration
 - Email as HTML
-- Provide also human readable by fetch all registered bridgeheads
+- Provide also human-readable by fetching all registered bridgeheads
 - DataSHIELD Project Status Error
 - Catch token manager exceptions and return ERROR status
-- Send emails in async execution pool
+- Send emails in the async execution pool
 - Notification async execution pool
 - Exporter async execution pool
 - Action explanations
-- Integration of action explanatios in fetch Actions
+- Integration of action examples in fetch Actions
 - Action explanations templates
 - Email Context
 - Extend email context
 - Thymeleaf Dialect for email context variables
-- Combine first and last name in name 
-- Replace email context variables in email subject
-- Default and Default var in html tags
-- Fetch human readable bridgehead for emails
+- Combine first and last name in a name 
+- Replace email context variables in the email subject
+- Default and Default var in HTML tags
+- Fetch human-readable bridgehead for emails
 - Email context project bridgeheads variable
 - Decode Base64 values of email context
 - Enable minus in variables of email context
@@ -173,35 +173,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Process variables recursively in Thymeleaf
 - Creator name in Frontend Project
 - Action explanation priority
-- Configurations as file
+- Configurations as a file
 - File Description for Frontend
-- Fetch Project-States for dashboard site
+- Fetch Project-States for the dashboard site
 - Primary and Test Mail Server
-- Email if project rejected
-- Send email when the query has arrived to the exporter or it has been executed
+- Email if a project is rejected
+- Send email when the query has arrived to the exporter, or it has been executed
 - Export dispatch counter
 - Title and description in project configuration
 - Annotation Ignore Project Configuration Match
-- Send error email if error while sending query to bridgehead
-- Mailing Black List
-- Sort Mailing Black List by first and last name
+- Send error email if error while sending a query to bridgehead
+- Mailing Blacklist
+- Sort Mailing Blacklist by first and last name
 - Results
-- DRN in exporter label
+- DRN in the exporter label
 - Final User State in results
 - Create State in Frontend DTO's (for project and project bridgehead)
 - Fetch email message and subject HTTP endpoint
 - Send project results only if there are final users
 - User Project State in State Constraints
 - Bridgehead Admin info in the variables for the email templates
-- Results URL in frontend dto
+- Result URL in frontend dto
 - EmailContextKey enum
 - Votum for all
 - Configuration Site
 - REST Service: is project manager admin 
 - Research Environment URL key for Email Context
 - REST Service: Fetch research environment URL
-- REST Service: Exists research environment workspace for user
-- View only last reseach environment workspace for a project
+- REST Service: There exists a research environment workspace for user
+- View only the last research environment workspace for a project
 - Valid Email Aspect
 - EncryptionConverter to encrypt results url
 - Coder Configuration
@@ -217,3 +217,81 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Log App Register Service
 - Removal conditions for ProjectBridgeheadDataShield
 - Check message for HTTP requests to exporter
+- Request Variable annotation
+- Optimize JPA configuration
+- Compatibility with Authentik
+- JWT Decoder configuration
+- AST and AST_DATA as query format
+- Project Form
+- Project Form Services
+- Language annotation
+- Form PDF Service
+- External Execution Not Allowed Profile
+- Download Form PDF
+- Arrange form fields in the right order in PDF
+- DataType in Form PDF
+- Form Variables Config
+- Fetch Form Templates
+- Fetch Form Template Filename
+- Current Date in Form Template
+- Project Form Fields
+- Bridgehead Affiliation
+- Form Data Type Date and Timestamp
+- HTTP Get methods fetch RequestParam and HTTP Post methods fetch RequestVariable except for uploading files
+- Check organizational roles for any bridgehead
+- Form Repository
+- Fetch all project states depending on project code
+- Make user role thread safe
+- Log frontend config
+- SAMPLES project type
+- Project And Form Configuration
+- Multiple types pro-project
+- Remove the project output service
+- Use global conversion service of spring
+- Annotated Parameter Wrapper
+- Request Parameter
+- Synchronization between query outputs and bridgehead executions
+- Project context in form template context
+- Template Filename
+- Send a query with different project types to bridgehead
+- List parameters in a controller
+- Fetch best form templates
+- Description document and related services
+- Cohort definition in a query
+- Send Query To Bridgehead Event
+- Send Query To Bridgehead Event scheduled job
+- Send attachments in emails
+- Final report services
+
+
+### Changed
+- Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
+- Update to Maven 4
+- Update to Java 25
+- Remove project bridgehead user with role creator
+- View also own-created projects even if they don't belong to own bridgeheads
+- View all project bridgeheads for creator
+- RequestVariableMethodArgumentResolver for complex datatypes
+- Edit form instead of just adding forms to the project
+- Add and rename forms instead of editing services
+- Notifications only for Project Manager Admin
+- Filter templates by selected forms
+- Samples project can generate exports not visible to researcher
+- there isCustomConfig in the Project as nullable
+- Ethical Approval in Project Context
+- Data Type Enum for Form Config
+- Fetch selected forms returns also preconfigured titles
+- Query Details
+- There Exists Publication
+
+
+### Removed
+- RStudio Keycloak Groups
+- Application Form Services
+
+### Fixed
+- Init flyway migration in spring 4
+- Jwt decoder configuration
+- Full name if the first or last name is missing
+- Only one user session at the same time
+- Update query outputs correctly

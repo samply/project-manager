@@ -1,20 +1,26 @@
 package de.samply.user.roles;
 
-import java.util.*;
+import lombok.Getter;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class UserRoles<T> {
 
-    private final Map<String, Set<T>> bridgheadRolesMap = new HashMap<>();
-    private final Set<T> rolesNotDependentOnBridgeheads = new HashSet<>();
+    private final Map<String, Set<T>> bridgheadRolesMap = new ConcurrentHashMap<>();
+
+    @Getter
+    private final Set<T> rolesNotDependentOnBridgeheads = ConcurrentHashMap.newKeySet();
 
     public void addBridgeheadRole(String bridgehead, T role) {
         if (bridgehead != null && role != null) {
-            Set<T> bridgeheadRoles = bridgheadRolesMap.get(bridgehead);
-            if (bridgeheadRoles == null) {
-                bridgeheadRoles = new HashSet<>();
-                bridgheadRolesMap.put(bridgehead, bridgeheadRoles);
-            }
-            bridgeheadRoles.add(role);
+            bridgheadRolesMap
+                    .computeIfAbsent(bridgehead, _ -> ConcurrentHashMap.newKeySet())
+                    .add(role);
         }
     }
 
@@ -22,10 +28,6 @@ public class UserRoles<T> {
         if (role != null) {
             rolesNotDependentOnBridgeheads.add(role);
         }
-    }
-
-    public Set<T> getRolesNotDependentOnBridgeheads() {
-        return rolesNotDependentOnBridgeheads;
     }
 
     public Set<T> getBridgeheadRoles(String bridgehead) {
@@ -41,6 +43,7 @@ public class UserRoles<T> {
         return containsRole(role, Optional.empty());
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // bridghead as optional
     public boolean containsRole(T role, Optional<String> bridgehead) {
         if (rolesNotDependentOnBridgeheads.contains(role)) {
             return true;
@@ -51,6 +54,17 @@ public class UserRoles<T> {
             }
         }
         return false;
+    }
+
+    // Checks the role independently of the bridgehead
+    public boolean containsAnyRole(T role) {
+        if (rolesNotDependentOnBridgeheads.contains(role)) {
+            return true;
+        } else {
+            return bridgheadRolesMap.values().stream()
+                    .flatMap(Set::stream)
+                    .collect(Collectors.toSet()).contains(role);
+        }
     }
 
 }

@@ -3,12 +3,10 @@ package de.samply.project;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
 import de.samply.db.repository.ProjectRepository;
-import de.samply.db.repository.QueryRepository;
+import de.samply.form.FormService;
 import de.samply.frontend.dto.DtoFactory;
-import de.samply.frontend.dto.Results;
+import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
@@ -16,6 +14,7 @@ import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
 import de.samply.query.OutputFormat;
+import de.samply.query.QueryPersistenceService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
 import jakarta.validation.constraints.NotNull;
@@ -24,83 +23,83 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
 public class ProjectService {
 
-    private final NotificationService notificationService;
-    private final ProjectRepository projectRepository;
-    private final QueryRepository queryRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
+
     private final SessionUser sessionUser;
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
     private final ProjectConfigurations projectConfigurations;
-    private final DtoFactory dtoFactory;
+
+    // Services
+    private final NotificationService notificationService;
+    private final FormService formService;
+    private final QueryPersistenceService queryPersistenceService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+    private final ProjectBridgeheadUserService projectBridgeheadUserService;
+
+    // Repositories
+    private final ProjectRepository projectRepository;
+
 
     public ProjectService(NotificationService notificationService,
                           ProjectRepository projectRepository,
-                          QueryRepository queryRepository,
-                          ProjectBridgeheadRepository projectBridgeheadRepository,
                           SessionUser sessionUser,
-                          ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
                           ProjectConfigurations projectConfigurations,
-                          DtoFactory dtoFactory) {
+                          FormService formService,
+                          QueryPersistenceService queryPersistenceService,
+                          ProjectBridgeheadService projectBridgeheadService,
+                          ProjectBridgeheadUserService projectBridgeheadUserService) {
         this.notificationService = notificationService;
         this.projectRepository = projectRepository;
-        this.queryRepository = queryRepository;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
+        this.queryPersistenceService = queryPersistenceService;
+        this.projectBridgeheadService = projectBridgeheadService;
         this.sessionUser = sessionUser;
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
         this.projectConfigurations = projectConfigurations;
-        this.dtoFactory = dtoFactory;
+        this.formService = formService;
+        this.projectBridgeheadUserService = projectBridgeheadUserService;
     }
 
-    public de.samply.frontend.dto.Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
+    public Project fetchProject(@NotNull String projectCode) throws ProjectServiceException {
+        Optional<Project> project = projectRepository.findByCode(projectCode);
+        if (project.isEmpty()) {
+            throw new ProjectServiceException("ProjectCode " + projectCode + " not found");
         }
-        return dtoFactory.convert(projectOptional.get());
+        return project.get();
     }
 
-    public void editProject(@NotNull String projectCode, ProjectType type, String[] bridgeheads) {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        boolean hasChanged = false;
-        if (projectOptional.isPresent()) {
-            if (type != null) {
-                projectOptional.get().setType(type);
-                this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
-                        OperationType.EDIT_PROJECT, "Changed project type to " + type, null, null);
-                hasChanged = true;
-            }
-            if (hasChanged) {
-                saveProject(projectOptional.get());
-            }
-            if (bridgeheads != null && bridgeheads.length > 0) {
-                updateBridgeheads(projectOptional.get(), bridgeheads);
-            }
-        }
-    }
-
-    private void saveProject(@NotNull Project project){
+    public void saveProject(@NotNull Project project) {
         project.setModifiedAt(Instant.now());
         projectRepository.save(project);
     }
 
-    private void updateBridgeheads(Project project, String[] bridgeheads) {
+    public void updateBridgeheads(Project project, String[] bridgeheads) {
         Set<String> editionBridgeheads = Set.of(bridgeheads);
+
         // Remove bridgeheads that are no longer present
-        projectBridgeheadRepository.findByProject(project).stream().filter(projectBridgehead ->
-                !editionBridgeheads.contains(projectBridgehead.getBridgehead())).forEach(projectBridgehead ->
-                projectBridgeheadRepository.delete(projectBridgehead));
+        projectBridgeheadService
+                .fetchBridgeheads(project)
+                .stream()
+                .filter(projectBridgehead ->
+                        !editionBridgeheads.contains(projectBridgehead.getBridgehead()))
+                .forEach(projectBridgeheadService::deleteBridgehead);
+
         // Add new bridgeheads
-        Set<String> oldBridgeheads = new HashSet<>(projectBridgeheadRepository.findByProject(project).stream().
-                map(projectBridgehead -> projectBridgehead.getBridgehead()).toList());
-        editionBridgeheads.stream().filter(bridgehead -> !oldBridgeheads.contains(bridgehead)).forEach(bridgehead ->
-                createProjectBridgehead(project, bridgehead));
-        this.notificationService.createNotification(project.getCode(), null, sessionUser.getEmail(),
-                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + bridgeheads), null, null);
+        Set<String> oldBridgeheads = new HashSet<>(projectBridgeheadService
+                .fetchBridgeheads(project)
+                .stream()
+                .map(ProjectBridgehead::getBridgehead)
+                .toList());
+
+        editionBridgeheads
+                .stream()
+                .filter(bridgehead -> !oldBridgeheads.contains(bridgehead))
+                .forEach(bridgehead -> createProjectBridgehead(project, bridgehead));
+
+        this.notificationService.createNotification(project, null, sessionUser.getEmail(),
+                OperationType.EDIT_PROJECT, "Changed bridgeheads: " + String.join("," + Arrays.toString(bridgeheads)), null, null);
 
     }
 
@@ -109,12 +108,11 @@ public class ProjectService {
         projectBridgehead.setBridgehead(bridgehead);
         projectBridgehead.setProject(project);
         projectBridgehead.setState(ProjectBridgeheadState.CREATED);
-        projectBridgehead.setModifiedAt(Instant.now());
-        projectBridgeheadRepository.save(projectBridgehead);
+        projectBridgeheadService.saveBridgehead(projectBridgehead);
     }
 
     public List<Project> fetchAllUserVisibleProjects() {
-        // Fetch projects as project manager
+        // Fetch projects as a project manager
         if (isProjectManagerAdmin()) {
             return projectRepository.findAll();
         }
@@ -122,32 +120,17 @@ public class ProjectService {
         // Fetch projects as bridgehead admin
         // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
         if (isBridgeheadAdmin()) {
-            return projectRepository.findByBridgeheads(bridgeheads);
+            return projectRepository.findByBridgeheadsOrCreator(sessionUser.getEmail(), bridgeheads);
         }
-        // Fetch projects as researcher
-        return projectBridgeheadUserRepository.findProjectsByEmail(sessionUser.getEmail());
+        // Fetch projects as a researcher
+        return projectBridgeheadUserService.fetchProjects(sessionUser.getEmail());
     }
 
-    public Page<de.samply.frontend.dto.Project> fetchUserVisibleProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize,
-            boolean modifiedDescendant) {
-        PageRequest pageRequest = PageRequest.of(page, pageSize);
-        if (isProjectManagerAdmin()) {
-            return fetchProjectManagerAdminProjects(projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
-        }
-        Set<String> bridgeheads = sessionUser.getBridgeheads();
-        // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
-        if (isBridgeheadAdmin()) {
-            return fetchBridgeheadAdminProjects(bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
-        }
-        return fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
-    }
-
-    private boolean isProjectManagerAdmin() {
+    protected boolean isProjectManagerAdmin() {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
 
-    private boolean isBridgeheadAdmin() {
+    protected boolean isBridgeheadAdmin() {
         for (String bridgehead : sessionUser.getBridgeheads()) {
             if (sessionUser.getUserOrganisationRoles()
                     .getBridgeheadRoles(bridgehead).contains(OrganisationRole.BRIDGEHEAD_ADMIN)) {
@@ -157,7 +140,7 @@ public class ProjectService {
         return false;
     }
 
-    private Page<Project> fetchProjectManagerAdminProjects(
+    protected Page<Project> fetchProjectManagerAdminProjects(
             Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest,
             boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
@@ -207,186 +190,190 @@ public class ProjectService {
         }
     }
 
-    private Page<Project> fetchBridgeheadAdminProjects(
+    protected Page<Project> fetchBridgeheadAdminProjects(
             Set<String> bridgeheads, Optional<ProjectState> projectState, Optional<Boolean> archived,
             PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                    return projectRepository.findByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                    return projectRepository.findByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByBridgeheadsModifiedAtDesc(bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByBridgeheadsModifiedAtAsc(bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
                     }
                 }
             }
         } else {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsModifiedAtDesc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsModifiedAtAsc(projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
                     }
                 }
             }
         }
     }
 
-    private Page<Project> fetchResearcherProjects(String
-                                                          email, Set<String> bridgeheads, Optional<ProjectState> projectState,
-                                                  Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
+    protected Page<Project> fetchResearcherProjects(String
+                                                            email, Set<String> bridgeheads, Optional<ProjectState> projectState,
+                                                    Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
         if (projectState.isEmpty()) {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtDesc(email, bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsModifiedAtAsc(email, bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
                     }
                 }
             }
         } else {
             if (archived.isEmpty()) {
                 if (modifiedDescendant) {
-                    return projectRepository.findByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
                 } else {
-                    return projectRepository.findByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                    return projectRepository.findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
                 }
             } else {
                 if (archived.get()) {
                     if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
                     }
                 } else {
                     if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
                     } else {
-                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
+                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
                     }
                 }
             }
         }
     }
 
-    public OutputFormat[] fetchOutputFormats(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        if (projectOptional.get().getType() == null){
-            return OutputFormat.values();
-        }
-        return switch (projectOptional.get().getType()) {
-            case DATASHIELD -> new OutputFormat[]{OutputFormat.OPAL};
-            default ->
-                    Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toArray(OutputFormat[]::new);
-        };
+    public Map<ProjectType, List<OutputFormat>> fetchOutputFormats(@NotNull Project project) throws ProjectServiceException {
+        Map<ProjectType, List<OutputFormat>> result = new HashMap<>();
+        project.fetchProjectTypes().forEach(projectType ->
+                result.put(projectType, fetchOutputFormats(projectType)));
+        return result;
     }
 
-    public Map<String, de.samply.frontend.dto.Project> fetchCurrentProjectConfiguration(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        return this.projectConfigurations.fetchCurrentProjectConfiguration(dtoFactory.convert(projectOptional.get()));
+    private List<OutputFormat> fetchOutputFormats(ProjectType projectType) {
+        return (projectType == ProjectType.DATASHIELD) ?
+                List.of(OutputFormat.OPAL) :
+                Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toList();
     }
 
-    public void setProjectConfiguration(@NotNull String projectCode, @NotNull String projectConfigurationName) throws ProjectServiceException {
-        Optional<Project> projectOptional = this.projectRepository.findByCode(projectCode);
-        if (projectOptional.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        if (!projectConfigurationName.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
-            de.samply.frontend.dto.Project projectConfiguration = this.projectConfigurations.getConfig().get(projectConfigurationName);
-            if (projectConfiguration == null) {
-                throw new ProjectServiceException("Project configuration " + projectConfigurationName + " not found");
+    public void setProjectConfiguration(@NotNull Project project, @NotNull String projectConfigurationNames) throws ProjectServiceException {
+        if (!projectConfigurationNames.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
+            String[] names = projectConfigurationNames.split(",");
+            List<de.samply.frontend.dto.ProjectOutput> allOutputs = new ArrayList<>();
+            List<String> allFormTitles = new ArrayList<>();
+
+            for (String rawName : names) {
+                String name = rawName.trim();
+                de.samply.frontend.dto.ProjectAndForms paf = this.projectConfigurations.getConfig().get(name);
+                if (paf == null) {
+                    throw new ProjectServiceException("ProjectCode configuration " + name + " not found");
+                }
+                if (paf.project() != null && paf.project().getOutputs() != null) {
+                    for (de.samply.frontend.dto.ProjectOutput output : paf.project().getOutputs()) {
+                        if (allOutputs.stream().noneMatch(o -> o.projectType() == output.projectType())) {
+                            allOutputs.add(output);
+                        }
+                    }
+                }
+                if (paf.forms() != null) {
+                    Arrays.stream(paf.forms()).map(Form::title)
+                            .filter(t -> !allFormTitles.contains(t))
+                            .forEach(allFormTitles::add);
+                }
             }
-            Project project = DtoFactory.convert(projectConfiguration, projectOptional.get());
-            project.setCustomConfig(false);
+
+            de.samply.frontend.dto.Project combinedDtoProject = new de.samply.frontend.dto.Project();
+            combinedDtoProject.setOutputs(allOutputs.toArray(new de.samply.frontend.dto.ProjectOutput[0]));
+
+            Project mergedProject = DtoFactory.merge(combinedDtoProject, project);
+            mergedProject.setIsCustomConfigSelected(false);
+            saveProject(mergedProject);
+            queryPersistenceService.saveQuery(mergedProject.getQuery());
+
+            if (!allFormTitles.isEmpty()) {
+                this.formService.syncSelectedForms(project, allFormTitles);
+            }
+
+            this.formService.editProjectFormFieldValues(Optional.empty(), project);
+
+        } else if (!Boolean.TRUE.equals(project.getIsCustomConfigSelected())) {
+            project.setIsCustomConfigSelected(true);
             saveProject(project);
-            this.queryRepository.save(project.getQuery());
-        } else if (!projectOptional.get().isCustomConfig()) {
-            projectOptional.get().setCustomConfig(true);
-            saveProject(projectOptional.get());
         }
     }
 
-    public void addProjectResultUrl(@NotNull String projectCode, @NotNull String resultUrl) throws ProjectServiceException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        project.get().setResultsUrl(resultUrl);
-        project.get().setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the new results again
-        saveProject(project.get());
+    public void addProjectResultUrl(@NotNull Project project, @NotNull String resultUrl) throws ProjectServiceException {
+        project.setResultsUrl(resultUrl);
+        project.setCreatorResultsState(UserProjectState.CREATED); // The creator should accept the new results again
+        saveProject(project);
     }
 
-    public void acceptResultsByCreator(@NotNull String projectCode) throws ProjectServiceException {
-        changeCreatorResultsState(projectCode, UserProjectState.ACCEPTED);
+    public void acceptResultsByCreator(@NotNull Project project) throws ProjectServiceException {
+        changeCreatorResultsState(project, UserProjectState.ACCEPTED);
     }
 
-    public void rejectResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
-        changeCreatorResultsState(projectCode, UserProjectState.REJECTED);
+    public void rejectResultsForCreator(@NotNull Project project) throws ProjectServiceException {
+        changeCreatorResultsState(project, UserProjectState.REJECTED);
     }
 
-    public void requestChangesInResultsForCreator(@NotNull String projectCode) throws ProjectServiceException {
-        changeCreatorResultsState(projectCode, UserProjectState.REQUEST_CHANGES);
+    public void requestChangesInResultsForCreator(@NotNull Project project) throws ProjectServiceException {
+        changeCreatorResultsState(project, UserProjectState.REQUEST_CHANGES);
     }
 
-    private void changeCreatorResultsState(@NotNull String projectCode, UserProjectState state) throws ProjectServiceException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        project.get().setCreatorResultsState(state);
-        saveProject(project.get());
+    private void changeCreatorResultsState(@NotNull Project project, UserProjectState state) throws ProjectServiceException {
+        project.setCreatorResultsState(state);
+        saveProject(project);
     }
 
-    public Optional<Results> fetchResults(@NotNull String projectCode) throws ProjectServiceException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectServiceException("Project " + projectCode + " not found");
-        }
-        return dtoFactory.fetchResults(project.get());
+    public List<Project> findProjectByExpiresAtBeforeAndStateIn(LocalDate expirationTime, Set<ProjectState> states) {
+        return projectRepository.findByExpiresAtBeforeAndStateIn(expirationTime, states);
     }
 
 }

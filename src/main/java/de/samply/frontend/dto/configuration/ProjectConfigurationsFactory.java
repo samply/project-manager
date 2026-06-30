@@ -19,10 +19,9 @@ public class ProjectConfigurationsFactory {
     @Bean
     public ProjectConfigurations createProjectConfigurations(@Value(ProjectManagerConst.FRONTEND_PROJECT_CONFIG_PATH_SV) String frontendProjectConfigurationPath) {
         try {
-            ProjectConfigurations projectConfigurations = objectMapper.readValue(new File(frontendProjectConfigurationPath), ProjectConfigurations.class);
-            return projectConfigurations;
+            return objectMapper.readValue(new File(frontendProjectConfigurationPath), ProjectConfigurations.class);
         } catch (IOException e) {
-            log.error("Project configuration file not found: {}", frontendProjectConfigurationPath);
+            log.error("ProjectCode configuration file not found: {}", frontendProjectConfigurationPath);
             throw new RuntimeException(e);
         }
     }
