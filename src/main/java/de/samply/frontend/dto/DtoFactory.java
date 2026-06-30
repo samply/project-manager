@@ -3,10 +3,7 @@ package de.samply.frontend.dto;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadConfiguration;
 import de.samply.db.model.*;
-import de.samply.form.DisplayMetadata;
-import de.samply.form.FormConfig;
-import de.samply.form.FormFieldConfig;
-import de.samply.form.FormService;
+import de.samply.form.*;
 import de.samply.form.template.FormTemplateConfig;
 import de.samply.form.template.FormTemplateMetadata;
 import de.samply.project.ProjectBridgeheadUserService;
@@ -231,7 +228,7 @@ public class DtoFactory {
         return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null);
     }
 
-    public FormField convert(@NotNull String title, Optional<String> label, Optional<String> value, Optional<String> language) {
+    public FormField convert(@NotNull String title, Optional<String> label, Optional<Integer> blockInstance, Optional<String> value, Optional<String> language) {
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
@@ -270,6 +267,37 @@ public class DtoFactory {
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::isMandatory)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getBlock)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getBlock)
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(DisplayMetadata::getDisplayName)
+                        .map(m -> fetchValue(m, language))
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getBlock)
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(DisplayMetadata::getDescription)
+                        .map(m -> fetchValue(m, language))
+                        .orElse(null),
+                blockInstance.orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getBlock)
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(FormFieldBlock::getMultiple)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getBlock)
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(FormFieldBlock::getMinInstances)
                         .orElse(null),
                 label.map(l -> fetchFormFieldOrder(title, l)).orElse(null),
                 value.orElse(null)
@@ -324,7 +352,7 @@ public class DtoFactory {
                 .orElse(languageMapper.get(defaultLanguage));
     }
 
-    public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig, Optional<String> value, Optional<String> language) {
+    public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig, Optional<Integer> blockInstance, Optional<String> value, Optional<String> language) {
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
@@ -342,6 +370,26 @@ public class DtoFactory {
                 formFieldConfig.getDataType(),
                 convert(formFieldConfig.getAllowedValues(), language),
                 formFieldConfig.isMandatory(),
+                formFieldConfig.getBlock(),
+                Optional.ofNullable(formFieldConfig.getBlock())
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(DisplayMetadata::getDisplayName)
+                        .map(m -> fetchValue(m, language))
+                        .orElse(null),
+                Optional.ofNullable(formFieldConfig.getBlock())
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(DisplayMetadata::getDescription)
+                        .map(m -> fetchValue(m, language))
+                        .orElse(null),
+                blockInstance.orElse(null),
+                Optional.ofNullable(formFieldConfig.getBlock())
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(FormFieldBlock::getMultiple)
+                        .orElse(null),
+                Optional.ofNullable(formFieldConfig.getBlock())
+                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(FormFieldBlock::getMinInstances)
+                        .orElse(null),
                 fetchFormFieldOrder(title, formFieldConfig.getLabel()),
                 value.orElse(null)
         );
@@ -357,6 +405,7 @@ public class DtoFactory {
         return convert(
                 projectFormField.getFormTitle(),
                 Optional.of(projectFormField.getLabel()),
+                Optional.ofNullable(projectFormField.getBlockInstance()),
                 Optional.ofNullable(projectFormField.getValue()),
                 language);
     }

@@ -176,13 +176,14 @@ CREATE TABLE samply.user
 
 CREATE TABLE samply.project_form_field
 (
-    id          SERIAL PRIMARY KEY,
-    project_id  BIGINT    NOT NULL,
-    label       TEXT      NOT NULL,
-    form_title  TEXT      NOT NULL,
-    value       TEXT,
-    created_at  TIMESTAMP NOT NULL,
-    modified_at TIMESTAMP
+    id             SERIAL PRIMARY KEY,
+    project_id     BIGINT    NOT NULL,
+    label          TEXT      NOT NULL,
+    form_title     TEXT      NOT NULL,
+    value          TEXT,
+    block_instance INT,
+    created_at     TIMESTAMP NOT NULL,
+    modified_at    TIMESTAMP
 );
 
 CREATE TABLE samply.project_form

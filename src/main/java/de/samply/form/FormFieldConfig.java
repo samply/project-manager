@@ -26,7 +26,11 @@ public class FormFieldConfig extends DisplayMetadata {
 
     private boolean mandatory;
 
+    // Categories and subcategories of form fields
     private String[] groups;
+
+    // A block is a collection of form fields that are always displayed together.
+    private String block;
 
     // This field is intended for project values to be displayed as form fields in a form.
     // e.g. "${project-code}": This will be replaced with the value of the project code.

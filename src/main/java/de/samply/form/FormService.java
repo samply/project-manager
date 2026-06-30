@@ -58,16 +58,27 @@ public class FormService {
             return;
         }
         Map<String, ProjectFormField> labelFormMap = projectFormFieldRepository.findByProject(project).stream()
-                .collect(Collectors.toMap(ProjectFormField::getLabel, Function.identity()));
+                .collect(Collectors.toMap(this::fetchLabelBlockInstance, Function.identity()));
         Arrays.stream(formFields.get()).forEach(formField -> {
-            ProjectFormField projectFormField = labelFormMap.get(formField.label());
+            ProjectFormField projectFormField = labelFormMap.get(fetchLabelBlockInstance(formField));
             boolean isModified = false;
-            String details = "title: " + formField.title() + "label: " + formField.label() + " - value: " + formField.value();
+            String details =
+                    "title: " + formField.title() +
+                            " label: " + formField.label() +
+                            (formField.blockInstance() != null
+                                    ? " (block instance: " + formField.blockInstance() + ")"
+                                    : "") +
+                            " - value: " + formField.value();
             if (projectFormField == null) {
                 projectFormField = new ProjectFormField();
                 projectFormField.setLabel(formField.label());
                 projectFormField.setFormTitle(formField.title());
                 projectFormField.setValue(formField.value());
+                if (isInBlock(formField)) {
+                    projectFormField.setBlockInstance(
+                            Objects.requireNonNullElse(formField.blockInstance(), 1)
+                    );
+                }
                 projectFormField.setProject(project);
                 isModified = true;
                 notificationService.createNotification(project, null,
@@ -87,6 +98,22 @@ public class FormService {
                 projectFormFieldRepository.save(projectFormField);
             }
         });
+    }
+
+    private boolean isInBlock(FormField formField){
+        return formField.block() != null || formConfig.fetchFormFieldConfig(formField.title(), formField.label()).getBlock() != null;
+    }
+
+    private String fetchLabelBlockInstance(ProjectFormField projectFormField) {
+        return fetchLabelBlockInstance(projectFormField.getLabel(), projectFormField.getBlockInstance());
+    }
+
+    private String fetchLabelBlockInstance(FormField formField) {
+        return fetchLabelBlockInstance(formField.label(), formField.blockInstance());
+    }
+
+    private String fetchLabelBlockInstance(String label, Integer blockInstance) {
+        return label + (blockInstance == null ? "" : "_" + blockInstance);
     }
 
     protected List<ProjectForm> fetchSelectedForms(@NotNull Project project) {

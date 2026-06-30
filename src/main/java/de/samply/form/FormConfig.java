@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 @Getter
 public class FormConfig {
 
+    private final Map<String, FormFieldBlock> blockLabelformFieldBlockMap = new HashMap<>();
     private final Map<String, DisplayMetadata> formTitleDisplaMetadataMap = new HashMap<>();
     private final Map<String, DisplayMetadata> groupsDisplayMetadataMap = new HashMap<>();
     private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
@@ -80,6 +81,12 @@ public class FormConfig {
                 orderMap.put(field.getLabel(), counter.getAndIncrement());
             });
 
+            // Block metadata
+            if (formMetadataConfig.getFieldBlocks() != null) {
+                Arrays.stream(formMetadataConfig.getFieldBlocks()).forEach(fieldBlock ->
+                        blockLabelformFieldBlockMap.put(fieldBlock.getLabel(), fieldBlock));
+            }
+
             log.info(
                     "Loaded {} form fields from {}",
                     formMetadataConfig.getFields().length,
@@ -89,6 +96,10 @@ public class FormConfig {
         } catch (IOException e) {
             log.error("Failed to read form config file {}", configFile, e);
         }
+    }
+
+    public FormFieldConfig fetchFormFieldConfig(String formTitle, String formLabel) {
+        return formTitleLabelFieldMap.getOrDefault(formTitle, new HashMap<>()).get(formLabel);
     }
 
 }

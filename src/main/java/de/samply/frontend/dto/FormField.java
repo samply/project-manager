@@ -3,11 +3,13 @@ package de.samply.frontend.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.form.DataType;
+import lombok.Builder;
 
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
+@Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record FormField(
         String title,
@@ -20,6 +22,12 @@ public record FormField(
         DataType type,
         FormFieldValue[] allowedValues,
         Boolean mandatory,
+        String block,
+        String blockDisplayName,
+        String blockDescription,
+        Integer blockInstance,
+        Boolean multipleBlock,
+        Integer minBlockInstances,
         Integer order,
         String value
 ) {

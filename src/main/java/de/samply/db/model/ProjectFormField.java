@@ -32,6 +32,25 @@ public class ProjectFormField {
     @Column(name = "value")
     private String value;
 
+    /**
+     * Index of the block instance this field belongs to.
+     * <p>
+     * A block represents a repeatable set of form fields (e.g., var1, var2).
+     * Each occurrence of the block is identified by a 1-based block instance number.
+     * <p>
+     * Example:
+     * Block definition: (var1, var2)
+     * Instances: 1, 2, 3
+     * <p>
+     * Then:
+     * var1 | blockInstance = 1
+     * var2 | blockInstance = 1
+     * var1 | blockInstance = 2
+     * var2 | blockInstance = 2
+     */
+    @Column(name = "block_instance")
+    private Integer blockInstance;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
