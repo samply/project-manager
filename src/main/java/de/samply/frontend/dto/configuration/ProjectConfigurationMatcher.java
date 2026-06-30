@@ -5,7 +5,6 @@ import de.samply.frontend.dto.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class ProjectConfigurationMatcher {
@@ -33,10 +32,15 @@ public class ProjectConfigurationMatcher {
             }
         }
 
-        return matchScores.entrySet().stream()
-                .max(Comparator.comparingInt(Map.Entry::getValue))
-                .map(e -> Map.of(e.getKey().getKey(), e.getKey().getValue()))
-                .orElseGet(() -> fetchCustomConfiguration(config));
+        if (matchScores.isEmpty()) {
+            return fetchCustomConfiguration(config);
+        }
+
+        Map<String, ProjectAndForms> result = new LinkedHashMap<>();
+        matchScores.entrySet().stream()
+                .sorted(Map.Entry.<Map.Entry<String, ProjectAndForms>, Integer>comparingByValue().reversed())
+                .forEach(e -> result.put(e.getKey().getKey(), e.getKey().getValue()));
+        return result;
     }
 
     private static boolean isTrue(Boolean value) {
@@ -88,15 +92,20 @@ public class ProjectConfigurationMatcher {
         ProjectOutput[] runtimeOutputs = runtime.getOutputs();
 
         if (templateOutputs == null || templateOutputs.length == 0) return 0;
+        if (runtimeOutputs == null || runtimeOutputs.length == 0) return -1;
 
-        if (runtimeOutputs == null || runtimeOutputs.length != templateOutputs.length) return -1;
+        // Subset matching: every template output must be present in the runtime outputs
+        int score = 0;
+        for (ProjectOutput templateOutput : templateOutputs) {
+            boolean found = false;
+            for (ProjectOutput runtimeOutput : runtimeOutputs) {
+                int s = matchOutput(runtimeOutput, templateOutput);
+                if (s >= 0) { score += s; found = true; break; }
+            }
+            if (!found) return -1;
+        }
 
-        // Compute score using streams
-        return (isTrue(template.getIsCustomConfigSelected()) ? 1 : 0) +
-                IntStream.range(0, templateOutputs.length)
-                        .map(i -> matchOutput(runtimeOutputs[i], templateOutputs[i]))
-                        .filter(s -> s >= 0) // only count successful matches
-                        .sum();
+        return (isTrue(template.getIsCustomConfigSelected()) ? 1 : 0) + score;
     }
 
     private static int matchOutput(ProjectOutput runtime, ProjectOutput template) {

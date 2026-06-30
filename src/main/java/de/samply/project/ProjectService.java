@@ -303,25 +303,45 @@ public class ProjectService {
                 Arrays.stream(OutputFormat.values()).filter(outputFormat -> outputFormat != OutputFormat.OPAL).toList();
     }
 
-    public void setProjectConfiguration(@NotNull Project project, @NotNull String projectConfigurationName) throws ProjectServiceException {
-        if (!projectConfigurationName.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
-            de.samply.frontend.dto.ProjectAndForms projectAndForms = this.projectConfigurations.getConfig().get(projectConfigurationName);
-            if (projectAndForms == null) {
-                throw new ProjectServiceException("ProjectCode configuration " + projectConfigurationName + " not found");
+    public void setProjectConfiguration(@NotNull Project project, @NotNull String projectConfigurationNames) throws ProjectServiceException {
+        if (!projectConfigurationNames.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
+            String[] names = projectConfigurationNames.split(",");
+            List<de.samply.frontend.dto.ProjectOutput> allOutputs = new ArrayList<>();
+            List<String> allFormTitles = new ArrayList<>();
+
+            for (String rawName : names) {
+                String name = rawName.trim();
+                de.samply.frontend.dto.ProjectAndForms paf = this.projectConfigurations.getConfig().get(name);
+                if (paf == null) {
+                    throw new ProjectServiceException("ProjectCode configuration " + name + " not found");
+                }
+                if (paf.project() != null && paf.project().getOutputs() != null) {
+                    for (de.samply.frontend.dto.ProjectOutput output : paf.project().getOutputs()) {
+                        if (allOutputs.stream().noneMatch(o -> o.projectType() == output.projectType())) {
+                            allOutputs.add(output);
+                        }
+                    }
+                }
+                if (paf.forms() != null) {
+                    Arrays.stream(paf.forms()).map(Form::title)
+                            .filter(t -> !allFormTitles.contains(t))
+                            .forEach(allFormTitles::add);
+                }
             }
 
-            Project mergedProject = DtoFactory.merge(projectAndForms.project(), project);
+            de.samply.frontend.dto.Project combinedDtoProject = new de.samply.frontend.dto.Project();
+            combinedDtoProject.setOutputs(allOutputs.toArray(new de.samply.frontend.dto.ProjectOutput[0]));
+
+            Project mergedProject = DtoFactory.merge(combinedDtoProject, project);
             mergedProject.setIsCustomConfigSelected(false);
             saveProject(mergedProject);
             queryPersistenceService.saveQuery(mergedProject.getQuery());
 
-            // Synchronize Forms
-            if (projectAndForms.forms() != null && projectAndForms.forms().length > 0) {
-                this.formService.syncSelectedForms(project, Arrays.stream(projectAndForms.forms()).map(Form::title).toList());
+            if (!allFormTitles.isEmpty()) {
+                this.formService.syncSelectedForms(project, allFormTitles);
             }
 
-            // Synchronize Form Fields
-            this.formService.editProjectFormFieldValues(Optional.ofNullable(projectAndForms.formFields()), project);
+            this.formService.editProjectFormFieldValues(Optional.empty(), project);
 
         } else if (!Boolean.TRUE.equals(project.getIsCustomConfigSelected())) {
             project.setIsCustomConfigSelected(true);

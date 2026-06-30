@@ -4,5 +4,6 @@ public enum ProjectType {
     EXPORT,
     SAMPLES, // Interacts with Negotiator
     DATASHIELD,
-    RESEARCH_ENVIRONMENT
+    RESEARCH_ENVIRONMENT,
+    SEQUENCING
 }
