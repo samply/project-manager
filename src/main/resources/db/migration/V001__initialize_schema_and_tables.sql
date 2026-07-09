@@ -214,33 +214,40 @@ ALTER TABLE samply.project
 ALTER TABLE samply.project_bridgehead
     ADD CONSTRAINT fk_project_id
         FOREIGN KEY (project_id)
-            REFERENCES samply.project (id);
+            REFERENCES samply.project (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE samply.project_bridgehead_user
     ADD CONSTRAINT fk_project_bridgehead_id
         FOREIGN KEY (project_bridgehead_id)
-            REFERENCES samply.project_bridgehead (id);
+            REFERENCES samply.project_bridgehead (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE samply.project_document
     ADD CONSTRAINT fk_project_document_project
         FOREIGN KEY (project_id)
-            REFERENCES samply.project (id);
+            REFERENCES samply.project (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE samply.notification
     ADD CONSTRAINT fk_project_id
-        FOREIGN KEY (project_id) REFERENCES samply.project (id);
+        FOREIGN KEY (project_id) REFERENCES samply.project (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE samply.notification_user_action
     ADD CONSTRAINT fk_notification_id
-        FOREIGN KEY (notification_id) REFERENCES samply.notification (id);
+        FOREIGN KEY (notification_id) REFERENCES samply.notification (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE samply.project_bridgehead_datashield
     ADD CONSTRAINT fk_project_bridgehead_datashield FOREIGN KEY (project_bridgehead_id)
-        REFERENCES samply.project_bridgehead (id);
+        REFERENCES samply.project_bridgehead (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE samply.project_coder
     ADD CONSTRAINT fk_project_bridgehead_user FOREIGN KEY (project_bridgehead_user_id)
-        REFERENCES samply.project_bridgehead_user (id);
+        REFERENCES samply.project_bridgehead_user (id)
+            ON DELETE CASCADE;
 
 ALTER TABLE samply.user
     ADD CONSTRAINT unique_email UNIQUE (email);

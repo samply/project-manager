@@ -726,6 +726,17 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectEventService.create(project));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @StateConstraints(projectStates = {ProjectState.DRAFT})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DELETE_PROJECT_ACTION)
+    @DeleteMapping(value = ProjectManagerConst.DELETE_PROJECT)
+    public ResponseEntity deleteProject(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
+    ) {
+        return convertToResponseEntity(() -> projectService.deleteProject(project));
+    }
+
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.APPROVAL})
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})

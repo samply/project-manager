@@ -3,6 +3,7 @@ package de.samply.project;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.form.FormService;
 import de.samply.frontend.dto.DtoFactory;
@@ -21,6 +22,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -73,6 +75,18 @@ public class ProjectService {
     public void saveProject(@NotNull Project project) {
         project.setModifiedAt(Instant.now());
         projectRepository.save(project);
+    }
+
+    @Transactional
+    public void deleteProject(@NotNull Project project) {
+        Long queryId = Optional.ofNullable(project.getQuery())
+                .map(Query::getId)
+                .orElse(null);
+        projectRepository.delete(project);
+        projectRepository.flush();
+        if (queryId != null) {
+            queryPersistenceService.deleteQueryIfOrphan(queryId);
+        }
     }
 
     public void updateBridgeheads(Project project, String[] bridgeheads) {

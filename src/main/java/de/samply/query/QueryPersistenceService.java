@@ -117,4 +117,8 @@ public class QueryPersistenceService {
         return result;
     }
 
+    public void deleteQueryIfOrphan(Long queryId) {
+        queryRepository.deleteIfOrphan(queryId);
+    }
+
 }

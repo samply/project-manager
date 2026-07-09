@@ -32,6 +32,7 @@ public class ProjectManagerConst {
     public final static String SET_PILOT_USER_ACTION = "SET_PILOT_USER";
     public final static String SET_FINAL_USER_ACTION = "SET_FINAL_USER";
     public final static String CREATE_PROJECT_ACTION = "CREATE_PROJECT";
+    public final static String DELETE_PROJECT_ACTION = "DELETE_PROJECT";
     public final static String ACCEPT_PROJECT_ACTION = "ACCEPT_PROJECT";
     public final static String REJECT_PROJECT_ACTION = "REJECT_PROJECT";
     public final static String ARCHIVE_PROJECT_ACTION = "ARCHIVE_PROJECT";
@@ -160,6 +161,7 @@ public class ProjectManagerConst {
     public final static String SET_PROJECT_CONFIGURATION = "/project/configuration";
     public final static String DESIGN_PROJECT = "/project/design";
     public final static String CREATE_PROJECT = "/project";
+    public final static String DELETE_PROJECT = "/project";
     public final static String ACCEPT_PROJECT = "/project/accept";
     public final static String REJECT_PROJECT = "/project/reject";
     public final static String ADD_USER_TO_MAILING_BLACK_LIST = "/mailing-black-list";
