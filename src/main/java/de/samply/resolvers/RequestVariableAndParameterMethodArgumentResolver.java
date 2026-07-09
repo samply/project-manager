@@ -164,29 +164,44 @@ public class RequestVariableAndParameterMethodArgumentResolver implements Handle
 
         Class<?> targetType = parameter.getParameterType();
 
-        // If the value is a String, try Spring's ConversionService first
         if (value instanceof String s) {
+            String trimmed = s.trim();
 
-            // Check if the element is a list (e.g., param=val1,val2)
+            // --- Case 1: target is a List ---
             if (List.class.isAssignableFrom(targetType)) {
+                JavaType javaType = objectMapper.getTypeFactory()
+                        .constructType(parameter.getGenericParameterType());
+
+                if (trimmed.startsWith("[")) {
+                    // Proper JSON array, e.g. [{"title":"a"},{"title":"b"}]
+
+                    return objectMapper.readValue(trimmed, javaType);
+                }
+
+                // Comma-separated scalar list, e.g., param=val1,val2
                 Class<?> elementType = getListElementType(parameter);
-                return Arrays.stream(s.split(","))
+                return Arrays.stream(trimmed.split(","))
                         .map(String::trim)
                         .map(v -> conversionService.convert(v, elementType))
                         .toList();
             }
 
+            // --- Case 2: Spring's ConversionService can handle it directly ---
             if (conversionService.canConvert(String.class, targetType)) {
                 return conversionService.convert(s, targetType);
             }
-            // fallback to ObjectMapper if ConversionService cannot convert
-            return objectMapper.convertValue(s, targetType);
+
+            // --- Case 3: fallback to Jackson ---
+            boolean looksLikeJson = trimmed.startsWith("{") || trimmed.startsWith("[");
+            if (looksLikeJson) {
+                return objectMapper.readValue(trimmed, targetType); // parse JSON text (e.g., FormField)
+            } else {
+                return objectMapper.convertValue(s, targetType); // scalar coercion (enums, etc.)
+            }
         }
 
-        // For non-String values (e.g., JSON Maps, Lists, Numbers), delegate to ObjectMapper
-        JavaType javaType = objectMapper.getTypeFactory()
-                .constructType(parameter.getGenericParameterType());
-        return objectMapper.convertValue(value, javaType);
+        // --- value is not a String, e.g., already a Map/LinkedHashMap from elsewhere ---
+        return objectMapper.convertValue(value, targetType);
     }
 
     private Class<?> getListElementType(MethodParameter parameter) {

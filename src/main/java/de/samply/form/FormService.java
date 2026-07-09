@@ -101,6 +101,7 @@ public class FormService {
         });
     }
 
+    @Transactional
     public void removeProjectFormFieldBlock(@NotNull FormField formField, @NotNull Project project) {
         if (!StringUtils.hasText(formField.block())) {
             throw new IllegalArgumentException("Block must not be empty");
