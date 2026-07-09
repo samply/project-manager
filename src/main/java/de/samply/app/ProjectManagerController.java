@@ -515,6 +515,21 @@ public class ProjectManagerController {
                 () -> formService.editProjectFormFieldValues(Optional.ofNullable(formFields), project));
     }
 
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DELETE_FORM_FIELD_BLOCK_ACTION)
+    @PutMapping(value = ProjectManagerConst.DELETE_FORM_FIELD_BLOCK)
+    public ResponseEntity removeProjectFormFieldBlock(
+            // ProjectCode code needed for role constraints
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @RequestVariable(name = ProjectManagerConst.FORM_FIELD) FormField formField
+    ) {
+        return convertToResponseEntity(
+                () -> formService.removeProjectFormFieldBlock(formField, project));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
             ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,

@@ -264,6 +264,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Final report services
 - Form field blocks
 - Delete Project API endpoint
+- Delete Form Field Block API endpoint
 
 
 ### Changed

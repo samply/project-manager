@@ -10,9 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -100,6 +98,12 @@ public class FormConfig {
 
     public FormFieldConfig fetchFormFieldConfig(String formTitle, String formLabel) {
         return formTitleLabelFieldMap.getOrDefault(formTitle, new HashMap<>()).get(formLabel);
+    }
+
+    public List<FormFieldConfig> fetchFieldsByTitleAndBlock(String title, String block) {
+        return formTitleLabelFieldMap.getOrDefault(title, Map.of()).values().stream()
+                .filter(config -> Objects.equals(config.getBlock(), block))
+                .toList();
     }
 
 }

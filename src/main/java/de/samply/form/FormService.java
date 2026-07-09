@@ -12,6 +12,7 @@ import de.samply.security.SessionUser;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.*;
@@ -100,7 +101,27 @@ public class FormService {
         });
     }
 
-    private boolean isInBlock(FormField formField){
+    public void removeProjectFormFieldBlock(@NotNull FormField formField, @NotNull Project project) {
+        if (!StringUtils.hasText(formField.block())) {
+            throw new IllegalArgumentException("Block must not be empty");
+        }
+        if (!StringUtils.hasText(formField.title())) {
+            throw new IllegalArgumentException("Title must not be empty");
+        }
+        if (Objects.isNull(formField.blockInstance())) {
+            throw new IllegalArgumentException("Block instance must not be null");
+        }
+        formConfig
+                .fetchFieldsByTitleAndBlock(formField.title(), formField.block())
+                .forEach(config ->
+                        projectFormFieldRepository.deleteProjectFormFieldByProjectAndFormTitleAndLabelAndBlockInstance(
+                                project,
+                                formField.title(),
+                                config.getLabel(),
+                                formField.blockInstance()));
+    }
+
+    private boolean isInBlock(FormField formField) {
         return formField.block() != null || formConfig.fetchFormFieldConfig(formField.title(), formField.label()).getBlock() != null;
     }
 

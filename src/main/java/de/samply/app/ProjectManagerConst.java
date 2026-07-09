@@ -33,6 +33,7 @@ public class ProjectManagerConst {
     public final static String SET_FINAL_USER_ACTION = "SET_FINAL_USER";
     public final static String CREATE_PROJECT_ACTION = "CREATE_PROJECT";
     public final static String DELETE_PROJECT_ACTION = "DELETE_PROJECT";
+    public final static String DELETE_FORM_FIELD_BLOCK_ACTION = "DELETE_FORM_FIELD_BLOCK";
     public final static String ACCEPT_PROJECT_ACTION = "ACCEPT_PROJECT";
     public final static String REJECT_PROJECT_ACTION = "REJECT_PROJECT";
     public final static String ARCHIVE_PROJECT_ACTION = "ARCHIVE_PROJECT";
@@ -254,6 +255,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_TEMPLATES = "/project/forms/templates";
     public final static String FETCH_BEST_PROJECT_FORM_TEMPLATES = "/project/forms/templates/best";
     public final static String EDIT_PROJECT_FORM_FIELDS = "/project/forms/fields";
+    public final static String DELETE_FORM_FIELD_BLOCK = "/project/form/field/block";
     public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
     public final static String FETCH_SELECTED_PROJECT_FORMS = "/project/forms/selected";
     public final static String ADD_SELECTED_PROJECT_FORM = "/project/forms/selected";
@@ -287,6 +289,7 @@ public class ProjectManagerConst {
     public final static String LABEL = "label";
     public final static String FORM_TITLE = "form-title";
     public final static String FORM_FIELDS = "form-fields";
+    public final static String FORM_FIELD = "form-field";
     public final static String FORM_TEMPLATE = "form-template";
     public final static String DESCRIPTION = "description";
     public final static String COHORT_DEFINITION = "cohort-definition";
