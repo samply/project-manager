@@ -513,7 +513,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&query-format=AST_DATA&human-readable=KCgoZGlhZ25vc2lzIEVRVUFMUyBENDMpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4xKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuMikgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjApIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4zKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuNCkgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjcpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My45KSkgQU5EICgobW9ycGhvbG9neSBFUVVBTFMgOTM4My8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM4NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM5NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTQyMS8xKSkpCg==&bridgeheads=star-wars,jurassic-park",
+          "raw": "http://localhost:8097/create-query-and-design-project?label=Test&description=This is a test query for CCP&query-format=AST_DATA&human-readable=KCgoZGlhZ25vc2lzIEVRVUFMUyBENDMpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4xKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuMikgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjApIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My4zKSBPUiAoZGlhZ25vc2lzIEVRVUFMUyBENDMuNCkgT1IgKGRpYWdub3NpcyBFUVVBTFMgRDQzLjcpIE9SIChkaWFnbm9zaXMgRVFVQUxTIEQ0My45KSkgQU5EICgobW9ycGhvbG9neSBFUVVBTFMgOTM4My8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM4NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTM5NC8xKSBPUiAobW9ycGhvbG9neSBFUVVBTFMgOTQyMS8xKSkpCg==&bridgeheads=star-wars,jurassic-park&explorer-url=https://data.dktk.dkfz.de/redirect/12345&query-details=W1t7ImlkIjoiZjA5MGNhMGYtMjEzMS00ZDI1LThmZDQtNjM4ZWIzNWY4YTBiIiwia2V5IjoiZ2xpb21fYWxsX2dyb3VwcyIsIm5hbWUiOiJHbGlvbWUsIGFsbGUgR3J1cHBlbiIsInR5cGUiOiJFUVVBTFMiLCJ2YWx1ZXMiOlt7Im5hbWUiOiJHbGlvbSAtIEdyYWQgSSIsInZhbHVlIjpbW3sidmFsdWUiOiJkaWFnbm9zaXMiLCJuYW1lIjoiRDQzLiUifV0sW3sidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODMvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzOTQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6Ijk0MjEvMSJ9XV0sInF1ZXJ5QmluZElkIjoiY2RjMTE0YTYtOThiZi00OGRlLWFlNWYtNzBhMmIxOGUxNTIyIn1dfV1d",
           "protocol": "http",
           "host": [
             "localhost"
@@ -545,9 +545,12 @@
             },
             {
               "key": "explorer-url",
-              "value": "https://data.dktk.dkfz.de/redirect/12345",
-              "type": "text",
-              "disabled": true
+              "value": "https://data.dktk.dkfz.de/redirect/12345"
+            },
+            {
+              "key": "query-details",
+              "value": "W1t7ImlkIjoiZjA5MGNhMGYtMjEzMS00ZDI1LThmZDQtNjM4ZWIzNWY4YTBiIiwia2V5IjoiZ2xpb21fYWxsX2dyb3VwcyIsIm5hbWUiOiJHbGlvbWUsIGFsbGUgR3J1cHBlbiIsInR5cGUiOiJFUVVBTFMiLCJ2YWx1ZXMiOlt7Im5hbWUiOiJHbGlvbSAtIEdyYWQgSSIsInZhbHVlIjpbW3sidmFsdWUiOiJkaWFnbm9zaXMiLCJuYW1lIjoiRDQzLiUifV0sW3sidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODMvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzOTQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6Ijk0MjEvMSJ9XV0sInF1ZXJ5QmluZElkIjoiY2RjMTE0YTYtOThiZi00OGRlLWFlNWYtNzBhMmIxOGUxNTIyIn1dfV1d",
+              "type": "text"
             }
           ]
         }
@@ -1175,7 +1178,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project/forms/fields?project-code=a1ba86d4574e45dd9962",
+          "raw": "http://localhost:8097/project/forms/fields?project-code=240cd07736434018879d",
           "protocol": "http",
           "host": [
             "localhost"
@@ -1189,7 +1192,7 @@
           "query": [
             {
               "key": "project-code",
-              "value": "a1ba86d4574e45dd9962"
+              "value": "240cd07736434018879d"
             }
           ]
         }
@@ -1322,6 +1325,34 @@
             {
               "key": "form-title",
               "value": "sample_data"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove project",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project?project-code=9c41a08afb7b4fdbb389",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "9c41a08afb7b4fdbb389"
             }
           ]
         }
@@ -1699,6 +1730,39 @@
             {
               "key": "project-code",
               "value": "ce573ab8dd1a4a53bce7"
+            },
+            {
+              "key": "bridgehead",
+              "value": "jurassic-park"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Project Description",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/description?project-code=722aa8b032a7434d8570&bridgehead=jurassic-park",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "description"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "722aa8b032a7434d8570"
             },
             {
               "key": "bridgehead",
@@ -2216,7 +2280,7 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project/bridgehead/query/save?project-code=14ed087fb7994c84a564&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/bridgehead/query/save?project-code=edc0372212c343d1ba04&bridgehead=jurassic-park&project-type=EXPORT",
           "protocol": "http",
           "host": [
             "localhost"
@@ -2231,11 +2295,15 @@
           "query": [
             {
               "key": "project-code",
-              "value": "14ed087fb7994c84a564"
+              "value": "edc0372212c343d1ba04"
             },
             {
               "key": "bridgehead",
               "value": "jurassic-park"
+            },
+            {
+              "key": "project-type",
+              "value": "EXPORT"
             }
           ]
         }
@@ -2290,7 +2358,7 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "http://localhost:8097/project/bridgehead/query/save-execute?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park",
+          "raw": "http://localhost:8097/project/bridgehead/query/save-execute?project-code=2dfcd1bf620241f9b884&bridgehead=jurassic-park&project-type=EXPORT",
           "protocol": "http",
           "host": [
             "localhost"
@@ -2310,6 +2378,11 @@
             {
               "key": "bridgehead",
               "value": "jurassic-park"
+            },
+            {
+              "key": "project-type",
+              "value": "EXPORT",
+              "type": "text"
             }
           ]
         }
