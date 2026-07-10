@@ -19,6 +19,7 @@ public record FormField(
         String labelDisplayName,
         String labelDescription,
         FormFieldGroup[] groups,
+        String[] properties,
         DataType type,
         FormFieldValue[] allowedValues,
         Boolean mandatory,

@@ -26,6 +26,9 @@ public class FormFieldConfig extends DisplayMetadata {
 
     private boolean mandatory;
 
+    // Special properties for different uses (e.g., something specific for the UI)
+    private String[] properties;
+
     // Categories and subcategories of form fields
     private String[] groups;
 
