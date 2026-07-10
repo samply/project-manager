@@ -8,6 +8,7 @@ import de.samply.db.repository.ProjectDocumentRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
+import de.samply.utils.directory.EnsuredDirectory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,12 +37,12 @@ public class DocumentService {
 
     public DocumentService(NotificationService notificationService,
                            ProjectDocumentRepository projectDocumentRepository,
-                           @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_SV) String documentsDirectory,
+                           @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_SV) EnsuredDirectory documentsDirectory,
                            @Value(ProjectManagerConst.PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV) String timestampFormat,
-                           SessionUser sessionUser) throws IOException {
+                           SessionUser sessionUser) {
         this.notificationService = notificationService;
         this.projectDocumentRepository = projectDocumentRepository;
-        this.documentsDirectory = fetchPathDirectory(documentsDirectory);
+        this.documentsDirectory = documentsDirectory.path();
         this.timestampFormat = timestampFormat;
         this.sessionUser = sessionUser;
     }
@@ -127,14 +128,6 @@ public class DocumentService {
 
     private String generateRandomFilename() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, ProjectManagerConst.RANDOM_FILENAME_SIZE);
-    }
-
-    private Path fetchPathDirectory(String directory) throws IOException {
-        Path directoryPath = Path.of(directory);
-        if (!Files.exists(directoryPath)) {
-            Files.createDirectories(directoryPath);
-        }
-        return directoryPath;
     }
 
     private void deleteFile(ProjectDocument projectDocument) throws DocumentServiceException {

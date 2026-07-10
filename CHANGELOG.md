@@ -266,6 +266,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Delete Project API endpoint
 - Delete Form Field Block API endpoint
 - Form field properties
+- Normalize paths in constructor parameters
 
 
 ### Changed

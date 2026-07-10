@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 @Slf4j
 @Component
@@ -17,9 +17,9 @@ public class ProjectConfigurationsFactory {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
-    public ProjectConfigurations createProjectConfigurations(@Value(ProjectManagerConst.FRONTEND_PROJECT_CONFIG_PATH_SV) String frontendProjectConfigurationPath) {
+    public ProjectConfigurations createProjectConfigurations(@Value(ProjectManagerConst.FRONTEND_PROJECT_CONFIG_PATH_SV) Path frontendProjectConfigurationPath) {
         try {
-            return objectMapper.readValue(new File(frontendProjectConfigurationPath), ProjectConfigurations.class);
+            return objectMapper.readValue(frontendProjectConfigurationPath.toFile(), ProjectConfigurations.class);
         } catch (IOException e) {
             log.error("ProjectCode configuration file not found: {}", frontendProjectConfigurationPath);
             throw new RuntimeException(e);

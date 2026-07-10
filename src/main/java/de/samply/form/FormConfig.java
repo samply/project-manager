@@ -2,6 +2,7 @@ package de.samply.form;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
+import de.samply.utils.directory.ExistingDirectory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,16 +26,11 @@ public class FormConfig {
     private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
     private final Map<String, Map<String, Integer>> formTitleLabelOrderMap = new HashMap<>();
 
-    public FormConfig(@Value(ProjectManagerConst.FORM_FIELDS_DIRECTORY_SV) Path configDir
+    public FormConfig(@Value(ProjectManagerConst.FORM_FIELDS_DIRECTORY_SV) ExistingDirectory configDir
     ) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        if (!Files.isDirectory(configDir)) {
-            log.warn("Form config directory does not exist or is not a directory: {}", configDir);
-            return;
-        }
-
-        try (Stream<Path> files = Files.list(configDir)) {
+        try (Stream<Path> files = Files.list(configDir.path())) {
             files
                     .filter(path -> path.toString().endsWith(".json"))
                     .sorted() // deterministic order

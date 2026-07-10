@@ -1,7 +1,7 @@
 package de.samply.email.thymeleaf;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.utils.DirectoryUtils;
+import de.samply.utils.directory.ExistingDirectory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,6 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
-import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 
 @Configuration
@@ -18,8 +17,8 @@ public class ThymeleafConfiguration {
     private final String externalTemplateDirectory;
 
     public ThymeleafConfiguration(
-            @Value(ProjectManagerConst.EMAIL_TEMPLATES_DIRECTORY_SV) String externalTemplateDirectory) throws FileNotFoundException {
-        this.externalTemplateDirectory = DirectoryUtils.fetchExternalTemplateDirectory(externalTemplateDirectory);
+            @Value(ProjectManagerConst.EMAIL_TEMPLATES_DIRECTORY_SV) ExistingDirectory externalTemplateDirectory) {
+        this.externalTemplateDirectory = externalTemplateDirectory.path().toAbsolutePath().toString();
     }
 
     @Bean

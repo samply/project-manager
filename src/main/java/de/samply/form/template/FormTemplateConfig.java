@@ -3,6 +3,7 @@ package de.samply.form.template;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
 import de.samply.form.FormFieldConfig;
+import de.samply.utils.directory.ExistingDirectory;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,11 +29,11 @@ public class FormTemplateConfig {
     private final String defaultLanguage;
 
     public FormTemplateConfig(
-            @Value(ProjectManagerConst.FORM_TEMPLATE_METADATA_DIRECTORY_SV) Path templatesDir,
+            @Value(ProjectManagerConst.FORM_TEMPLATE_METADATA_DIRECTORY_SV) ExistingDirectory templatesDir,
             @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage
     ) {
         this.defaultLanguage = defaultLanguage;
-        this.templateMetadataMap = loadTemplates(new ObjectMapper(), templatesDir);
+        this.templateMetadataMap = loadTemplates(new ObjectMapper(), templatesDir.path());
         this.templateLabelOrderMap = loadTemplateLabelOrderMap(templateMetadataMap);
     }
 
@@ -76,11 +77,6 @@ public class FormTemplateConfig {
             ObjectMapper objectMapper,
             Path templatesDir
     ) {
-        if (!Files.isDirectory(templatesDir)) {
-            throw new IllegalStateException(
-                    "Form templates directory does not exist or is not a directory: " + templatesDir
-            );
-        }
         try (Stream<Path> paths = Files.list(templatesDir)) {
             return loadTemplates(objectMapper, paths);
 
@@ -157,7 +153,7 @@ public class FormTemplateConfig {
                 ));
     }
 
-    public Optional<String> fetchTemplateFile(String formTemplate){
+    public Optional<String> fetchTemplateFile(String formTemplate) {
         return Optional.ofNullable(templateMetadataMap.get(formTemplate))
                 .map(FormTemplateMetadata::getTemplateFile);
     }
