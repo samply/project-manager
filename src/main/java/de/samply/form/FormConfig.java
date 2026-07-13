@@ -76,8 +76,8 @@ public class FormConfig {
             });
 
             // Block metadata
-            if (formMetadataConfig.getFieldBlocks() != null) {
-                Arrays.stream(formMetadataConfig.getFieldBlocks()).forEach(fieldBlock ->
+            if (formMetadataConfig.getBlocks() != null) {
+                Arrays.stream(formMetadataConfig.getBlocks()).forEach(fieldBlock ->
                         blockLabelformFieldBlockMap.put(fieldBlock.getLabel(), fieldBlock));
             }
 

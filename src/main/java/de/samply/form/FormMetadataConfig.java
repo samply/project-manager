@@ -17,6 +17,6 @@ public class FormMetadataConfig extends DisplayMetadata{
     private String title;
     private Map<String, DisplayMetadata> groups;
     private FormFieldConfig[] fields;
-    private FormFieldBlock[] fieldBlocks;
+    private FormFieldBlock[] blocks;
 
 }
