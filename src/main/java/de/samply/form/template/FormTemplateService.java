@@ -114,8 +114,8 @@ public class FormTemplateService {
 
                         // 2️⃣ Form fields from formService (raw, base + override)
                         Arrays.stream(template.getFormTitles())
-                                .flatMap(formTitle -> dtoFormService.fetchBaseAndOverrideFormFields(
-                                        formTitle, project, Optional.of(language)))
+                                .flatMap(formTitle -> dtoFormService.fetchProjectFormFields(
+                                        Optional.of(formTitle), project, Optional.of(language)).stream())
                 )
                 .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
                 .collect(FormFieldUtils.formFieldMapCollector());

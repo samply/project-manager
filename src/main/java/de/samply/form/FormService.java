@@ -49,8 +49,16 @@ public class FormService {
         this.sessionUser = sessionUser;
     }
 
-    protected List<ProjectFormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull Project project) {
+    public List<ProjectFormField> fetchProjectFormFields(Project project) {
+        return projectFormFieldRepository.findByProject(project);
+    }
+
+    protected List<ProjectFormField> fetchProjectFormFields(@NotNull String formTitle, @NotNull Project project) {
         return projectFormFieldRepository.findByProjectAndFormTitle(project, formTitle);
+    }
+
+    public List<ProjectForm> fetchProjectForms(Project project) {
+        return projectFormRepository.findByProject(project);
     }
 
     @Transactional
@@ -222,13 +230,6 @@ public class FormService {
                 .forEach(projectFormRepository::delete);
     }
 
-    public List<ProjectForm> fetchProjectForms(Project project) {
-        return projectFormRepository.findByProject(project);
-    }
-
-    public List<ProjectFormField> fetchProjectFormFields(Project project) {
-        return projectFormFieldRepository.findByProject(project);
-    }
 
 
 }

@@ -1,6 +1,7 @@
 package de.samply.form;
 
 import de.samply.db.model.Project;
+import de.samply.form.condition.FormFieldConditionEvaluator;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.FormField;
@@ -23,17 +24,20 @@ public class DtoFormService {
 
     private final DtoFactory dtoFactory;
     private final FormConfig formConfig;
+    private final FormFieldConditionEvaluator formFieldConditionEvaluator;
 
 
     public DtoFormService(
             FormService formService,
             DtoFactory dtoFactory,
             FormConfig formConfig,
-            DtoProjectService dtoProjectService) {
+            DtoProjectService dtoProjectService,
+            FormFieldConditionEvaluator formFieldConditionEvaluator) {
         this.formService = formService;
         this.dtoFactory = dtoFactory;
         this.formConfig = formConfig;
         this.dtoProjectService = dtoProjectService;
+        this.formFieldConditionEvaluator = formFieldConditionEvaluator;
     }
 
     public List<FormField> fetchProjectFormTitles(Optional<String> language) {
@@ -51,7 +55,7 @@ public class DtoFormService {
                 .collect(Collectors.toList());
     }
 
-    public List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(@NotNull String formTitle, Optional<String> language) {
+    private List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(@NotNull String formTitle, Optional<String> language) {
         return formConfig
                 .getFormTitleLabelFieldMap()
                 .getOrDefault(formTitle, Map.of())
@@ -62,9 +66,9 @@ public class DtoFormService {
                 .toList();
     }
 
-    public List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull Project project, Optional<String> language) {
+    private List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull Project project, Optional<String> language) {
         return formService
-                .fetchProjectFormFieldsWithValues(formTitle, project)
+                .fetchProjectFormFields(formTitle, project)
                 .stream()
                 .map(projectFormField -> dtoFactory.convert(projectFormField, language))
                 .toList();
@@ -94,7 +98,7 @@ public class DtoFormService {
                 .toList();
     }
 
-    public Stream<FormField> fetchBaseAndOverrideFormFields(
+    private Stream<FormField> fetchBaseAndOverrideFormFields(
             @NotNull String formTitle, @NotNull Project project, Optional<String> language
     ) {
         // "base" fields: the plain field definitions from config, no value, no instance.
@@ -149,7 +153,7 @@ public class DtoFormService {
                         baseByBlock.getOrDefault(block, List.of()),
                         valuedByBlock.getOrDefault(block, List.of())
                 ));
-        
+
         return Stream.concat(nonBlockFields, blockFields);
     }
 
@@ -207,16 +211,14 @@ public class DtoFormService {
                 .build();
     }
 
-    public List<FormField> fetchProjectFormFields(Optional<String> formTitle, @NotNull Project project, Optional<String> language) {
-        return formTitle
+    public Collection<FormField> fetchProjectFormFields(Optional<String> formTitle, @NotNull Project project, Optional<String> language) {
+        return formFieldConditionEvaluator.filter(formTitle
                 .map(Stream::of)
                 .orElseGet(() -> formConfig.getFormTitleLabelFieldMap().keySet().stream())
                 .flatMap(title -> fetchBaseAndOverrideFormFields(title, project, language))
                 .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
                 .collect(FormFieldUtils.formFieldMapCollector())
-                .values()
-                .stream()
-                .toList();
+                .values());
     }
 
 

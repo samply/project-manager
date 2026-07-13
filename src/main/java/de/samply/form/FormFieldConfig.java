@@ -35,6 +35,10 @@ public class FormFieldConfig extends DisplayMetadata {
     // A block is a collection of form fields that are always displayed together.
     private String block;
 
+    // Condition for displaying the form field based on SpEL expression (e.g., "<label>.<value> == '12345'")
+    // See https://docs.spring.io/spring-framework/reference/core/expressions.html
+    private String condition;
+
     // This field is intended for project values to be displayed as form fields in a form.
     // e.g. "${project-code}": This will be replaced with the value of the project code.
     @JsonProperty("value")
