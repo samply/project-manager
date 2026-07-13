@@ -1,6 +1,7 @@
 package de.samply.utils.directory;
 
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,24 @@ public class DirectoryConversionConfiguration {
                 beanFactory.setConversionService(configurableConversionService);
             }
         };
+    }
+
+    @Bean
+    @ConfigurationPropertiesBinding
+    public StringToPathConverter pathConverter() {
+        return new StringToPathConverter();
+    }
+
+    @Bean
+    @ConfigurationPropertiesBinding
+    public StringToExistingDirectoryConverter existingDirectoryConverter(StringToPathConverter pathConverter) {
+        return new StringToExistingDirectoryConverter(pathConverter);
+    }
+
+    @Bean
+    @ConfigurationPropertiesBinding
+    public StringToEnsuredDirectoryConverter ensuredDirectoryConverter(StringToPathConverter pathConverter) {
+        return new StringToEnsuredDirectoryConverter(pathConverter);
     }
 
 }
