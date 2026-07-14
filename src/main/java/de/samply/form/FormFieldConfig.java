@@ -37,6 +37,9 @@ public class FormFieldConfig extends DisplayMetadata {
 
     // Condition for displaying the form field based on SpEL expression (e.g., "<label>.<value> == '12345'")
     // See https://docs.spring.io/spring-framework/reference/core/expressions.html
+    // e.g. "condition": "['samples']['liquid_type']['value'] == 'other'"
+    // The first element is the title, the second is the label, and the third one is an element from FormField.java (for frontend)
+    // It should be written as in FormField.java
     private String condition;
 
     // This field is intended for project values to be displayed as form fields in a form.
