@@ -13,6 +13,7 @@ public enum DataType {
     DOUBLE(Double.class),
     BOOLEAN(Boolean.class),
     STRING(String.class),
+    LONG_STRING(String.class),
     ENUM(String.class),
     DATE(LocalDate.class),
     TIMESTAMP(Instant.class);
