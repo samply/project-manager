@@ -221,6 +221,7 @@ public class ProjectManagerConst {
     public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/project/bridgehead/query/save";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/project/bridgehead/query/save-execute";
     public final static String DOWNLOAD_AUTHENTICATION_SCRIPT = "/authentication-script/download";
+    public final static String ASSETS = "/assets/**";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT = "/project/export-files/send";
     public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT = "/project/export-files/status";
     public final static String EXISTS_AUTHENTICATION_SCRIPT = "/authentication-script/exists";
@@ -413,6 +414,8 @@ public class ProjectManagerConst {
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
     public final static String REQUEST_CACHE_LIMIT = "REQUEST_CACHE_LIMIT";
+    public final static String ASSETS_CACHE_DURATION_IN_HOURS = "ASSETS_CACHE_DURATION_IN_HOURS";
+    public final static String ASSETS_DIRECTORY = "ASSETS_DIRECTORY";
 
     public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
     public final static String JWT_EMAIL_CLAIM = "JWT_EMAIL_CLAIM";
@@ -542,7 +545,8 @@ public class ProjectManagerConst {
     public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
     public final static String CODER_WORKSPACE_NAME_MAX_LENGTH_SV = HEAD_SV + CODER_WORKSPACE_NAME_MAX_LENGTH + ":32" + BOTTOM_SV;
     public final static String REQUEST_CACHE_LIMIT_SV = HEAD_SV + REQUEST_CACHE_LIMIT + ":#{2 * 1024 * 1024}" + BOTTOM_SV;
-
+    public final static String ASSETS_CACHE_DURATION_IN_HOURS_SV = HEAD_SV + ASSETS_CACHE_DURATION_IN_HOURS + ":1" + BOTTOM_SV;
+    public final static String ASSETS_DIRECTORY_SV = HEAD_SV + ASSETS_DIRECTORY + BOTTOM_SV;
 
     public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
 

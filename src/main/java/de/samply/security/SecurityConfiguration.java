@@ -83,6 +83,7 @@ public class SecurityConfiguration {
 
         // Services without authentication required
         authorization.requestMatchers(HttpMethod.GET, ProjectManagerConst.INFO).permitAll();
+        authorization.requestMatchers(HttpMethod.GET, ProjectManagerConst.ASSETS).permitAll();
 
         // Services with authentication required
         Map<String, MethodRoles> pathRolesMap = RolesExtractor.extractPathRolesMap();
