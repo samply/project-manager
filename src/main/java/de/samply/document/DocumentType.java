@@ -6,5 +6,6 @@ public enum DocumentType {
     PUBLICATION,
     DESCRIPTION,
     FINAL_REPORT,
+    FORM_FIELD,
     OTHERS
 }

@@ -1377,6 +1377,38 @@ public class ProjectManagerController {
                 project, Optional.empty(), document, DocumentType.DESCRIPTION, Optional.ofNullable(label)));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_FORM_FIELD_ACTION)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_FORM_FIELD)
+    public ResponseEntity uploadFormField(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                project, Optional.empty(), document, DocumentType.FORM_FIELD, Optional.ofNullable(label)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_FORM_FIELD_URL_ACTION)
+    @PostMapping(value = ProjectManagerConst.ADD_FORM_FIELD_URL)
+    public ResponseEntity addFormFieldUrl(
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead,
+            @RequestVariable(name = ProjectManagerConst.DOCUMENT_URL) String documentUrl,
+            @RequestVariable(name = ProjectManagerConst.LABEL, required = false) String label
+    ) {
+        return convertToResponseEntity(() -> this.documentService.addDocumentUrl(
+                project, Optional.empty(), documentUrl, DocumentType.FORM_FIELD, Optional.ofNullable(label)));
+    }
+
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
@@ -1532,6 +1564,19 @@ public class ProjectManagerController {
         return downloadProjectDocument(project, Optional.empty(), Optional.empty(), DocumentType.DESCRIPTION);
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FORM_FIELD_ACTION)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_FORM_FIELD)
+    public ResponseEntity downloadFormField(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(project, Optional.empty(), Optional.empty(), DocumentType.FORM_FIELD);
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
@@ -1579,6 +1624,21 @@ public class ProjectManagerController {
         return convertOptionalToResponseEntity(
                 () -> this.dtoDocumentService.fetchLastDocumentOfThisTypeForFrontend(project,
                         Optional.empty(), DocumentType.DESCRIPTION));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_FORM_FIELD_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_FORM_FIELD)
+    public ResponseEntity fetchFormField(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return convertOptionalToResponseEntity(
+                () -> this.dtoDocumentService.fetchLastDocumentOfThisTypeForFrontend(project,
+                        Optional.empty(), DocumentType.FORM_FIELD));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
@@ -1653,6 +1713,19 @@ public class ProjectManagerController {
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return existsProjectDocument(project, Optional.empty(), DocumentType.DESCRIPTION);
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_FORM_FIELD_ACTION)
+    @GetMapping(value = ProjectManagerConst.EXISTS_FORM_FIELD)
+    public ResponseEntity existsFormField(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return existsProjectDocument(project, Optional.empty(), DocumentType.FORM_FIELD);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
