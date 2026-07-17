@@ -23,6 +23,7 @@ public record FormField(
         DataType type,
         FormFieldValue[] allowedValues,
         Boolean mandatory,
+        Boolean asFile,
         String block,
         String blockDisplayName,
         String blockDescription,

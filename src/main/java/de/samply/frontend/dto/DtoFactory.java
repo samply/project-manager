@@ -274,6 +274,10 @@ public class DtoFactory {
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getAsFile)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getBlock)
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
@@ -375,6 +379,7 @@ public class DtoFactory {
                 formFieldConfig.getDataType(),
                 convert(formFieldConfig.getAllowedValues(), language),
                 formFieldConfig.isMandatory(),
+                formFieldConfig.getAsFile(),
                 formFieldConfig.getBlock(),
                 Optional.ofNullable(formFieldConfig.getBlock())
                         .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))

@@ -35,6 +35,10 @@ public class FormFieldConfig extends DisplayMetadata {
     // A block is a collection of form fields that are always displayed together.
     private String block;
 
+    // This field can also be provided as a file
+    @JsonProperty("as_file")
+    private Boolean asFile;
+
     // Condition for displaying the form field based on SpEL expression (e.g., "<label>.<value> == '12345'")
     // See https://docs.spring.io/spring-framework/reference/core/expressions.html
     // e.g. "condition": "['samples']['liquid_type']['value'] == 'other'"
