@@ -270,6 +270,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Condition in form field config
 - External assets for frontend
 - Form field as file
+- Form Field upload and download
 
 
 ### Changed

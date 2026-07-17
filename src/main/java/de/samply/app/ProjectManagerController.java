@@ -1630,9 +1630,9 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
-    @FrontendAction(action = ProjectManagerConst.FETCH_FORM_FIELD_ACTION)
-    @GetMapping(value = ProjectManagerConst.FETCH_FORM_FIELD)
-    public ResponseEntity fetchFormField(
+    @FrontendAction(action = ProjectManagerConst.FETCH_FORM_FIELD_FILE_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_FORM_FIELD_FILE)
+    public ResponseEntity fetchFormFieldFile(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
