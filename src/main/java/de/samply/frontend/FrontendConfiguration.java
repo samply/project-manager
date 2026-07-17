@@ -19,6 +19,8 @@ public class FrontendConfiguration {
 
     private String baseUrl;
     private Map<String, String> sites = new HashMap<>();
+    private Map<String, String> variables = new HashMap<>();
+
 
     @PostConstruct
     private void postConstruct() {

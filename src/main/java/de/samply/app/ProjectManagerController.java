@@ -21,6 +21,7 @@ import de.samply.exporter.ExporterService;
 import de.samply.form.DtoFormService;
 import de.samply.form.FormService;
 import de.samply.form.template.FormTemplateService;
+import de.samply.frontend.FrontendConfiguration;
 import de.samply.frontend.FrontendService;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.FormField;
@@ -105,6 +106,7 @@ public class ProjectManagerController {
     private final FormService formService;
     private final DtoFormService dtoFormService;
     private final FormTemplateService formTemplateService;
+    private final FrontendConfiguration frontendConfiguration;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -128,7 +130,8 @@ public class ProjectManagerController {
                                     CoderService coderService,
                                     FormService formService,
                                     DtoFormService dtoFormService,
-                                    FormTemplateService formTemplateService) {
+                                    FormTemplateService formTemplateService,
+                                    FrontendConfiguration frontendConfiguration) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -152,6 +155,7 @@ public class ProjectManagerController {
         this.formService = formService;
         this.dtoFormService = dtoFormService;
         this.formTemplateService = formTemplateService;
+        this.frontendConfiguration = frontendConfiguration;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -186,6 +190,12 @@ public class ProjectManagerController {
         return convertToResponseEntity(() ->
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(project),
                         Optional.ofNullable(bridgehead), Optional.ofNullable(language), false));
+    }
+
+    @FrontendAction(action = ProjectManagerConst.FETCH_FRONTEND_VARIABLES_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_FRONTEND_VARIABLES, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity fetchFrontendVariables() {
+        return convertToResponseEntity(this.frontendConfiguration::getVariables);
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)

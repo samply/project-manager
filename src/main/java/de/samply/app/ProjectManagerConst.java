@@ -102,6 +102,7 @@ public class ProjectManagerConst {
     public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
     public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT";
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
+    public final static String FETCH_FRONTEND_VARIABLES_ACTION = "FETCH_FRONTEND_VARIABLES";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE";
@@ -189,6 +190,7 @@ public class ProjectManagerConst {
     public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS = "/project/bridgeheads/visible";
     public final static String FETCH_PROJECT = "/project";
     public final static String FETCH_PROJECT_STATES = "/project/states";
+    public final static String FETCH_FRONTEND_VARIABLES = "/frontend/variables";
     public final static String ARCHIVE_PROJECT = "/project/archive";
     public final static String START_DEVELOP_STAGE = "/project/start-develop";
     public final static String START_PILOT_STAGE = "/project/start-pilot";
