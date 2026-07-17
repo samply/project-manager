@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,6 +28,11 @@ public class FrontendConfiguration {
         Map<String, String> tempSites = new HashMap<>();
         sites.forEach((siteId, sitePath) -> tempSites.put(replaceHyphen(siteId), sitePath));
         sites = tempSites;
+
+        Map<String, String> tempVariables = new HashMap<>();
+        variables.forEach((key, value) -> tempVariables.put(normalizeVariableKey(key), value));
+        variables = tempVariables;
+
         log.info("----------------------------------------");
         log.info("Frontend Configuration:");
         log.info("Base URL: {}", baseUrl);
@@ -39,6 +45,12 @@ public class FrontendConfiguration {
 
     private String replaceHyphen(String var) {
         return var.replace(ProjectManagerConst.HYPHEN, "-");
+    }
+
+    private String normalizeVariableKey(String key) {
+        return key
+                .replace(".", "_")
+                .toUpperCase(Locale.ROOT);
     }
 
     public Optional<String> getSitePath(String site) {
