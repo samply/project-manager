@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Service
@@ -158,7 +159,9 @@ public class DtoFormService {
     }
 
     /**
-     * Expands a single block's fields across all of its existing instances.
+     * Expands a single block's fields across all of its existing instances. If
+     * no instance has been persisted yet, the configured minimum number of blank
+     * instances is created for the response.
      * <p>
      * Example:
      * baseBlockFields = [F1, F2, F3] (config order, no instance, no value)
@@ -170,6 +173,19 @@ public class DtoFormService {
     private Stream<FormField> expandBlock(List<FormField> baseBlockFields, List<FormField> valuedBlockFields) {
 
         if (valuedBlockFields.isEmpty()) {
+            int minInstances = baseBlockFields.stream()
+                    .map(FormField::minBlockInstances)
+                    .filter(Objects::nonNull)
+                    .max(Integer::compareTo)
+                    .orElse(0);
+
+            if (minInstances > 0) {
+                return IntStream.rangeClosed(1, minInstances)
+                        .boxed()
+                        .flatMap(instance -> baseBlockFields.stream()
+                                .map(base -> withInstance(base, instance)));
+            }
+
             return baseBlockFields.stream();
         }
 
