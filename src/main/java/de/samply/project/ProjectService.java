@@ -318,11 +318,16 @@ public class ProjectService {
     }
 
     public void setProjectConfiguration(@NotNull Project project, @NotNull String projectConfigurationName) throws ProjectServiceException {
-        if (!projectConfigurationName.equals(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
-            de.samply.frontend.dto.ProjectAndForms projectAndForms = this.projectConfigurations.getConfig().get(projectConfigurationName);
-            if (projectAndForms == null) {
-                throw new ProjectServiceException("ProjectCode configuration " + projectConfigurationName + " not found");
-            }
+        final List<String> selectedConfigurations;
+        try {
+            selectedConfigurations = projectConfigurations.parseSelection(projectConfigurationName);
+        } catch (IllegalArgumentException exception) {
+            throw new ProjectServiceException(exception.getMessage());
+        }
+
+        if (!selectedConfigurations.contains(ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION)) {
+            de.samply.frontend.dto.ProjectAndForms projectAndForms =
+                    projectConfigurations.merge(selectedConfigurations);
 
             Project mergedProject = DtoFactory.merge(projectAndForms.project(), project);
             mergedProject.setIsCustomConfigSelected(false);
@@ -330,8 +335,10 @@ public class ProjectService {
             queryPersistenceService.saveQuery(mergedProject.getQuery());
 
             // Synchronize Forms
-            if (projectAndForms.forms() != null && projectAndForms.forms().length > 0) {
-                this.formService.syncSelectedForms(project, Arrays.stream(projectAndForms.forms()).map(Form::title).toList());
+            if (projectAndForms.forms() != null) {
+                this.formService.syncSelectedForms(
+                        project,
+                        Arrays.stream(projectAndForms.forms()).map(Form::title).toList());
             }
 
             // Synchronize Form Fields

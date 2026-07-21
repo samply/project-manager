@@ -82,9 +82,9 @@ public class DtoFormService {
                                 .map(projectForm -> dtoFactory.convert(projectForm, language)),
                         // Fetch forms that should be selected according to the current configuration.
                         // This is particularly important if the current configuration is CUSTOM
-                        dtoProjectService.fetchCurrentProjectConfiguration(project)
-                                .values()
+                        dtoProjectService.fetchCurrentProjectConfigurations(project)
                                 .stream()
+                                .filter(projectAndForms -> projectAndForms.forms() != null)
                                 .flatMap(projectAndForms -> Arrays.stream(projectAndForms.forms()))
                 )
                 // Remove duplicates

@@ -110,6 +110,7 @@ public class ProjectManagerConst {
     public final static String FETCH_CURRENT_USER_ACTION = "FETCH_CURRENT_USER";
     public final static String EXIST_INVITED_USERS_ACTION = "EXIST_INVITED_USERS";
     public final static String FETCH_PROJECT_CONFIGURATIONS_ACTION = "FETCH_PROJECT_CONFIGURATIONS";
+    public final static String FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE_ACTION = "FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE";
     public final static String EXISTS_AUTHENTICATION_SCRIPT_ACTION = "EXISTS_AUTHENTICATION_SCRIPT";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
     public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
@@ -164,6 +165,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_ROLES = "/project/roles";
     public final static String FETCH_OUTPUT_FORMATS = "/output/formats";
     public final static String FETCH_PROJECT_CONFIGURATIONS = "/project/configurations";
+    public final static String FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE = "/project/configurations/selection-type";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION = "/project/configuration";
     public final static String SET_PROJECT_CONFIGURATION = "/project/configuration";
     public final static String DESIGN_PROJECT = "/project/design";
@@ -278,6 +280,7 @@ public class ProjectManagerConst {
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
     public final static String PROJECT_CONFIGURATION = "project-configuration";
+    public final static String PROJECT_CONFIGURATION_SEPARATOR = ",";
     public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String LANGUAGE = "language";

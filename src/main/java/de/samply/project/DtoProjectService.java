@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -54,8 +54,13 @@ public class DtoProjectService {
         return projectService.fetchResearcherProjects(sessionUser.getEmail(), bridgeheads, projectState, archived, pageRequest, modifiedDescendant).map(dtoFactory::convert);
     }
 
-    public Map<String, ProjectAndForms> fetchCurrentProjectConfiguration(@NotNull de.samply.db.model.Project project) throws ProjectServiceException {
+    public List<String> fetchCurrentProjectConfiguration(@NotNull de.samply.db.model.Project project) throws ProjectServiceException {
         return this.projectConfigurations.fetchCurrentProjectConfiguration(dtoFactory.convertToProjectAndForms(project, Optional.empty()));
+    }
+
+    public List<ProjectAndForms> fetchCurrentProjectConfigurations(@NotNull de.samply.db.model.Project project) throws ProjectServiceException {
+        return this.projectConfigurations.fetchCurrentProjectConfigurations(
+                dtoFactory.convertToProjectAndForms(project, Optional.empty()));
     }
 
     public Optional<Results> fetchResults(@NotNull de.samply.db.model.Project project) throws ProjectServiceException {

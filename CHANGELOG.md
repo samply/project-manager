@@ -272,6 +272,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form field as file
 - Form field upload and download
 - Frontend variables
+- Multiple selected configurations
 
 
 ### Changed

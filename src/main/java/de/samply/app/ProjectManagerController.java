@@ -692,6 +692,18 @@ public class ProjectManagerController {
         return convertToResponseEntity(this.frontendProjectConfigurations::getConfig);
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE)
+    public ResponseEntity fetchProjectConfigurationSelectionType(
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return convertToResponseEntity(this.frontendProjectConfigurations::getSelectionType);
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)

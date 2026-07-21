@@ -1,183 +1,200 @@
 package de.samply.frontend.dto.configuration;
 
+import de.samply.annotations.IgnoreProjectConfigurationMatch;
 import de.samply.app.ProjectManagerConst;
-import de.samply.frontend.dto.*;
+import de.samply.frontend.dto.Form;
+import de.samply.frontend.dto.FormField;
+import de.samply.frontend.dto.Project;
+import de.samply.frontend.dto.ProjectAndForms;
+import de.samply.frontend.dto.ProjectOutput;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class ProjectConfigurationMatcher {
 
     private static final String CUSTOM_KEY = ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION;
 
-    public static Map<String, ProjectAndForms> fetchMatchProjectConfiguration(ProjectAndForms runtime, Map<String, ProjectAndForms> config) {
-
-        if (runtime.project() != null && isTrue(runtime.project().getIsCustomConfigSelected())) {
-            return fetchCustomConfiguration(config);
-        }
-
-        Map<Map.Entry<String, ProjectAndForms>, Integer> matchScores = new HashMap<>();
-
-        for (Map.Entry<String, ProjectAndForms> templateEntry : config.entrySet()) {
-
-            if (templateEntry.getKey().equals(CUSTOM_KEY)) {
-                continue;
-            }
-
-            int score = calculateMatchScore(runtime, templateEntry.getValue());
-
-            if (score >= 0) {
-                matchScores.put(templateEntry, score);
-            }
-        }
-
-        return matchScores.entrySet().stream()
-                .max(Comparator.comparingInt(Map.Entry::getValue))
-                .map(e -> Map.of(e.getKey().getKey(), e.getKey().getValue()))
-                .orElseGet(() -> fetchCustomConfiguration(config));
+    private ProjectConfigurationMatcher() {
     }
 
-    private static boolean isTrue(Boolean value) {
-        return Boolean.TRUE.equals(value);
-    }
-
-    private static Map<String, ProjectAndForms> fetchCustomConfiguration(
-            Map<String, ProjectAndForms> config) {
-
-        ProjectAndForms custom = config.get(CUSTOM_KEY);
-
-        if (custom != null) {
-            return Map.of(CUSTOM_KEY, custom);
-        }
-
-        // fallback minimal custom
-        Project customProject = new Project();
-        customProject.setIsCustomConfigSelected(true);
-
-        return Map.of(CUSTOM_KEY,
-                new ProjectAndForms(customProject, new Form[0], new FormField[0]));
-    }
-
-    private static int calculateMatchScore(
+    public static List<String> fetchMatchingProjectConfigurations(
             ProjectAndForms runtime,
-            ProjectAndForms template) {
+            Map<String, ProjectAndForms> configurations,
+            SelectionType selectionType) {
+
+        if (runtime.project() != null && Boolean.TRUE.equals(runtime.project().getIsCustomConfigSelected())) {
+            return List.of(CUSTOM_KEY);
+        }
+
+        List<ConfigurationMatch> matches = configurations.entrySet().stream()
+                .filter(entry -> !CUSTOM_KEY.equals(entry.getKey()))
+                .map(entry -> new ConfigurationMatch(
+                        entry.getKey(),
+                        calculateMatchScore(runtime, entry.getValue())))
+                .filter(match -> match.score() >= 0)
+                .toList();
+
+        if (matches.isEmpty()) {
+            return List.of(CUSTOM_KEY);
+        }
+
+        if (selectionType == SelectionType.MULTIPLE) {
+            return matches.stream().map(ConfigurationMatch::name).toList();
+        }
+
+        return matches.stream()
+                .max(Comparator.comparingInt(ConfigurationMatch::score))
+                .map(match -> List.of(match.name()))
+                .orElseGet(() -> List.of(CUSTOM_KEY));
+    }
+
+    private static int calculateMatchScore(ProjectAndForms runtime, ProjectAndForms template) {
+        if (runtime == null || template == null) {
+            return -1;
+        }
 
         int projectScore = matchProject(runtime.project(), template.project());
-        if (projectScore < 0) return -1;
-
         int formScore = matchForms(runtime.forms(), template.forms());
-        if (formScore < 0) return -1;
-
         int formFieldScore = matchFormFields(runtime.formFields(), template.formFields());
-        if (formFieldScore < 0) return -1;
+
+        if (projectScore < 0 || formScore < 0 || formFieldScore < 0) {
+            return -1;
+        }
 
         return projectScore + formScore + formFieldScore;
     }
 
     private static int matchProject(Project runtime, Project template) {
-        if (runtime == null || template == null) return -1;
-
-        // Check the project-level field
-        if (isTrue(template.getIsCustomConfigSelected()) && !isTrue(runtime.getIsCustomConfigSelected())) {
+        if (template == null) {
+            return 0;
+        }
+        if (runtime == null) {
             return -1;
         }
 
-        ProjectOutput[] templateOutputs = template.getOutputs();
-        ProjectOutput[] runtimeOutputs = runtime.getOutputs();
+        int score = matchConfiguredFields(runtime, template, "outputs");
+        if (score < 0) {
+            return -1;
+        }
 
-        if (templateOutputs == null || templateOutputs.length == 0) return 0;
-
-        if (runtimeOutputs == null || runtimeOutputs.length != templateOutputs.length) return -1;
-
-        // Compute score using streams
-        return (isTrue(template.getIsCustomConfigSelected()) ? 1 : 0) +
-                IntStream.range(0, templateOutputs.length)
-                        .map(i -> matchOutput(runtimeOutputs[i], templateOutputs[i]))
-                        .filter(s -> s >= 0) // only count successful matches
-                        .sum();
+        int outputScore = matchOutputs(runtime.getOutputs(), template.getOutputs());
+        return outputScore < 0 ? -1 : score + outputScore;
     }
 
-    private static int matchOutput(ProjectOutput runtime, ProjectOutput template) {
-        if (template.projectType() != null && !Objects.equals(template.projectType(), runtime.projectType())) return -1;
-        if (template.outputFormat() != null && !Objects.equals(template.outputFormat(), runtime.outputFormat()))
+    private static int matchOutputs(ProjectOutput[] runtimeOutputs, ProjectOutput[] templateOutputs) {
+        if (templateOutputs == null || templateOutputs.length == 0) {
+            return 0;
+        }
+        if (runtimeOutputs == null || runtimeOutputs.length == 0) {
             return -1;
-        if (template.templateId() != null && !Objects.equals(template.templateId(), runtime.templateId())) return -1;
+        }
 
-        // Count matched fields
-        return Stream.of(template.projectType(), template.outputFormat(), template.templateId())
-                .filter(Objects::nonNull)
-                .mapToInt(_ -> 1)
-                .sum();
+        int score = 0;
+        for (ProjectOutput templateOutput : templateOutputs) {
+            int outputScore = Arrays.stream(runtimeOutputs)
+                    .mapToInt(runtimeOutput -> matchConfiguredFields(runtimeOutput, templateOutput))
+                    .filter(candidateScore -> candidateScore >= 0)
+                    .max()
+                    .orElse(-1);
+            if (outputScore < 0) {
+                return -1;
+            }
+            score += outputScore;
+        }
+        return score;
     }
 
     private static int matchForms(Form[] runtimeForms, Form[] templateForms) {
-
         if (templateForms == null || templateForms.length == 0) {
             return 0;
         }
-
         if (runtimeForms == null || runtimeForms.length == 0) {
             return -1;
         }
 
-        Set<String> runtimeTitles = Arrays.stream(runtimeForms)
-                .map(Form::title)
-                .collect(Collectors.toSet());
-
         int score = 0;
-
         for (Form templateForm : templateForms) {
-            if (!runtimeTitles.contains(templateForm.title())) {
+            int formScore = Arrays.stream(runtimeForms)
+                    .mapToInt(runtimeForm -> matchConfiguredFields(runtimeForm, templateForm))
+                    .filter(candidateScore -> candidateScore >= 0)
+                    .max()
+                    .orElse(-1);
+            if (formScore < 0) {
                 return -1;
             }
-            score++;
+            score += formScore;
         }
-
         return score;
     }
 
     private static int matchFormFields(FormField[] runtimeFields, FormField[] templateFields) {
-
         if (templateFields == null || templateFields.length == 0) {
             return 0;
         }
-
         if (runtimeFields == null || runtimeFields.length == 0) {
             return -1;
         }
 
-        Map<String, FormField> runtimeLookup = Arrays.stream(runtimeFields)
-                .collect(Collectors.toMap(
-                        f -> buildKey(f.title(), f.label()),
-                        f -> f,
-                        (a, _) -> a
-                ));
-
         int score = 0;
-
         for (FormField templateField : templateFields) {
-
-            String key = buildKey(templateField.title(), templateField.label());
-            FormField runtimeField = runtimeLookup.get(key);
-
-            if (runtimeField == null) {
+            int fieldScore = Arrays.stream(runtimeFields)
+                    .mapToInt(runtimeField -> matchConfiguredFields(runtimeField, templateField))
+                    .filter(candidateScore -> candidateScore >= 0)
+                    .max()
+                    .orElse(-1);
+            if (fieldScore < 0) {
                 return -1;
             }
-
-            if (templateField.value() != null &&
-                    !Objects.equals(templateField.value(), runtimeField.value())) {
-                return -1;
-            }
-
-            score++;
+            score += fieldScore;
         }
-
         return score;
     }
 
-    private static String buildKey(String title, String label) {
-        return (title == null ? "" : title) + "|" + (label == null ? "" : label);
+    /**
+     * Treats the template as a subset: every non-null template field must equal the
+     * runtime value, while values only present at runtime do not affect the match.
+     */
+    private static int matchConfiguredFields(Object runtime, Object template, String... excludedFields) {
+        if (template == null) {
+            return 0;
+        }
+        if (runtime == null || !runtime.getClass().equals(template.getClass())) {
+            return -1;
+        }
+
+        List<String> exclusions = Arrays.asList(excludedFields);
+        List<Field> fields = new ArrayList<>(Arrays.asList(template.getClass().getDeclaredFields()));
+        int score = 0;
+
+        try {
+            for (Field field : fields) {
+                if (field.isAnnotationPresent(IgnoreProjectConfigurationMatch.class)
+                        || exclusions.contains(field.getName())) {
+                    continue;
+                }
+
+                field.setAccessible(true);
+                Object expected = field.get(template);
+                if (expected == null) {
+                    continue;
+                }
+                if (!Objects.deepEquals(expected, field.get(runtime))) {
+                    return -1;
+                }
+                score++;
+            }
+            return score;
+        } catch (IllegalAccessException exception) {
+            throw new IllegalStateException("Unable to compare project configuration", exception);
+        }
+    }
+
+    private record ConfigurationMatch(String name, int score) {
     }
 }
