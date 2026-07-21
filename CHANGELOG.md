@@ -274,6 +274,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Frontend variables
 - Multiple selected configurations
 - Create block for min instances
+- Attribute "active" in form field config
 
 
 ### Changed

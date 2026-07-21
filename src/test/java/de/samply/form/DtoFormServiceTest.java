@@ -1,6 +1,7 @@
 package de.samply.form;
 
 import de.samply.db.model.Project;
+import de.samply.db.model.ProjectFormField;
 import de.samply.form.condition.FormFieldConditionEvaluator;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.FormField;
@@ -55,20 +56,95 @@ class DtoFormServiceTest {
                         org.assertj.core.groups.Tuple.tuple("volume", 1));
     }
 
+    @Test
+    void ignoresInactiveFieldWhenItHasNotBeenPersisted() {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoProjectService dtoProjectService = mock(DtoProjectService.class);
+        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        DtoFormService service = new DtoFormService(
+                formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
+
+        String title = "project";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig activeConfig = formFieldConfig("active", null);
+        FormFieldConfig inactiveConfig = formFieldConfig("inactive", null);
+        inactiveConfig.setActive(false);
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
+                Map.of(title, Map.of("active", activeConfig, "inactive", inactiveConfig)));
+        when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
+        when(dtoFactory.convert(eq(title), eq(activeConfig), any(), any(), eq(language)))
+                .thenReturn(formField(title, "active", null, 1, null));
+        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Collection<FormField> result = service.fetchProjectFormFields(
+                Optional.of(title), project, language);
+
+        assertThat(result).extracting(FormField::label).containsExactly("active");
+    }
+
+    @Test
+    void keepsInactiveFieldWhenItHasBeenPersisted() {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoProjectService dtoProjectService = mock(DtoProjectService.class);
+        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        DtoFormService service = new DtoFormService(
+                formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
+
+        String title = "project";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig inactiveConfig = formFieldConfig("inactive", null);
+        inactiveConfig.setActive(false);
+        ProjectFormField persistedField = new ProjectFormField();
+        FormField baseField = formField(title, "inactive", null, 1, null);
+        FormField valuedField = formField(title, "inactive", null, 1, "saved value");
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
+                Map.of(title, Map.of("inactive", inactiveConfig)));
+        when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of(persistedField));
+        when(dtoFactory.convert(persistedField, language)).thenReturn(valuedField);
+        when(dtoFactory.convert(eq(title), eq(inactiveConfig), any(), any(), eq(language)))
+                .thenReturn(baseField);
+        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Collection<FormField> result = service.fetchProjectFormFields(
+                Optional.of(title), project, language);
+
+        assertThat(result)
+                .singleElement()
+                .satisfies(field -> {
+                    assertThat(field.label()).isEqualTo("inactive");
+                    assertThat(field.value()).isEqualTo("saved value");
+                });
+    }
+
     private FormFieldConfig formFieldConfig(String label, @SuppressWarnings("SameParameterValue") String block) {
         FormFieldConfig config = new FormFieldConfig();
         config.setLabel(label);
         config.setBlock(block);
+        config.setActive(true);
         return config;
     }
 
     private FormField formField(String title, String label, int order) {
+        return formField(title, label, "liquid", order, null).toBuilder()
+                .minBlockInstances(1)
+                .build();
+    }
+
+    private FormField formField(String title, String label, String block, Integer order, String value) {
         return FormField.builder()
                 .title(title)
                 .label(label)
-                .block("liquid")
-                .minBlockInstances(1)
+                .block(block)
                 .order(order)
+                .value(value)
                 .build();
     }
 }

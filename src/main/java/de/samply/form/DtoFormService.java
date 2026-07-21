@@ -56,12 +56,17 @@ public class DtoFormService {
                 .collect(Collectors.toList());
     }
 
-    private List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(@NotNull String formTitle, Optional<String> language) {
+    private List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(
+            @NotNull String formTitle, Set<String> persistedLabels, Optional<String> language
+    ) {
         return formConfig
                 .getFormTitleLabelFieldMap()
                 .getOrDefault(formTitle, Map.of())
                 .values()
                 .stream()
+                // Keep inactive definitions only when this project already has
+                // persisted data that still needs to be represented.
+                .filter(field -> field.isActive() || persistedLabels.contains(field.getLabel()))
                 .map(field ->
                         dtoFactory.convert(formTitle, field, Optional.empty(), Optional.empty(), language))
                 .toList();
@@ -102,12 +107,19 @@ public class DtoFormService {
     private Stream<FormField> fetchBaseAndOverrideFormFields(
             @NotNull String formTitle, @NotNull Project project, Optional<String> language
     ) {
-        // "base" fields: the plain field definitions from config, no value, no instance.
-        List<FormField> baseFields = fetchProjectFormFieldsDefinedInConfigWithoutValues(formTitle, language);
-
         // "valued" fields: the fields that actually have a value saved for this project,
         // each tagged with a concrete blockInstance.
         List<FormField> valuedFields = fetchProjectFormFieldsWithValues(formTitle, project, language);
+
+        // Load persisted labels first so filtering the base configuration does not
+        // remove inactive fields that were used before they became inactive.
+        Set<String> persistedLabels = valuedFields.stream()
+                .map(FormField::label)
+                .collect(Collectors.toSet());
+
+        // Inactive fields are kept only for projects that already have data for them.
+        List<FormField> baseFields = fetchProjectFormFieldsDefinedInConfigWithoutValues(
+                formTitle, persistedLabels, language);
 
         return buildFormFieldsExpandingBlockInstances(baseFields, valuedFields);
     }
@@ -115,8 +127,8 @@ public class DtoFormService {
     /**
      * Combines base field definitions with valued fields, making sure that every
      * block instance that has AT LEAST ONE valued field ends up with ALL of its
-     * fields present (using the valued one where it exists, and a "blank" clone
-     * of the base definition - stamped with the instance number - where it doesn't).
+     * fields present. (Using the valued one where it exists, and a "blank" clone
+     * of the base definition - stamped with the instance number - where it doesn't.)
      * <p>
      * Fields that don't belong to a block are untouched: they're just concatenated
      * as before (base and valued), since the "missing instance" problem only applies

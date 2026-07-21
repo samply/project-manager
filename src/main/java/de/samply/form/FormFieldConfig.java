@@ -26,6 +26,10 @@ public class FormFieldConfig extends DisplayMetadata {
 
     private boolean mandatory;
 
+    // Inactive fields are hidden when a project has no data for them. They remain
+    // available for projects with existing values, preserving previously saved data.
+    private boolean active = true;
+
     // Special properties for different uses (e.g., something specific for the UI)
     private String[] properties;
 
