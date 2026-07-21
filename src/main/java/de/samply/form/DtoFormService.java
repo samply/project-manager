@@ -173,11 +173,11 @@ public class DtoFormService {
     private Stream<FormField> expandBlock(List<FormField> baseBlockFields, List<FormField> valuedBlockFields) {
 
         if (valuedBlockFields.isEmpty()) {
-            int minInstances = baseBlockFields.stream()
-                    .map(FormField::minBlockInstances)
-                    .filter(Objects::nonNull)
-                    .max(Integer::compareTo)
-                    .orElse(0);
+            // Block metadata is shared by all base fields in the same block, so
+            // reading minBlockInstances from the first definition is sufficient.
+            int minInstances = baseBlockFields.isEmpty()
+                    ? 0
+                    : Optional.ofNullable(baseBlockFields.getFirst().minBlockInstances()).orElse(0);
 
             if (minInstances > 0) {
                 return IntStream.rangeClosed(1, minInstances)
