@@ -1362,7 +1362,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @EmailSender(templateType = EmailTemplateType.NEW_VOTUM, recipients = {
             EmailRecipientType.PROJECT_MANAGER_ADMIN})
@@ -1434,7 +1434,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.DRAFT})
     @EmailSender(templateType = EmailTemplateType.NEW_VOTUM_FOR_ALL_BRIDGEHEADS, recipients = {
             EmailRecipientType.ALL_BRIDGEHEAD_ADMINS, EmailRecipientType.CREATOR,
             EmailRecipientType.PROJECT_MANAGER_ADMIN})
@@ -1560,7 +1560,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
