@@ -35,8 +35,8 @@ public class DtoProjectService {
         this.projectConfigurations = projectConfigurations;
     }
 
-    public Project fetchDtoProject(@NotNull String projectCode) throws ProjectServiceException {
-        return dtoFactory.convert(projectService.fetchProject(projectCode));
+    public Project fetchDtoProject(@NotNull de.samply.db.model.Project project) throws ProjectServiceException {
+        return dtoFactory.convert(project);
     }
 
     public Page<Project> fetchUserVisibleProjects(
