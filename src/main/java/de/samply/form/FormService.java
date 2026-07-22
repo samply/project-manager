@@ -94,7 +94,7 @@ public class FormService {
                         sessionUser.getEmail(), OperationType.ADD_PROJECT_FORM_LABEL,
                         details, null, null);
             } else {
-                if (!projectFormField.getValue().equals(formField.value())) {
+                if (projectFormField.getValue() == null || !projectFormField.getValue().equals(formField.value())) {
                     projectFormField.setValue(formField.value());
                     notificationService.createNotification(project, null,
                             sessionUser.getEmail(), OperationType.EDIT_PROJECT_FORM_LABEL,
