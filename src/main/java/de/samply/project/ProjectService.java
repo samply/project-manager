@@ -2,7 +2,11 @@ package de.samply.project;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
+import de.samply.db.model.Project_;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgehead_;
+import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.db.model.ProjectBridgeheadUser_;
 import de.samply.db.model.Query;
 import de.samply.db.repository.ProjectRepository;
 import de.samply.form.FormService;
@@ -18,9 +22,15 @@ import de.samply.query.OutputFormat;
 import de.samply.query.QueryPersistenceService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -154,154 +164,157 @@ public class ProjectService {
         return false;
     }
 
-    protected Page<Project> fetchProjectManagerAdminProjects(
-            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest,
-            boolean modifiedDescendant) {
-        if (projectState.isEmpty()) {
-            if (archived.isEmpty()) {
-                if (modifiedDescendant) {
-                    return projectRepository.findAllByOrderByModifiedAtDesc(pageRequest);
-                } else {
-                    return projectRepository.findAllByOrderByModifiedAtAsc(pageRequest);
-                }
-            } else {
-                if (archived.get()) {
-                    if (modifiedDescendant) {
-                        return projectRepository.findAllArchivedProjectsModifiedAtDesc(pageRequest);
-                    } else {
-                        return projectRepository.findAllArchivedProjectsModifiedAtAsc(pageRequest);
-                    }
-                } else {
-                    if (modifiedDescendant) {
-                        return projectRepository.findAllNotArchivedProjectsModifiedAtDesc(pageRequest);
-                    } else {
-                        return projectRepository.findAllNotArchivedProjectsModifiedAtAsc(pageRequest);
-                    }
-                }
-            }
-        } else {
-            if (archived.isEmpty()) {
-                if (modifiedDescendant) {
-                    return projectRepository.findByStateOrderByModifiedAtDesc(projectState.get(), pageRequest);
-                } else {
-                    return projectRepository.findByStateOrderByModifiedAtAsc(projectState.get(), pageRequest);
-                }
-            } else {
-                if (archived.get()) {
-                    if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByStateModifiedAtDesc(projectState.get(), pageRequest);
-                    } else {
-                        return projectRepository.findArchivedProjectsByStateModifiedAtAsc(projectState.get(), pageRequest);
-                    }
-                } else {
-                    if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByStateModifiedAtDesc(projectState.get(), pageRequest);
-                    } else {
-                        return projectRepository.findNotArchivedProjectsByStateModifiedAtAsc(projectState.get(), pageRequest);
-                    }
-                }
-            }
-        }
+    /**
+     * Fetches one page of projects that satisfy the requested filters and are visible to the
+     * current user. Filtering and authorization are executed in the database as one query.
+     */
+    protected Page<Project> fetchUserVisibleProjects(
+            Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest) {
+        // Paging, sorting, filtering, and visibility are applied by a single database query.
+        return projectRepository.findAll(
+                buildUserVisibleProjectsSpecification(projectState, archived), pageRequest);
     }
 
-    protected Page<Project> fetchBridgeheadAdminProjects(
-            Set<String> bridgeheads, Optional<ProjectState> projectState, Optional<Boolean> archived,
-            PageRequest pageRequest, boolean modifiedDescendant) {
-        if (projectState.isEmpty()) {
-            if (archived.isEmpty()) {
-                if (modifiedDescendant) {
-                    return projectRepository.findByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
-                } else {
-                    return projectRepository.findByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
-                }
-            } else {
-                if (archived.get()) {
-                    if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
-                    }
-                } else {
-                    if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findNotArchivedProjectsByBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), bridgeheads, pageRequest);
-                    }
-                }
-            }
-        } else {
-            if (archived.isEmpty()) {
-                if (modifiedDescendant) {
-                    return projectRepository.findByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
-                } else {
-                    return projectRepository.findByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
-                }
-            } else {
-                if (archived.get()) {
-                    if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
-                    }
-                } else {
-                    if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtDesc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findNotArchivedProjectsByStateAndBridgeheadsOrCreatorModifiedAtAsc(sessionUser.getEmail(), projectState.get(), bridgeheads, pageRequest);
-                    }
-                }
-            }
-        }
+    /**
+     * Combines the independent state, archive, and user-visibility rules into one specification.
+     */
+    private Specification<Project> buildUserVisibleProjectsSpecification(
+            Optional<ProjectState> projectState, Optional<Boolean> archived) {
+        boolean isProjectManagerAdmin = isProjectManagerAdmin();
+        // allOf combines the independent specifications with a logical AND.
+        return Specification.allOf(List.of(
+                buildProjectStateSpecification(projectState, isProjectManagerAdmin),
+                buildArchivedStatusSpecification(archived),
+                buildUserVisibilitySpecification(isProjectManagerAdmin)
+        ));
     }
 
-    protected Page<Project> fetchResearcherProjects(String
-                                                            email, Set<String> bridgeheads, Optional<ProjectState> projectState,
-                                                    Optional<Boolean> archived, PageRequest pageRequest, boolean modifiedDescendant) {
-        if (projectState.isEmpty()) {
-            if (archived.isEmpty()) {
-                if (modifiedDescendant) {
-                    return projectRepository.findByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
-                } else {
-                    return projectRepository.findByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
-                }
-            } else {
-                if (archived.get()) {
-                    if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
-                    }
-                } else {
-                    if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtDesc(email, bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findNotArchivedProjectsByEmailAndBridgeheadsOrCreatorModifiedAtAsc(email, bridgeheads, pageRequest);
-                    }
-                }
-            }
-        } else {
-            if (archived.isEmpty()) {
-                if (modifiedDescendant) {
-                    return projectRepository.findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
-                } else {
-                    return projectRepository.findByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
-                }
-            } else {
-                if (archived.get()) {
-                    if (modifiedDescendant) {
-                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
-                    }
-                } else {
-                    if (modifiedDescendant) {
-                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtDesc(email, projectState.get(), bridgeheads, pageRequest);
-                    } else {
-                        return projectRepository.findNotArchivedProjectsByEmailAndStateAndBridgeheadsOrCreatorModifiedAtAsc(email, projectState.get(), bridgeheads, pageRequest);
-                    }
-                }
-            }
+    /**
+     * Filters by the requested state. Without an explicit state, project manager admins see every
+     * state except DRAFT; other users receive no state restriction here because their visibility
+     * is handled separately.
+     */
+    private Specification<Project> buildProjectStateSpecification(
+            Optional<ProjectState> projectState, boolean isProjectManagerAdmin) {
+        // Criterion: match the requested state, or exclude DRAFT by default for admins.
+        return (project, _, criteriaBuilder) -> projectState
+                .map(state ->
+                        criteriaBuilder.equal(project.get(Project_.state), state))
+                .orElseGet(() -> isProjectManagerAdmin
+                        ? criteriaBuilder.notEqual(project.get(Project_.state), ProjectState.DRAFT)
+                        : criteriaBuilder.conjunction());
+    }
+
+    /**
+     * Interprets archived=true as having an archive timestamp and archived=false as not having
+     * one. An omitted parameter does not restrict the archive status.
+     */
+    private Specification<Project> buildArchivedStatusSpecification(Optional<Boolean> archived) {
+        // Criterion: archivedAt must be present for archived projects and absent otherwise.
+        return (project, _, criteriaBuilder) -> archived
+                .map(isArchived -> isArchived
+                        ? criteriaBuilder.isNotNull(project.get(Project_.archivedAt))
+                        : criteriaBuilder.isNull(project.get(Project_.archivedAt)))
+                .orElseGet(criteriaBuilder::conjunction);
+    }
+
+    /**
+     * Project manager admins have unrestricted visibility. Other users can see projects they
+     * created or projects reachable through one of their bridgeheads.
+     */
+    private Specification<Project> buildUserVisibilitySpecification(boolean isProjectManagerAdmin) {
+        if (isProjectManagerAdmin) {
+            // A conjunction adds no visibility restriction for project manager admins.
+            return (_, _, criteriaBuilder) -> criteriaBuilder.conjunction();
         }
+
+        String email = sessionUser.getEmail();
+        Set<String> bridgeheads = sessionUser.getBridgeheads();
+        boolean bridgeheadAdmin = isBridgeheadAdmin();
+
+        // Criterion: the user is the creator OR a permitted bridgehead row exists.
+        return (project, query, criteriaBuilder) -> criteriaBuilder.or(
+                criteriaBuilder.equal(project.get(Project_.creatorEmail), email),
+                criteriaBuilder.exists(buildVisibleBridgeheadSubquery(
+                        project, query, criteriaBuilder, email, bridgeheads, bridgeheadAdmin))
+        );
+    }
+
+    /**
+     * Builds the correlated bridgehead lookup used by the outer project query. Bridgehead admins
+     * only need a matching bridgehead assignment. Researchers additionally need a matching
+     * ProjectBridgeheadUser entry for their email address.
+     */
+    private Subquery<Integer> buildVisibleBridgeheadSubquery(
+            Root<Project> project,
+            CriteriaQuery<?> query,
+            CriteriaBuilder criteriaBuilder,
+            String email,
+            Set<String> bridgeheads,
+            boolean bridgeheadAdmin) {
+        Subquery<Integer> bridgeheadQuery = query.subquery(Integer.class);
+        Root<ProjectBridgehead> projectBridgehead = bridgeheadQuery.from(ProjectBridgehead.class);
+        // Criteria: correlate the outer project and restrict it to the user's bridgeheads.
+        List<Predicate> predicates = buildBridgeheadVisibilityPredicates(
+                project, projectBridgehead, criteriaBuilder, bridgeheads);
+        if (!bridgeheadAdmin) {
+            // Researchers additionally need an explicit assignment to that project bridgehead.
+            predicates.addAll(buildResearcherVisibilityPredicates(
+                    bridgeheadQuery, projectBridgehead, criteriaBuilder, email));
+        }
+        // EXISTS only needs a matching row, so select the constant 1 and apply the visibility criteria.
+        return bridgeheadQuery.select(criteriaBuilder.literal(1))
+                .where(predicates.toArray(Predicate[]::new));
+    }
+
+    /**
+     * Correlates the bridgehead record with the outer project and restricts it to bridgeheads
+     * assigned to the current user.
+     */
+    private List<Predicate> buildBridgeheadVisibilityPredicates(
+            Root<Project> project,
+            Root<ProjectBridgehead> projectBridgehead,
+            CriteriaBuilder criteriaBuilder,
+            Set<String> bridgeheads) {
+        return new ArrayList<>(List.of(
+                criteriaBuilder.equal(projectBridgehead.get(ProjectBridgehead_.project), project),
+                buildAssignedBridgeheadPredicate(
+                        projectBridgehead, criteriaBuilder, bridgeheads)
+        ));
+    }
+
+    /**
+     * Returns a predicate that can match only the current user's bridgeheads. An empty set becomes
+     * an always-false predicate, leaving project ownership as the user's only visibility path.
+     */
+    private Predicate buildAssignedBridgeheadPredicate(
+            Root<ProjectBridgehead> projectBridgehead,
+            CriteriaBuilder criteriaBuilder,
+            Set<String> bridgeheads) {
+        // An always-false predicate avoids an invalid empty IN clause.
+        return bridgeheads.isEmpty()
+                ? criteriaBuilder.disjunction()
+                : projectBridgehead.get(ProjectBridgehead_.bridgehead).in(bridgeheads);
+    }
+
+    /**
+     * Restricts a bridgehead match to a researcher explicitly assigned to that project bridgehead.
+     */
+    private List<Predicate> buildResearcherVisibilityPredicates(
+            Subquery<Integer> bridgeheadQuery,
+            Root<ProjectBridgehead> projectBridgehead,
+            CriteriaBuilder criteriaBuilder,
+            String email) {
+        Root<ProjectBridgeheadUser> projectBridgeheadUser =
+                bridgeheadQuery.from(ProjectBridgeheadUser.class);
+        // Criteria: the assignment belongs to this bridgehead and to the current researcher.
+        return List.of(
+                criteriaBuilder.equal(
+                        projectBridgeheadUser.get(ProjectBridgeheadUser_.projectBridgehead),
+                        projectBridgehead),
+                criteriaBuilder.equal(
+                        projectBridgeheadUser.get(ProjectBridgeheadUser_.email), email)
+        );
     }
 
     public Map<ProjectType, List<OutputFormat>> fetchOutputFormats(@NotNull Project project) throws ProjectServiceException {

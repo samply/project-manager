@@ -297,6 +297,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch selected forms returns also preconfigured titles
 - Query Details
 - There Exists Publication
+- Refactor fetch projects
 
 
 ### Removed
