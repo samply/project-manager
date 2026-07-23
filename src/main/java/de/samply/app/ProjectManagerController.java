@@ -357,11 +357,7 @@ public class ProjectManagerController {
         if (areBridgeheadsOrExplorerIdsEmpty(bridgeheads, explorerIds)) {
             return ResponseEntity.badRequest().body("Bridgeheads or explorer ids cannot be empty");
         }
-        String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
-                Arrays.stream(explorerIds)
-                        .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
-                        .flatMap(Optional::stream)
-                        .toArray(String[]::new) : bridgeheads;
+        String[] tempBridgeheads = resolveBridgeheads(bridgeheads, explorerIds);
         String queryCode = this.queryService.createQuery(
                 query, queryFormat, label, description, outputFormat, templateId,
                 projectType, humanReadable, explorerUrl, queryContext, queryDetails);
@@ -376,6 +372,15 @@ public class ProjectManagerController {
     private boolean areBridgeheadsOrExplorerIdsEmpty(String[] bridgeheads, String[] explorerIds) {
         return (bridgeheads == null || bridgeheads.length == 0) && (explorerIds == null
                 || explorerIds.length == 0);
+    }
+
+    private String[] resolveBridgeheads(String[] bridgeheads, String[] explorerIds) {
+        return (explorerIds != null && explorerIds.length > 0)
+                ? Arrays.stream(explorerIds)
+                .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
+                .flatMap(Optional::stream)
+                .toArray(String[]::new)
+                : bridgeheads;
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
@@ -400,13 +405,9 @@ public class ProjectManagerController {
             @RequestVariable(name = ProjectManagerConst.QUERY_DETAILS, required = false) String queryDetails,
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
     ) {
-        if (bridgeheads != null) {
-            String[] tempBridgeheads = (explorerIds != null && explorerIds.length > 0) ?
-                    Arrays.stream(explorerIds)
-                            .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
-                            .flatMap(Optional::stream)
-                            .toArray(String[]::new) : bridgeheads;
-            projectService.updateBridgeheads(project, tempBridgeheads);
+        if (!areBridgeheadsOrExplorerIdsEmpty(bridgeheads, explorerIds)) {
+            projectService.updateBridgeheads(
+                    project, resolveBridgeheads(bridgeheads, explorerIds));
         }
         queryService.editQuery(project,
                 (query != null && !query.trim().isEmpty() && !query.equals("{}")) ? query :

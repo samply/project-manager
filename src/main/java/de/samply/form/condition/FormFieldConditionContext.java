@@ -38,11 +38,13 @@ public class FormFieldConditionContext {
     }
 
     private void createContext(Collection<FormField> formFields) {
+        // Group non-block fields together and block fields by form, block, and instance.
         Map<String, List<FormField>> fieldsByBlock = formFields.stream()
                 .collect(Collectors.groupingBy(this::fetchBlock, LinkedHashMap::new, Collectors.toList()));
 
         List<FormField> nonBlockFields = fieldsByBlock.getOrDefault(NON_BLOCK, List.of());
 
+        // Place all concrete instances of the same block into one block family.
         Map<String, List<Map.Entry<String, List<FormField>>>> blockFamilies = fieldsByBlock.entrySet().stream()
                 .filter(entry -> !NON_BLOCK.equals(entry.getKey()))
                 .collect(Collectors.groupingBy(
@@ -54,6 +56,7 @@ public class FormFieldConditionContext {
         List<List<Map.Entry<String, List<FormField>>>> perBlockInstances = new ArrayList<>(blockFamilies.values()).stream()
                 .toList();
 
+        // Each combination contains every non-block field and one instance from each block family.
         for (List<Map.Entry<String, List<FormField>>> combination : cartesianProduct(perBlockInstances)) {
             List<FormField> combinedFields = new ArrayList<>(nonBlockFields);
             List<String> keys = new ArrayList<>(List.of(NON_BLOCK));
@@ -64,6 +67,7 @@ public class FormFieldConditionContext {
             }
 
             StandardEvaluationContext evaluationContext = buildEvaluationContext(combinedFields);
+            // Index the context globally and under every concrete block instance it contains.
             keys.forEach(key -> context.computeIfAbsent(key, _ -> new ArrayList<>()).add(evaluationContext));
         }
     }
@@ -74,6 +78,7 @@ public class FormFieldConditionContext {
     }
 
     private StandardEvaluationContext buildEvaluationContext(List<FormField> fields) {
+        // Build the SpEL root as: form title -> field label -> serialized FormField.
         Map<String, Object> root = new LinkedHashMap<>();
 
         for (FormField formField : fields) {
@@ -89,6 +94,7 @@ public class FormFieldConditionContext {
     }
 
     private static <T> List<List<T>> cartesianProduct(List<List<T>> lists) {
+        // Extend every partial combination with each available instance of the next block family.
         List<List<T>> result = new ArrayList<>(List.of(List.of()));
         for (List<T> list : lists) {
             result = result.stream()
