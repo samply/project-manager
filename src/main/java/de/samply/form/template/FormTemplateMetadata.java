@@ -24,6 +24,8 @@ public class FormTemplateMetadata {
     private String templateFile;
     @JsonProperty("form_titles")
     private String[] formTitles;
+    @JsonProperty("all_form_titles_required")
+    private boolean allFormTitlesRequired = false;
     // Output filenames
     @JsonProperty("filename_templates")
     private Map<FileExtension, String> extensionFilenameTemplateMap;

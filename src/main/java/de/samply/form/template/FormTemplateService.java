@@ -113,7 +113,7 @@ public class FormTemplateService {
                                 )),
 
                         // 2️⃣ Form fields from formService (raw, base + override)
-                        Arrays.stream(template.getFormTitles())
+                        fetchApplicableFormTitles(template, project, language)
                                 .flatMap(formTitle -> dtoFormService.fetchProjectFormFields(
                                         Optional.of(formTitle), project, Optional.of(language)).stream())
                 )
@@ -121,22 +121,39 @@ public class FormTemplateService {
                 .collect(FormFieldUtils.formFieldMapCollector());
     }
 
+    private Stream<String> fetchApplicableFormTitles(
+            FormTemplateMetadata template, Project project, String language) {
+        Stream<String> configuredFormTitles = Arrays.stream(template.getFormTitles());
+        if (template.isAllFormTitlesRequired()) {
+            return configuredFormTitles;
+        }
+
+        Set<String> selectedFormTitles = dtoFormService
+                .fetchSelectedForms(project, Optional.of(language)).stream()
+                .map(Form::title)
+                .collect(Collectors.toSet());
+        return configuredFormTitles.filter(selectedFormTitles::contains);
+    }
+
     private List<FormTemplateMetadata> fetchValidMetadata(Project project, Optional<String> language) {
 
         // Fetch all selected forms for the project and extract their titles into a Set
-        // A Set is used for O(1) lookup when checking if a title is contained
+        //  is used for O(1) lookup when checking if a title is contained
         Set<String> selectedFormTitles = dtoFormService.fetchSelectedForms(project, language).stream()
                 .map(Form::title)
                 .collect(Collectors.toSet());
 
-        // From all available template metadata:
-        // Keep only those templates where *all* required form titles
-        // are present in the selected forms of the project
         return formTemplateConfig.getTemplateMetadataMap().values().stream()
-                .filter(metadata -> Arrays.stream(metadata.getFormTitles())
-                        .allMatch(selectedFormTitles::contains)
-                )
+                .filter(metadata -> matchesSelectedForms(metadata, selectedFormTitles))
                 .toList();
+    }
+
+    private boolean matchesSelectedForms(
+            FormTemplateMetadata metadata, Set<String> selectedFormTitles) {
+        Stream<String> formTitles = Arrays.stream(metadata.getFormTitles());
+        return metadata.isAllFormTitlesRequired()
+                ? formTitles.allMatch(selectedFormTitles::contains)
+                : formTitles.anyMatch(selectedFormTitles::contains);
     }
 
     public List<FormTemplate> fetchTemplates(@NotNull Project project, Optional<String> language) {
@@ -150,12 +167,11 @@ public class FormTemplateService {
 
     public List<FormTemplate> fetchBestTemplates(@NotNull Project project, Optional<String> language) {
 
-        // Step 1: Get all templates that fully match the selected forms
+        // Step 1: Get all templates that match their configured form-title requirement
         List<FormTemplateMetadata> validTemplates = fetchValidMetadata(project, language);
 
         // Step 2: Compute the "score" of each template
-        // Here, the score is simply the number of form titles the template requires
-        // (this works because we already ensured all titles are present via allMatch)
+        // Here, the score is the number of form titles configured for the template
         int maxScore = validTemplates.stream()
                 .mapToInt(metadata -> metadata.getFormTitles().length)
                 .max()
