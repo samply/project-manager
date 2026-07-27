@@ -1,6 +1,7 @@
 package de.samply.email.thymeleaf;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.utils.FileExtension;
 import de.samply.utils.directory.ExistingDirectory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 @Configuration
@@ -24,8 +26,8 @@ public class ThymeleafConfiguration {
     @Bean
     public FileTemplateResolver externalTemplateResolver() {
         FileTemplateResolver resolver = new FileTemplateResolver();
-        resolver.setPrefix(externalTemplateDirectory);
-        resolver.setSuffix(".html");
+        resolver.setPrefix(externalTemplateDirectory + File.separator);
+        resolver.setSuffix("." + FileExtension.HTML.value());
         resolver.setTemplateMode(TemplateMode.HTML);
         resolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
         resolver.setCacheable(true);
