@@ -1,11 +1,6 @@
 server:
   port: ${APPLICATION_PORT:8097}
-
-  servlet:
-    session:
-      cookie:
-        secure: true
-        same-site: none
+  max-http-request-header-size: 32KB # Some JWT can be relative large
 
 logging:
   level:
