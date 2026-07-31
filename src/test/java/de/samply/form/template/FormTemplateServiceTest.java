@@ -128,10 +128,10 @@ class FormTemplateServiceTest {
 
     private FormTemplateService formTemplateService(
             DtoFormService dtoFormService, FormTemplateMetadata metadata) {
-        FormPdfGeneratorFactory pdfGeneratorFactory = mock(FormPdfGeneratorFactory.class);
-        when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(mock(PdfGenerator.class));
         FormTemplateConfig config = mock(FormTemplateConfig.class);
         when(config.getTemplate(metadata.getTemplate())).thenReturn(Optional.of(metadata));
+        FormPdfGeneratorFactory pdfGeneratorFactory = mock(FormPdfGeneratorFactory.class);
+        when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(mock(PdfGenerator.class));
         return new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config,
                 mock(DtoFactory.class), "yyyy-MM-dd", mock(ProjectContextFactory.class));

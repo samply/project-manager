@@ -25,6 +25,7 @@ public class FormConfig {
     private final Map<String, DisplayMetadata> groupsDisplayMetadataMap = new HashMap<>();
     private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
     private final Map<String, Map<String, Integer>> formTitleLabelOrderMap = new HashMap<>();
+    private final Map<String, List<FormFieldLayout>> formTitleLayoutsMap = new HashMap<>();
 
     public FormConfig(@Value(ProjectManagerConst.FORM_FIELDS_DIRECTORY_SV) ExistingDirectory configDir
     ) {
@@ -50,6 +51,13 @@ public class FormConfig {
                     formMetadataConfig.getTitle(),
                     formMetadataConfig.fetchDisplayMetadata()
             );
+
+            // Layouts
+            List<FormFieldLayout> layouts = formTitleLayoutsMap.computeIfAbsent(
+                    formMetadataConfig.getTitle(), _ -> new ArrayList<>());
+            if (formMetadataConfig.getLayouts() != null) {
+                layouts.addAll(Arrays.asList(formMetadataConfig.getLayouts()));
+            }
 
             // Group metadata
             if (formMetadataConfig.getGroups() != null) {

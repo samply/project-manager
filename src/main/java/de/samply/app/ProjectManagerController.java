@@ -451,8 +451,6 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
             ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,
-            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS)
@@ -466,6 +464,21 @@ public class ProjectManagerController {
         return convertToResponseEntity(
                 () -> dtoFormService.fetchProjectFormFields(Optional.ofNullable(formTitle), project,
                         Optional.ofNullable(language)));
+    }
+
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_LAYOUTS_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_LAYOUTS)
+    public ResponseEntity fetchProjectFormLayouts(
+            // ProjectCode code needed for role constraints
+            @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead,
+            @RequestParameter(name = ProjectManagerConst.FORM_TITLE, required = false) String formTitle
+    ) {
+        return convertToResponseEntity(
+                () -> dtoFormService.fetchFormLayouts(Optional.ofNullable(formTitle)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,

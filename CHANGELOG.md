@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-07-23]
+## [1.0.0 - 2026-07-31]
 ### Added
 - First version of the project
 - Spring Application
@@ -276,6 +276,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Create block for min instances
 - Attribute "active" in form field config
 - Feature all_form_titles_required in form template metadata
+- Form Layout
 
 
 ### Changed

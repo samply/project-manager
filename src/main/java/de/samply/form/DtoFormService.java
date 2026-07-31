@@ -249,5 +249,16 @@ public class DtoFormService {
                 .values());
     }
 
+    public Map<String, List<FormFieldLayout>> fetchFormLayouts(Optional<String> formTitle) {
+        return formConfig.getFormTitleLayoutsMap().entrySet().stream()
+                .filter(entry -> formTitle.map(entry.getKey()::equals).orElse(true))
+                .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (_, layouts) -> layouts,
+                        LinkedHashMap::new));
+    }
 
 }

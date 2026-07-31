@@ -1,5 +1,6 @@
 package de.samply.form;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectFormField;
 import de.samply.form.condition.FormFieldConditionEvaluator;
@@ -20,6 +21,26 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class DtoFormServiceTest {
+
+    @Test
+    void deserializesLayoutsFromFormMetadataConfig() throws Exception {
+        FormMetadataConfig config = new ObjectMapper().readValue("""
+                {
+                  "title": "patient",
+                  "layouts": [
+                    {
+                      "rows": [
+                        {"fields": ["patient-id", "birth-date"]}
+                      ]
+                    }
+                  ]
+                }
+                """, FormMetadataConfig.class);
+
+        assertThat(config.getLayouts())
+                .containsExactly(new FormFieldLayout(List.of(
+                        new FormFieldLayoutRow(List.of("patient-id", "birth-date")))));
+    }
 
     @Test
     void createsCompleteMinimumBlockInstancesWhenNoValuesArePersisted() {
@@ -122,6 +143,46 @@ class DtoFormServiceTest {
                     assertThat(field.label()).isEqualTo("inactive");
                     assertThat(field.value()).isEqualTo("saved value");
                 });
+    }
+
+    @Test
+    void fetchesLayoutsGroupedByFormTitle() {
+        FormConfig formConfig = mock(FormConfig.class);
+        FormFieldLayout patientLayout = new FormFieldLayout(List.of(new FormFieldLayoutRow(List.of("patient-id"))));
+        FormFieldLayout sharedLayout = new FormFieldLayout(List.of(new FormFieldLayoutRow(List.of("field-a", "field-b"))));
+
+        when(formConfig.getFormTitleLayoutsMap()).thenReturn(Map.of(
+                "patient", List.of(patientLayout, sharedLayout),
+                "administration", List.of()));
+        DtoFormService service = dtoFormService(formConfig);
+
+        assertThat(service.fetchFormLayouts(Optional.empty()))
+                .containsExactly(Map.entry("patient", List.of(patientLayout, sharedLayout)));
+    }
+
+    @Test
+    void filtersLayoutsByFormTitle() {
+        FormConfig formConfig = mock(FormConfig.class);
+        FormFieldLayout layout = new FormFieldLayout(List.of(new FormFieldLayoutRow(List.of("field-a"))));
+
+        when(formConfig.getFormTitleLayoutsMap()).thenReturn(Map.of(
+                "patient", List.of(layout),
+                "sample", List.of()));
+        DtoFormService service = dtoFormService(formConfig);
+
+        assertThat(service.fetchFormLayouts(Optional.of("patient")))
+                .containsExactly(Map.entry("patient", List.of(layout)));
+
+        assertThat(service.fetchFormLayouts(Optional.of("sample"))).isEmpty();
+    }
+
+    private DtoFormService dtoFormService(FormConfig formConfig) {
+        return new DtoFormService(
+                mock(FormService.class),
+                mock(DtoFactory.class),
+                formConfig,
+                mock(DtoProjectService.class),
+                mock(FormFieldConditionEvaluator.class));
     }
 
     private FormFieldConfig formFieldConfig(String label, @SuppressWarnings("SameParameterValue") String block) {

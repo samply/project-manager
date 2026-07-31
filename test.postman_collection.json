@@ -663,6 +663,37 @@
       "response": []
     },
     {
+      "name": "Create query and design project (Researcher) [e260-serv-13]",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"query\": \"eyJsYW5nIjoiYXN0IiwicGF5bG9hZCI6ImV5SmhjM1FpT25zaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSkJUa1FpTENKamFHbHNaSEpsYmlJNlczc2lhMlY1SWpvaVoyeHBiMjFmWVd4c1gyZHliM1Z3Y3lJc0ltOXdaWEpoYm1RaU9pSlBVaUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKSGJHbHZiU0F0SUVkeVlXUWdTU0lzSW05d1pYSmhibVFpT2lKQlRrUWlMQ0pqYUdsc1pISmxiaUk2VzNzaWIzQmxjbUZ1WkNJNklrOVNJaXdpWTJocGJHUnlaVzRpT2x0N0ltOXdaWEpoYm1RaU9pSlBVaUlzSW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW1Ob2FXeGtjbVZ1SWpwYmV5SnJaWGtpT2lKa2FXRm5ibTl6YVhNaUxDSjBlWEJsSWpvaVJWRlZRVXhUSWl3aWRtRnNkV1VpT2lKRU5ETWlmU3g3SW10bGVTSTZJbVJwWVdkdWIzTnBjeUlzSW5SNWNHVWlPaUpGVVZWQlRGTWlMQ0oyWVd4MVpTSTZJa1EwTXk0eEluMHNleUpyWlhraU9pSmthV0ZuYm05emFYTWlMQ0owZVhCbElqb2lSVkZWUVV4VElpd2lkbUZzZFdVaU9pSkVORE11TWlKOUxIc2lhMlY1SWpvaVpHbGhaMjV2YzJseklpd2lkSGx3WlNJNklrVlJWVUZNVXlJc0luWmhiSFZsSWpvaVJEUXpMakFpZlN4N0ltdGxlU0k2SW1ScFlXZHViM05wY3lJc0luUjVjR1VpT2lKRlVWVkJURk1pTENKMllXeDFaU0k2SWtRME15NHpJbjBzZXlKclpYa2lPaUprYVdGbmJtOXphWE1pTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUpFTkRNdU5DSjlMSHNpYTJWNUlqb2laR2xoWjI1dmMybHpJaXdpZEhsd1pTSTZJa1ZSVlVGTVV5SXNJblpoYkhWbElqb2lSRFF6TGpjaWZTeDdJbXRsZVNJNkltUnBZV2R1YjNOcGN5SXNJblI1Y0dVaU9pSkZVVlZCVEZNaUxDSjJZV3gxWlNJNklrUTBNeTQ1SW4xZGZWMTlMSHNpYjNCbGNtRnVaQ0k2SWs5U0lpd2lZMmhwYkdSeVpXNGlPbHQ3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnekx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXpnMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TXprMEx6RWlmU3g3SW10bGVTSTZJbTF2Y25Cb2IyeHZaM2tpTENKMGVYQmxJam9pUlZGVlFVeFRJaXdpZG1Gc2RXVWlPaUk1TkRJeEx6RWlmVjE5WFgxZGZWMTlYWDBzSW1sa0lqb2lZelJqWkRRNVpqVXRZV1V5T0MwMFl6TmxMV0V4WVRjdE5XTXpNamM1TnpabVlqbGxJbjA9In0=\",\r\n    \"explorer-ids\": \"lens-cce-gr,lens-cce-ki,lens-cce-nki,lens-cce-vhio\",\r\n    \"query-format\": \"AST_DATA\",\r\n    \"human-readable\": \"(((diagnosis EQUALS D43) OR (diagnosis EQUALS D43.1) OR (diagnosis EQUALS D43.2) OR (diagnosis EQUALS D43.0) OR (diagnosis EQUALS D43.3) OR (diagnosis EQUALS D43.4) OR (diagnosis EQUALS D43.7) OR (diagnosis EQUALS D43.9)) AND ((morphology EQUALS 9383/1) OR (morphology EQUALS 9384/1) OR (morphology EQUALS 9394/1) OR (morphology EQUALS 9421/1)))\",\r\n    \"explorer-url\": \"https://demo.lens.samply.de/?collections=&query=W1t7ImlkIjoiMDVlOTVlODEtMGZiYi00ZDczLWE1YzgtZDYyOTg3ZmYzMzg5Iiwia2V5IjoiZ2xpb21fYWxsX2dyb3VwcyIsIm5hbWUiOiJHbGlvbWUsIGFsbGUgR3J1cHBlbiIsInR5cGUiOiJFUVVBTFMiLCJ2YWx1ZXMiOlt7Im5hbWUiOiJHbGlvbSAtIEdyYWQgSSIsInZhbHVlIjpbW3sidmFsdWUiOiJkaWFnbm9zaXMiLCJuYW1lIjoiRDQzLiUifV0sW3sidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODMvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzODQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6IjkzOTQvMSJ9LHsidmFsdWUiOiJtb3JwaG9sb2d5IiwibmFtZSI6Ijk0MjEvMSJ9XV0sInF1ZXJ5QmluZElkIjoiM2FiMTM1ZjctYzI3NC00YWFlLWI5YjQtYmFhNDc2OWRkZjcxIn1dfV1d\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://e260-serv-13/requester-api/create-query-and-design-project",
+          "protocol": "https",
+          "host": [
+            "e260-serv-13"
+          ],
+          "path": [
+            "requester-api",
+            "create-query-and-design-project"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Lens: Create Query",
       "request": {
         "auth": {
@@ -1163,6 +1194,36 @@
             {
               "key": "project-code",
               "value": "a1ba86d4574e45dd9962"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Form Layouts",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8097/project/forms/layouts?project-code=bd5bca98994141c19d48",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "project",
+            "forms",
+            "layouts"
+          ],
+          "query": [
+            {
+              "key": "project-code",
+              "value": "bd5bca98994141c19d48"
             }
           ]
         }
