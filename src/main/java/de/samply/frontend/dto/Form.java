@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record Form(
         String title,
         String titleDisplayName,
-        String titleDescription
+        String titleDescription,
+        String titleShortDescription
 ) {
 }

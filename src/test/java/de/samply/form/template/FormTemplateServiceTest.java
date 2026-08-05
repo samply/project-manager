@@ -46,7 +46,7 @@ class FormTemplateServiceTest {
         when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(mock(PdfGenerator.class));
         when(config.getTemplateMetadataMap()).thenReturn(Map.of(metadata.getTemplate(), metadata));
         when(dtoFormService.fetchSelectedForms(project, language)).thenReturn(selectedTitles.stream()
-                .map(title -> new Form(title, null, null))
+                .map(title -> new Form(title, null, null, null))
                 .toList());
         when(dtoFactory.convert(metadata, language)).thenReturn(template);
 
@@ -56,7 +56,7 @@ class FormTemplateServiceTest {
 
         assertThat(service.fetchTemplates(project, language))
                 .containsExactlyElementsOf(
-                        expectedToMatch ? List.of(template) : List.<FormTemplate>of());
+                        expectedToMatch ? List.of(template) : List.of());
     }
 
     @Test
@@ -94,8 +94,8 @@ class FormTemplateServiceTest {
         Project project = new Project();
         FormTemplateMetadata metadata = metadata(false);
         when(dtoFormService.fetchSelectedForms(project, Optional.of("en"))).thenReturn(List.of(
-                new Form("patient", null, null),
-                new Form("unrelated", null, null)));
+                new Form("patient", null, null, null),
+                new Form("unrelated", null, null, null)));
         FormTemplateService service = formTemplateService(dtoFormService, metadata);
 
         service.fetchFormFields(

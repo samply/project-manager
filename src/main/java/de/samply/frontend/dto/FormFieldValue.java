@@ -6,5 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record FormFieldValue(
         String label,
         String displayName,
-        String description) {
+        String description,
+        String shortDescription) {
 }

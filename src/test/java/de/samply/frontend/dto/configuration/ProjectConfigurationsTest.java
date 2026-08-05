@@ -51,11 +51,11 @@ class ProjectConfigurationsTest {
         FormField second = first.toBuilder().value("opal").build();
         configurations.getConfig().put("export", new ProjectAndForms(
                 project(output(ProjectType.EXPORT, OutputFormat.CSV, "export")),
-                new Form[]{new Form("export", null, null)},
+                new Form[]{new Form("export", null, null, null)},
                 new FormField[]{first}));
         configurations.getConfig().put("datashield", new ProjectAndForms(
                 project(output(ProjectType.DATASHIELD, OutputFormat.OPAL, "datashield")),
-                new Form[]{new Form("datashield", null, null)},
+                new Form[]{new Form("datashield", null, null, null)},
                 new FormField[]{second}));
 
         ProjectAndForms merged = configurations.merge(List.of("export", "datashield"));

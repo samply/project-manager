@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record FormFieldGroup (
         String group,
         String displayName,
-        String description
+        String description,
+        String shortDescription
 ){
 }

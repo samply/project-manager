@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-07-31]
+## [1.0.0 - 2026-08-05]
 ### Added
 - First version of the project
 - Spring Application
@@ -299,6 +299,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Query Details
 - There Exists Publication
 - Refactor fetch projects
+- Short Description in Display Metadata
 
 
 ### Removed
