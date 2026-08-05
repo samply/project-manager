@@ -6,6 +6,9 @@ logging:
   level:
     root: ${ROOT_LOG_LEVEL:INFO}
     de.samply: ${LOG_LEVEL:INFO}
+    # OpenHTMLtoPDF assigns AcroForm widget rectangles after setting their values.
+    # FormPdfConverter refreshes appearances once rendering has positioned them.
+    org.apache.pdfbox.pdmodel.interactive.form.AppearanceGeneratorHelper: ERROR
 
 spring:
 
