@@ -628,6 +628,7 @@ public class ProjectManagerConst {
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
+    public final static String NOT_SELECTED_PROJECT_CONFIGURATION = "NOT_SELECTED";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
     public final static String BASE_64 = "b64";
     public final static String HTTP_PROTOCOL_SCHEMA = "http";

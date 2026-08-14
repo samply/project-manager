@@ -48,6 +48,9 @@ public class ProjectConfigurations {
         if (names.isEmpty()) {
             throw new IllegalArgumentException("At least one project configuration must be selected");
         }
+        if (names.contains(ProjectManagerConst.NOT_SELECTED_PROJECT_CONFIGURATION) && names.size() > 1) {
+            throw new IllegalArgumentException("The NOT_SELECTED project configuration cannot be combined with another configuration");
+        }
         if (!isMultipleSelection() && names.size() > 1) {
             names = List.of(names.getFirst());
         }

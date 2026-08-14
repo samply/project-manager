@@ -31,6 +31,41 @@ class ProjectConfigurationsTest {
     }
 
     @Test
+    void missingCustomSelectionReturnsNotSelected() {
+        Project runtimeProject = project();
+
+        List<String> result = configurations(SelectionType.SINGLE)
+                .fetchCurrentProjectConfiguration(
+                        new ProjectAndForms(runtimeProject, new Form[0], new FormField[0]));
+
+        assertThat(result).containsExactly("NOT_SELECTED");
+    }
+
+    @Test
+    void explicitCustomSelectionReturnsCustom() {
+        Project runtimeProject = project();
+        runtimeProject.setIsCustomConfigSelected(true);
+
+        List<String> result = configurations(SelectionType.SINGLE)
+                .fetchCurrentProjectConfiguration(
+                        new ProjectAndForms(runtimeProject, new Form[0], new FormField[0]));
+
+        assertThat(result).containsExactly("CUSTOM");
+    }
+
+    @Test
+    void nonCustomUnmatchedStateReturnsNotSelected() {
+        Project runtimeProject = project();
+        runtimeProject.setIsCustomConfigSelected(false);
+
+        List<String> result = configurations(SelectionType.SINGLE)
+                .fetchCurrentProjectConfiguration(
+                        new ProjectAndForms(runtimeProject, new Form[0], new FormField[0]));
+
+        assertThat(result).containsExactly("NOT_SELECTED");
+    }
+
+    @Test
     void singleSelectionKeepsOnlyTheMostSpecificMatch() {
         ProjectConfigurations configurations = configurations(SelectionType.SINGLE);
         Project combined = project(
@@ -73,12 +108,21 @@ class ProjectConfigurationsTest {
                 .containsExactly("export");
     }
 
+    @Test
+    void notSelectedCanBeSelectedAlone() {
+        ProjectConfigurations configurations = configurations(SelectionType.SINGLE);
+
+        assertThat(configurations.parseSelection("NOT_SELECTED"))
+                .containsExactly("NOT_SELECTED");
+    }
+
     private ProjectConfigurations configurations(SelectionType selectionType) {
         ProjectConfigurations configurations = new ProjectConfigurations();
         configurations.setSelectionType(selectionType);
         Map<String, ProjectAndForms> config = new LinkedHashMap<>();
         config.put("export", configuration(project(output(ProjectType.EXPORT, OutputFormat.CSV, "export"))));
         config.put("datashield", configuration(project(output(ProjectType.DATASHIELD, OutputFormat.OPAL, "datashield"))));
+        config.put("NOT_SELECTED", new ProjectAndForms(null, new Form[0], new FormField[0]));
         configurations.setConfig(config);
         return configurations;
     }

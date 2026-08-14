@@ -19,6 +19,7 @@ import java.util.Objects;
 public class ProjectConfigurationMatcher {
 
     private static final String CUSTOM_KEY = ProjectManagerConst.CUSTOM_PROJECT_CONFIGURATION;
+    private static final String NOT_SELECTED_KEY = ProjectManagerConst.NOT_SELECTED_PROJECT_CONFIGURATION;
 
     private ProjectConfigurationMatcher() {
     }
@@ -28,12 +29,17 @@ public class ProjectConfigurationMatcher {
             Map<String, ProjectAndForms> configurations,
             SelectionType selectionType) {
 
-        if (runtime.project() != null && Boolean.TRUE.equals(runtime.project().getIsCustomConfigSelected())) {
+        if (runtime == null || runtime.project() == null) {
+            return List.of(NOT_SELECTED_KEY);
+        }
+
+        if (Boolean.TRUE.equals(runtime.project().getIsCustomConfigSelected())) {
             return List.of(CUSTOM_KEY);
         }
 
         List<ConfigurationMatch> matches = configurations.entrySet().stream()
                 .filter(entry -> !CUSTOM_KEY.equals(entry.getKey()))
+                .filter(entry -> !NOT_SELECTED_KEY.equals(entry.getKey()))
                 .map(entry -> new ConfigurationMatch(
                         entry.getKey(),
                         calculateMatchScore(runtime, entry.getValue())))
@@ -41,7 +47,7 @@ public class ProjectConfigurationMatcher {
                 .toList();
 
         if (matches.isEmpty()) {
-            return List.of(CUSTOM_KEY);
+            return List.of(NOT_SELECTED_KEY);
         }
 
         if (selectionType == SelectionType.MULTIPLE) {
@@ -51,7 +57,7 @@ public class ProjectConfigurationMatcher {
         return matches.stream()
                 .max(Comparator.comparingInt(ConfigurationMatch::score))
                 .map(match -> List.of(match.name()))
-                .orElseGet(() -> List.of(CUSTOM_KEY));
+                .orElseGet(() -> List.of(NOT_SELECTED_KEY));
     }
 
     private static int calculateMatchScore(ProjectAndForms runtime, ProjectAndForms template) {
