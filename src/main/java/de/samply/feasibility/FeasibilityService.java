@@ -75,7 +75,7 @@ public class FeasibilityService {
 
     private Mono<Void> createTask(BeamRequest request) {
         return webClient.post()
-                .uri(ProjectManagerConst.BEAM_TASK_PATH)
+                .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.BEAM_TASK_PATH).build())
                 .header(HttpHeaders.AUTHORIZATION, authorization())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
