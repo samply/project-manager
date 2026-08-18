@@ -269,7 +269,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Normalize paths in constructor parameters
 - Condition in form field config
 - External assets for frontend
-- Form field as file
+- Form field as a file
 - Form field upload and download
 - Frontend variables
 - Multiple selected configurations
@@ -279,7 +279,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form Layout
 - NOT SELECTED configuration
 - Query format constraints
-- Feasibility service for Lens-style AST_DATA queries through Beam and Focus
+- Feasibility service and endpoint for Lens-style AST_DATA queries through Beam and Focus
 
 
 ### Changed

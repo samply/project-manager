@@ -18,6 +18,7 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
+import de.samply.feasibility.FeasibilityService;
 import de.samply.form.DtoFormService;
 import de.samply.form.FormService;
 import de.samply.form.template.FormTemplateService;
@@ -107,6 +108,7 @@ public class ProjectManagerController {
     private final DtoFormService dtoFormService;
     private final FormTemplateService formTemplateService;
     private final FrontendConfiguration frontendConfiguration;
+    private final FeasibilityService feasibilityService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -131,7 +133,8 @@ public class ProjectManagerController {
                                     FormService formService,
                                     DtoFormService dtoFormService,
                                     FormTemplateService formTemplateService,
-                                    FrontendConfiguration frontendConfiguration) {
+                                    FrontendConfiguration frontendConfiguration,
+                                    FeasibilityService feasibilityService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -156,6 +159,7 @@ public class ProjectManagerController {
         this.dtoFormService = dtoFormService;
         this.formTemplateService = formTemplateService;
         this.frontendConfiguration = frontendConfiguration;
+        this.feasibilityService = feasibilityService;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -255,6 +259,22 @@ public class ProjectManagerController {
     ) {
         return convertToResponseEntity(
                 () -> dtoProjectBridgeheadService.fetchProjectBridgeheads(project));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
+            OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @ProjectConstraints(queryFormats = {QueryFormat.AST_DATA})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE,
+            module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_FEASIBILITY_ACTION)
+    @GetMapping(value = ProjectManagerConst.FETCH_FEASIBILITY,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity fetchFeasibility(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return convertToResponseEntity(() -> feasibilityService.fetchFeasibility(project, bridgehead).block());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,

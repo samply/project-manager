@@ -115,6 +115,7 @@ public class ProjectManagerConst {
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
     public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
     public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_PROJECT_BRIDGEHEADS";
+    public final static String FETCH_FEASIBILITY_ACTION = "FETCH_FEASIBILITY";
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
     public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION = "ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT";
@@ -191,6 +192,7 @@ public class ProjectManagerConst {
     public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS = "/project/analysis/request-changes";
     public final static String FETCH_PROJECT_BRIDGEHEADS = "/project/bridgeheads";
     public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS = "/project/bridgeheads/visible";
+    public final static String FETCH_FEASIBILITY = "/project/bridgehead/feasibility";
     public final static String FETCH_PROJECT = "/project";
     public final static String FETCH_PROJECT_STATES = "/project/states";
     public final static String FETCH_FRONTEND_VARIABLES = "/frontend/variables";
