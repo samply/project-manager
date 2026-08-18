@@ -1,4 +1,4 @@
-package de.samply.exporter.focus;
+package de.samply.beam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +45,18 @@ public class BeamService {
         return beamRequest;
     }
 
+    public BeamRequest generateFeasibilityBeamRequest(String query, String bridgehead, String focusProject) throws BeamServiceException {
+        BeamRequest beamRequest = new BeamRequest();
+        beamRequest.setId(generateId());
+        beamRequest.setBody(query);
+        beamRequest.setFrom(projectManagerId);
+        beamRequest.setTo(new String[]{fetchFocusBeamId(bridgehead)});
+        beamRequest.setTtl(ttl);
+        beamRequest.setMetadata(createFeasibilityMetadata(focusProject));
+        beamRequest.setFailureStrategy(failureStrategy);
+        return beamRequest;
+    }
+
     public String generateId() {
         return UUID.randomUUID().toString();
     }
@@ -69,6 +81,13 @@ public class BeamService {
         BeamRequestMetadata beamRequestMetadata = new BeamRequestMetadata();
         beamRequestMetadata.setProject(ProjectManagerConst.BEAM_FOCUS_METADATA_PROJECT);
         beamRequestMetadata.setTaskType(taskType);
+        return beamRequestMetadata;
+    }
+
+    private BeamRequestMetadata createFeasibilityMetadata(String focusProject) {
+        BeamRequestMetadata beamRequestMetadata = new BeamRequestMetadata();
+        beamRequestMetadata.setProject(focusProject);
+        beamRequestMetadata.setTransform(ProjectManagerConst.BEAM_FOCUS_METADATA_TRANSFORM_LENS);
         return beamRequestMetadata;
     }
 

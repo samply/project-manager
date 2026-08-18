@@ -357,6 +357,7 @@ public class ProjectManagerConst {
 
     // Beam
     public final static String BEAM_FOCUS_METADATA_PROJECT = "exporter";
+    public final static String BEAM_FOCUS_METADATA_TRANSFORM_LENS = "LENS";
     public final static String BEAM_TASK_PATH = "/v1/tasks";
     public final static String BEAM_TASK_RESULTS_PATH = "/results";
     public final static String BEAM_TASK_WAIT_TIME_PARAM = "wait_time";
@@ -418,6 +419,7 @@ public class ProjectManagerConst {
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES = "BEAM_FAILURE_STRATEGY_MAX_TRIES";
     public final static String BEAM_URL = "BEAM_URL";
     public final static String BEAM_API_KEY = "BEAM_API_KEY";
+    public final static String FOCUS_LENS_PROJECT = "FOCUS_LENS_PROJECT";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
@@ -540,6 +542,7 @@ public class ProjectManagerConst {
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + BEAM_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
     public final static String BEAM_URL_SV = HEAD_SV + BEAM_URL + BOTTOM_SV;
     public final static String BEAM_API_KEY_SV = HEAD_SV + BEAM_API_KEY + BOTTOM_SV;
+    public final static String FOCUS_LENS_PROJECT_SV = HEAD_SV + FOCUS_LENS_PROJECT + ":default_obfuscation" + BOTTOM_SV;
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String ENABLE_TOKEN_MANAGER_SV = HEAD_SV + ENABLE_TOKEN_MANAGER + ":true" + BOTTOM_SV;
     public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;

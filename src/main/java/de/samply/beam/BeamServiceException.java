@@ -1,4 +1,4 @@
-package de.samply.exporter.focus;
+package de.samply.beam;
 
 public class BeamServiceException extends RuntimeException {
     public BeamServiceException(String message) {

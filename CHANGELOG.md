@@ -279,6 +279,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form Layout
 - NOT SELECTED configuration
 - Query format constraints
+- Feasibility service for Lens-style AST_DATA queries through Beam and Focus
 
 
 ### Changed

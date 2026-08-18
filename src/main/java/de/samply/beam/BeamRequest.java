@@ -1,4 +1,4 @@
-package de.samply.exporter.focus;
+package de.samply.beam;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

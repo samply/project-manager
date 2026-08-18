@@ -1,4 +1,4 @@
-package de.samply.exporter.focus;
+package de.samply.beam;
 
 public enum TaskType {
     CREATE,
