@@ -181,6 +181,15 @@ public class ConstraintsService {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
                 }
             }
+            if (projectConstraints.get().queryFormats().length > 0) {
+                boolean hasAnyQueryFormatConstraint = project.get().getQuery() != null &&
+                        Arrays.asList(projectConstraints.get().queryFormats())
+                                .contains(project.get().getQuery().getQueryFormat());
+
+                if (!hasAnyQueryFormatConstraint) {
+                    return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
+                }
+            }
         }
         return Optional.empty();
     }
