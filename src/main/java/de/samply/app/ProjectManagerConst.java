@@ -432,6 +432,7 @@ public class ProjectManagerConst {
     public final static String EXPLORER_REDIRECT_URI_PARAMETER = "EXPLORER_REDIRECT_URI_PARAMETER";
     public final static String FRONTEND_PROJECT_CONFIG_PATH = "FRONTEND_PROJECT_CONFIG_PATH";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
+    public final static String ENABLE_FEASIBILITY = "ENABLE_FEASIBILITY";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
     public final static String REQUEST_CACHE_LIMIT = "REQUEST_CACHE_LIMIT";
@@ -548,6 +549,7 @@ public class ProjectManagerConst {
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String ENABLE_TOKEN_MANAGER_SV = HEAD_SV + ENABLE_TOKEN_MANAGER + ":true" + BOTTOM_SV;
     public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;
+    public final static String ENABLE_FEASIBILITY_SV = HEAD_SV + ENABLE_FEASIBILITY + ":true" + BOTTOM_SV;
     public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
             HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 * * * * *'}" + BOTTOM_SV;
     public final static String EXPORTER_CRON_EXPRESSION_SV =

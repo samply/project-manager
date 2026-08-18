@@ -130,7 +130,20 @@ class FeasibilityServiceTest {
                 .verify();
     }
 
+    @Test
+    void doesNotContactBeamWhenFeasibilityIsDisabled() {
+        StepVerifier.create(createService(false).fetchFeasibility(project(), projectBridgehead()))
+                .verifyComplete();
+
+        assertThat(postedTask.get()).isNull();
+        assertThat(resultRequestCount.get()).isZero();
+    }
+
     private FeasibilityService createService() {
+        return createService(true);
+    }
+
+    private FeasibilityService createService(boolean enabled) {
         BridgeheadConfiguration bridgeheadConfiguration = new BridgeheadConfiguration();
         BridgeheadConfiguration.BridgeheadConfig config = new BridgeheadConfiguration.BridgeheadConfig();
         config.setFocusBeamId(FOCUS_BEAM_ID);
@@ -142,7 +155,7 @@ class FeasibilityServiceTest {
                 .baseUrl("http://localhost:" + server.getAddress().getPort())
                 .build();
         return new FeasibilityService(webClient, beamService, PROJECT_MANAGER_ID,
-                BEAM_API_KEY, "30s", FOCUS_PROJECT);
+                BEAM_API_KEY, "30s", FOCUS_PROJECT, enabled);
     }
 
     private Project project() {

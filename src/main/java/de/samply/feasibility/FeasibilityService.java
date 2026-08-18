@@ -4,12 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
-import de.samply.db.model.Project;
-import de.samply.db.model.ProjectBridgehead;
 import de.samply.beam.BeamRequest;
 import de.samply.beam.BeamService;
+import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
 import de.samply.utils.Base64Utils;
 import de.samply.utils.WebClientFactory;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +33,7 @@ public class FeasibilityService {
     private final String beamApiKey;
     private final String beamWaitTime;
     private final String focusProject;
+    private final boolean enabled;
 
     @Autowired
     public FeasibilityService(
@@ -40,15 +42,16 @@ public class FeasibilityService {
             @Value(ProjectManagerConst.BEAM_API_KEY_SV) String beamApiKey,
             @Value(ProjectManagerConst.BEAM_TTL_SV) String beamWaitTime,
             @Value(ProjectManagerConst.FOCUS_LENS_PROJECT_SV) String focusProject,
+            @Value(ProjectManagerConst.ENABLE_FEASIBILITY_SV) boolean enabled,
             WebClientFactory webClientFactory,
             BeamService beamService) {
         this(webClientFactory.createWebClient(beamUrl), beamService, projectManagerId,
-                beamApiKey, beamWaitTime, focusProject);
+                beamApiKey, beamWaitTime, focusProject, enabled);
     }
 
     FeasibilityService(WebClient webClient, BeamService beamService,
                        String projectManagerId, String beamApiKey, String beamWaitTime,
-                       String focusProject) {
+                       String focusProject, boolean enabled) {
         this.webClient = webClient;
         this.beamService = beamService;
         this.objectMapper = new ObjectMapper();
@@ -56,16 +59,14 @@ public class FeasibilityService {
         this.beamApiKey = beamApiKey;
         this.beamWaitTime = beamWaitTime;
         this.focusProject = focusProject;
+        this.enabled = enabled;
     }
 
-    public Mono<JsonNode> fetchFeasibility(Project project, ProjectBridgehead bridgehead) {
-        if (project == null || project.getQuery() == null || project.getQuery().getQuery() == null) {
-            return Mono.error(new FeasibilityServiceException("Project query not found"));
+    public Mono<JsonNode> fetchFeasibility(@NotNull Project project,
+                                           @NotNull ProjectBridgehead bridgehead) {
+        if (!enabled) {
+            return Mono.empty();
         }
-        if (bridgehead == null || bridgehead.getBridgehead() == null) {
-            return Mono.error(new FeasibilityServiceException("Bridgehead not found"));
-        }
-
         BeamRequest request = beamService.generateFeasibilityBeamRequest(
                 project.getQuery().getQuery(), bridgehead.getBridgehead(), focusProject);
 
