@@ -417,6 +417,9 @@ public class ProjectManagerConst {
     public final static String BEAM_PROJECT_MANAGER_ID = "BEAM_PROJECT_MANAGER_ID";
     public final static String BEAM_TTL = "BEAM_TTL";
     public final static String BEAM_WAIT_COUNT = "BEAM_WAIT_COUNT";
+    public final static String FEASIBILITY_BEAM_TTL = "FEASIBILITY_BEAM_TTL";
+    public final static String FEASIBILITY_BEAM_RESULT_WAIT_TIME = "FEASIBILITY_BEAM_RESULT_WAIT_TIME";
+    public final static String FEASIBILITY_BEAM_RESULT_MAX_TRIES = "FEASIBILITY_BEAM_RESULT_MAX_TRIES";
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES = "BEAM_FAILURE_STRATEGY_MAX_TRIES";
     public final static String BEAM_URL = "BEAM_URL";
@@ -540,6 +543,11 @@ public class ProjectManagerConst {
     public final static String BEAM_PROJECT_MANAGER_ID_SV = HEAD_SV + BEAM_PROJECT_MANAGER_ID + BOTTOM_SV;
     public final static String BEAM_TTL_SV = HEAD_SV + BEAM_TTL + ":30s" + BOTTOM_SV;
     public final static String BEAM_WAIT_COUNT_SV = HEAD_SV + BEAM_WAIT_COUNT + ":1" + BOTTOM_SV;
+    public final static String FEASIBILITY_BEAM_TTL_SV = HEAD_SV + FEASIBILITY_BEAM_TTL + ":360s" + BOTTOM_SV;
+    public final static String FEASIBILITY_BEAM_RESULT_WAIT_TIME_SV =
+            HEAD_SV + FEASIBILITY_BEAM_RESULT_WAIT_TIME + ":20s" + BOTTOM_SV;
+    public final static String FEASIBILITY_BEAM_RESULT_MAX_TRIES_SV =
+            HEAD_SV + FEASIBILITY_BEAM_RESULT_MAX_TRIES + ":18" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
             HEAD_SV + BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + BEAM_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;

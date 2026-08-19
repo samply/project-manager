@@ -311,6 +311,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Application Form Services
 
 ### Fixed
+- Wait asynchronously for feasibility Beam results using dedicated timing configuration
 - Init flyway migration in spring 4
 - Jwt decoder configuration
 - Full name if the first or last name is missing

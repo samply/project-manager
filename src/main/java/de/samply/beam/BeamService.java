@@ -45,13 +45,14 @@ public class BeamService {
         return beamRequest;
     }
 
-    public BeamRequest generateFeasibilityBeamRequest(String query, String bridgehead, String focusProject) throws BeamServiceException {
+    public BeamRequest generateFeasibilityBeamRequest(String query, String bridgehead,
+                                                       String focusProject, String feasibilityTtl) throws BeamServiceException {
         BeamRequest beamRequest = new BeamRequest();
         beamRequest.setId(generateId());
         beamRequest.setBody(query);
         beamRequest.setFrom(projectManagerId);
         beamRequest.setTo(new String[]{fetchFocusBeamId(bridgehead)});
-        beamRequest.setTtl(ttl);
+        beamRequest.setTtl(feasibilityTtl);
         beamRequest.setMetadata(createFeasibilityMetadata(focusProject));
         beamRequest.setFailureStrategy(failureStrategy);
         return beamRequest;

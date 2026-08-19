@@ -33,6 +33,9 @@ class FeasibilityServiceTest {
     private static final String FOCUS_BEAM_ID = "focus.berlin.broker";
     private static final String FOCUS_PROJECT = "dktk";
     private static final String QUERY = "encoded-ast-data-query";
+    private static final String FEASIBILITY_TTL = "360s";
+    private static final String RESULT_WAIT_TIME = "20s";
+    private static final int RESULT_MAX_TRIES = 3;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final AtomicReference<JsonNode> postedTask = new AtomicReference<>();
@@ -46,6 +49,8 @@ class FeasibilityServiceTest {
     private String postResponse;
     private int getStatus;
     private String getResponse;
+    private int emptyResultResponses;
+    private int temporaryFailureResponses;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -53,6 +58,8 @@ class FeasibilityServiceTest {
         postResponse = "";
         getStatus = 200;
         getResponse = successfulBeamResult("{\"totals\":{\"patients\":42},\"stratifiers\":{}}");
+        emptyResultResponses = 0;
+        temporaryFailureResponses = 0;
 
         server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         server.createContext("/v1/tasks", this::handleBeamRequest);
@@ -77,7 +84,7 @@ class FeasibilityServiceTest {
         assertThat(request.get("body").asText()).isEqualTo(QUERY);
         assertThat(request.get("from").asText()).isEqualTo(PROJECT_MANAGER_ID);
         assertThat(request.at("/to/0").asText()).isEqualTo(FOCUS_BEAM_ID);
-        assertThat(request.get("ttl").asText()).isEqualTo("30s");
+        assertThat(request.get("ttl").asText()).isEqualTo(FEASIBILITY_TTL);
         assertThat(request.at("/metadata/project").asText()).isEqualTo(FOCUS_PROJECT);
         assertThat(request.at("/metadata/transform").asText()).isEqualTo("LENS");
         assertThat(request.get("metadata").has("task_type")).isFalse();
@@ -87,8 +94,44 @@ class FeasibilityServiceTest {
         assertThat(getAuthorization.get()).isEqualTo(postAuthorization.get());
         assertThat(resultRequestUri.get())
                 .startsWith("/v1/tasks/" + request.get("id").asText() + "/results?")
-                .contains("wait_time=30s")
+                .contains("wait_time=" + RESULT_WAIT_TIME)
                 .contains("wait_count=1");
+    }
+
+    @Test
+    void retriesResultRequestUntilFocusAnswers() {
+        emptyResultResponses = 2;
+
+        StepVerifier.create(createService().fetchFeasibility(project(), projectBridgehead()))
+                .assertNext(result -> assertThat(result.at("/totals/patients").asInt()).isEqualTo(42))
+                .verifyComplete();
+
+        assertThat(resultRequestCount.get()).isEqualTo(3);
+    }
+
+    @Test
+    void retriesTemporaryBeamFailureUntilFocusAnswers() {
+        temporaryFailureResponses = 1;
+
+        StepVerifier.create(createService().fetchFeasibility(project(), projectBridgehead()))
+                .assertNext(result -> assertThat(result.at("/totals/patients").asInt()).isEqualTo(42))
+                .verifyComplete();
+
+        assertThat(resultRequestCount.get()).isEqualTo(2);
+    }
+
+    @Test
+    void stopsAfterConfiguredNumberOfResultRequests() {
+        emptyResultResponses = RESULT_MAX_TRIES;
+
+        StepVerifier.create(createService().fetchFeasibility(project(), projectBridgehead()))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(FeasibilityServiceException.class);
+                    assertThat(error.getMessage()).contains("after " + RESULT_MAX_TRIES + " tries");
+                })
+                .verify();
+
+        assertThat(resultRequestCount.get()).isEqualTo(RESULT_MAX_TRIES);
     }
 
     @Test
@@ -108,12 +151,13 @@ class FeasibilityServiceTest {
 
     @Test
     void rejectsBeamResponseWithoutSuccessfulResult() {
-        getResponse = "[{\"body\":\"\",\"from\":\"focus.berlin.broker\",\"status\":\"permafailed\"}]";
+        getResponse = "[{\"body\":\"" + Base64Utils.encode("Focus rejected the query") +
+                "\",\"from\":\"focus.berlin.broker\",\"status\":\"permafailed\"}]";
 
         StepVerifier.create(createService().fetchFeasibility(project(), projectBridgehead()))
                 .expectErrorSatisfies(error -> {
                     assertThat(error).isInstanceOf(FeasibilityServiceException.class);
-                    assertThat(error.getMessage()).contains("no successful feasibility result");
+                    assertThat(error.getMessage()).contains("permafailed", "Focus rejected the query");
                 })
                 .verify();
     }
@@ -155,7 +199,8 @@ class FeasibilityServiceTest {
                 .baseUrl("http://localhost:" + server.getAddress().getPort())
                 .build();
         return new FeasibilityService(webClient, beamService, PROJECT_MANAGER_ID,
-                BEAM_API_KEY, "30s", FOCUS_PROJECT, enabled);
+                BEAM_API_KEY, FEASIBILITY_TTL, RESULT_WAIT_TIME, RESULT_MAX_TRIES,
+                FOCUS_PROJECT, enabled);
     }
 
     private Project project() {
@@ -188,10 +233,15 @@ class FeasibilityServiceTest {
                 return;
             }
             if ("GET".equals(exchange.getRequestMethod())) {
-                resultRequestCount.incrementAndGet();
+                int requestNumber = resultRequestCount.incrementAndGet();
                 getAuthorization.set(exchange.getRequestHeaders().getFirst("Authorization"));
                 resultRequestUri.set(exchange.getRequestURI().toString());
-                sendResponse(exchange, getStatus, getResponse);
+                String response = requestNumber <= emptyResultResponses
+                        ? "[]"
+                        : requestNumber <= emptyResultResponses + temporaryFailureResponses
+                        ? "[{\"status\":\"tempfailed\"}]"
+                        : getResponse;
+                sendResponse(exchange, getStatus, response);
                 return;
             }
             sendResponse(exchange, 405, "");
