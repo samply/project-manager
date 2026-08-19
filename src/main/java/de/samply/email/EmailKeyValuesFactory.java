@@ -1,7 +1,7 @@
 package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.document.DocumentService;
 import de.samply.frontend.FrontendService;
 import de.samply.project.ProjectBridgeheadService;
@@ -19,28 +19,28 @@ public class EmailKeyValuesFactory {
     private final ProjectBridgeheadService projectBridgeheadService;
 
     private final EmailContext emailContext;
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
     private final String researchEnvironmentUrl;
 
     public EmailKeyValuesFactory(FrontendService frontendService, DocumentService documentService,
                                  EmailContext emailContext,
                                  UserService userService, ProjectBridgeheadService projectBridgeheadService,
-                                 BridgeheadConfiguration bridgeheadConfiguration,
+                                 BridgeheadsConfiguration bridgeheadsConfiguration,
                                  @Value(ProjectManagerConst.CODER_BASE_URL_SV) String researchEnvironmentUrl) {
         this.frontendService = frontendService;
         this.documentService = documentService;
         this.emailContext = emailContext;
         this.userService = userService;
         this.projectBridgeheadService = projectBridgeheadService;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.researchEnvironmentUrl = researchEnvironmentUrl;
     }
 
     public EmailKeyValues newInstance() {
         return new EmailKeyValues(
                 frontendService, emailContext, documentService,
-                userService, bridgeheadConfiguration,
+                userService, bridgeheadsConfiguration,
                 researchEnvironmentUrl,
                 projectBridgeheadService);
     }

@@ -1,7 +1,7 @@
 package de.samply.datashield;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.coder.CoderService;
 import de.samply.datashield.dto.DataShieldProjectStatus;
 import de.samply.datashield.dto.DataShieldTokenManagerProjectStatus;
@@ -46,7 +46,7 @@ public class DataShieldTokenManagerJob {
     private final EmailService emailService;
     private final AppRegisterService appRegisterService;
 
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
     private final boolean isTokenManagerActive;
 
@@ -55,7 +55,7 @@ public class DataShieldTokenManagerJob {
                                      ProjectBridgeheadUserService projectBridgeheadUserService,
                                      DataShieldTokenManagerService tokenManagerService,
                                      EmailService emailService,
-                                     BridgeheadConfiguration bridgeheadConfiguration,
+                                     BridgeheadsConfiguration bridgeheadsConfiguration,
                                      AppRegisterService appRegisterService,
                                      @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive
     ) {
@@ -64,7 +64,7 @@ public class DataShieldTokenManagerJob {
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.tokenManagerService = tokenManagerService;
         this.emailService = emailService;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.appRegisterService = appRegisterService;
         this.isTokenManagerActive = isTokenManagerActive;
     }
@@ -231,7 +231,7 @@ public class DataShieldTokenManagerJob {
     }
 
     private boolean isBridgeheadConfiguredForTokenManager(String bridgehead) {
-        return this.bridgeheadConfiguration.getTokenManagerId(bridgehead).isPresent();
+        return this.bridgeheadsConfiguration.getTokenManagerId(bridgehead).isPresent();
     }
 
     private Mono<Void> manageInactiveProjects() {

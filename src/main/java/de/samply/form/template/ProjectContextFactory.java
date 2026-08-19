@@ -1,7 +1,7 @@
 package de.samply.form.template;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.CreatorUser;
 import de.samply.db.model.Project;
 import de.samply.db.model.User;
@@ -24,17 +24,17 @@ import java.util.stream.Collectors;
 public class ProjectContextFactory {
 
     private final UserService userService;
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
     private final String datePattern;
     private final DocumentService documentService;
 
     public ProjectContextFactory(
             UserService userService,
-            BridgeheadConfiguration bridgeheadConfiguration,
+            BridgeheadsConfiguration bridgeheadsConfiguration,
             @Value(ProjectManagerConst.FORM_TEMPLATE_DATE_PATTERN_SV) String datePattern,
             DocumentService documentService) {
         this.userService = userService;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.datePattern = datePattern;
         this.documentService = documentService;
     }
@@ -52,7 +52,7 @@ public class ProjectContextFactory {
             Set<CreatorUser> users = userService.fetchCreatorUser(user.getEmail());
             String bridgeheads = users.stream()
                     .map(CreatorUser::getBridgehead)
-                    .map(bridgeheadConfiguration::getHumanReadable)
+                    .map(bridgeheadsConfiguration::getHumanReadable)
                     .flatMap(Optional::stream)
                     .collect(Collectors.joining(",")).trim();
             if (!bridgeheads.isEmpty()) {
@@ -60,7 +60,7 @@ public class ProjectContextFactory {
             }
             String affiliations = users.stream()
                     .map(CreatorUser::getBridgehead)
-                    .map(bridgeheadConfiguration::getAffiliation)
+                    .map(bridgeheadsConfiguration::getAffiliation)
                     .flatMap(Optional::stream)
                     .collect(Collectors.joining(",")).trim();
             if (!affiliations.isEmpty()) {

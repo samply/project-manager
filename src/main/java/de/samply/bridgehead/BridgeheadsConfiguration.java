@@ -9,7 +9,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -19,7 +21,7 @@ import java.util.function.Function;
 @Configuration
 @ConfigurationProperties(prefix = ProjectManagerConst.REGISTERED_BRIDGEHEADS)
 @Data
-public class BridgeheadConfiguration {
+public class BridgeheadsConfiguration {
 
     private Map<String, BridgeheadConfig> config = new HashMap<>();
     private Map<String, String> explorerIdBridgeheadMap = new HashMap<>();
@@ -35,6 +37,14 @@ public class BridgeheadConfiguration {
         private String tokenManagerId;
         private String humanReadable;
         private String affiliation;
+        private List<Contact> contacts = new ArrayList<>();
+    }
+
+    @Data
+    public static class Contact {
+        private Map<String, String> name = new HashMap<>();
+        private Map<String, String> description = new HashMap<>();
+        private String emailAddress;
     }
 
     @PostConstruct
@@ -91,6 +101,13 @@ public class BridgeheadConfiguration {
 
     public Optional<String> getAffiliation(String bridgehead) {
         return getProperty(bridgehead, BridgeheadConfig::getAffiliation);
+    }
+
+    public List<Contact> getContacts(String bridgehead) {
+        BridgeheadConfig bridgeheadConfig = config.get(bridgehead);
+        return bridgeheadConfig == null || bridgeheadConfig.getContacts() == null
+                ? List.of()
+                : bridgeheadConfig.getContacts();
     }
 
     public Optional<String> getTokenManagerId(String bridgehead) {

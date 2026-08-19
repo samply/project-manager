@@ -237,7 +237,11 @@ public class UserService {
     }
 
     public Optional<BridgeheadAdminUser> fetchFirstBridgeheadAdmin(ProjectBridgehead bridgehead) {
-        return bridgeheadAdminUserRepository.findFirstByBridgehead(bridgehead.getBridgehead());
+        return fetchFirstBridgeheadAdmin(bridgehead.getBridgehead());
+    }
+
+    public Optional<BridgeheadAdminUser> fetchFirstBridgeheadAdmin(String bridgehead) {
+        return bridgeheadAdminUserRepository.findFirstByBridgeheadOrderByIdAsc(bridgehead);
     }
 
 }

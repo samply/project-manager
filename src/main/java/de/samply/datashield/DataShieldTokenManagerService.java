@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.datashield.dto.*;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
@@ -58,7 +58,7 @@ public class DataShieldTokenManagerService {
     private final WebClientFactory webClientFactory;
     private final WebClient webClient;
 
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
     private final boolean isTokenManagerActive;
 
@@ -70,14 +70,14 @@ public class DataShieldTokenManagerService {
                                          ProjectBridgeheadService projectBridgeheadService,
                                          ProjectBridgeheadUserService projectBridgeheadUserService,
                                          NotificationService notificationService,
-                                         BridgeheadConfiguration bridgeheadConfiguration,
+                                         BridgeheadsConfiguration bridgeheadsConfiguration,
                                          @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive) {
         this.sessionUser = sessionUser;
         this.webClientFactory = webClientFactory;
         this.projectBridgeheadService = projectBridgeheadService;
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.notificationService = notificationService;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.isTokenManagerActive = isTokenManagerActive;
         this.webClient = webClientFactory.createWebClient(tokenManagerUrl);
     }
@@ -350,14 +350,14 @@ public class DataShieldTokenManagerService {
     }
 
     private Optional<String> fetchTokenManagerId(ProjectBridgehead bridgehead) {
-        return bridgeheadConfiguration.getTokenManagerId(bridgehead.getBridgehead());
+        return bridgeheadsConfiguration.getTokenManagerId(bridgehead.getBridgehead());
     }
 
     private DataShieldTokenManagerProjectStatus replaceTokenManagerId(DataShieldTokenManagerProjectStatus dataShieldTokenManagerProjectStatus) {
         return (dataShieldTokenManagerProjectStatus != null) ?
                 new DataShieldTokenManagerProjectStatus(
                         dataShieldTokenManagerProjectStatus.projectCode(),
-                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(dataShieldTokenManagerProjectStatus.bridgehead()),
+                        bridgeheadsConfiguration.fetchBridgeheadForTokenManagerId(dataShieldTokenManagerProjectStatus.bridgehead()),
                         dataShieldTokenManagerProjectStatus.projectStatus()
                 )
                 : null;
@@ -367,7 +367,7 @@ public class DataShieldTokenManagerService {
         return (dataShieldTokenManagerTokenStatus != null) ?
                 new DataShieldTokenManagerTokenStatus(
                         dataShieldTokenManagerTokenStatus.projectCode(),
-                        bridgeheadConfiguration.fetchBridgeheadForTokenManagerId(dataShieldTokenManagerTokenStatus.bridgehead()),
+                        bridgeheadsConfiguration.fetchBridgeheadForTokenManagerId(dataShieldTokenManagerTokenStatus.bridgehead()),
                         dataShieldTokenManagerTokenStatus.email(),
                         dataShieldTokenManagerTokenStatus.createdAt(),
                         dataShieldTokenManagerTokenStatus.projectStatus(),

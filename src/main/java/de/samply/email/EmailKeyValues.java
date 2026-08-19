@@ -1,7 +1,7 @@
 package de.samply.email;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -32,21 +32,21 @@ public class EmailKeyValues {
     private final UserService userService;
     private final ProjectBridgeheadService projectBridgeheadService;
 
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
 
     public EmailKeyValues(FrontendService frontendService,
                           EmailContext emailContext,
                           DocumentService documentService,
                           UserService userService,
-                          BridgeheadConfiguration bridgeheadConfiguration,
+                          BridgeheadsConfiguration bridgeheadsConfiguration,
                           String researchEnvironmentUrl,
                           ProjectBridgeheadService projectBridgeheadService
     ) {
         this.frontendService = frontendService;
         this.documentService = documentService;
         this.userService = userService;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.projectBridgeheadService = projectBridgeheadService;
         keyValues.putAll(emailContext.getContext());
         addKeyValue(EmailContextKey.RESEARCH_ENVIRONMENT_URL, researchEnvironmentUrl);
@@ -145,7 +145,7 @@ public class EmailKeyValues {
     }
 
     private String fetchHumanReadableBridgehead(ProjectBridgehead bridgehead) {
-        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead.getBridgehead());
+        Optional<String> humanReadable = bridgeheadsConfiguration.getHumanReadable(bridgehead.getBridgehead());
         return humanReadable.orElse(bridgehead.getBridgehead());
     }
 

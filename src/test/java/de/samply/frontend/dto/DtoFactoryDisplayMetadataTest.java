@@ -1,6 +1,6 @@
 package de.samply.frontend.dto;
 
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
 import de.samply.form.FormService;
@@ -64,7 +64,7 @@ class DtoFactoryDisplayMetadataTest {
 
         FormConfig formConfig = new FormConfig(new ExistingDirectory(configDirectory));
         DtoFactory factory = new DtoFactory(
-                mock(BridgeheadConfiguration.class),
+                mock(BridgeheadsConfiguration.class),
                 mock(FormService.class),
                 mock(UserService.class),
                 formConfig,

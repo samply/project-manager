@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.coder.CoderService;
 import de.samply.datashield.DataShieldTokenManagerService;
 import de.samply.db.model.Project;
@@ -100,7 +100,7 @@ public class ProjectManagerController {
     private final DtoProjectBridgeheadService dtoProjectBridgeheadService;
     private final NotificationService notificationService;
     private final DtoNotificationService dtoNotificationService;
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
     private final ProjectConfigurations frontendProjectConfigurations;
     private final DtoFactory dtoFactory;
     private final EmailService emailService;
@@ -127,7 +127,7 @@ public class ProjectManagerController {
                                     DtoProjectBridgeheadService dtoProjectBridgeheadService,
                                     NotificationService notificationService,
                                     DtoNotificationService dtoNotificationService,
-                                    BridgeheadConfiguration bridgeheadConfiguration,
+                                    BridgeheadsConfiguration bridgeheadsConfiguration,
                                     ProjectConfigurations frontendProjectConfigurations,
                                     DtoFactory dtoFactory,
                                     EmailService emailService,
@@ -153,7 +153,7 @@ public class ProjectManagerController {
         this.dtoProjectBridgeheadService = dtoProjectBridgeheadService;
         this.notificationService = notificationService;
         this.dtoNotificationService = dtoNotificationService;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.frontendProjectConfigurations = frontendProjectConfigurations;
         this.dtoFactory = dtoFactory;
         this.emailService = emailService;
@@ -404,7 +404,7 @@ public class ProjectManagerController {
     private String[] resolveBridgeheads(String[] bridgeheads, String[] explorerIds) {
         return (explorerIds != null && explorerIds.length > 0)
                 ? Arrays.stream(explorerIds)
-                .map(bridgeheadConfiguration::getBridgeheadForExplorerId)
+                .map(bridgeheadsConfiguration::getBridgeheadForExplorerId)
                 .flatMap(Optional::stream)
                 .toArray(String[]::new)
                 : bridgeheads;
@@ -2096,7 +2096,7 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity fetchAllRegisteredBridgeheads() {
-        return convertToResponseEntity(() -> bridgeheadConfiguration
+        return convertToResponseEntity(() -> bridgeheadsConfiguration
                 .getRegisteredBridgeheads().stream().map(dtoFactory::convertToBridgehead)
                 .collect(Collectors.toSet()));
     }

@@ -1,7 +1,7 @@
 package de.samply.frontend.dto;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.*;
 import de.samply.form.*;
 import de.samply.form.template.FormTemplateConfig;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Component
 public class DtoFactory {
 
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
     private final FormConfig formConfig;
     private final FormTemplateConfig formTemplateConfig;
     private final String defaultLanguage;
@@ -41,13 +41,13 @@ public class DtoFactory {
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
 
 
-    public DtoFactory(BridgeheadConfiguration bridgeheadConfiguration,
+    public DtoFactory(BridgeheadsConfiguration bridgeheadsConfiguration,
                       FormService formService, UserService userService,
                       FormConfig formConfig,
                       FormTemplateConfig formTemplateConfig,
                       @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
                       ProjectBridgeheadUserService projectBridgeheadUserService) {
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.userService = userService;
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.formService = formService;
@@ -173,6 +173,7 @@ public class DtoFactory {
                 projectBridgehead.getProject().getCode(),
                 projectBridgehead.getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgehead),
+                fetchBridgeheadContacts(projectBridgehead.getBridgehead(), Optional.empty()),
                 projectBridgehead.getState(),
                 projectBridgehead.getModifiedAt(),
                 projectBridgehead.getExecutions().stream()
@@ -189,7 +190,7 @@ public class DtoFactory {
     }
 
     public String fetchHumanReadableBridgehead(@NotNull String bridgehead) {
-        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
+        Optional<String> humanReadable = bridgeheadsConfiguration.getHumanReadable(bridgehead);
         return humanReadable.orElse(bridgehead);
     }
 
@@ -220,8 +221,33 @@ public class DtoFactory {
     }
 
     public Bridgehead convertToBridgehead(@NotNull String bridgehead) {
-        Optional<String> humanReadable = bridgeheadConfiguration.getHumanReadable(bridgehead);
-        return humanReadable.map(s -> new Bridgehead(bridgehead, s)).orElseGet(() -> new Bridgehead(bridgehead, null));
+        Optional<String> humanReadable = bridgeheadsConfiguration.getHumanReadable(bridgehead);
+        return new Bridgehead(bridgehead, humanReadable.orElse(null), fetchBridgeheadContacts(bridgehead, Optional.empty()));
+    }
+
+    private BridgeheadContact[] fetchBridgeheadContacts(@NotNull String bridgehead, Optional<String> language) {
+        var configuredContacts = bridgeheadsConfiguration.getContacts(bridgehead);
+        if (!configuredContacts.isEmpty()) {
+            return configuredContacts.stream()
+                    .map(contact -> new BridgeheadContact(
+                            fetchValue(contact.getName(), language),
+                            fetchValue(contact.getDescription(), language),
+                            contact.getEmailAddress()))
+                    .toArray(BridgeheadContact[]::new);
+        }
+
+        return userService.fetchFirstBridgeheadAdmin(bridgehead)
+                .map(admin -> fetchFallbackBridgeheadContact(admin.getEmail()))
+                .map(contact -> new BridgeheadContact[]{contact})
+                .orElseGet(() -> new BridgeheadContact[0]);
+    }
+
+    private BridgeheadContact fetchFallbackBridgeheadContact(String email) {
+        String name = UserUtils.extractFullName(userService.fetchUser(email));
+        if (name == null) {
+            name = email;
+        }
+        return new BridgeheadContact(name, ProjectManagerConst.BRIDGEHEAD_ADMIN_CONTACT_DESCRIPTION, email);
     }
 
     public static User convert(de.samply.db.model.User user) {
@@ -499,10 +525,10 @@ public class DtoFactory {
     }
 
     public Results fetchResults(@NotNull de.samply.db.model.ProjectBridgehead projectBridgehead) {
-        Optional<BridgeheadAdminUser> bridgeheadAdmin = userService.fetchBridgeheadAdmin(projectBridgehead).stream().findAny();
+        Optional<BridgeheadAdminUser> bridgeheadAdmin = userService.fetchFirstBridgeheadAdmin(projectBridgehead);
         AtomicReference<Optional<de.samply.db.model.User>> user = new AtomicReference<>(Optional.empty());
         bridgeheadAdmin.ifPresent(tempUser -> user.set(userService.fetchUser(tempUser.getEmail())));
-        AtomicReference<Optional<String>> humanReadableBridgehead = new AtomicReference<>(bridgeheadConfiguration.getHumanReadable(projectBridgehead.getBridgehead()));
+        AtomicReference<Optional<String>> humanReadableBridgehead = new AtomicReference<>(bridgeheadsConfiguration.getHumanReadable(projectBridgehead.getBridgehead()));
         return new Results(projectBridgehead.getBridgehead(),
                 fetchValue(humanReadableBridgehead),
                 fetchValue(user, de.samply.db.model.User::getEmail),

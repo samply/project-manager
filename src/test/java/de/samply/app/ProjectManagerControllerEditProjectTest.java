@@ -1,6 +1,6 @@
 package de.samply.app;
 
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.Project;
 import de.samply.frontend.FrontendService;
 import de.samply.project.ProjectService;
@@ -28,7 +28,7 @@ class ProjectManagerControllerEditProjectTest {
     @Mock
     private ProjectService projectService;
     @Mock
-    private BridgeheadConfiguration bridgeheadConfiguration;
+    private BridgeheadsConfiguration bridgeheadsConfiguration;
     @InjectMocks
     private ProjectManagerController controller;
 
@@ -37,9 +37,9 @@ class ProjectManagerControllerEditProjectTest {
         Project project = new Project();
         project.setCode("project-code");
         String[] explorerIds = {"lens-essen", "lens-frankfurt"};
-        when(bridgeheadConfiguration.getBridgeheadForExplorerId("lens-essen"))
+        when(bridgeheadsConfiguration.getBridgeheadForExplorerId("lens-essen"))
                 .thenReturn(Optional.of("essen"));
-        when(bridgeheadConfiguration.getBridgeheadForExplorerId("lens-frankfurt"))
+        when(bridgeheadsConfiguration.getBridgeheadForExplorerId("lens-frankfurt"))
                 .thenReturn(Optional.of("frankfurt"));
         when(frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,

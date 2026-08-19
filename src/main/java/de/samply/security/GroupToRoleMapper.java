@@ -1,7 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.user.roles.OrganisationRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -28,7 +28,7 @@ public class GroupToRoleMapper {
 
     private final SessionUser sessionUser;
 
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
     private Boolean adminOverUser;
 
@@ -38,10 +38,10 @@ public class GroupToRoleMapper {
     public GroupToRoleMapper(
             ProjectManagerAdminGroups projectManagerAdminGroups,
             SessionUser sessionUser,
-            BridgeheadConfiguration bridgeheadConfiguration) {
+            BridgeheadsConfiguration bridgeheadsConfiguration) {
         this.projectManagerAdminGroups = projectManagerAdminGroups;
         this.sessionUser = sessionUser;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
     }
 
     public OrganisationRole getRoleFromGroup(String group) {
@@ -74,7 +74,7 @@ public class GroupToRoleMapper {
             };
             if (bridgehead == null) {
                 sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(organisationRole);
-            } else if (bridgeheadConfiguration.isRegisteredBridgehead(bridgehead)) {
+            } else if (bridgeheadsConfiguration.isRegisteredBridgehead(bridgehead)) {
                 sessionUser.getUserOrganisationRoles().addBridgeheadRole(bridgehead, organisationRole);
             } else {
                 organisationRole = null;

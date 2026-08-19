@@ -3,7 +3,7 @@ package de.samply.beam;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -17,7 +17,7 @@ public class BeamService {
     private final String projectManagerId;
     private final String ttl;
     private final FailureStrategy failureStrategy;
-    private final BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
@@ -26,11 +26,11 @@ public class BeamService {
             @Value(ProjectManagerConst.BEAM_TTL_SV) String ttl,
             @Value(ProjectManagerConst.BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV) int retriesBackoff,
             @Value(ProjectManagerConst.BEAM_FAILURE_STRATEGY_MAX_TRIES_SV) int maxRetries,
-            BridgeheadConfiguration bridgeheadConfiguration) {
+            BridgeheadsConfiguration bridgeheadsConfiguration) {
         this.projectManagerId = projectManagerId;
         this.ttl = ttl;
         this.failureStrategy = createFailureStrategy(retriesBackoff, maxRetries);
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
     }
 
     public BeamRequest generateFocusBeamRequest(String exporterQuery, TaskType taskType, String bridgehead) throws BeamServiceException {
@@ -63,7 +63,7 @@ public class BeamService {
     }
 
     private String fetchFocusBeamId(String bridgehead) throws BeamServiceException {
-        Optional<String> focusId = bridgeheadConfiguration.getFocusBeamId(bridgehead);
+        Optional<String> focusId = bridgeheadsConfiguration.getFocusBeamId(bridgehead);
         if (focusId.isEmpty()) {
             throw new BeamServiceException("Focus Beam ID for bridgehead " + bridgehead + " not found");
         }
@@ -71,7 +71,7 @@ public class BeamService {
     }
 
     private String fetchFileDispatcherId(String bridgehead) throws BeamServiceException {
-        String focusId = bridgeheadConfiguration.getFileDispatcherBeamId(bridgehead);
+        String focusId = bridgeheadsConfiguration.getFileDispatcherBeamId(bridgehead);
         if (!StringUtils.hasText(focusId)) {
             throw new BeamServiceException("File Dispatcher Beam ID for bridgehead " + bridgehead + " not found");
         }

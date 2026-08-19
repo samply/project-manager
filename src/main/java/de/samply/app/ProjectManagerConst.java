@@ -492,6 +492,7 @@ public class ProjectManagerConst {
     public final static String SHED_LOCK_MAX_TIME = "SHED_LOCK_MAX_TIME";
     public final static String TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS = "TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS";
     public final static String MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS = "MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS";
+    public final static String FEASIBILITY_MAPPING = "FEASIBILITY_MAPPING";
 
 
     // Spring Values (SV)
@@ -613,6 +614,7 @@ public class ProjectManagerConst {
     public final static String SHED_LOCK_MAX_TIME_SV = HEAD_SV + SHED_LOCK_MAX_TIME + ":PT5M" + BOTTOM_SV;
     public final static String TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS_SV = HEAD_SV + TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS + ":5" + BOTTOM_SV;
     public final static String MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS_SV = HEAD_SV + MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS + ":3" + BOTTOM_SV;
+    public final static String FEASIBILITY_MAPPING_SV = HEAD_SV + FEASIBILITY_MAPPING + ":" + BOTTOM_SV;
 
 
     // Async Configuration
@@ -658,7 +660,6 @@ public class ProjectManagerConst {
     public final static String EXPORTER_JOB_NAME = "exporterJob";
     public final static String SHEDLOCK_TABLE_NAME = "samply.shedlock";
 
-    public final static String FEASIBILITY_MAPPING = "feasibility.mapping";
-    public final static String FEASIBILITY_MAPPING_SV = HEAD_SV + FEASIBILITY_MAPPING + ":" + BOTTOM_SV;
+    public final static String BRIDGEHEAD_ADMIN_CONTACT_DESCRIPTION = "Bridgehead admin";
 
 }
