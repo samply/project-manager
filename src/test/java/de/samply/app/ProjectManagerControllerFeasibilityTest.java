@@ -8,7 +8,9 @@ import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
+import de.samply.frontend.dto.FeasibilityItem;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryFormat;
 import de.samply.user.roles.OrganisationRole;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -34,6 +37,9 @@ class ProjectManagerControllerFeasibilityTest {
 
     @Mock
     private FeasibilityService feasibilityService;
+
+    @Mock
+    private FeasibilityMapper feasibilityMapper;
 
     @InjectMocks
     private ProjectManagerController controller;
@@ -59,13 +65,17 @@ class ProjectManagerControllerFeasibilityTest {
     void returnsFocusResultDirectly() throws Exception {
         Project project = new Project();
         ProjectBridgehead bridgehead = new ProjectBridgehead();
-        JsonNode result = objectMapper.readTree("{\"total\":42}");
-        when(feasibilityService.fetchFeasibility(project, bridgehead)).thenReturn(Mono.just(result));
+        JsonNode rawResult = objectMapper.readTree("{\"total\":42}");
+        List<FeasibilityItem> mappedResult = List.of(new FeasibilityItem("patients", 42L, null));
+        when(feasibilityService.fetchFeasibility(project, bridgehead)).thenReturn(Mono.just(rawResult));
+        when(feasibilityMapper.map(rawResult)).thenReturn(mappedResult);
 
         ResponseEntity response = controller.fetchFeasibility(project, bridgehead);
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(objectMapper.readTree((String) response.getBody())).isEqualTo(result);
+        assertThat(objectMapper.readTree((String) response.getBody()))
+                .isEqualTo(objectMapper.readTree("[{\"label\":\"patients\",\"value\":42}]"));
         verify(feasibilityService).fetchFeasibility(project, bridgehead);
+        verify(feasibilityMapper).map(rawResult);
     }
 }

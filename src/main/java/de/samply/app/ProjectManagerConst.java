@@ -658,5 +658,7 @@ public class ProjectManagerConst {
     public final static String EXPORTER_JOB_NAME = "exporterJob";
     public final static String SHEDLOCK_TABLE_NAME = "samply.shedlock";
 
+    public final static String FEASIBILITY_MAPPING = "feasibility.mapping";
+    public final static String FEASIBILITY_MAPPING_SV = HEAD_SV + FEASIBILITY_MAPPING + ":" + BOTTOM_SV;
 
 }

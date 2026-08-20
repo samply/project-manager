@@ -18,6 +18,7 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
+import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
 import de.samply.form.DtoFormService;
 import de.samply.form.FormService;
@@ -109,6 +110,7 @@ public class ProjectManagerController {
     private final FormTemplateService formTemplateService;
     private final FrontendConfiguration frontendConfiguration;
     private final FeasibilityService feasibilityService;
+    private final FeasibilityMapper feasibilityMapper;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -134,7 +136,8 @@ public class ProjectManagerController {
                                     DtoFormService dtoFormService,
                                     FormTemplateService formTemplateService,
                                     FrontendConfiguration frontendConfiguration,
-                                    FeasibilityService feasibilityService) {
+                                    FeasibilityService feasibilityService,
+                                    FeasibilityMapper feasibilityMapper) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -160,6 +163,7 @@ public class ProjectManagerController {
         this.formTemplateService = formTemplateService;
         this.frontendConfiguration = frontendConfiguration;
         this.feasibilityService = feasibilityService;
+        this.feasibilityMapper = feasibilityMapper;
     }
 
     @GetMapping(value = ProjectManagerConst.INFO)
@@ -274,7 +278,10 @@ public class ProjectManagerController {
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
-        return convertToResponseEntity(() -> feasibilityService.fetchFeasibility(project, bridgehead).block());
+        return convertToResponseEntity(() ->
+                feasibilityService.fetchFeasibility(project, bridgehead)
+                        .map(feasibilityMapper::map)
+                        .block());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
