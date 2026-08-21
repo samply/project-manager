@@ -12,12 +12,15 @@ import java.util.stream.Collectors;
 
 public class FormFieldUtils {
 
-    // Comparator to sort FormFields by order -> title -> label
+    // Comparator to sort FormFields by order -> title -> label -> field instance
     public static final Comparator<FormField> FORM_FIELD_COMPARATOR =
             Comparator.comparing(FormField::title, Comparator.nullsLast(String::compareTo))
                     .thenComparing(FormFieldUtils::compareByInstanceIfSameBlock)
                     .thenComparing(FormField::order, Comparator.nullsLast(Integer::compareTo))
-                    .thenComparing(FormField::label, Comparator.nullsLast(String::compareTo));
+                    .thenComparing(FormField::label, Comparator.nullsLast(String::compareTo))
+                    // Two field instances of the same multiple field share the same
+                    // label/order, so they'd otherwise be indistinguishable here.
+                    .thenComparing(FormField::fieldInstance, Comparator.nullsLast(Integer::compareTo));
 
     // Only compares by blockInstance when both fields belong to the SAME
     // non-null block; otherwise it's a no-op (0), letting order decide -
@@ -43,7 +46,9 @@ public class FormFieldUtils {
     }
 
     public static String fetchFormFieldKey(@NotNull FormField formField) {
-        return formField.title() + formField.label() + (formField.blockInstance() != null ? formField.blockInstance() : "");
+        return formField.title() + formField.label()
+                + (formField.blockInstance() != null ? formField.blockInstance() : "")
+                + (formField.fieldInstance() != null ? "_field" + formField.fieldInstance() : "");
     }
 
 }

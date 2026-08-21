@@ -51,6 +51,19 @@ public class ProjectFormField {
     @Column(name = "block_instance")
     private Integer blockInstance;
 
+    /**
+     * Index of the value instance for a field whose config has multiple = true.
+     * <p>
+     * Scoped WITHIN a block instance, not globally per label: a multiple field
+     * inside a multiple block restarts its numbering at 1 for every block
+     * instance, so field_instance = 1 can legitimately appear in several rows
+     * at once, as long as their block_instance differs.
+     * <p>
+     * Null for fields whose config has multiple = false.
+     */
+    @Column(name = "field_instance")
+    private Integer fieldInstance;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 

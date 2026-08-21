@@ -67,9 +67,9 @@ public class FormService {
             return;
         }
         Map<String, ProjectFormField> labelFormMap = projectFormFieldRepository.findByProject(project).stream()
-                .collect(Collectors.toMap(this::fetchLabelBlockInstance, Function.identity()));
+                .collect(Collectors.toMap(this::fetchFieldKey, Function.identity()));
         Arrays.stream(formFields.get()).forEach(formField -> {
-            ProjectFormField projectFormField = labelFormMap.get(fetchLabelBlockInstance(formField));
+            ProjectFormField projectFormField = labelFormMap.get(fetchFieldKey(formField));
             boolean isModified = false;
             String details =
                     "title: " + formField.title() +
@@ -86,6 +86,11 @@ public class FormService {
                 if (isInBlock(formField)) {
                     projectFormField.setBlockInstance(
                             Objects.requireNonNullElse(formField.blockInstance(), 1)
+                    );
+                }
+                if (isMultiple(formField)) {
+                    projectFormField.setFieldInstance(
+                            Objects.requireNonNullElse(formField.fieldInstance(), 1)
                     );
                 }
                 projectFormField.setProject(project);
@@ -130,20 +135,53 @@ public class FormService {
                                 formField.blockInstance()));
     }
 
+    // Removes a single value instance of a multiple field (formField.fieldInstance),
+    // as opposed to removeProjectFormFieldBlock above, which removes every field in
+    // a whole block instance. formField.blockInstance() may legitimately be null
+    // here (a multiple field outside any block) - it is not required, unlike
+    // fieldInstance, which identifies which value to remove.
+    @Transactional
+    public void removeProjectFormFieldValue(@NotNull FormField formField, @NotNull Project project) {
+        if (!StringUtils.hasText(formField.title())) {
+            throw new IllegalArgumentException("Title must not be empty");
+        }
+        if (!StringUtils.hasText(formField.label())) {
+            throw new IllegalArgumentException("Label must not be empty");
+        }
+        if (Objects.isNull(formField.fieldInstance())) {
+            throw new IllegalArgumentException("Field instance must not be null");
+        }
+        projectFormFieldRepository.deleteProjectFormFieldByProjectAndFormTitleAndLabelAndBlockInstanceAndFieldInstance(
+                project,
+                formField.title(),
+                formField.label(),
+                formField.blockInstance(),
+                formField.fieldInstance());
+    }
+
     private boolean isInBlock(FormField formField) {
         return formField.block() != null || formConfig.fetchFormFieldConfig(formField.title(), formField.label()).getBlock() != null;
     }
 
-    private String fetchLabelBlockInstance(ProjectFormField projectFormField) {
-        return fetchLabelBlockInstance(projectFormField.getLabel(), projectFormField.getBlockInstance());
+    private boolean isMultiple(FormField formField) {
+        return Boolean.TRUE.equals(formField.multiple()) || formConfig.fetchFormFieldConfig(formField.title(), formField.label()).isMultiple();
     }
 
-    private String fetchLabelBlockInstance(FormField formField) {
-        return fetchLabelBlockInstance(formField.label(), formField.blockInstance());
+    private String fetchFieldKey(ProjectFormField projectFormField) {
+        return fetchFieldKey(projectFormField.getLabel(), projectFormField.getBlockInstance(), projectFormField.getFieldInstance());
     }
 
-    private String fetchLabelBlockInstance(String label, Integer blockInstance) {
-        return label + (blockInstance == null ? "" : "_" + blockInstance);
+    private String fetchFieldKey(FormField formField) {
+        return fetchFieldKey(formField.label(), formField.blockInstance(), formField.fieldInstance());
+    }
+
+    // field_instance is scoped WITHIN a block_instance, not globally per label -
+    // a multiple field inside a multiple block restarts its numbering at 1 for
+    // every block instance, so both parts are needed to uniquely identify a row.
+    private String fetchFieldKey(String label, Integer blockInstance, Integer fieldInstance) {
+        return label
+                + (blockInstance == null ? "" : "_" + blockInstance)
+                + (fieldInstance == null ? "" : "_field" + fieldInstance);
     }
 
     protected List<ProjectForm> fetchSelectedForms(@NotNull Project project) {

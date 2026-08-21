@@ -75,7 +75,7 @@ class DtoFactoryDisplayMetadataTest {
 
         Form form = factory.convertForm("patient", Optional.of("en"));
         FormField field = factory.convert(
-                "patient", fieldConfig, Optional.empty(), Optional.of("active"), Optional.of("en"));
+                "patient", fieldConfig, Optional.empty(), Optional.empty(), Optional.of("active"), Optional.of("en"));
 
         assertThat(form.titleShortDescription()).isEqualTo("Patient short");
         assertThat(field.titleShortDescription()).isEqualTo("Patient short");

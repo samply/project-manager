@@ -182,6 +182,7 @@ CREATE TABLE samply.project_form_field
     form_title     TEXT      NOT NULL,
     value          TEXT,
     block_instance INT,
+    field_instance INT,
     created_at     TIMESTAMP NOT NULL,
     modified_at    TIMESTAMP
 );

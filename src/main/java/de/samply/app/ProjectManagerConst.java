@@ -34,6 +34,7 @@ public class ProjectManagerConst {
     public final static String CREATE_PROJECT_ACTION = "CREATE_PROJECT";
     public final static String DELETE_PROJECT_ACTION = "DELETE_PROJECT";
     public final static String DELETE_FORM_FIELD_BLOCK_ACTION = "DELETE_FORM_FIELD_BLOCK";
+    public final static String DELETE_FORM_FIELD_VALUE_ACTION = "DELETE_FORM_FIELD_VALUE";
     public final static String ACCEPT_PROJECT_ACTION = "ACCEPT_PROJECT";
     public final static String REJECT_PROJECT_ACTION = "REJECT_PROJECT";
     public final static String ARCHIVE_PROJECT_ACTION = "ARCHIVE_PROJECT";
@@ -275,6 +276,7 @@ public class ProjectManagerConst {
     public final static String FETCH_BEST_PROJECT_FORM_TEMPLATES = "/project/forms/templates/best";
     public final static String EDIT_PROJECT_FORM_FIELDS = "/project/forms/fields";
     public final static String DELETE_FORM_FIELD_BLOCK = "/project/form/field/block";
+    public final static String DELETE_FORM_FIELD_VALUE = "/project/form/field/value";
     public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
     public final static String FETCH_SELECTED_PROJECT_FORMS = "/project/forms/selected";
     public final static String ADD_SELECTED_PROJECT_FORM = "/project/forms/selected";

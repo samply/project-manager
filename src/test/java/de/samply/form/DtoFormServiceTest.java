@@ -61,9 +61,9 @@ class DtoFormServiceTest {
         when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
                 Map.of(title, Map.of("type", typeConfig, "volume", volumeConfig)));
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
-        when(dtoFactory.convert(eq(title), eq(typeConfig), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(typeConfig), any(), any(), any(), eq(language)))
                 .thenReturn(formField(title, "type", 1));
-        when(dtoFactory.convert(eq(title), eq(volumeConfig), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(volumeConfig), any(), any(), any(), eq(language)))
                 .thenReturn(formField(title, "volume", 2));
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -75,6 +75,142 @@ class DtoFormServiceTest {
                 .containsExactly(
                         org.assertj.core.groups.Tuple.tuple("type", 1),
                         org.assertj.core.groups.Tuple.tuple("volume", 1));
+    }
+
+    @Test
+    void expandsMultipleFieldWithSeveralSavedValues() {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoProjectService dtoProjectService = mock(DtoProjectService.class);
+        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        DtoFormService service = new DtoFormService(
+                formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
+
+        String title = "project";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig tagsConfig = formFieldConfig("tags", null);
+        // mock(), not new ProjectFormField() - two blank real instances would be
+        // equals() to each other (Lombok @Data), and Mockito's default
+        // equals-based argument matching would then let the second when(...)
+        // stub silently shadow the first. A mock has identity equals instead.
+        ProjectFormField persistedTag1 = mock(ProjectFormField.class);
+        ProjectFormField persistedTag2 = mock(ProjectFormField.class);
+        FormField baseField = formField(title, "tags", null, 1, null).toBuilder().multiple(true).build();
+        FormField valuedTag2 = baseField.toBuilder().fieldInstance(2).value("b").build();
+        FormField valuedTag1 = baseField.toBuilder().fieldInstance(1).value("a").build();
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
+                Map.of(title, Map.of("tags", tagsConfig)));
+        when(formService.fetchProjectFormFields(title, project))
+                .thenReturn(List.of(persistedTag2, persistedTag1)); // deliberately out of order
+        when(dtoFactory.convert(persistedTag1, language)).thenReturn(valuedTag1);
+        when(dtoFactory.convert(persistedTag2, language)).thenReturn(valuedTag2);
+        when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language)))
+                .thenReturn(baseField);
+        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Collection<FormField> result = service.fetchProjectFormFields(
+                Optional.of(title), project, language);
+
+        // Both saved values come back, sorted by fieldInstance regardless of
+        // persistence order - and the generic blank base is NOT also present.
+        assertThat(result)
+                .extracting(FormField::fieldInstance, FormField::value)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(1, "a"),
+                        org.assertj.core.groups.Tuple.tuple(2, "b"));
+    }
+
+    @Test
+    void createsOneBlankInstanceForMultipleFieldWithNoSavedValues() {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoProjectService dtoProjectService = mock(DtoProjectService.class);
+        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        DtoFormService service = new DtoFormService(
+                formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
+
+        String title = "project";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig tagsConfig = formFieldConfig("tags", null);
+        FormField baseField = formField(title, "tags", null, 1, null).toBuilder().multiple(true).build();
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
+                Map.of(title, Map.of("tags", tagsConfig)));
+        when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
+        when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language)))
+                .thenReturn(baseField);
+        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Collection<FormField> result = service.fetchProjectFormFields(
+                Optional.of(title), project, language);
+
+        assertThat(result)
+                .singleElement()
+                .satisfies(field -> {
+                    assertThat(field.fieldInstance()).isEqualTo(1);
+                    assertThat(field.value()).isNull();
+                });
+    }
+
+    @Test
+    void expandsMultipleFieldIndependentlyPerBlockInstance() {
+        // The scenario that would throw IllegalStateException: Duplicate key
+        // under the old (pre-multiple) expandBlock grouping: a multiple field
+        // ("publication") inside a multiple block ("collaborator"), with a
+        // different number of values saved per block instance. field_instance
+        // is scoped WITHIN block_instance, so "1" legitimately appears twice
+        // here (once per block instance) - see the scoping note on
+        // ProjectFormField.fieldInstance.
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoProjectService dtoProjectService = mock(DtoProjectService.class);
+        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        DtoFormService service = new DtoFormService(
+                formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
+
+        String title = "project";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig publicationConfig = formFieldConfig("publication", "collaborator");
+        FormField baseField = formField(title, "publication", "collaborator", 1, null)
+                .toBuilder().multiple(true).build();
+
+        // mock(), not new ProjectFormField() - see the comment in
+        // expandsMultipleFieldWithSeveralSavedValues for why.
+        ProjectFormField block1Publication1 = mock(ProjectFormField.class);
+        ProjectFormField block1Publication2 = mock(ProjectFormField.class);
+        ProjectFormField block2Publication1 = mock(ProjectFormField.class);
+
+        FormField valuedBlock1Publication1 = baseField.toBuilder().blockInstance(1).fieldInstance(1).value("Paper A").build();
+        FormField valuedBlock1Publication2 = baseField.toBuilder().blockInstance(1).fieldInstance(2).value("Paper B").build();
+        FormField valuedBlock2Publication1 = baseField.toBuilder().blockInstance(2).fieldInstance(1).value("Paper C").build();
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
+                Map.of(title, Map.of("publication", publicationConfig)));
+        when(formService.fetchProjectFormFields(title, project))
+                .thenReturn(List.of(block1Publication1, block1Publication2, block2Publication1));
+        when(dtoFactory.convert(block1Publication1, language)).thenReturn(valuedBlock1Publication1);
+        when(dtoFactory.convert(block1Publication2, language)).thenReturn(valuedBlock1Publication2);
+        when(dtoFactory.convert(block2Publication1, language)).thenReturn(valuedBlock2Publication1);
+        when(dtoFactory.convert(eq(title), eq(publicationConfig), any(), any(), any(), eq(language)))
+                .thenReturn(baseField);
+        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Collection<FormField> result = service.fetchProjectFormFields(
+                Optional.of(title), project, language);
+
+        assertThat(result)
+                .extracting(FormField::blockInstance, FormField::fieldInstance, FormField::value)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(1, 1, "Paper A"),
+                        org.assertj.core.groups.Tuple.tuple(1, 2, "Paper B"),
+                        org.assertj.core.groups.Tuple.tuple(2, 1, "Paper C"));
     }
 
     @Test
@@ -97,7 +233,7 @@ class DtoFormServiceTest {
         when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
                 Map.of(title, Map.of("active", activeConfig, "inactive", inactiveConfig)));
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
-        when(dtoFactory.convert(eq(title), eq(activeConfig), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(activeConfig), any(), any(), any(), eq(language)))
                 .thenReturn(formField(title, "active", null, 1, null));
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -130,7 +266,7 @@ class DtoFormServiceTest {
                 Map.of(title, Map.of("inactive", inactiveConfig)));
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of(persistedField));
         when(dtoFactory.convert(persistedField, language)).thenReturn(valuedField);
-        when(dtoFactory.convert(eq(title), eq(inactiveConfig), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(inactiveConfig), any(), any(), any(), eq(language)))
                 .thenReturn(baseField);
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 

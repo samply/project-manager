@@ -25,12 +25,21 @@ public record FormField(
         DataType type,
         FormFieldValue[] allowedValues,
         Boolean mandatory,
+        // Whether this field can hold several values of its own data type,
+        // independently of any block-level "multiple" (multipleBlock below).
+        // Ignored for BOOLEAN fields.
+        Boolean multiple,
         Boolean asFile,
         String block,
         String blockDisplayName,
         String blockDescription,
         String blockShortDescription,
         Integer blockInstance,
+        // Index of the value instance for a field whose config has
+        // multiple = true. Scoped within blockInstance, not globally per
+        // label - see ProjectFormField.fieldInstance for the full
+        // explanation. Null when the field's config has multiple = false.
+        Integer fieldInstance,
         Boolean multipleBlock,
         Integer minBlockInstances,
         Integer order,

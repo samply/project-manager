@@ -51,6 +51,7 @@ public class DtoFormService {
                         Optional.empty(),
                         Optional.empty(),
                         Optional.empty(),
+                        Optional.empty(),
                         language
                 ))
                 .collect(Collectors.toList());
@@ -68,7 +69,7 @@ public class DtoFormService {
                 // persisted data that still needs to be represented.
                 .filter(field -> field.isActive() || persistedLabels.contains(field.getLabel()))
                 .map(field ->
-                        dtoFactory.convert(formTitle, field, Optional.empty(), Optional.empty(), language))
+                        dtoFactory.convert(formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(), language))
                 .toList();
     }
 
@@ -111,7 +112,7 @@ public class DtoFormService {
         // each tagged with a concrete blockInstance.
         List<FormField> valuedFields = fetchProjectFormFieldsWithValues(formTitle, project, language);
 
-        // Load persisted labels first so filtering the base configuration does not
+        // Load persisted labels first, so filtering the base configuration does not
         // remove inactive fields that were used before they became inactive.
         Set<String> persistedLabels = valuedFields.stream()
                 .map(FormField::label)
@@ -137,11 +138,23 @@ public class DtoFormService {
     private Stream<FormField> buildFormFieldsExpandingBlockInstances(
             List<FormField> baseFields, List<FormField> valuedFields
     ) {
-        // --- 1) Non-block fields: keep the original, simple behavior. ---
-        Stream<FormField> nonBlockFields = Stream.concat(
-                baseFields.stream().filter(f -> f.block() == null),
-                valuedFields.stream().filter(f -> f.block() == null)
-        );
+        // --- 1) Non-block fields: expand each one across its value instances. ---
+        // (Every label with a value is guaranteed to also have a base
+        // definition - see persistedLabels in fetchBaseAndOverrideFormFields -
+        // so driving off the base map's labels doesn't miss any valued field.)
+        Map<String, FormField> baseNonBlockByLabel = baseFields.stream()
+                .filter(f -> f.block() == null)
+                .collect(Collectors.toMap(FormField::label, Function.identity(), (a, _) -> a, LinkedHashMap::new));
+
+        Map<String, List<FormField>> valuedNonBlockByLabel = valuedFields.stream()
+                .filter(f -> f.block() == null)
+                .collect(Collectors.groupingBy(FormField::label, LinkedHashMap::new, Collectors.toList()));
+
+        Stream<FormField> nonBlockFields = baseNonBlockByLabel.entrySet().stream()
+                .flatMap(entry -> expandFieldInstances(
+                        entry.getValue(),
+                        valuedNonBlockByLabel.getOrDefault(entry.getKey(), List.of())
+                ));
 
         // --- 2) Group block fields by block name, preserving config order. ---
         // baseByBlock: block name -> ordered list of field definitions (F1, F2, F3, ...)
@@ -186,7 +199,7 @@ public class DtoFormService {
 
         if (valuedBlockFields.isEmpty()) {
             // Block metadata is shared by all base fields in the same block, so
-            // reading minBlockInstances from the first definition is sufficient.
+            // reading minBlockInstances from the first definition is enough.
             int minInstances = baseBlockFields.isEmpty()
                     ? 0
                     : Optional.ofNullable(baseBlockFields.getFirst().minBlockInstances()).orElse(0);
@@ -195,19 +208,24 @@ public class DtoFormService {
                 return IntStream.rangeClosed(1, minInstances)
                         .boxed()
                         .flatMap(instance -> baseBlockFields.stream()
-                                .map(base -> withInstance(base, instance)));
+                                .flatMap(base -> expandFieldInstances(withInstance(base, instance), List.of())));
             }
 
-            return baseBlockFields.stream();
+            return baseBlockFields.stream()
+                    .flatMap(base -> expandFieldInstances(base, List.of()));
         }
 
-        // Index valued fields as: label -> (instance -> the valued FormField).
+        // Index valued fields as: label -> (block instance -> ITS value instances).
+        // A plain (non-multiple) field always has exactly one value instance per
+        // block instance, the same as before; a multiple field can have several -
+        // see fieldInstance on ProjectFormField for why that's scoped per block
+        // instance rather than globally per label.
         // NOTE: title is the *form* title (shared by every field), not the field's
         // own identity — label is what actually distinguishes F1 from F2 from F3.
-        Map<String, Map<Integer, FormField>> valuedByLabelAndInstance = valuedBlockFields.stream()
+        Map<String, Map<Integer, List<FormField>>> valuedByLabelAndInstance = valuedBlockFields.stream()
                 .collect(Collectors.groupingBy(
                         FormField::label,
-                        Collectors.toMap(FormField::blockInstance, Function.identity())
+                        Collectors.groupingBy(FormField::blockInstance)
                 ));
 
         Set<Integer> instances = valuedBlockFields.stream()
@@ -216,11 +234,35 @@ public class DtoFormService {
 
         return instances.stream()
                 .flatMap(instance -> baseBlockFields.stream()
-                        .map(base -> valuedByLabelAndInstance
-                                .getOrDefault(base.label(), Map.of())
-                                .getOrDefault(instance, withInstance(base, instance))
-                        )
+                        .flatMap(base -> expandFieldInstances(
+                                withInstance(base, instance),
+                                valuedByLabelAndInstance
+                                        .getOrDefault(base.label(), Map.of())
+                                        .getOrDefault(instance, List.of())
+                        ))
                 );
+    }
+
+    /**
+     * Expands a single field (already stamped with its block instance, if any)
+     * across its own value instances - the field-level counterpart to
+     * expandBlock above, one level deeper.
+     * <p>
+     * If the field's config has multiple = false, this preserves the exact
+     * prior behavior: the one-valued instance if present, otherwise the blank
+     * base. If multiple = true and at least one valued instance exists, every
+     * valued instance is returned (sorted by fieldInstance), and the generic
+     * blank base is dropped; if none exist yet, a single blank instance
+     * stamped fieldInstance = 1 is returned, so there's always at least one
+     * empty slot to render/fill in - the field-level equivalent of a block
+     * with no persisted instances still needing something to show.
+     */
+    private Stream<FormField> expandFieldInstances(FormField base, List<FormField> valuedFieldInstances) {
+        if (valuedFieldInstances.isEmpty()) {
+            return Stream.of(Boolean.TRUE.equals(base.multiple()) ? withFirstFieldInstance(base) : base);
+        }
+        return valuedFieldInstances.stream()
+                .sorted(Comparator.comparing(FormField::fieldInstance, Comparator.nullsLast(Integer::compareTo)));
     }
 
     /**
@@ -235,6 +277,17 @@ public class DtoFormService {
     private FormField withInstance(FormField base, int instance) {
         return base.toBuilder()
                 .blockInstance(instance)
+                .value(null)
+                .build();
+    }
+
+    // Unlike withInstance above, this has no "instance" parameter: there is no
+    // minFieldInstances concept for multiple fields (only blocks have
+    // minInstances) - a multiple field with no saved value yet always gets
+    // exactly one blank slot to start from, fieldInstance = 1.
+    private FormField withFirstFieldInstance(FormField base) {
+        return base.toBuilder()
+                .fieldInstance(1)
                 .value(null)
                 .build();
     }

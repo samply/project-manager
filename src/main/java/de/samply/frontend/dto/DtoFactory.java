@@ -254,7 +254,7 @@ public class DtoFactory {
         return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null);
     }
 
-    public FormField convert(@NotNull String title, Optional<String> label, Optional<Integer> blockInstance, Optional<String> value, Optional<String> language) {
+    public FormField convert(@NotNull String title, Optional<String> label, Optional<Integer> blockInstance, Optional<Integer> fieldInstance, Optional<String> value, Optional<String> language) {
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
@@ -309,6 +309,10 @@ public class DtoFactory {
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::isMultiple)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getAsFile)
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
@@ -337,6 +341,7 @@ public class DtoFactory {
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
                 blockInstance.orElse(null),
+                fieldInstance.orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getBlock)
@@ -404,7 +409,7 @@ public class DtoFactory {
                 .orElse(languageMapper.get(defaultLanguage));
     }
 
-    public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig, Optional<Integer> blockInstance, Optional<String> value, Optional<String> language) {
+    public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig, Optional<Integer> blockInstance, Optional<Integer> fieldInstance, Optional<String> value, Optional<String> language) {
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
@@ -428,6 +433,7 @@ public class DtoFactory {
                 formFieldConfig.getDataType(),
                 convert(formFieldConfig.getAllowedValues(), language),
                 formFieldConfig.isMandatory(),
+                formFieldConfig.isMultiple(),
                 formFieldConfig.getAsFile(),
                 formFieldConfig.getBlock(),
                 Optional.ofNullable(formFieldConfig.getBlock())
@@ -446,6 +452,7 @@ public class DtoFactory {
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
                 blockInstance.orElse(null),
+                fieldInstance.orElse(null),
                 Optional.ofNullable(formFieldConfig.getBlock())
                         .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
                         .map(FormFieldBlock::getMultiple)
@@ -470,6 +477,7 @@ public class DtoFactory {
                 projectFormField.getFormTitle(),
                 Optional.of(projectFormField.getLabel()),
                 Optional.ofNullable(projectFormField.getBlockInstance()),
+                Optional.ofNullable(projectFormField.getFieldInstance()),
                 Optional.ofNullable(projectFormField.getValue()),
                 language);
     }

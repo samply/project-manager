@@ -16,4 +16,6 @@ public interface ProjectFormFieldRepository extends JpaRepository<ProjectFormFie
 
     void deleteProjectFormFieldByProjectAndFormTitleAndLabelAndBlockInstance(Project project, String formTitle, String label, Integer blockInstance);
 
+    void deleteProjectFormFieldByProjectAndFormTitleAndLabelAndBlockInstanceAndFieldInstance(Project project, String formTitle, String label, Integer blockInstance, Integer fieldInstance);
+
 }

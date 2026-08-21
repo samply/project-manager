@@ -26,6 +26,11 @@ public class FormFieldConfig extends DisplayMetadata {
 
     private boolean mandatory;
 
+    // Whether this field can hold several values of its own data type,
+    // independently of any block-level "multiple" (FormFieldBlock.multiple).
+    // Ignored for BOOLEAN fields.
+    private boolean multiple = false;
+
     // Inactive fields are hidden when a project has no data for them. They remain
     // available for projects with existing values, preserving previously saved data.
     private boolean active = true;

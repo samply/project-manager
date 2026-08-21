@@ -571,7 +571,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DELETE_FORM_FIELD_BLOCK_ACTION)
-    @PutMapping(value = ProjectManagerConst.DELETE_FORM_FIELD_BLOCK)
+    @DeleteMapping(value = ProjectManagerConst.DELETE_FORM_FIELD_BLOCK)
     public ResponseEntity removeProjectFormFieldBlock(
             // ProjectCode code needed for role constraints
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -579,6 +579,28 @@ public class ProjectManagerController {
     ) {
         return convertToResponseEntity(
                 () -> formService.removeProjectFormFieldBlock(formField, project));
+    }
+
+    // Removes ONE value instance of a multiple field (formField.fieldInstance),
+    // e.g., clicking "-" next to one of several values. This is not how a
+    // field's value is cleared in general - for a non-multiple field, or for
+    // a specific value of a multiple field that should just become empty
+    // rather than disappear, save an empty value through EDIT_PROJECT_FORM_FIELDS
+    // instead. formService.removeProjectFormFieldValue requires fieldInstance
+    // to be non-null precisely to guard against this action being used outside
+    // its intended "multiple field" context.
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DELETE_FORM_FIELD_VALUE_ACTION)
+    @DeleteMapping(value = ProjectManagerConst.DELETE_FORM_FIELD_VALUE)
+    public ResponseEntity removeProjectFormFieldValue(
+            // ProjectCode code needed for role constraints
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @RequestVariable(name = ProjectManagerConst.FORM_FIELD) FormField formField
+    ) {
+        return convertToResponseEntity(
+                () -> formService.removeProjectFormFieldValue(formField, project));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
