@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.Query;
@@ -188,8 +188,8 @@ class FeasibilityServiceTest {
     }
 
     private FeasibilityService createService(boolean enabled) {
-        BridgeheadConfiguration bridgeheadConfiguration = new BridgeheadConfiguration();
-        BridgeheadConfiguration.BridgeheadConfig config = new BridgeheadConfiguration.BridgeheadConfig();
+        BridgeheadsConfiguration bridgeheadConfiguration = new BridgeheadsConfiguration();
+        BridgeheadsConfiguration.BridgeheadConfig config = new BridgeheadsConfiguration.BridgeheadConfig();
         config.setFocusBeamId(FOCUS_BEAM_ID);
         bridgeheadConfiguration.setConfig(Map.of(BRIDGEHEAD, config));
 
