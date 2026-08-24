@@ -13,7 +13,25 @@ public class ProjectConfigurations {
 
     // If not specifically set, the user can choose only one project configuration.
     private SelectionType selectionType = SelectionType.SINGLE;
+    private List<String> formTitleOrder = new ArrayList<>();
     private Map<String, ProjectAndForms> config = new HashMap<>();
+
+    public void validate() {
+        if (formTitleOrder == null) {
+            formTitleOrder = new ArrayList<>();
+            return;
+        }
+
+        Set<String> seenTitles = new HashSet<>();
+        List<String> duplicateTitles = formTitleOrder.stream()
+                .filter(title -> !seenTitles.add(title))
+                .distinct()
+                .toList();
+        if (!duplicateTitles.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Duplicate entries in formTitleOrder: " + String.join(", ", duplicateTitles));
+        }
+    }
 
     private boolean isMultipleSelection(){
         return selectionType == SelectionType.MULTIPLE;
@@ -121,4 +139,3 @@ public class ProjectConfigurations {
     }
 
 }
-

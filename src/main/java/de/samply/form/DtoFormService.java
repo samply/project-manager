@@ -57,6 +57,13 @@ public class DtoFormService {
                 .collect(Collectors.toList());
     }
 
+    public List<Form> fetchProjectFormTitleCanonicalOrder(
+            Collection<String> formTitleOrder, Optional<String> language) {
+        return formTitleOrder.stream()
+                .map(title -> dtoFactory.convertForm(title, language))
+                .toList();
+    }
+
     private List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(
             @NotNull String formTitle, Set<String> persistedLabels, Optional<String> language
     ) {

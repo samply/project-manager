@@ -14,8 +14,38 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProjectConfigurationsTest {
+
+    @Test
+    void formTitleOrderDefaultsToEmpty() {
+        assertThat(new ProjectConfigurations().getFormTitleOrder()).isEmpty();
+    }
+
+    @Test
+    void preservesConfiguredFormTitleOrder() throws Exception {
+        ProjectConfigurations configurations = new com.fasterxml.jackson.databind.ObjectMapper().readValue("""
+                {
+                  "formTitleOrder": ["project", "query", "summary"]
+                }
+                """, ProjectConfigurations.class);
+
+        configurations.validate();
+
+        assertThat(configurations.getFormTitleOrder())
+                .containsExactly("project", "query", "summary");
+    }
+
+    @Test
+    void rejectsDuplicateFormTitleOrderEntries() {
+        ProjectConfigurations configurations = new ProjectConfigurations();
+        configurations.setFormTitleOrder(List.of("project", "query", "project"));
+
+        assertThatThrownBy(configurations::validate)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Duplicate entries in formTitleOrder: project");
+    }
 
     @Test
     void multipleSelectionReturnsEverySubsetMatch() {

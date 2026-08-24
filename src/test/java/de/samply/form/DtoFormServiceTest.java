@@ -5,6 +5,7 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectFormField;
 import de.samply.form.condition.FormFieldConditionEvaluator;
 import de.samply.frontend.dto.DtoFactory;
+import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.FormField;
 import de.samply.project.DtoProjectService;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class DtoFormServiceTest {
+
+    @Test
+    void fetchesEnrichedFormTitlesInConfiguredOrder() {
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        DtoFormService service = new DtoFormService(
+                mock(FormService.class), dtoFactory, mock(FormConfig.class),
+                mock(DtoProjectService.class), mock(FormFieldConditionEvaluator.class));
+        Optional<String> language = Optional.of("en");
+        Form project = new Form("project", "Project", "Project description", null);
+        Form query = new Form("query", "Query", "Query description", null);
+        when(dtoFactory.convertForm("project", language)).thenReturn(project);
+        when(dtoFactory.convertForm("query", language)).thenReturn(query);
+
+        List<Form> result = service.fetchProjectFormTitleCanonicalOrder(
+                List.of("project", "query"), language);
+
+        assertThat(result).containsExactly(project, query);
+    }
 
     @Test
     void deserializesLayoutsFromFormMetadataConfig() throws Exception {

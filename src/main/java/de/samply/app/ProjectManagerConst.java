@@ -140,6 +140,7 @@ public class ProjectManagerConst {
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL_ACTION = "FETCH_RESEARCH_ENVIRONMENT_URL";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION = "EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE";
     public final static String FETCH_PROJECT_FORM_TITLES_ACTION = "FETCH_PROJECT_FORM_TITLES";
+    public final static String FETCH_PROJECT_FORM_TITLE_ORDER_ACTION = "FETCH_PROJECT_FORM_TITLE_ORDER";
     public final static String FETCH_PROJECT_FORM_FIELDS_ACTION = "FETCH_PROJECT_FORM_FIELDS";
     public final static String FETCH_PROJECT_FORM_LAYOUTS_ACTION = "FETCH_PROJECT_FORM_LAYOUTS";
     public final static String FETCH_PROJECT_FORM_TEMPLATES_ACTION = "FETCH_FORM_TEMPLATES";
@@ -270,6 +271,7 @@ public class ProjectManagerConst {
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL = "/research-environment-url";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/research-environment-workspace/exists";
     public final static String FETCH_PROJECT_FORM_TITLES = "/project/forms/titles";
+    public final static String FETCH_PROJECT_FORM_TITLE_ORDER = "/project/forms/title/order";
     public final static String FETCH_PROJECT_FORM_FIELDS = "/project/forms/fields";
     public final static String FETCH_PROJECT_FORM_LAYOUTS = "/project/forms/layouts";
     public final static String FETCH_PROJECT_FORM_TEMPLATES = "/project/forms/templates";
