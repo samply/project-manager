@@ -77,8 +77,10 @@ public class FormConfig {
                             _ -> new HashMap<>()
                     );
 
+            FormFieldConfig[] fields = Optional.ofNullable(formMetadataConfig.getFields())
+                    .orElseGet(() -> new FormFieldConfig[0]);
             AtomicInteger counter = new AtomicInteger(1);
-            Arrays.stream(formMetadataConfig.getFields()).forEach(field -> {
+            Arrays.stream(fields).forEach(field -> {
                 fieldMap.put(field.getLabel(), field);
                 orderMap.put(field.getLabel(), counter.getAndIncrement());
             });
@@ -91,7 +93,7 @@ public class FormConfig {
 
             log.info(
                     "Loaded {} form fields from {}",
-                    formMetadataConfig.getFields().length,
+                    fields.length,
                     configFile.getFileName()
             );
 

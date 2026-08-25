@@ -24,21 +24,23 @@ import static org.mockito.Mockito.when;
 class DtoFormServiceTest {
 
     @Test
-    void fetchesEnrichedFormTitlesInConfiguredOrder() {
+    void fetchesEnrichedAndUnknownFormTitlesInConfiguredOrder() {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         DtoFormService service = new DtoFormService(
                 mock(FormService.class), dtoFactory, mock(FormConfig.class),
                 mock(DtoProjectService.class), mock(FormFieldConditionEvaluator.class));
         Optional<String> language = Optional.of("en");
         Form project = new Form("project", "Project", "Project description", null);
-        Form query = new Form("query", "Query", "Query description", null);
+        Form query = new Form("query", "Query", "Query description", "Query short description");
+        Form summary = new Form("summary", null, null, null);
         when(dtoFactory.convertForm("project", language)).thenReturn(project);
         when(dtoFactory.convertForm("query", language)).thenReturn(query);
+        when(dtoFactory.convertForm("summary", language)).thenReturn(summary);
 
         List<Form> result = service.fetchProjectFormTitleCanonicalOrder(
-                List.of("project", "query"), language);
+                List.of("project", "query", "summary"), language);
 
-        assertThat(result).containsExactly(project, query);
+        assertThat(result).containsExactly(project, query, summary);
     }
 
     @Test

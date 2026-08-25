@@ -57,6 +57,10 @@ public class DtoFormService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Resolves the configured title order to complete form metadata. Titles without
+     * configured metadata are retained so the frontend can apply generic fallbacks.
+     */
     public List<Form> fetchProjectFormTitleCanonicalOrder(
             Collection<String> formTitleOrder, Optional<String> language) {
         return formTitleOrder.stream()
