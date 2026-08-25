@@ -7,6 +7,12 @@ public record Form(
         String title,
         String titleDisplayName,
         String titleDescription,
-        String titleShortDescription
+        String titleShortDescription,
+        String titlePreInfo,
+        String titlePostInfo
 ) {
+
+    public Form(String title, String titleDisplayName, String titleDescription, String titleShortDescription) {
+        this(title, titleDisplayName, titleDescription, titleShortDescription, null, null);
+    }
 }

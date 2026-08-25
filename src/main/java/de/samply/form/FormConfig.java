@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public class FormConfig {
 
     private final Map<String, FormFieldBlock> blockLabelformFieldBlockMap = new HashMap<>();
-    private final Map<String, DisplayMetadata> formTitleDisplaMetadataMap = new HashMap<>();
+    private final Map<String, ContextualDisplayMetadata> formTitleDisplaMetadataMap = new HashMap<>();
     private final Map<String, DisplayMetadata> groupsDisplayMetadataMap = new HashMap<>();
     private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
     private final Map<String, Map<String, Integer>> formTitleLabelOrderMap = new HashMap<>();
@@ -45,6 +45,8 @@ public class FormConfig {
         try {
             FormMetadataConfig formMetadataConfig =
                     objectMapper.readValue(configFile.toFile(), FormMetadataConfig.class);
+
+            validateContextualInformation(formMetadataConfig, configFile);
 
             // Title metadata
             formTitleDisplaMetadataMap.put(
@@ -98,7 +100,40 @@ public class FormConfig {
             );
 
         } catch (IOException e) {
-            log.error("Failed to read form config file {}", configFile, e);
+            throw new IllegalStateException(
+                    "Failed to read form config file " + configFile + ": " + e.getMessage(), e);
+        }
+    }
+
+    private void validateContextualInformation(FormMetadataConfig form, Path configFile) {
+        validateContextualInformation(form, configFile, "form '" + form.getTitle() + "'");
+
+        if (form.getFields() != null) {
+            Arrays.stream(form.getFields()).forEach(field -> validateContextualInformation(
+                    field,
+                    configFile,
+                    "form '" + form.getTitle() + "', field '" + field.getLabel() + "'"));
+        }
+
+        if (form.getBlocks() != null) {
+            Arrays.stream(form.getBlocks()).forEach(block -> validateContextualInformation(
+                    block,
+                    configFile,
+                    "form '" + form.getTitle() + "', block '" + block.getLabel() + "'"));
+        }
+    }
+
+    private void validateContextualInformation(
+            ContextualDisplayMetadata metadata, Path configFile, String location) {
+        validateDisplayInfo(metadata.getPreInfo(), configFile, location + ".pre_info");
+        validateDisplayInfo(metadata.getPostInfo(), configFile, location + ".post_info");
+    }
+
+    private void validateDisplayInfo(DisplayInfo info, Path configFile, String location) {
+        if (info != null && info.getProjectStates() != null && info.getProjectStates().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Invalid form configuration in " + configFile + " at " + location
+                            + ": project_states must not be empty; omit project_states to allow all states");
         }
     }
 

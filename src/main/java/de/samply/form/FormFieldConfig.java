@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FormFieldConfig extends DisplayMetadata {
+public class FormFieldConfig extends ContextualDisplayMetadata {
 
     private String label;
 

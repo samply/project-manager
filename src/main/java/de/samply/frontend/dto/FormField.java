@@ -16,10 +16,14 @@ public record FormField(
         String titleDisplayName,
         String titleDescription,
         String titleShortDescription,
+        String titlePreInfo,
+        String titlePostInfo,
         String label,
         String labelDisplayName,
         String labelDescription,
         String labelShortDescription,
+        String labelPreInfo,
+        String labelPostInfo,
         FormFieldGroup[] groups,
         String[] properties,
         DataType type,
@@ -34,6 +38,8 @@ public record FormField(
         String blockDisplayName,
         String blockDescription,
         String blockShortDescription,
+        String blockPreInfo,
+        String blockPostInfo,
         Integer blockInstance,
         // Index of the value instance for a field whose config has
         // multiple = true. Scoped within blockInstance, not globally per

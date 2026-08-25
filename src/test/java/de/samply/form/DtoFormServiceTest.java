@@ -7,7 +7,9 @@ import de.samply.form.condition.FormFieldConditionEvaluator;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.FormField;
+import de.samply.frontend.dto.ProjectAndForms;
 import de.samply.project.DtoProjectService;
+import de.samply.project.state.ProjectState;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -30,17 +32,43 @@ class DtoFormServiceTest {
                 mock(FormService.class), dtoFactory, mock(FormConfig.class),
                 mock(DtoProjectService.class), mock(FormFieldConditionEvaluator.class));
         Optional<String> language = Optional.of("en");
+        Project dbProject = new Project();
+        dbProject.setState(ProjectState.REVIEW);
         Form project = new Form("project", "Project", "Project description", null);
         Form query = new Form("query", "Query", "Query description", "Query short description");
         Form summary = new Form("summary", null, null, null);
-        when(dtoFactory.convertForm("project", language)).thenReturn(project);
-        when(dtoFactory.convertForm("query", language)).thenReturn(query);
-        when(dtoFactory.convertForm("summary", language)).thenReturn(summary);
+        when(dtoFactory.convertForm("project", language, ProjectState.REVIEW)).thenReturn(project);
+        when(dtoFactory.convertForm("query", language, ProjectState.REVIEW)).thenReturn(query);
+        when(dtoFactory.convertForm("summary", language, ProjectState.REVIEW)).thenReturn(summary);
 
         List<Form> result = service.fetchProjectFormTitleCanonicalOrder(
-                List.of("project", "query", "summary"), language);
+                List.of("project", "query", "summary"), dbProject, language);
 
         assertThat(result).containsExactly(project, query, summary);
+    }
+
+    @Test
+    void enrichesConfiguredInformationalFormsWithoutFieldsForTheCurrentState() {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        DtoProjectService dtoProjectService = mock(DtoProjectService.class);
+        DtoFormService service = new DtoFormService(
+                formService, dtoFactory, mock(FormConfig.class), dtoProjectService,
+                mock(FormFieldConditionEvaluator.class));
+        Optional<String> language = Optional.of("en");
+        Project project = new Project();
+        project.setState(ProjectState.DRAFT);
+        Form configuredForm = new Form("introduction", null, null, null);
+        Form enrichedForm = new Form(
+                "introduction", "Introduction", null, null, "Welcome", null);
+
+        when(formService.fetchSelectedForms(project)).thenReturn(List.of());
+        when(dtoProjectService.fetchCurrentProjectConfigurations(project)).thenReturn(List.of(
+                new ProjectAndForms(null, new Form[]{configuredForm}, new FormField[0])));
+        when(dtoFactory.convertForm("introduction", language, ProjectState.DRAFT))
+                .thenReturn(enrichedForm);
+
+        assertThat(service.fetchSelectedForms(project, language)).containsExactly(enrichedForm);
     }
 
     @Test
@@ -82,9 +110,9 @@ class DtoFormServiceTest {
         when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
                 Map.of(title, Map.of("type", typeConfig, "volume", volumeConfig)));
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
-        when(dtoFactory.convert(eq(title), eq(typeConfig), any(), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(typeConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(formField(title, "type", 1));
-        when(dtoFactory.convert(eq(title), eq(volumeConfig), any(), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(volumeConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(formField(title, "volume", 2));
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -128,7 +156,7 @@ class DtoFormServiceTest {
                 .thenReturn(List.of(persistedTag2, persistedTag1)); // deliberately out of order
         when(dtoFactory.convert(persistedTag1, language)).thenReturn(valuedTag1);
         when(dtoFactory.convert(persistedTag2, language)).thenReturn(valuedTag2);
-        when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -163,7 +191,7 @@ class DtoFormServiceTest {
         when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
                 Map.of(title, Map.of("tags", tagsConfig)));
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
-        when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -219,7 +247,7 @@ class DtoFormServiceTest {
         when(dtoFactory.convert(block1Publication1, language)).thenReturn(valuedBlock1Publication1);
         when(dtoFactory.convert(block1Publication2, language)).thenReturn(valuedBlock1Publication2);
         when(dtoFactory.convert(block2Publication1, language)).thenReturn(valuedBlock2Publication1);
-        when(dtoFactory.convert(eq(title), eq(publicationConfig), any(), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(publicationConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -254,7 +282,7 @@ class DtoFormServiceTest {
         when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
                 Map.of(title, Map.of("active", activeConfig, "inactive", inactiveConfig)));
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
-        when(dtoFactory.convert(eq(title), eq(activeConfig), any(), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(activeConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(formField(title, "active", null, 1, null));
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -287,7 +315,7 @@ class DtoFormServiceTest {
                 Map.of(title, Map.of("inactive", inactiveConfig)));
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of(persistedField));
         when(dtoFactory.convert(persistedField, language)).thenReturn(valuedField);
-        when(dtoFactory.convert(eq(title), eq(inactiveConfig), any(), any(), any(), eq(language)))
+        when(dtoFactory.convert(eq(title), eq(inactiveConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
         when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
 

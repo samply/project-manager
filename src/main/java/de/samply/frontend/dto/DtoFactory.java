@@ -9,6 +9,7 @@ import de.samply.form.template.FormTemplateMetadata;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
 import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
@@ -255,6 +256,22 @@ public class DtoFactory {
     }
 
     public FormField convert(@NotNull String title, Optional<String> label, Optional<Integer> blockInstance, Optional<Integer> fieldInstance, Optional<String> value, Optional<String> language) {
+        return convert(title, label, blockInstance, fieldInstance, value, language, null);
+    }
+
+    public FormField convert(@NotNull String title, Optional<String> label, Optional<Integer> blockInstance,
+                             Optional<Integer> fieldInstance, Optional<String> value,
+                             Optional<String> language, ProjectState projectState) {
+        ContextualDisplayMetadata titleMetadata = formConfig.getFormTitleDisplaMetadataMap().get(title);
+        FormFieldConfig fieldMetadata = label
+                .map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                .map(fields -> fields.get(label.get()))
+                .orElse(null);
+        FormFieldBlock blockMetadata = Optional.ofNullable(fieldMetadata)
+                .map(FormFieldConfig::getBlock)
+                .map(block -> formConfig.getBlockLabelformFieldBlockMap().get(block))
+                .orElse(null);
+
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
@@ -269,6 +286,8 @@ public class DtoFactory {
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
+                fetchDisplayInfo(titleMetadata, true, language, projectState),
+                fetchDisplayInfo(titleMetadata, false, language, projectState),
                 label.orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
@@ -285,6 +304,8 @@ public class DtoFactory {
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
+                fetchDisplayInfo(fieldMetadata, true, language, projectState),
+                fetchDisplayInfo(fieldMetadata, false, language, projectState),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getGroups)
@@ -340,6 +361,8 @@ public class DtoFactory {
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
+                fetchDisplayInfo(blockMetadata, true, language, projectState),
+                fetchDisplayInfo(blockMetadata, false, language, projectState),
                 blockInstance.orElse(null),
                 fieldInstance.orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
@@ -409,7 +432,29 @@ public class DtoFactory {
                 .orElse(languageMapper.get(defaultLanguage));
     }
 
+    private String fetchDisplayInfo(ContextualDisplayMetadata metadata, boolean preInfo,
+                                    Optional<String> language, ProjectState projectState) {
+        DisplayInfo info = metadata == null
+                ? null
+                : (preInfo ? metadata.getPreInfo() : metadata.getPostInfo());
+        if (info == null || !info.appliesTo(projectState) || info.getContent() == null) {
+            return null;
+        }
+        return fetchValue(info.getContent(), language);
+    }
+
     public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig, Optional<Integer> blockInstance, Optional<Integer> fieldInstance, Optional<String> value, Optional<String> language) {
+        return convert(title, formFieldConfig, blockInstance, fieldInstance, value, language, null);
+    }
+
+    public FormField convert(@NotNull String title, @NotNull FormFieldConfig formFieldConfig,
+                             Optional<Integer> blockInstance, Optional<Integer> fieldInstance,
+                             Optional<String> value, Optional<String> language, ProjectState projectState) {
+        ContextualDisplayMetadata titleMetadata = formConfig.getFormTitleDisplaMetadataMap().get(title);
+        FormFieldBlock blockMetadata = Optional.ofNullable(formFieldConfig.getBlock())
+                .map(block -> formConfig.getBlockLabelformFieldBlockMap().get(block))
+                .orElse(null);
+
         return new FormField(
                 title,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(title))
@@ -424,10 +469,14 @@ public class DtoFactory {
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
+                fetchDisplayInfo(titleMetadata, true, language, projectState),
+                fetchDisplayInfo(titleMetadata, false, language, projectState),
                 formFieldConfig.getLabel(),
                 fetchValue(formFieldConfig.getDisplayName(), language),
                 fetchValue(formFieldConfig.getDescription(), language),
                 fetchValue(formFieldConfig.getShortDescription(), language),
+                fetchDisplayInfo(formFieldConfig, true, language, projectState),
+                fetchDisplayInfo(formFieldConfig, false, language, projectState),
                 convertGroups(formFieldConfig.getGroups(), language),
                 formFieldConfig.getProperties(),
                 formFieldConfig.getDataType(),
@@ -451,6 +500,8 @@ public class DtoFactory {
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
+                fetchDisplayInfo(blockMetadata, true, language, projectState),
+                fetchDisplayInfo(blockMetadata, false, language, projectState),
                 blockInstance.orElse(null),
                 fieldInstance.orElse(null),
                 Optional.ofNullable(formFieldConfig.getBlock())
@@ -479,14 +530,23 @@ public class DtoFactory {
                 Optional.ofNullable(projectFormField.getBlockInstance()),
                 Optional.ofNullable(projectFormField.getFieldInstance()),
                 Optional.ofNullable(projectFormField.getValue()),
-                language);
+                language,
+                Optional.ofNullable(projectFormField.getProject()).map(de.samply.db.model.Project::getState).orElse(null));
     }
 
     public Form convert(@NotNull ProjectForm projectForm, Optional<String> language) {
-        return convertForm(projectForm.getFormTitle(), language);
+        return convertForm(
+                projectForm.getFormTitle(),
+                language,
+                Optional.ofNullable(projectForm.getProject()).map(de.samply.db.model.Project::getState).orElse(null));
     }
 
     public Form convertForm(@NotNull String formTitle, Optional<String> language) {
+        return convertForm(formTitle, language, null);
+    }
+
+    public Form convertForm(@NotNull String formTitle, Optional<String> language, ProjectState projectState) {
+        ContextualDisplayMetadata metadata = formConfig.getFormTitleDisplaMetadataMap().get(formTitle);
         return new Form(
                 formTitle,
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(formTitle))
@@ -500,7 +560,9 @@ public class DtoFactory {
                 Optional.ofNullable(formConfig.getFormTitleDisplaMetadataMap().get(formTitle))
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
-                        .orElse(null)
+                        .orElse(null),
+                fetchDisplayInfo(metadata, true, language, projectState),
+                fetchDisplayInfo(metadata, false, language, projectState)
         );
     }
 

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FormConfigTest {
 
@@ -76,5 +77,31 @@ class FormConfigTest {
                         List.of(new FormFieldLayout(List.of(
                                 new FormFieldLayoutRow(List.of("patient-id", "birth-date")),
                                 new FormFieldLayoutRow(List.of("height", "weight")))))));
+    }
+
+    @Test
+    void rejectsExplicitlyEmptyProjectStateRestrictionsDuringStartup(@TempDir Path configDirectory)
+            throws Exception {
+        Path configFile = configDirectory.resolve("patient.json");
+        Files.writeString(configFile, """
+                {
+                  "title": "patient",
+                  "fields": [{
+                    "label": "status",
+                    "data_type": "STRING",
+                    "pre_info": {
+                      "content": {"en": "Invalid restriction"},
+                      "project_states": []
+                    }
+                  }]
+                }
+                """);
+
+        assertThatThrownBy(() -> new FormConfig(new ExistingDirectory(configDirectory)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(configFile.toString())
+                .hasMessageContaining("form 'patient', field 'status'.pre_info")
+                .hasMessageContaining("project_states must not be empty")
+                .hasMessageContaining("omit project_states to allow all states");
     }
 }

@@ -12,7 +12,7 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FormMetadataConfig extends DisplayMetadata{
+public class FormMetadataConfig extends ContextualDisplayMetadata {
 
     private String title;
 

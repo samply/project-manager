@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-08-24]
+## [1.0.0 - 2026-08-25]
 ### Added
 - First version of the project
 - Spring Application
@@ -282,6 +282,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Feasibility service and endpoint for Lens-style AST_DATA queries through Beam and Focus
 - ENABLE_FEASIBILITY feature toggle
 - Form title canonical order
+- Pre_info and post_info
 
 
 ### Changed

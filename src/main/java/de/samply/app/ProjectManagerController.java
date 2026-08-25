@@ -473,7 +473,7 @@ public class ProjectManagerController {
             @Language String language
     ) {
         return convertToResponseEntity(
-                () -> dtoFormService.fetchProjectFormTitles(Optional.ofNullable(language)));
+                () -> dtoFormService.fetchProjectFormTitles(project, Optional.ofNullable(language)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
@@ -490,7 +490,7 @@ public class ProjectManagerController {
             @Language String language
     ) {
         return convertToResponseEntity(() -> dtoFormService.fetchProjectFormTitleCanonicalOrder(
-                frontendProjectConfigurations.getFormTitleOrder(), Optional.ofNullable(language)));
+                frontendProjectConfigurations.getFormTitleOrder(), project, Optional.ofNullable(language)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,

@@ -41,7 +41,7 @@ public class DtoFormService {
         this.formFieldConditionEvaluator = formFieldConditionEvaluator;
     }
 
-    public List<FormField> fetchProjectFormTitles(Optional<String> language) {
+    public List<FormField> fetchProjectFormTitles(@NotNull Project project, Optional<String> language) {
         return formConfig
                 .getFormTitleLabelFieldMap()
                 .keySet()
@@ -52,7 +52,8 @@ public class DtoFormService {
                         Optional.empty(),
                         Optional.empty(),
                         Optional.empty(),
-                        language
+                        language,
+                        project.getState()
                 ))
                 .collect(Collectors.toList());
     }
@@ -62,14 +63,15 @@ public class DtoFormService {
      * configured metadata are retained so the frontend can apply generic fallbacks.
      */
     public List<Form> fetchProjectFormTitleCanonicalOrder(
-            Collection<String> formTitleOrder, Optional<String> language) {
+            Collection<String> formTitleOrder, @NotNull Project project, Optional<String> language) {
         return formTitleOrder.stream()
-                .map(title -> dtoFactory.convertForm(title, language))
+                .map(title -> dtoFactory.convertForm(title, language, project.getState()))
                 .toList();
     }
 
     private List<FormField> fetchProjectFormFieldsDefinedInConfigWithoutValues(
-            @NotNull String formTitle, Set<String> persistedLabels, Optional<String> language
+            @NotNull String formTitle, Set<String> persistedLabels, @NotNull Project project,
+            Optional<String> language
     ) {
         return formConfig
                 .getFormTitleLabelFieldMap()
@@ -80,7 +82,8 @@ public class DtoFormService {
                 // persisted data that still needs to be represented.
                 .filter(field -> field.isActive() || persistedLabels.contains(field.getLabel()))
                 .map(field ->
-                        dtoFactory.convert(formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(), language))
+                        dtoFactory.convert(formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(),
+                                language, project.getState()))
                 .toList();
     }
 
@@ -97,13 +100,15 @@ public class DtoFormService {
                         // Fetch forms selected explicitly
                         formService.fetchSelectedForms(project)
                                 .stream()
-                                .map(projectForm -> dtoFactory.convert(projectForm, language)),
+                                .map(projectForm -> dtoFactory.convertForm(
+                                        projectForm.getFormTitle(), language, project.getState())),
                         // Fetch forms that should be selected according to the current configuration.
                         // This is particularly important if the current configuration is CUSTOM
                         dtoProjectService.fetchCurrentProjectConfigurations(project)
                                 .stream()
                                 .filter(projectAndForms -> projectAndForms.forms() != null)
                                 .flatMap(projectAndForms -> Arrays.stream(projectAndForms.forms()))
+                                .map(form -> dtoFactory.convertForm(form.title(), language, project.getState()))
                 )
                 // Remove duplicates
                 .collect(Collectors.toMap(
@@ -131,7 +136,7 @@ public class DtoFormService {
 
         // Inactive fields are kept only for projects that already have data for them.
         List<FormField> baseFields = fetchProjectFormFieldsDefinedInConfigWithoutValues(
-                formTitle, persistedLabels, language);
+                formTitle, persistedLabels, project, language);
 
         return buildFormFieldsExpandingBlockInstances(baseFields, valuedFields);
     }
