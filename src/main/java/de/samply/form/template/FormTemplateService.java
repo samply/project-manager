@@ -4,6 +4,7 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.form.DataType;
 import de.samply.form.DtoFormService;
+import de.samply.form.FormFieldType;
 import de.samply.form.pdf.FormPdfGeneratorFactory;
 import de.samply.form.pdf.FormTemplateServiceException;
 import de.samply.frontend.dto.DtoFactory;
@@ -118,6 +119,9 @@ public class FormTemplateService {
                                 .flatMap(formTitle -> dtoFormService.fetchProjectFormFields(
                                         Optional.of(formTitle), project, Optional.of(language)).stream())
                 )
+                // FIXED entries are metadata references for native frontend
+                // fields, not form-template/PDF values.
+                .filter(field -> field.fieldType() != FormFieldType.FIXED)
                 .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
                 .collect(FormFieldUtils.formFieldMapCollector());
     }

@@ -78,6 +78,7 @@ public class DtoFormService {
                 .getOrDefault(formTitle, Map.of())
                 .values()
                 .stream()
+                .filter(field -> field.getFieldType() == FormFieldType.DYNAMIC)
                 // Keep inactive definitions only when this project already has
                 // persisted data that still needs to be represented.
                 .filter(field -> field.isActive() || persistedLabels.contains(field.getLabel()))
@@ -85,6 +86,23 @@ public class DtoFormService {
                         dtoFactory.convert(formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(),
                                 language, project.getState()))
                 .toList();
+    }
+
+    private Stream<FormField> fetchFixedFormFieldMetadata(
+            @NotNull String formTitle, @NotNull Project project, Optional<String> language) {
+        // FIXED entries describe frontend-owned fields. They are returned once,
+        // including when inactive, so the frontend can override/suppress its
+        // native field. They deliberately bypass persisted values, conditions,
+        // blocks and field-instance expansion.
+        return formConfig
+                .getFormTitleLabelFieldMap()
+                .getOrDefault(formTitle, Map.of())
+                .values()
+                .stream()
+                .filter(field -> field.getFieldType() == FormFieldType.FIXED)
+                .map(field -> dtoFactory.convert(
+                        formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(),
+                        language, project.getState()));
     }
 
     private List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull Project project, Optional<String> language) {
@@ -309,13 +327,22 @@ public class DtoFormService {
     }
 
     public Collection<FormField> fetchProjectFormFields(Optional<String> formTitle, @NotNull Project project, Optional<String> language) {
-        return formFieldConditionEvaluator.filter(formTitle
-                .map(Stream::of)
-                .orElseGet(() -> formConfig.getFormTitleLabelFieldMap().keySet().stream())
+        List<String> formTitles = formTitle
+                .map(List::of)
+                .orElseGet(() -> formConfig.getFormTitleLabelFieldMap().keySet().stream().toList());
+
+        Collection<FormField> dynamicFields = formFieldConditionEvaluator.filter(formTitles.stream()
                 .flatMap(title -> fetchBaseAndOverrideFormFields(title, project, language))
                 .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
                 .collect(FormFieldUtils.formFieldMapCollector())
                 .values());
+
+        return Stream.concat(
+                        dynamicFields.stream(),
+                        formTitles.stream().flatMap(title -> fetchFixedFormFieldMetadata(title, project, language)))
+                .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
+                .collect(FormFieldUtils.formFieldMapCollector())
+                .values();
     }
 
     public Map<String, List<FormFieldLayout>> fetchFormLayouts(Optional<String> formTitle) {

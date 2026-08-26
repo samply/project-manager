@@ -13,6 +13,7 @@ import de.samply.project.state.ProjectState;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 class DtoFormServiceTest {
 
@@ -328,6 +330,66 @@ class DtoFormServiceTest {
                     assertThat(field.label()).isEqualTo("inactive");
                     assertThat(field.value()).isEqualTo("saved value");
                 });
+    }
+
+    @Test
+    void returnsInactiveFixedMetadataWithoutSendingItThroughDynamicProcessing() {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoProjectService dtoProjectService = mock(DtoProjectService.class);
+        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        DtoFormService service = new DtoFormService(
+                formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
+
+        String title = "project";
+        Optional<String> language = Optional.of("en");
+        Project project = new Project();
+        project.setState(ProjectState.DRAFT);
+        FormFieldConfig fixedConfig = formFieldConfig("PROJECT_TITLE", null);
+        fixedConfig.setFieldType(FormFieldType.FIXED);
+        fixedConfig.setActive(false);
+        FormFieldConfig dynamicConfig = formFieldConfig("methodology", null);
+        Map<String, FormFieldConfig> configuredFields = new LinkedHashMap<>();
+        configuredFields.put(fixedConfig.getLabel(), fixedConfig);
+        configuredFields.put(dynamicConfig.getLabel(), dynamicConfig);
+        FormField fixedDto = FormField.builder()
+                .title(title)
+                .label("PROJECT_TITLE")
+                .fieldType(FormFieldType.FIXED)
+                .active(false)
+                .order(1)
+                .build();
+        FormField dynamicDto = FormField.builder()
+                .title(title)
+                .label("methodology")
+                .fieldType(FormFieldType.DYNAMIC)
+                .order(2)
+                .build();
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(Map.of(title, configuredFields));
+        when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
+        when(dtoFactory.convert(eq(title), eq(fixedConfig), any(), any(), any(), eq(language), any()))
+                .thenReturn(fixedDto);
+        when(dtoFactory.convert(eq(title), eq(dynamicConfig), any(), any(), any(), eq(language), any()))
+                .thenReturn(dynamicDto);
+        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> {
+            Collection<FormField> fields = invocation.getArgument(0);
+            assertThat(fields).extracting(FormField::label).containsExactly("methodology");
+            return fields;
+        });
+
+        Collection<FormField> result = service.fetchProjectFormFields(
+                Optional.of(title), project, language);
+
+        assertThat(result)
+                .extracting(FormField::label, FormField::fieldType, FormField::active, FormField::order)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(
+                                "PROJECT_TITLE", FormFieldType.FIXED, false, 1),
+                        org.assertj.core.groups.Tuple.tuple(
+                                "methodology", FormFieldType.DYNAMIC, null, 2));
+        verify(conditionEvaluator).filter(any());
     }
 
     @Test

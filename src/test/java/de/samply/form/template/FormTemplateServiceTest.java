@@ -3,9 +3,11 @@ package de.samply.form.template;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.db.model.Project;
 import de.samply.form.DtoFormService;
+import de.samply.form.FormFieldType;
 import de.samply.form.pdf.FormPdfGeneratorFactory;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.Form;
+import de.samply.frontend.dto.FormField;
 import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
 import org.junit.jupiter.api.Test;
@@ -107,6 +109,38 @@ class FormTemplateServiceTest {
                 Optional.of("sample"), project, Optional.of("en"));
         verify(dtoFormService, never()).fetchProjectFormFields(
                 Optional.of("unrelated"), project, Optional.of("en"));
+    }
+
+    @Test
+    void excludesFixedFrontendMetadataFromTemplateFieldValues() {
+        DtoFormService dtoFormService = mock(DtoFormService.class);
+        Project project = new Project();
+        FormTemplateMetadata metadata = metadata(true);
+        FormField fixed = FormField.builder()
+                .title("patient")
+                .label("PROJECT_TITLE")
+                .fieldType(FormFieldType.FIXED)
+                .order(1)
+                .build();
+        FormField dynamic = FormField.builder()
+                .title("patient")
+                .label("diagnosis")
+                .fieldType(FormFieldType.DYNAMIC)
+                .order(2)
+                .value("example")
+                .build();
+        when(dtoFormService.fetchProjectFormFields(
+                Optional.of("patient"), project, Optional.of("en")))
+                .thenReturn(List.of(fixed, dynamic));
+        when(dtoFormService.fetchProjectFormFields(
+                Optional.of("sample"), project, Optional.of("en")))
+                .thenReturn(List.of());
+        FormTemplateService service = formTemplateService(dtoFormService, metadata);
+
+        Map<String, FormField> result = service.fetchFormFields(
+                project, metadata.getTemplate(), "en", mock(ProjectContext.class));
+
+        assertThat(result.values()).extracting(FormField::label).containsExactly("diagnosis");
     }
 
     private static Stream<Arguments> formSelections() {

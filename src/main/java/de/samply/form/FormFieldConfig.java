@@ -3,6 +3,7 @@ package de.samply.form;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,14 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
 
     private String label;
 
+    // DYNAMIC is the backward-compatible default and represents a normal,
+    // persistable form field. FIXED identifies a metadata-only reference to a
+    // frontend-implemented field; it may only control display metadata, order
+    // and active state and must never be persisted as a dynamic form field.
+    @JsonProperty("field_type")
+    @Builder.Default
+    private FormFieldType fieldType = FormFieldType.DYNAMIC;
+
     @JsonProperty("data_type")
     private DataType dataType;
 
@@ -31,8 +40,10 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
     // Ignored for BOOLEAN fields.
     private boolean multiple = false;
 
-    // Inactive fields are hidden when a project has no data for them. They remain
-    // available for projects with existing values, preserving previously saved data.
+    // For DYNAMIC fields, inactive definitions are hidden when a project has no
+    // data for them and remain available when values already exist. For FIXED
+    // fields, false is sent to the frontend to suppress its native field.
+    @Builder.Default
     private boolean active = true;
 
     // Special properties for different uses (e.g., something specific for the UI)

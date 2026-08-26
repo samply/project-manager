@@ -104,4 +104,43 @@ class FormConfigTest {
                 .hasMessageContaining("project_states must not be empty")
                 .hasMessageContaining("omit project_states to allow all states");
     }
+
+    @Test
+    void defaultsOmittedFieldTypeToDynamicAndLoadsInactiveFixedMetadata(@TempDir Path configDirectory)
+            throws Exception {
+        Files.writeString(configDirectory.resolve("project.json"), """
+                {
+                  "title": "project",
+                  "fields": [
+                    {
+                      "label": "PROJECT_TITLE",
+                      "field_type": "FIXED",
+                      "active": false,
+                      "data_type": "STRING",
+                      "mandatory": true
+                    },
+                    {"label": "methodology", "data_type": "STRING"}
+                  ]
+                }
+                """);
+
+        FormConfig config = new FormConfig(new ExistingDirectory(configDirectory));
+
+        assertThat(config.fetchFormFieldConfig("project", "PROJECT_TITLE"))
+                .satisfies(field -> {
+                    assertThat(field.getFieldType()).isEqualTo(FormFieldType.FIXED);
+                    assertThat(field.isActive()).isFalse();
+                    assertThat(field.getDataType()).isEqualTo(DataType.STRING);
+                    assertThat(field.isMandatory()).isTrue();
+                });
+        assertThat(config.fetchFormFieldConfig("project", "methodology"))
+                .satisfies(field -> {
+                    assertThat(field.getFieldType()).isEqualTo(FormFieldType.DYNAMIC);
+                    assertThat(field.isActive()).isTrue();
+                });
+        assertThat(config.getFormTitleLabelOrderMap().get("project"))
+                .containsEntry("PROJECT_TITLE", 1)
+                .containsEntry("methodology", 2);
+    }
+
 }

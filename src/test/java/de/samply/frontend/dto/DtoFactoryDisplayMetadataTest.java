@@ -3,6 +3,7 @@ package de.samply.frontend.dto;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
+import de.samply.form.FormFieldType;
 import de.samply.form.FormService;
 import de.samply.form.template.FormTemplateConfig;
 import de.samply.project.ProjectBridgeheadUserService;
@@ -117,6 +118,8 @@ class DtoFactoryDisplayMetadataTest {
         assertThat(draftField.titleShortDescription()).isEqualTo("Patient short");
         assertThat(draftField.titlePreInfo()).isEqualTo("Patient draft introduction");
         assertThat(draftField.labelShortDescription()).isEqualTo("Status short");
+        assertThat(draftField.fieldType()).isEqualTo(FormFieldType.DYNAMIC);
+        assertThat(draftField.active()).isNull();
         assertThat(draftField.labelPreInfo()).isEqualTo("Status draft introduction");
         assertThat(draftField.labelPostInfo()).isNull();
         assertThat(reviewField.labelPreInfo()).isNull();
@@ -140,6 +143,68 @@ class DtoFactoryDisplayMetadataTest {
                 .contains("\"titlePreInfo\":\"Patient draft introduction\"")
                 .contains("\"titlePostInfo\":\"Patient information in every state\"")
                 .contains("\"labelPreInfo\":\"Status draft introduction\"")
-                .contains("\"blockPreInfo\":\"Details draft introduction\"");
+                .contains("\"blockPreInfo\":\"Details draft introduction\"")
+                .contains("\"fieldType\":\"DYNAMIC\"")
+                .doesNotContain("\"active\":");
+    }
+
+    @Test
+    void mapsFixedFieldTypeActiveStateAndLocalizedMetadata(@TempDir Path temporaryDirectory)
+            throws Exception {
+        Path configDirectory = Files.createDirectory(temporaryDirectory.resolve("form-fields"));
+        Path templateMetadataDirectory = Files.createDirectory(temporaryDirectory.resolve("template-metadata"));
+        Files.writeString(configDirectory.resolve("project.json"), """
+                {
+                  "title": "project",
+                  "fields": [
+                    {
+                      "label": "PROJECT_TITLE",
+                      "field_type": "FIXED",
+                      "active": false,
+                      "display_name": {"en": "Request title"},
+                      "description": {"en": "Request title description"},
+                      "short_description": {"en": "Short request title"}
+                    },
+                    {
+                      "label": "PROJECT_DESCRIPTION",
+                      "field_type": "FIXED"
+                    }
+                  ]
+                }
+                """);
+
+        FormConfig formConfig = new FormConfig(new ExistingDirectory(configDirectory));
+        DtoFactory factory = new DtoFactory(
+                mock(BridgeheadsConfiguration.class),
+                mock(FormService.class),
+                mock(UserService.class),
+                formConfig,
+                new FormTemplateConfig(new ExistingDirectory(templateMetadataDirectory), "en"),
+                "en",
+                mock(ProjectBridgeheadUserService.class));
+
+        FormField field = factory.convert(
+                "project",
+                formConfig.fetchFormFieldConfig("project", "PROJECT_TITLE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField activeField = factory.convert(
+                "project",
+                formConfig.fetchFormFieldConfig("project", "PROJECT_DESCRIPTION"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+
+        assertThat(field.fieldType()).isEqualTo(FormFieldType.FIXED);
+        assertThat(field.active()).isFalse();
+        assertThat(field.labelDisplayName()).isEqualTo("Request title");
+        assertThat(field.labelDescription()).isEqualTo("Request title description");
+        assertThat(field.labelShortDescription()).isEqualTo("Short request title");
+        assertThat(field.order()).isEqualTo(1);
+        assertThat(activeField.fieldType()).isEqualTo(FormFieldType.FIXED);
+        assertThat(activeField.active()).isNull();
+        assertThat(activeField.order()).isEqualTo(2);
+
+        com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+                new com.fasterxml.jackson.databind.ObjectMapper();
+        assertThat(objectMapper.writeValueAsString(field)).contains("\"active\":false");
+        assertThat(objectMapper.writeValueAsString(activeField)).doesNotContain("\"active\":");
     }
 }

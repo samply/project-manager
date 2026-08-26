@@ -26,7 +26,6 @@ public class FormConfig {
     private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
     private final Map<String, Map<String, Integer>> formTitleLabelOrderMap = new HashMap<>();
     private final Map<String, List<FormFieldLayout>> formTitleLayoutsMap = new HashMap<>();
-
     public FormConfig(@Value(ProjectManagerConst.FORM_FIELDS_DIRECTORY_SV) ExistingDirectory configDir
     ) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -47,6 +46,7 @@ public class FormConfig {
                     objectMapper.readValue(configFile.toFile(), FormMetadataConfig.class);
 
             validateContextualInformation(formMetadataConfig, configFile);
+            validateFieldTypes(formMetadataConfig, configFile);
 
             // Title metadata
             formTitleDisplaMetadataMap.put(
@@ -103,6 +103,20 @@ public class FormConfig {
             throw new IllegalStateException(
                     "Failed to read form config file " + configFile + ": " + e.getMessage(), e);
         }
+    }
+
+    private void validateFieldTypes(FormMetadataConfig form, Path configFile) {
+        if (form.getFields() == null) {
+            return;
+        }
+        Arrays.stream(form.getFields()).forEach(field -> {
+            if (field.getFieldType() == null) {
+                throw new IllegalArgumentException(
+                        "Invalid form configuration in " + configFile + " at form '"
+                                + form.getTitle() + "', field '" + field.getLabel()
+                                + "': field_type must be DYNAMIC or FIXED");
+            }
+        });
     }
 
     private void validateContextualInformation(FormMetadataConfig form, Path configFile) {

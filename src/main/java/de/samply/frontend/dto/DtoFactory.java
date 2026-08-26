@@ -289,6 +289,10 @@ public class DtoFactory {
                 fetchDisplayInfo(titleMetadata, true, language, projectState),
                 fetchDisplayInfo(titleMetadata, false, language, projectState),
                 label.orElse(null),
+                Optional.ofNullable(fieldMetadata)
+                        .map(FormFieldConfig::getFieldType)
+                        .orElse(null),
+                fetchInactiveFixedFlag(fieldMetadata),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(DisplayMetadata::getDisplayName)
@@ -472,6 +476,8 @@ public class DtoFactory {
                 fetchDisplayInfo(titleMetadata, true, language, projectState),
                 fetchDisplayInfo(titleMetadata, false, language, projectState),
                 formFieldConfig.getLabel(),
+                formFieldConfig.getFieldType(),
+                fetchInactiveFixedFlag(formFieldConfig),
                 fetchValue(formFieldConfig.getDisplayName(), language),
                 fetchValue(formFieldConfig.getDescription(), language),
                 fetchValue(formFieldConfig.getShortDescription(), language),
@@ -521,6 +527,17 @@ public class DtoFactory {
         return formTemplateConfig.isProjectFormFieldTitle(title) ?
                 formTemplateConfig.fetchProjectFormFieldOrder(title, label) :
                 formConfig.getFormTitleLabelOrderMap().get(title).get(label);
+    }
+
+    private Boolean fetchInactiveFixedFlag(FormFieldConfig fieldConfig) {
+        // Active is true by default and remains an internal backend concern for
+        // DYNAMIC fields. The frontend only needs an explicit false marker to
+        // suppress a native field referenced by an inactive FIXED entry.
+        return fieldConfig != null
+                && fieldConfig.getFieldType() == FormFieldType.FIXED
+                && !fieldConfig.isActive()
+                ? Boolean.FALSE
+                : null;
     }
 
     public FormField convert(@NotNull ProjectFormField projectFormField, Optional<String> language) {
