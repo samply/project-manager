@@ -761,7 +761,7 @@ public class ProjectManagerController {
                 () -> coderService.existsUserResearchEnvironmentWorkspace(project, bridgehead));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS_ACTION)
@@ -784,7 +784,7 @@ public class ProjectManagerController {
         return convertToResponseEntity(this.frontendProjectConfigurations::getSelectionType);
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION)

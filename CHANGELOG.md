@@ -285,6 +285,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Pre_info and post_info
 - Override fixed form fields
 - Mailing blacklist file
+- Project Manager admin sees the selected predefined configurations
 
 
 ### Changed
