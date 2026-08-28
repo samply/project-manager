@@ -293,7 +293,7 @@ public class ProjectManagerConst {
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
-    public final static String PROJECT_CREATOR = "project-creator";
+    public final static String PROJECT_CREATOR_EMAIL = "project-creator-email";
     public final static String PROJECT_CONFIGURATION = "project-configuration";
     public final static String PROJECT_CONFIGURATION_SEPARATOR = ",";
     public final static String NOTIFICATION_ID = "notification-id";

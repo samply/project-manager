@@ -216,13 +216,13 @@ public class ProjectManagerController {
             @RequestParameter(name = ProjectManagerConst.SORT_DESC, required = false, defaultValue = "true") boolean sortDesc,
             @RequestParameter(name = ProjectManagerConst.PAGE) int page,
             @RequestParameter(name = ProjectManagerConst.PAGE_SIZE) int pageSize,
-            @RequestParameter(name = ProjectManagerConst.PROJECT_CREATOR, required = false) String projectCreator,
+            @RequestParameter(name = ProjectManagerConst.PROJECT_CREATOR_EMAIL, required = false) String projectCreatorEmail,
             @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) String bridgehead
     ) {
         return convertToResponseEntity(() -> dtoProjectService.fetchUserVisibleProjects(
                 Optional.ofNullable(projectState), Optional.ofNullable(archived), page, pageSize,
                 ProjectSortField.fromValue(sortBy), sortDesc,
-                Optional.ofNullable(projectCreator), Optional.ofNullable(bridgehead)));
+                Optional.ofNullable(projectCreatorEmail), Optional.ofNullable(bridgehead)));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,

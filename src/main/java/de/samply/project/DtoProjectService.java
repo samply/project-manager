@@ -39,7 +39,7 @@ public class DtoProjectService {
 
     public Page<Project> fetchUserVisibleProjects(
             Optional<ProjectState> projectState, Optional<Boolean> archived, int page, int pageSize,
-            ProjectSortField sortBy, boolean sortDesc, Optional<String> projectCreator, Optional<String> bridgehead) {
+            ProjectSortField sortBy, boolean sortDesc, Optional<String> projectCreatorEmail, Optional<String> bridgehead) {
         Sort.Direction direction = sortDesc ? Sort.Direction.DESC : Sort.Direction.ASC;
         String sortProperty = switch (sortBy) {
             case TITLE -> Project_.QUERY + "." + Query_.LABEL;
@@ -52,7 +52,7 @@ public class DtoProjectService {
         PageRequest pageRequest = PageRequest.of(
                 page, pageSize, Sort.by(direction, sortProperty));
         return projectService.fetchUserVisibleProjects(
-                        projectState, archived, pageRequest, projectCreator, bridgehead)
+                        projectState, archived, pageRequest, projectCreatorEmail, bridgehead)
                 .map(dtoFactory::convert);
     }
 

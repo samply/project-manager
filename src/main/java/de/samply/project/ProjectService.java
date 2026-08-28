@@ -171,9 +171,9 @@ public class ProjectService {
      */
     protected Page<Project> fetchUserVisibleProjects(
             Optional<ProjectState> projectState, Optional<Boolean> archived, PageRequest pageRequest,
-            Optional<String> projectCreator, Optional<String> bridgehead) {
+            Optional<String> projectCreatorEmail, Optional<String> bridgehead) {
         Specification<Project> specification =
-                buildUserVisibleProjectsSpecification(projectState, archived, projectCreator, bridgehead);
+                buildUserVisibleProjectsSpecification(projectState, archived, projectCreatorEmail, bridgehead);
         return projectRepository.findAll(specification, pageRequest);
     }
 
@@ -182,37 +182,24 @@ public class ProjectService {
      */
     private Specification<Project> buildUserVisibleProjectsSpecification(
             Optional<ProjectState> projectState, Optional<Boolean> archived,
-            Optional<String> projectCreator, Optional<String> bridgehead) {
+            Optional<String> projectCreatorEmail, Optional<String> bridgehead) {
         boolean isProjectManagerAdmin = isProjectManagerAdmin();
         // allOf combines the independent specifications with a logical AND.
         return Specification.allOf(List.of(
                 buildProjectStateSpecification(projectState, isProjectManagerAdmin),
                 buildArchivedStatusSpecification(archived),
                 buildUserVisibilitySpecification(isProjectManagerAdmin),
-                buildProjectCreatorSpecification(projectCreator),
+                buildProjectCreatorSpecification(projectCreatorEmail),
                 buildBridgeheadSpecification(bridgehead)
         ));
     }
 
-    private Specification<Project> buildProjectCreatorSpecification(Optional<String> projectCreator) {
-        return (project, query, criteriaBuilder) -> projectCreator
+    private Specification<Project> buildProjectCreatorSpecification(Optional<String> projectCreatorEmail) {
+        return (project, query, criteriaBuilder) -> projectCreatorEmail
                 .filter(StringUtils::hasText)
-                .map(filter -> {
-                    String pattern = "%" + filter.toLowerCase(Locale.ROOT) + "%";
-                    Predicate emailMatch = criteriaBuilder.like(
-                            criteriaBuilder.lower(project.get(Project_.creatorEmail)), pattern);
-
-                    Subquery<Long> userQuery = query.subquery(Long.class);
-                    Root<User> user = userQuery.from(User.class);
-                    Predicate sameEmail = criteriaBuilder.equal(
-                            criteriaBuilder.lower(user.get(User_.email)),
-                            criteriaBuilder.lower(project.get(Project_.creatorEmail)));
-                    Predicate nameMatch = criteriaBuilder.or(
-                            criteriaBuilder.like(criteriaBuilder.lower(user.get(User_.firstName)), pattern),
-                            criteriaBuilder.like(criteriaBuilder.lower(user.get(User_.lastName)), pattern));
-                    return criteriaBuilder.or(emailMatch,
-                            criteriaBuilder.exists(userQuery.select(user.get(User_.id)).where(sameEmail, nameMatch)));
-                })
+                .map(filter -> criteriaBuilder.equal(
+                        criteriaBuilder.lower(project.get(Project_.creatorEmail)),
+                        filter.toLowerCase(Locale.ROOT)))
                 .orElseGet(criteriaBuilder::conjunction);
     }
 
