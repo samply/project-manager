@@ -249,6 +249,8 @@ public class ProjectManagerController {
                 () -> projectEventService.fetchAllProjectEvents(Optional.ofNullable(project)));
     }
 
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_PROJECT_STATES_ACTION)
     @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_PROJECT_STATES, produces = MediaType.APPLICATION_JSON_VALUE)
