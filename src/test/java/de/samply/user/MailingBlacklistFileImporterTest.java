@@ -25,7 +25,7 @@ class MailingBlacklistFileImporterTest {
         when(repository.findByEmail("manager@example.org")).thenReturn(Optional.empty());
         when(repository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        new MailingBlacklistFileImporter(repository, file.toString())
+        new MailingBlacklistFileImporter(repository, file)
                 .run(new DefaultApplicationArguments());
 
         var captor = org.mockito.ArgumentCaptor.forClass(User.class);
@@ -42,27 +42,17 @@ class MailingBlacklistFileImporterTest {
         UserRepository repository = mock(UserRepository.class);
         when(repository.findByEmail(existing.getEmail())).thenReturn(Optional.of(existing));
 
-        new MailingBlacklistFileImporter(repository, file.toString())
+        new MailingBlacklistFileImporter(repository, file)
                 .run(new DefaultApplicationArguments());
 
         verify(repository, never()).save(any(User.class));
     }
 
     @Test
-    void disabledWhenPathIsBlank() {
-        UserRepository repository = mock(UserRepository.class);
-
-        new MailingBlacklistFileImporter(repository, " ")
-                .run(new DefaultApplicationArguments());
-
-        verifyNoInteractions(repository);
-    }
-
-    @Test
     void failsWhenConfiguredFileCannotBeRead(@TempDir Path tempDir) {
         Path missing = tempDir.resolve("missing.txt");
 
-        assertThatThrownBy(() -> new MailingBlacklistFileImporter(mock(UserRepository.class), missing.toString())
+        assertThatThrownBy(() -> new MailingBlacklistFileImporter(mock(UserRepository.class), missing)
                 .run(new DefaultApplicationArguments()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Failed to read mailing blacklist file");

@@ -41,11 +41,11 @@ public class MailingBlacklistFileImporter implements ApplicationRunner {
             "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
 
     private final UserRepository userRepository;
-    private final String blacklistFilePath;
+    private final Path blacklistFilePath;
 
-    public MailingBlacklistFileImporter(
+    public  MailingBlacklistFileImporter(
             UserRepository userRepository,
-            @Value(ProjectManagerConst.MAILING_BLACK_LIST_FILE_PATH_SV) String blacklistFilePath) {
+            @Value(ProjectManagerConst.MAILING_BLACK_LIST_FILE_PATH_SV) Path blacklistFilePath) {
         this.userRepository = userRepository;
         this.blacklistFilePath = blacklistFilePath;
     }
@@ -53,15 +53,7 @@ public class MailingBlacklistFileImporter implements ApplicationRunner {
     @Override
     @Transactional
     public void run(@NonNull ApplicationArguments args) {
-        if (!StringUtils.hasText(blacklistFilePath)) {
-            log.info("Mailing blacklist file path not provided; no users imported");
-            return;
-        }
-
-        // ApplicationRunner executes after Spring has initialized the database
-        // repositories, so this import is safe to perform in one transaction.
-        Path path = Path.of(blacklistFilePath.trim());
-        ParsedEmails parsed = readEmails(path);
+        ParsedEmails parsed = readEmails(blacklistFilePath);
         // Grouping the per-user result keeps the startup log useful without
         // logging the configured email addresses themselves.
         Map<ImportOutcome, Long> outcomes = parsed
@@ -71,7 +63,7 @@ public class MailingBlacklistFileImporter implements ApplicationRunner {
                 .collect(Collectors.groupingBy(outcome -> outcome, Collectors.counting()));
 
         log.info("Imported {} mailing-blacklist entries from {} (created: {}, updated: {}, unchanged: {})",
-                parsed.emails().size(), path,
+                parsed.emails().size(), blacklistFilePath,
                 outcomes.getOrDefault(ImportOutcome.CREATED, 0L),
                 outcomes.getOrDefault(ImportOutcome.UPDATED, 0L),
                 outcomes.getOrDefault(ImportOutcome.UNCHANGED, 0L));
