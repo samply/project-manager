@@ -312,6 +312,10 @@ public class DtoFactory {
                 fetchDisplayInfo(fieldMetadata, false, language, projectState),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
+                        .map(FormFieldConfig::getPlaceholder)
+                        .orElse(null),
+                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
+                        .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getGroups)
                         .map(groups -> convertGroups(groups, language))
                         .orElse(null),
@@ -483,6 +487,7 @@ public class DtoFactory {
                 fetchValue(formFieldConfig.getShortDescription(), language),
                 fetchDisplayInfo(formFieldConfig, true, language, projectState),
                 fetchDisplayInfo(formFieldConfig, false, language, projectState),
+                formFieldConfig.getPlaceholder(),
                 convertGroups(formFieldConfig.getGroups(), language),
                 formFieldConfig.getProperties(),
                 formFieldConfig.getDataType(),
@@ -556,10 +561,6 @@ public class DtoFactory {
                 projectForm.getFormTitle(),
                 language,
                 Optional.ofNullable(projectForm.getProject()).map(de.samply.db.model.Project::getState).orElse(null));
-    }
-
-    public Form convertForm(@NotNull String formTitle, Optional<String> language) {
-        return convertForm(formTitle, language, null);
     }
 
     public Form convertForm(@NotNull String formTitle, Optional<String> language, ProjectState projectState) {

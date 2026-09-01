@@ -30,6 +30,9 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
     @JsonProperty("data_type")
     private DataType dataType;
 
+    // Optional input hint for editable STRING and LONG_STRING fields.
+    private String placeholder;
+
     @JsonProperty("allowed_values")
     private FormFieldValue[] allowedValues;
 

@@ -114,7 +114,15 @@ public class FormConfig {
                 throw new IllegalArgumentException(
                         "Invalid form configuration in " + configFile + " at form '"
                                 + form.getTitle() + "', field '" + field.getLabel()
-                                + "': field_type must be DYNAMIC or FIXED");
+                        + "': field_type must be DYNAMIC or FIXED");
+            }
+            if (field.getPlaceholder() != null && !field.getPlaceholder().isBlank()
+                    && field.getDataType() != DataType.STRING
+                    && field.getDataType() != DataType.LONG_STRING) {
+                throw new IllegalArgumentException(
+                        "Invalid form configuration in " + configFile + " at form '"
+                                + form.getTitle() + "', field '" + field.getLabel()
+                                + "': placeholder is only supported for STRING and LONG_STRING fields");
             }
         });
     }

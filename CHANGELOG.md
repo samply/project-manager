@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-08-28]
+## [1.0.0 - 2026-09-01]
 ### Added
 - First version of the project
 - Spring Application
@@ -287,6 +287,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mailing blacklist file
 - Project Manager admin sees the selected predefined configurations
 - Filter applicants and bridgeheads
+- Form field placeholder
 
 
 ### Changed

@@ -33,6 +33,7 @@ public record FormField(
         String labelShortDescription,
         String labelPreInfo,
         String labelPostInfo,
+        String placeholder,
         FormFieldGroup[] groups,
         String[] properties,
         DataType type,
