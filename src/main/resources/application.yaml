@@ -85,3 +85,10 @@ spring:
       max-file-size: ${MAX_FILE_SIZE:10MB}
       max-request-size: ${MAX_REQEST_SIZE:10MB}
 
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: ../cce-project-manager
+      poll-interval: 1000ms
+      quiet-period: 400ms
+
