@@ -41,12 +41,24 @@ public class FormFieldConditionEvaluator {
         if (formFieldsWithConditions.isEmpty()) {
             return formFields;
         }
-        FormFieldConditionContext context = new FormFieldConditionContext(formFields);
         return formFields
                 .stream()
-                .filter(formField -> !hasCondition(formField) ||
-                        evaluateCondition(formField, context.getContext(formField)))
+                .filter(formField -> isVisible(formField, formFields))
                 .toList();
+    }
+
+    /**
+     * Evaluates one field against the supplied form-field context without
+     * removing it from the response. This is used for FIXED fields, whose
+     * visibility is represented by the active flag instead of filtering them
+     * out of the API response.
+     */
+    public boolean isVisible(@NotNull FormField formField, @NotNull Collection<FormField> contextFields) {
+        if (!hasCondition(formField)) {
+            return true;
+        }
+        FormFieldConditionContext context = new FormFieldConditionContext(contextFields);
+        return evaluateCondition(formField, context.getContext(formField));
     }
 
     private List<FormField> fetchFormFieldsWithConditions(Collection<FormField> formFields) {

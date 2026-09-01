@@ -21,8 +21,10 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
 
     // DYNAMIC is the backward-compatible default and represents a normal,
     // persistable form field. FIXED identifies a metadata-only reference to a
-    // frontend-implemented field; it may only control display metadata, order
-    // and active state and must never be persisted as a dynamic form field.
+    // frontend-implemented field. For FIXED fields, display metadata, order,
+    // KEEP_FIXED_FIELD_ORDER, active state and condition are interpreted as
+    // metadata for the native field; no value is persisted as a dynamic form
+    // field.
     @JsonProperty("field_type")
     @Builder.Default
     private FormFieldType fieldType = FormFieldType.DYNAMIC;

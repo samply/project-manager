@@ -89,11 +89,15 @@ public class DtoFormService {
     }
 
     private Stream<FormField> fetchFixedFormFieldMetadata(
-            @NotNull String formTitle, @NotNull Project project, Optional<String> language) {
-        // FIXED entries describe frontend-owned fields. They are returned once,
+            @NotNull String formTitle, @NotNull Project project, Optional<String> language,
+            Collection<FormField> conditionContext) {
+        // FIXED entries describe frontend-owned fields. Their supported
+        // configuration metadata is returned once,
         // including when inactive, so the frontend can override/suppress its
-        // native field. They deliberately bypass persisted values, conditions,
-        // blocks and field-instance expansion.
+        // native field. They deliberately bypass persisted values, blocks and
+        // field-instance expansion. Conditions are evaluated against the
+        // dynamic fields, but a false condition is represented as active=false
+        // instead of removing the fixed metadata from the response.
         return formConfig
                 .getFormTitleLabelFieldMap()
                 .getOrDefault(formTitle, Map.of())
@@ -102,7 +106,10 @@ public class DtoFormService {
                 .filter(field -> field.getFieldType() == FormFieldType.FIXED)
                 .map(field -> dtoFactory.convert(
                         formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(),
-                        language, project.getState()));
+                        language, project.getState()))
+                .map(field -> formFieldConditionEvaluator.isVisible(field, conditionContext)
+                        ? field
+                        : field.toBuilder().active(Boolean.FALSE).build());
     }
 
     private List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull Project project, Optional<String> language) {
@@ -339,7 +346,8 @@ public class DtoFormService {
 
         return Stream.concat(
                         dynamicFields.stream(),
-                        formTitles.stream().flatMap(title -> fetchFixedFormFieldMetadata(title, project, language)))
+                        formTitles.stream().flatMap(title -> fetchFixedFormFieldMetadata(
+                                title, project, language, dynamicFields)))
                 .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
                 .collect(FormFieldUtils.formFieldMapCollector())
                 .values();

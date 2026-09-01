@@ -288,6 +288,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Manager admin sees the selected predefined configurations
 - Filter applicants and bridgeheads
 - Form field placeholder
+- Fixed form field condition
 
 
 ### Changed
