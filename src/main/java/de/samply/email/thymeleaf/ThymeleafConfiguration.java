@@ -24,20 +24,20 @@ public class ThymeleafConfiguration {
     }
 
     @Bean
-    public FileTemplateResolver externalTemplateResolver() {
+    public FileTemplateResolver externalTemplateResolver(@Value("${EMAIL_TEMPLATES_CACHEABLE:true}") boolean cacheable) {
         FileTemplateResolver resolver = new FileTemplateResolver();
         resolver.setPrefix(externalTemplateDirectory + File.separator);
         resolver.setSuffix("." + FileExtension.HTML.value());
         resolver.setTemplateMode(TemplateMode.HTML);
         resolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        resolver.setCacheable(true);
+        resolver.setCacheable(cacheable);
         return resolver;
     }
 
     @Bean
-    public SpringTemplateEngine templateEngine() {
+    public SpringTemplateEngine templateEngine(FileTemplateResolver externalTemplateResolver) {
         SpringTemplateEngine engine = new SpringTemplateEngine();
-        engine.addTemplateResolver(externalTemplateResolver());
+        engine.addTemplateResolver(externalTemplateResolver);
         engine.addDialect(new ProjectManagerDialect());
         return engine;
     }
