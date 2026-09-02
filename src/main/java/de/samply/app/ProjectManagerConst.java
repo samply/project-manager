@@ -274,19 +274,20 @@ public class ProjectManagerConst {
     public final static String IS_PROJECT_MANAGER_ADMIN = "/is-project-manager-admin";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL = "/research-environment-url";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/research-environment-workspace/exists";
-    public final static String FETCH_PROJECT_FORM_TITLES = "/project/forms/titles";
-    public final static String FETCH_PROJECT_FORM_TITLE_ORDER = "/project/forms/title/order";
-    public final static String FETCH_PROJECT_FORM_FIELDS = "/project/forms/fields";
-    public final static String FETCH_PROJECT_FORM_LAYOUTS = "/project/forms/layouts";
-    public final static String FETCH_PROJECT_FORM_TEMPLATES = "/project/forms/templates";
-    public final static String FETCH_BEST_PROJECT_FORM_TEMPLATES = "/project/forms/templates/best";
-    public final static String EDIT_PROJECT_FORM_FIELDS = "/project/forms/fields";
+    public final static String PROJECT_FORMS = "/project/forms";
+    public final static String FETCH_PROJECT_FORM_TITLES = PROJECT_FORMS + "/titles";
+    public final static String FETCH_PROJECT_FORM_TITLE_ORDER = PROJECT_FORMS + "/title/order";
+    public final static String FETCH_PROJECT_FORM_FIELDS = PROJECT_FORMS + "/fields";
+    public final static String FETCH_PROJECT_FORM_LAYOUTS = PROJECT_FORMS + "/layouts";
+    public final static String FETCH_PROJECT_FORM_TEMPLATES = PROJECT_FORMS + "/templates";
+    public final static String FETCH_BEST_PROJECT_FORM_TEMPLATES = PROJECT_FORMS + "/templates/best";
+    public final static String EDIT_PROJECT_FORM_FIELDS = PROJECT_FORMS + "/fields";
     public final static String DELETE_FORM_FIELD_BLOCK = "/project/form/field/block";
     public final static String DELETE_FORM_FIELD_VALUE = "/project/form/field/value";
     public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
-    public final static String FETCH_SELECTED_PROJECT_FORMS = "/project/forms/selected";
-    public final static String ADD_SELECTED_PROJECT_FORM = "/project/forms/selected";
-    public final static String REMOVE_SELECTED_PROJECT_FORM = "/project/forms/selected";
+    public final static String FETCH_SELECTED_PROJECT_FORMS = PROJECT_FORMS + "/selected";
+    public final static String ADD_SELECTED_PROJECT_FORM = PROJECT_FORMS + "/selected";
+    public final static String REMOVE_SELECTED_PROJECT_FORM = PROJECT_FORMS + "/selected";
     public final static String FETCH_PROJECT_CREATORS = "/project/creators";
 
 
@@ -453,8 +454,10 @@ public class ProjectManagerConst {
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
     public final static String REQUEST_CACHE_LIMIT = "REQUEST_CACHE_LIMIT";
-    public final static String ASSETS_CACHE_DURATION_IN_HOURS = "ASSETS_CACHE_DURATION_IN_HOURS";
     public final static String ASSETS_DIRECTORY = "ASSETS_DIRECTORY";
+    public final static String CACHE_POLICY_PREFIX = "cache.policy";
+    public final static String CACHE_POLICY_SHORT_MAX_AGE_SECONDS = "CACHE_POLICY_SHORT_MAX_AGE_SECONDS";
+    public final static String CACHE_POLICY_LONG_MAX_AGE_SECONDS = "CACHE_POLICY_LONG_MAX_AGE_SECONDS";
 
     public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
     public final static String JWT_EMAIL_CLAIM = "JWT_EMAIL_CLAIM";
@@ -594,8 +597,9 @@ public class ProjectManagerConst {
     public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
     public final static String CODER_WORKSPACE_NAME_MAX_LENGTH_SV = HEAD_SV + CODER_WORKSPACE_NAME_MAX_LENGTH + ":32" + BOTTOM_SV;
     public final static String REQUEST_CACHE_LIMIT_SV = HEAD_SV + REQUEST_CACHE_LIMIT + ":#{2 * 1024 * 1024}" + BOTTOM_SV;
-    public final static String ASSETS_CACHE_DURATION_IN_HOURS_SV = HEAD_SV + ASSETS_CACHE_DURATION_IN_HOURS + ":1" + BOTTOM_SV;
     public final static String ASSETS_DIRECTORY_SV = HEAD_SV + ASSETS_DIRECTORY + BOTTOM_SV;
+    public final static String CACHE_POLICY_SHORT_MAX_AGE_SECONDS_SV = HEAD_SV + CACHE_POLICY_SHORT_MAX_AGE_SECONDS + ":300" + BOTTOM_SV;
+    public final static String CACHE_POLICY_LONG_MAX_AGE_SECONDS_SV = HEAD_SV + CACHE_POLICY_LONG_MAX_AGE_SECONDS + ":86400" + BOTTOM_SV;
 
     public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
 

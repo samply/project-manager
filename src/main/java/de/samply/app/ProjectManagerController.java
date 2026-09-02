@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
 import de.samply.bridgehead.BridgeheadsConfiguration;
+import de.samply.cache.CacheConfiguration;
+import de.samply.cache.CacheCategory;
+import de.samply.cache.CacheResource;
 import de.samply.coder.CoderService;
 import de.samply.datashield.DataShieldTokenManagerService;
 import de.samply.db.model.Project;
@@ -109,6 +112,7 @@ public class ProjectManagerController {
     private final DtoFormService dtoFormService;
     private final FormTemplateService formTemplateService;
     private final FrontendConfiguration frontendConfiguration;
+    private final CacheConfiguration cacheConfiguration;
     private final FeasibilityService feasibilityService;
     private final FeasibilityMapper feasibilityMapper;
 
@@ -136,6 +140,7 @@ public class ProjectManagerController {
                                     DtoFormService dtoFormService,
                                     FormTemplateService formTemplateService,
                                     FrontendConfiguration frontendConfiguration,
+                                    CacheConfiguration cacheConfiguration,
                                     FeasibilityService feasibilityService,
                                     FeasibilityMapper feasibilityMapper) {
         this.projectEventService = projectEventService;
@@ -162,20 +167,24 @@ public class ProjectManagerController {
         this.dtoFormService = dtoFormService;
         this.formTemplateService = formTemplateService;
         this.frontendConfiguration = frontendConfiguration;
+        this.cacheConfiguration = cacheConfiguration;
         this.feasibilityService = feasibilityService;
         this.feasibilityMapper = feasibilityMapper;
     }
 
+    @CacheCategory(CacheResource.PUBLIC_INFORMATION)
     @GetMapping(value = ProjectManagerConst.INFO)
     public ResponseEntity info() {
         return new ResponseEntity<>(projectVersion, HttpStatus.OK);
     }
 
+    @CacheCategory(CacheResource.AUTHENTICATED_GET)
     @GetMapping(value = ProjectManagerConst.TEST)
     public ResponseEntity test() {
         return new ResponseEntity<>(ProjectManagerConst.THIS_IS_A_TEST, HttpStatus.OK);
     }
 
+    @CacheCategory(CacheResource.ACTION_AVAILABILITY)
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchActions(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project,
@@ -188,6 +197,7 @@ public class ProjectManagerController {
                         Optional.ofNullable(bridgehead), Optional.ofNullable(language), true));
     }
 
+    @CacheCategory(CacheResource.ACTION_AVAILABILITY)
     @GetMapping(value = ProjectManagerConst.ALL_ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchAllActions(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project,
@@ -201,13 +211,17 @@ public class ProjectManagerController {
     }
 
     @FrontendAction(action = ProjectManagerConst.FETCH_FRONTEND_VARIABLES_ACTION)
+    @CacheCategory(CacheResource.FRONTEND_VARIABLES)
     @GetMapping(value = ProjectManagerConst.FETCH_FRONTEND_VARIABLES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchFrontendVariables() {
-        return convertToResponseEntity(this.frontendConfiguration::getVariables);
+        return convertToResponseEntity(() -> ResponseEntity.ok()
+                .cacheControl(cacheConfiguration.cacheControl(CacheResource.FRONTEND_VARIABLES))
+                .body(this.frontendConfiguration.getVariables()));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECTS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DASHBOARD)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjects(
             @RequestParameter(name = ProjectManagerConst.PROJECT_STATE, required = false) ProjectState projectState,
@@ -229,6 +243,7 @@ public class ProjectManagerController {
             ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DETAIL)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProject(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -241,6 +256,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_STATES_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_STATES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjectStates(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project
@@ -253,6 +269,7 @@ public class ProjectManagerController {
             OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_PROJECT_STATES_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_PROJECT_STATES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchVisibleProjectStates() {
         return convertToResponseEntity(projectService::fetchVisibleProjectStates);
@@ -261,6 +278,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_BRIDGEHEADS_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_VISIBLE_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchVisibleBridgeheads(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project
@@ -271,6 +289,7 @@ public class ProjectManagerController {
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_BRIDGEHEAD_EXECUTIONS)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEADS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjectsBridgeheads(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -286,6 +305,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE,
             module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_FEASIBILITY_ACTION)
+    @CacheCategory(CacheResource.FEASIBILITY_STATISTICS)
     @GetMapping(value = ProjectManagerConst.FETCH_FEASIBILITY,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchFeasibility(
@@ -309,6 +329,7 @@ public class ProjectManagerController {
     //TODO: Send email to PM-ADMIN, that there was a problem with the operation
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_DEVELOPER_USER_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.SET_DEVELOPER_USER)
     public ResponseEntity setUserAsDeveloper(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -329,6 +350,7 @@ public class ProjectManagerController {
             EmailRecipientType.BRIDGEHEAD_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PILOT_USER_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.SET_PILOT_USER)
     public ResponseEntity setUserAsPilot(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -346,6 +368,7 @@ public class ProjectManagerController {
             EmailRecipientType.EMAIL_ANNOTATION})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_FINAL_USER_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.SET_FINAL_USER)
     public ResponseEntity setUserAsFinal(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -358,6 +381,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.CREATE_QUERY)
     public ResponseEntity createProjectQuery(
             @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
@@ -379,6 +403,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.CREATE_QUERY_AND_DESIGN_PROJECT)
     public ResponseEntity createQueryAndDesignProject(
             @RequestVariable(name = ProjectManagerConst.QUERY, notEmpty = true) String query,
@@ -428,6 +453,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.EDIT_PROJECT)
     public ResponseEntity editProject(
             @RequestVariable(name = ProjectManagerConst.QUERY, required = false) String query,
@@ -465,6 +491,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_PROJECT_OUTPUT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @DeleteMapping(value = ProjectManagerConst.REMOVE_PROJECT_OUTPUT)
     public ResponseEntity removeOutput(
             @RequestVariable(name = ProjectManagerConst.PROJECT_TYPE) ProjectType projectType,
@@ -479,6 +506,7 @@ public class ProjectManagerController {
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TITLES_ACTION)
+    @CacheCategory(CacheResource.FORM_METADATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TITLES)
     public ResponseEntity fetchProjectFormTitles(
             // ProjectCode code needed for role constraints
@@ -496,6 +524,7 @@ public class ProjectManagerController {
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TITLE_ORDER_ACTION)
+    @CacheCategory(CacheResource.FORM_METADATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TITLE_ORDER)
     public ResponseEntity fetchProjectFormTitleCanonicalOrder(
             // ProjectCode code needed for role constraints
@@ -511,6 +540,7 @@ public class ProjectManagerController {
             ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS_ACTION)
+    @CacheCategory(CacheResource.FORM_METADATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS)
     public ResponseEntity fetchProjectFormFields(
             // ProjectCode code needed for role constraints
@@ -528,6 +558,7 @@ public class ProjectManagerController {
             ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_LAYOUTS_ACTION)
+    @CacheCategory(CacheResource.FORM_METADATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_LAYOUTS)
     public ResponseEntity fetchProjectFormLayouts(
             // ProjectCode code needed for role constraints
@@ -545,6 +576,7 @@ public class ProjectManagerController {
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_SELECTED_PROJECT_FORMS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DETAIL)
     @GetMapping(value = ProjectManagerConst.FETCH_SELECTED_PROJECT_FORMS)
     public ResponseEntity fetchSelectedProjectForms(
             // ProjectCode code needed for role constraints
@@ -560,6 +592,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_SELECTED_PROJECT_FORM)
     public ResponseEntity addSelectedProjectForm(
             // ProjectCode code needed for role constraints
@@ -573,6 +606,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @DeleteMapping(value = ProjectManagerConst.REMOVE_SELECTED_PROJECT_FORM)
     public ResponseEntity removeSelectedProjectForm(
             // ProjectCode code needed for role constraints
@@ -587,6 +621,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.EDIT_PROJECT_FORM_FIELDS)
     public ResponseEntity editProjectFormValues(
             // ProjectCode code needed for role constraints
@@ -602,6 +637,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DELETE_FORM_FIELD_BLOCK_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @DeleteMapping(value = ProjectManagerConst.DELETE_FORM_FIELD_BLOCK)
     public ResponseEntity removeProjectFormFieldBlock(
             // ProjectCode code needed for role constraints
@@ -624,6 +660,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DELETE_FORM_FIELD_VALUE_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @DeleteMapping(value = ProjectManagerConst.DELETE_FORM_FIELD_VALUE)
     public ResponseEntity removeProjectFormFieldValue(
             // ProjectCode code needed for role constraints
@@ -640,6 +677,7 @@ public class ProjectManagerController {
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FORM_AS_PDF_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_FORM_AS_PDF)
     public ResponseEntity downloadFormAsPdf(
             // ProjectCode code and bridgehead needed for role constraints
@@ -664,6 +702,7 @@ public class ProjectManagerController {
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TEMPLATES_ACTION)
+    @CacheCategory(CacheResource.FORM_METADATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_FORM_TEMPLATES)
     public ResponseEntity fetchProjectFormTemplates(
             // ProjectCode code and bridgehead needed for role constraints
@@ -681,6 +720,7 @@ public class ProjectManagerController {
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_BEST_PROJECT_FORM_TEMPLATES_ACTION)
+    @CacheCategory(CacheResource.FORM_METADATA)
     @GetMapping(value = ProjectManagerConst.FETCH_BEST_PROJECT_FORM_TEMPLATES)
     public ResponseEntity fetchBestProjectFormTemplates(
             // ProjectCode code and bridgehead needed for role constraints
@@ -696,6 +736,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_EXPORTER_TEMPLATES)
     public ResponseEntity fetchExporterTemplates(
             // ProjectCode code needed for role constraints
@@ -708,6 +749,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_QUERY_FORMATS_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_QUERY_FORMATS)
     public ResponseEntity fetchQueryFormats(
             // ProjectCode code needed for role constraints
@@ -720,6 +762,7 @@ public class ProjectManagerController {
             OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.NAVIGATION_BAR_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.IS_PROJECT_MANAGER_ADMIN_ACTION)
+    @CacheCategory(CacheResource.USER_ROLES)
     @GetMapping(value = ProjectManagerConst.IS_PROJECT_MANAGER_ADMIN)
     public ResponseEntity isProjectManagerAdmin(
     ) {
@@ -730,6 +773,7 @@ public class ProjectManagerController {
             ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ROLES_ACTION)
+    @CacheCategory(CacheResource.USER_ROLES)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_ROLES)
     public ResponseEntity fetchProjectRoles(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -743,6 +787,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_OUTPUT_FORMATS_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_OUTPUT_FORMATS)
     public ResponseEntity fetchOutputFormats(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -754,6 +799,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL_ACTION)
+    @CacheCategory(CacheResource.PROJECT_BRIDGEHEAD_EXECUTIONS)
     @GetMapping(value = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL)
     public ResponseEntity fetchResearchEnvironmentUrl(
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -766,6 +812,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION)
+    @CacheCategory(CacheResource.PROJECT_BRIDGEHEAD_EXECUTIONS)
     @GetMapping(value = ProjectManagerConst.EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE)
     public ResponseEntity existsUserResearchEnvironmentWorkspace(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -779,6 +826,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CONFIGURATIONS)
     public ResponseEntity fetchProjectConfigurations(
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -790,6 +838,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE)
     public ResponseEntity fetchProjectConfigurationSelectionType(
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -802,6 +851,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DETAIL)
     @GetMapping(value = ProjectManagerConst.FETCH_CURRENT_PROJECT_CONFIGURATION)
     public ResponseEntity fetchCurrentProjectConfiguration(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -814,6 +864,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_PROJECT_CONFIGURATION_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.SET_PROJECT_CONFIGURATION)
     public ResponseEntity setProjectConfiguration(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -827,6 +878,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_TYPES_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_TYPES)
     public ResponseEntity fetchProjectTypes(
             // ProjectCode code needed for role constraints
@@ -836,6 +888,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.DESIGN_PROJECT)
     public ResponseEntity designProject(
             @RequestVariable(name = ProjectManagerConst.BRIDGEHEADS) String[] bridgeheads,
@@ -850,6 +903,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.CREATE_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.CREATE_PROJECT)
     public ResponseEntity createProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -861,6 +915,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DRAFT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.DELETE_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @DeleteMapping(value = ProjectManagerConst.DELETE_PROJECT)
     public ResponseEntity deleteProject(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -873,6 +928,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.START_DEVELOP_STAGE)
     public ResponseEntity startDevelopStage(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -885,6 +941,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_PILOT_STAGE_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.START_PILOT_STAGE)
     public ResponseEntity startPilotStage(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -898,6 +955,7 @@ public class ProjectManagerController {
             EmailRecipientType.BRIDGEHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_FINAL_STAGE_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.START_FINAL_STAGE)
     public ResponseEntity startFinalStage(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -913,6 +971,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_BRIDGEHEAD_ADMINS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT)
     public ResponseEntity acceptProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -927,6 +986,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REJECT_PROJECT)
     public ResponseEntity rejectProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -939,6 +999,7 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
     @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_USER_TO_MAILING_BLACK_LIST)
     public ResponseEntity addUserToMailingBlackList(
             @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email
@@ -949,6 +1010,7 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
     @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @DeleteMapping(value = ProjectManagerConst.REMOVE_USER_FROM_MAILING_BLACK_LIST)
     public ResponseEntity removeUserFromMailingBlackList(
             @Email @RequestParameter(name = ProjectManagerConst.EMAIL) String email
@@ -959,6 +1021,7 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
     @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_MAILING_BLACK_LIST_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_MAILING_BLACK_LIST)
     public ResponseEntity fetchMailingBlackList() {
         return convertToResponseEntity(dtoUserService::fetchMailingBlackList);
@@ -967,6 +1030,7 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
     @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST)
     public ResponseEntity fetchUsersForAutocompleteInMailingBlackList(
             @RequestParameter(name = ProjectManagerConst.EMAIL, required = false) String partialEmail
@@ -982,6 +1046,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_FINALS, EmailRecipientType.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity addProjectBridgeheadResultsUrl(
             @SuppressWarnings("unused") @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -998,6 +1063,7 @@ public class ProjectManagerController {
             ProjectType.EXPORT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_RESULTS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_RESULTS)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_RESULTS)
     public ResponseEntity fetchProjectResults(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1012,6 +1078,7 @@ public class ProjectManagerController {
             ProjectType.EXPORT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_RESULTS)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS)
     public ResponseEntity fetchProjectBridgeheadResults(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1026,6 +1093,7 @@ public class ProjectManagerController {
             ProjectType.EXPORT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD_ACTION)
+    @CacheCategory(CacheResource.PROJECT_RESULTS)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD)
     public ResponseEntity fetchProjectBridgeheadResultsForOwnBridgehead(
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1044,6 +1112,7 @@ public class ProjectManagerController {
             EmailRecipientType.CREATOR})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_RESULTS_URL)
     public ResponseEntity addProjectResultsUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1061,6 +1130,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL)
     public ResponseEntity acceptProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1077,6 +1147,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL)
     public ResponseEntity rejectProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1093,6 +1164,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL)
     public ResponseEntity requestChangesInProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1110,6 +1182,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity acceptProjectBridgeheadResultsUrlByCreator(
             @SuppressWarnings("unused") @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1128,6 +1201,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity rejectProjectBridgeheadResultsUrlByCreator(
             @SuppressWarnings("unused") @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1146,6 +1220,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL)
     public ResponseEntity requestChangesProjectBridgeheadResultsUrlByCreator(
             @SuppressWarnings("unused") @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1159,6 +1234,7 @@ public class ProjectManagerController {
             OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DETAIL)
     @GetMapping(value = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT)
     public ResponseEntity fetchEmailMessageAndSubject(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project,
@@ -1179,6 +1255,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ACCEPT_BRIDGEHEAD_PROJECT)
     public ResponseEntity acceptBridgeheadProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1195,6 +1272,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REJECT_BRIDGEHEAD_PROJECT)
     public ResponseEntity rejectBridgeheadProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1214,6 +1292,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_PILOTS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_SCRIPT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ACCEPT_SCRIPT)
     public ResponseEntity acceptScript(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1230,6 +1309,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_PILOTS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_SCRIPT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REJECT_SCRIPT)
     public ResponseEntity rejectScript(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1248,6 +1328,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_PILOTS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_SCRIPT_CHANGES_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REQUEST_SCRIPT_CHANGES)
     public ResponseEntity requestChangesInScript(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1266,6 +1347,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS)
     public ResponseEntity acceptProjectResults(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1282,6 +1364,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_RESULTS_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS)
     public ResponseEntity rejectProjectResults(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1298,6 +1381,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_MANAGER_ADMIN, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT)
     public ResponseEntity requestChangesInProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1316,6 +1400,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_ANALYSIS)
     public ResponseEntity acceptProjectAnalysis(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1332,6 +1417,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REJECT_PROJECT_ANALYSIS_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_ANALYSIS)
     public ResponseEntity rejectProjectAnalysis(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1350,6 +1436,7 @@ public class ProjectManagerController {
             EmailRecipientType.ALL_PILOTS, EmailRecipientType.ALL_FINALS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_ANALYSIS)
     public ResponseEntity requestChangesInProjectAnalysis(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1365,6 +1452,7 @@ public class ProjectManagerController {
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ARCHIVE_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.ARCHIVE_PROJECT)
     public ResponseEntity archiveProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -1378,6 +1466,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.FINISH_PROJECT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.FINISH_PROJECT)
     public ResponseEntity finishProject(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -1389,6 +1478,7 @@ public class ProjectManagerController {
             ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_OTHER_DOCUMENT)
     public ResponseEntity uploadOtherDocument(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1409,6 +1499,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_PUBLICATION_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_PUBLICATION)
     public ResponseEntity uploadPublication(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1426,6 +1517,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_FINAL_REPORT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_FINAL_REPORT)
     public ResponseEntity uploadFinalReport(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1442,6 +1534,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_SCRIPT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_SCRIPT)
     public ResponseEntity uploadScript(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1463,6 +1556,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_VOTUM_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM)
     public ResponseEntity uploadVotum(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1482,6 +1576,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_DESCRIPTION)
     public ResponseEntity uploadDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1498,6 +1593,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_FORM_FIELD_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_FORM_FIELD)
     public ResponseEntity uploadFormField(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1514,6 +1610,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_FORM_FIELD_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_FORM_FIELD_URL)
     public ResponseEntity addFormFieldUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1535,6 +1632,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity uploadVotumForAllBridgeheads(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1553,6 +1651,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_PUBLICATION_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_PUBLICATION_URL)
     public ResponseEntity addPublicationUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1573,6 +1672,7 @@ public class ProjectManagerController {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_FINAL_REPORT_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_FINAL_REPORT_URL)
     public ResponseEntity addFinalReportUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1590,6 +1690,7 @@ public class ProjectManagerController {
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.ADD_OTHER_DOCUMENT_URL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.ADD_OTHER_DOCUMENT_URL)
     public ResponseEntity addOtherDocumentUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1609,6 +1710,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_SCRIPT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_SCRIPT)
     public ResponseEntity downloadScript(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1625,6 +1727,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_SCRIPT_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_SCRIPT_DESCRIPTION)
     public ResponseEntity fetchScriptDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1643,6 +1746,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_SCRIPT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_SCRIPT)
     public ResponseEntity existsScript(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1659,6 +1763,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM)
     public ResponseEntity downloadVotum(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1672,6 +1777,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_DESCRIPTION)
     public ResponseEntity downloadDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1685,6 +1791,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FORM_FIELD_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_FORM_FIELD)
     public ResponseEntity downloadFormField(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1700,6 +1807,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity downloadVotumForAllBridgeheads(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1715,6 +1823,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_VOTUM_DESCRIPTION)
     public ResponseEntity fetchVotumDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1732,6 +1841,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_DESCRIPTION)
     public ResponseEntity fetchProjectDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1747,6 +1857,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_FORM_FIELD_FILE_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_FORM_FIELD_FILE)
     public ResponseEntity fetchFormFieldFile(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1764,6 +1875,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION)
     public ResponseEntity fetchVotumDescriptionForAllBridgeheads(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1782,6 +1894,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_VOTUM_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_VOTUM)
     public ResponseEntity existsVotum(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1796,6 +1909,7 @@ public class ProjectManagerController {
             ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_PUBLICATION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_PUBLICATION)
     public ResponseEntity existsPublication(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1810,6 +1924,7 @@ public class ProjectManagerController {
             ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_FINAL_REPORT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_FINAL_REPORT)
     public ResponseEntity existsFinalReport(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1823,6 +1938,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_DESCRIPTION)
     public ResponseEntity existsDescription(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1836,6 +1952,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_FORM_FIELD_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_FORM_FIELD)
     public ResponseEntity existsFormField(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1852,6 +1969,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS)
     public ResponseEntity existsVotumForAllBridgeheads(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1863,6 +1981,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_PUBLICATION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_PUBLICATION)
     public ResponseEntity downloadPublication(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1875,6 +1994,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FINAL_REPORT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_FINAL_REPORT)
     public ResponseEntity downloadFinalReport(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1886,6 +2006,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PUBLICATIONS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_PUBLICATIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchPublications(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -1896,6 +2017,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_FINAL_REPORTS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_FINAL_REPORTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchFinalReports(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
@@ -1907,6 +2029,7 @@ public class ProjectManagerController {
             ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT)
     public ResponseEntity downloadOtherProjectDocument(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1920,6 +2043,7 @@ public class ProjectManagerController {
             ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_OTHER_DOCUMENTS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.FETCH_OTHER_DOCUMENTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchOtherDocuments(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -1996,6 +2120,7 @@ public class ProjectManagerController {
             queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.SAVE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity saveQueryInBridgehead(
             @SuppressWarnings("unused") @NotEmpty @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2022,6 +2147,7 @@ public class ProjectManagerController {
             queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD)
     public ResponseEntity saveAndExecuteQueryInBridgehead(
             @SuppressWarnings("unused") @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2043,6 +2169,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PostMapping(value = ProjectManagerConst.SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT)
     public ResponseEntity sendExportFilesToResearchEnvironment(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2059,6 +2186,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.EXPORT_MODULE)
     @FrontendAction(action = ProjectManagerConst.ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_BRIDGEHEAD_EXECUTIONS)
     @GetMapping(value = ProjectManagerConst.ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT)
     public ResponseEntity isExportFileTransferredToResearchEnvironment(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2074,6 +2202,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_AUTHENTICATION_SCRIPT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.DOWNLOAD_AUTHENTICATION_SCRIPT)
     public ResponseEntity fetchTokenScript(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2092,6 +2221,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_DATASHIELD_STATUS_ACTION)
+    @CacheCategory(CacheResource.PROJECT_BRIDGEHEAD_EXECUTIONS)
     @GetMapping(value = ProjectManagerConst.FETCH_DATASHIELD_STATUS)
     public ResponseEntity fetchDatashieldStatus(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2106,6 +2236,7 @@ public class ProjectManagerController {
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.TOKEN_MANAGER_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_AUTHENTICATION_SCRIPT_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
     @GetMapping(value = ProjectManagerConst.EXISTS_AUTHENTICATION_SCRIPT)
     public ResponseEntity existsTokenScript(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2119,6 +2250,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
+    @CacheCategory(CacheResource.NOTIFICATIONS)
     @GetMapping(value = ProjectManagerConst.FETCH_NOTIFICATIONS)
     public ResponseEntity fetchNotifications(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project,
@@ -2135,6 +2267,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_NOTIFICATION_AS_READ_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
     @PutMapping(value = ProjectManagerConst.SET_NOTIFICATION_AS_READ)
     public ResponseEntity setNotificationAsRead(
             @RequestVariable(name = ProjectManagerConst.NOTIFICATION_ID) Long notificationId
@@ -2148,6 +2281,7 @@ public class ProjectManagerController {
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
     public ResponseEntity fetchAllRegisteredBridgeheads() {
         return convertToResponseEntity(() -> bridgeheadsConfiguration
@@ -2160,6 +2294,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_USERS_FOR_AUTOCOMPLETE)
     public ResponseEntity fetchUsersForAutocomplete(
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2175,6 +2310,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_USERS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_USERS)
     public ResponseEntity fetchProjectUsers(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2187,6 +2323,7 @@ public class ProjectManagerController {
             OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CREATORS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_CREATORS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchProjectCreators(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project
@@ -2199,6 +2336,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_CURRENT_USER_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_CURRENT_USER)
     public ResponseEntity fetchCurrentUser(
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
@@ -2212,6 +2350,7 @@ public class ProjectManagerController {
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXIST_INVITED_USERS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
     @GetMapping(value = ProjectManagerConst.EXIST_INVITED_USERS)
     public ResponseEntity existInvitedUsers(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
