@@ -12,16 +12,15 @@ import java.nio.file.Path;
 
 @Slf4j
 @Component
-public class ActionExplanationsFactory {
+public class ActionMessagesFactory {
 
     @Bean
-    public ActionExplanations actionExplanations(@Value(ProjectManagerConst.ACTION_EXPLANATION_CONFIG_PATH_SV) Path templatesPath) {
+    public ActionMessages actionMessages(@Value(ProjectManagerConst.ACTION_MESSAGES_CONFIG_PATH_SV) Path messagesPath) {
         try {
-            return new ObjectMapper().readValue(templatesPath.toFile(), ActionExplanations.class);
+            return new ObjectMapper().readValue(messagesPath.toFile(), ActionMessages.class);
         } catch (IOException e) {
-            log.error("Action explanations file not found {}", templatesPath);
+            log.error("Action messages file not found {}", messagesPath);
             throw new RuntimeException(e);
         }
     }
-
 }

@@ -13,7 +13,6 @@ import de.samply.user.roles.RolesExtractor;
 import de.samply.utils.AspectUtils;
 import de.samply.utils.LanguageUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,7 +28,7 @@ public class FrontendService {
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
 
     private final FrontendConfiguration frontendConfiguration;
-    private final ActionExplanations actionExplanations;
+    private final ActionMessages actionMessages;
     private final SessionUser sessionUser;
 
     private final String explorerUrlRedirectUriParameter;
@@ -39,7 +38,7 @@ public class FrontendService {
     public FrontendService(
             ConstraintsService constraintsService, ProjectBridgeheadUserService projectBridgeheadUserService,
             FrontendConfiguration frontendConfiguration,
-            ActionExplanations actionExplanations,
+            ActionMessages actionMessages,
             SessionUser sessionUser,
             @Value(ProjectManagerConst.EXPLORER_REDIRECT_URI_PARAMETER_SV) String explorerUrlRedirectUriParameter,
             @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
@@ -47,7 +46,7 @@ public class FrontendService {
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.frontendConfiguration = frontendConfiguration;
         this.explorerUrlRedirectUriParameter = explorerUrlRedirectUriParameter;
-        this.actionExplanations = actionExplanations;
+        this.actionMessages = actionMessages;
         this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
         this.sessionUser = sessionUser;
     }
@@ -114,15 +113,21 @@ public class FrontendService {
                            Optional<Project> project, Optional<ProjectBridgehead> projectBridgehead,
                            Optional<ProjectBridgeheadUser> projectBridgeheadUser, String language) {
         Map<String, Action> actionNameActionsMap = moduleActionsMap.computeIfAbsent(frontendSiteModule.module(), _ -> new HashMap<>());
-        Optional<Pair<String, Integer>> explanationPriority = actionExplanations.fetchExplanationAndPriority(frontendAction.action(), frontendSiteModule.module(),
+        Optional<ResolvedActionMessages> resolvedMessages = actionMessages.fetchMessages(frontendAction.action(), frontendSiteModule.module(),
                 language, project, projectBridgehead, projectBridgeheadUser, sessionUser);
-        String explanation = explanationPriority.map(Pair::getFirst).orElse(null);
-        Integer priority = explanationPriority.map(Pair::getSecond).orElse(null);
         String resolvedPath = path.orElseThrow(
                 () -> new IllegalStateException("Path must be present for action " + frontendAction.action())
         );
         actionNameActionsMap.put(frontendAction.action(),
-                new Action(rootPath + resolvedPath, fetchHttpMethod(method), fetchHttpParams(method), explanation, priority));
+                new Action(
+                        rootPath + resolvedPath,
+                        fetchHttpMethod(method),
+                        fetchHttpParams(method),
+                        resolvedMessages.map(ResolvedActionMessages::explanation).orElse(null),
+                        resolvedMessages.map(ResolvedActionMessages::successMessage).orElse(null),
+                        resolvedMessages.map(ResolvedActionMessages::errorMessage).orElse(null),
+                        resolvedMessages.map(ResolvedActionMessages::priority).orElse(null)
+                ));
     }
 
     private String fetchHttpMethod(Method method) {

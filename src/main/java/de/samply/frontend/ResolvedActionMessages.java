@@ -1,9 +1,7 @@
 package de.samply.frontend;
 
-public record Action(
-        String path,
-        String method,
-        String[] params,
+/** Localized messages and explanation priority for an active frontend action. */
+public record ResolvedActionMessages(
         String explanation,
         String successMessage,
         String errorMessage,

@@ -422,7 +422,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS = "PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS";
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG_PATH = "EMAIL_TEMPLATES_CONFIG_PATH";
-    public final static String ACTION_EXPLANATION_CONFIG_PATH = "ACTION_EXPLANATION_CONFIG_PATH";
+    public final static String ACTION_MESSAGES_CONFIG_PATH = "ACTION_MESSAGES_CONFIG_PATH";
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
     public final static String SAMPLES_TEMPLATES = "SAMPLES_TEMPLATES";
@@ -551,7 +551,7 @@ public class ProjectManagerConst {
     public final static String PROJECT_MANAGER_EMAIL_FROM_SV =
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_PATH_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG_PATH + BOTTOM_SV;
-    public final static String ACTION_EXPLANATION_CONFIG_PATH_SV = HEAD_SV + ACTION_EXPLANATION_CONFIG_PATH + BOTTOM_SV;
+    public final static String ACTION_MESSAGES_CONFIG_PATH_SV = HEAD_SV + ACTION_MESSAGES_CONFIG_PATH + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String SAMPLES_TEMPLATES_SV = HEAD_SV + SAMPLES_TEMPLATES + BOTTOM_SV;

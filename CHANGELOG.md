@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-09-02]
+## [1.0.0 - 2026-09-04]
 ### Added
 - First version of the project
 - Spring Application
@@ -290,6 +290,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form field placeholder
 - Fixed form field condition
 - Cache config
+- Localized success and error messages for frontend actions
+- German translations for action explanations and user-action feedback messages
+- Merged proposed action success and error messages into the action message configuration
 
 
 ### Changed
@@ -315,6 +318,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Short Description in Display Metadata
 - Bridgehead contact data
 - Multiple Fields
+- Generalize Action Explanations as Action Messages while accepting the legacy configuration names
 
 
 ### Removed

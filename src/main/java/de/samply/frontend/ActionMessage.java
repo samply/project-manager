@@ -19,31 +19,37 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ActionExplanation {
+public class ActionMessage {
 
     private String module;
     private String site;
 
-    @JsonProperty(value = "project-role")
+    @JsonProperty("project-role")
     private ProjectRole projectRole;
-    @JsonProperty(value = "organisation-role")
+    @JsonProperty("organisation-role")
     private OrganisationRole organisationRole;
-    @JsonProperty(value = "project-type")
+    @JsonProperty("project-type")
     private ProjectType projectType;
-    @JsonProperty(value = "project-state")
+    @JsonProperty("project-state")
     private ProjectState projectState;
-    @JsonProperty(value = "project-bridgehead-state")
+    @JsonProperty("project-bridgehead-state")
     private ProjectBridgeheadState projectBridgeheadState;
-    @JsonProperty(value = "query-state")
+    @JsonProperty("query-state")
     private QueryState queryState;
-    @JsonProperty(value = "user-project-state")
+    @JsonProperty("user-project-state")
     private UserProjectState userProjectState;
-    @JsonProperty(value = "priority")
     private Integer priority;
-    @JsonProperty(value = "messages", required = true)
-    @JsonDeserialize(using = LanguageMessageMapDeserializer.class)
-    private Map<String, String> languageMessageMap;
 
+    @JsonProperty("explanation")
+    @JsonDeserialize(using = LanguageMessageMapDeserializer.class)
+    private Map<String, String> explanationMessages;
+
+    @JsonProperty("success-message")
+    @JsonDeserialize(using = LanguageMessageMapDeserializer.class)
+    private Map<String, String> successMessages;
+
+    @JsonProperty("error-message")
+    @JsonDeserialize(using = LanguageMessageMapDeserializer.class)
+    private Map<String, String> errorMessages;
 }
