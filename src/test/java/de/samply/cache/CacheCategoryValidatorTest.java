@@ -17,23 +17,40 @@ class CacheCategoryValidatorTest {
 
     @Test
     void everyControllerEndpointHasCacheCategory() {
-        List<String> missingCategories = new ArrayList<>();
+        List<String> violations = new ArrayList<>();
 
         for (Method method : ProjectManagerController.class.getDeclaredMethods()) {
             if (AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class) != null
                     && AnnotatedElementUtils.findMergedAnnotation(method, CacheCategory.class) == null) {
-                missingCategories.add(method.getName());
+                violations.add(ProjectManagerController.class.getSimpleName() + "#" + method.getName()
+                        + ": missing @CacheCategory");
             }
         }
 
         CacheCategory assetsCategory = AnnotatedElementUtils.findMergedAnnotation(
                 ProjectManagerWebConfig.class, CacheCategory.class);
         if (assetsCategory == null || assetsCategory.value() != CacheResource.BACKEND_ASSETS) {
-            missingCategories.add(ProjectManagerWebConfig.class.getSimpleName() + " (/assets/**)");
+            violations.add(ProjectManagerWebConfig.class.getSimpleName()
+                    + " (/assets/**): expected @CacheCategory(CacheResource.BACKEND_ASSETS)");
         }
 
-        assertThat(missingCategories)
-                .as("Every endpoint and the /assets/** resource handler must have a cache category")
+        assertThat(violations)
+                .withFailMessage("""
+                        Cache category validation failed:
+                        %s
+
+                        Every endpoint and the /assets/** resource handler must declare a cache category. The category
+                        determines the Cache-Control policy returned to clients; omitting or choosing the wrong category
+                        can make sensitive or stale responses cacheable for an inappropriate amount of time.
+
+                        Add @CacheCategory with the most appropriate CacheResource to each listed handler. For example:
+
+                            @CacheCategory(CacheResource.PROJECT_DETAIL)
+                            @GetMapping("/projects/{projectCode}")
+                            public ResponseEntity<?> fetchProject(...) { ... }
+
+                        See CacheResource for the available categories. The /assets/** handler must use BACKEND_ASSETS.
+                        """, String.join(System.lineSeparator(), violations))
                 .isEmpty();
     }
 }
