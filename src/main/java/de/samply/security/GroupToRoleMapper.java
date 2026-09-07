@@ -8,9 +8,19 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Component
 public class GroupToRoleMapper {
+
+    /**
+     * Optional comma-separated identity-provider groups granting RESEARCHER access
+     * independently of any registered bridgehead. Empty by default; matching is
+     * exact and case-sensitive, ignoring whitespace and a leading Keycloak slash.
+     * This does not grant bridgehead membership or administrative privileges.
+     */
+    @Value(ProjectManagerConst.RESEARCHER_GROUPS_SV)
+    private List<String> researcherGroups = List.of();
 
     @Value(ProjectManagerConst.BK_USER_GROUP_PREFIX_SV)
     private String bridgeheadUserGroupPrefix;
@@ -61,7 +71,19 @@ public class GroupToRoleMapper {
                 groupToRoleMapCache.put(group, organisationRole);
             }
         }
-        return addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole);
+        organisationRole = addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole);
+        final String normalizedGroup = group;
+        boolean globalResearcher = researcherGroups.stream()
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(this::removeSlashFromStart)
+                .anyMatch(normalizedGroup::equals);
+        if (globalResearcher) {
+            sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(OrganisationRole.RESEARCHER);
+            // Preserve existing administrative or bridgehead roles if a group overlaps.
+            if (organisationRole == null) organisationRole = OrganisationRole.RESEARCHER;
+        }
+        return organisationRole;
     }
 
     private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole) {
