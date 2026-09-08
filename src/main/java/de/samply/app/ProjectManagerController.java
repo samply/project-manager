@@ -1492,6 +1492,23 @@ public class ProjectManagerController {
                 Optional.ofNullable(label)));
     }
 
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
+            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN},
+            organisationRoles = {OrganisationRole.RESEARCHER})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @ProjectConstraints(documentCreatorOrProjectManagerAdmin = true)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_DOCUMENT_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @DeleteMapping(value = ProjectManagerConst.REMOVE_DOCUMENT)
+    public ResponseEntity removeDocument(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT_ID) Long documentId
+    ) {
+        return convertToResponseEntity(() -> this.documentService.removeDocument(project, documentId));
+    }
+
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
             OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.FINISHED})
@@ -1802,7 +1819,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
@@ -1870,7 +1887,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
@@ -1963,7 +1980,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED,
             ProjectState.ARCHIVED, ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)

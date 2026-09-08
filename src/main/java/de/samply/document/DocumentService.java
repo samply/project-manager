@@ -8,6 +8,7 @@ import de.samply.db.repository.ProjectDocumentRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
 import de.samply.utils.directory.EnsuredDirectory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -154,6 +155,24 @@ public class DocumentService {
             projectDocument = projectDocumentRepository.findFirstByProjectAndOriginalFilename(project, filename);
         }
         return projectDocument;
+    }
+
+    public void removeDocument(Project project, Long documentId) throws DocumentServiceException {
+        ProjectDocument projectDocument = projectDocumentRepository.findById(documentId)
+                .orElseThrow(() -> new DocumentServiceException("Document not found: " + documentId));
+        if (!project.getId().equals(projectDocument.getProject().getId())) {
+            throw new DocumentServiceException("Document does not belong to the requested project");
+        }
+        deleteFile(projectDocument);
+        projectDocumentRepository.delete(projectDocument);
+    }
+
+    public boolean isDocumentCreatorOrProjectManagerAdmin(Project project, Long documentId) {
+        return projectDocumentRepository.findById(documentId)
+                .filter(document -> project.getId().equals(document.getProject().getId()))
+                .map(document -> sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)
+                        || sessionUser.getEmail().equals(document.getCreatorEmail()))
+                .orElse(false);
     }
 
     public List<ProjectDocument> fetchDocuments(Project project, Optional<ProjectBridgehead> bridgehead, DocumentType documentType) {

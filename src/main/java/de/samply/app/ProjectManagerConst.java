@@ -58,6 +58,7 @@ public class ProjectManagerConst {
     public final static String UPLOAD_FINAL_REPORT_ACTION = "UPLOAD_FINAL_REPORT";
     public final static String UPLOAD_SCRIPT_ACTION = "UPLOAD_SCRIPT";
     public final static String UPLOAD_OTHER_DOCUMENT_ACTION = "UPLOAD_OTHER_DOCUMENT";
+    public final static String REMOVE_DOCUMENT_ACTION = "REMOVE_DOCUMENT";
     public final static String ADD_PUBLICATION_URL_ACTION = "ADD_PUBLICATION_URL";
     public final static String ADD_FINAL_REPORT_URL_ACTION = "ADD_FINAL_REPORT_URL";
     public final static String ADD_OTHER_DOCUMENT_URL_ACTION = "ADD_OTHER_DOCUMENT_URL";
@@ -217,6 +218,7 @@ public class ProjectManagerConst {
     public final static String UPLOAD_FINAL_REPORT = "/report/upload";
     public final static String UPLOAD_SCRIPT = "/script/upload";
     public final static String UPLOAD_OTHER_DOCUMENT = "/other-document/upload";
+    public final static String REMOVE_DOCUMENT = "/document/remove";
     public final static String ADD_PUBLICATION_URL = "/publication/url";
     public final static String ADD_FINAL_REPORT_URL = "/report/url";
     public final static String ADD_OTHER_DOCUMENT_URL = "/document/url";
@@ -318,6 +320,7 @@ public class ProjectManagerConst {
     public final static String SORT_DESC = "sort-desc";
     public final static String DOCUMENT = "document";
     public final static String DOCUMENT_URL = "document-url";
+    public final static String DOCUMENT_ID = "document-id";
     public final static String FILENAME = "filename";
     public final static String QUERY_CODE = "query-code";
     public final static String LABEL = "label";

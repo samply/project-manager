@@ -294,6 +294,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - German translations for action explanations and user-action feedback messages
 - Merged proposed action success and error messages into the action message configuration
 - Researcher Groups
+- Project document constraint
 
 
 ### Changed

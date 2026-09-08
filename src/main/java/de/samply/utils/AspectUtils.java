@@ -31,6 +31,20 @@ public class AspectUtils {
         return fetchParameterAnnotation(joinPoint, Message.class, String.class);
     }
 
+    public static <T> Optional<T> fetchRequestParameter(JoinPoint joinPoint, String name, Class<T> targetClass) {
+        Annotation[][] parameterAnnotations = fetchMethod(joinPoint).getParameterAnnotations();
+        Object[] args = joinPoint.getArgs();
+        for (int i = 0; i < parameterAnnotations.length; i++) {
+            for (Annotation annotation : parameterAnnotations[i]) {
+                if (annotation instanceof RequestParameter requestParameter && requestParameter.name().equals(name)
+                        && targetClass.isInstance(args[i])) {
+                    return Optional.of(targetClass.cast(args[i]));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     public static <T> Optional<T> fetchParameterAnnotation(
             JoinPoint joinPoint,
             Class<? extends Annotation> annotationClass,

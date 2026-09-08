@@ -156,6 +156,7 @@ public class DtoFactory {
 
     public ProjectDocument convert(@NotNull de.samply.db.model.ProjectDocument projectDocument) {
         return new ProjectDocument(
+                projectDocument.getId(),
                 projectDocument.getProject().getCode(),
                 projectDocument.getOriginalFilename(),
                 projectDocument.getUrl(),
