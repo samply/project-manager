@@ -76,4 +76,24 @@ public record FormField(
                 .orElse(value);
     }
 
+    // Description of the currently selected allowed value (an ENUM field's
+    // own value-level description, distinct from labelDescription which
+    // describes the field itself). Used in the thymeleaf templates for the
+    // forms, to surface this alongside fetchDisplayValue(). Null when there
+    // is no selected value, or no description configured for it.
+    @JsonIgnore
+    @SuppressWarnings("unused")
+    public String fetchDisplayDescription() {
+        return Optional
+                .ofNullable(allowedValues)
+                .stream()
+                .flatMap(Arrays::stream)
+                .filter(v -> Objects.equals(v.label(), value))
+                .findFirst()
+                // Optional.map (unlike Stream.findFirst()) tolerates a mapper
+                // returning null, which description() often does.
+                .map(FormFieldValue::description)
+                .orElse(null);
+    }
+
 }

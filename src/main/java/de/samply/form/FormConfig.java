@@ -169,4 +169,20 @@ public class FormConfig {
                 .toList();
     }
 
+    /**
+     * Finds a configured FIXED field by its native label (e.g. "ETHICS_VOTE_FOR_ALL_SITES"),
+     * regardless of which form title it's declared under - FIXED labels are
+     * native/global keys, not scoped to one title. Used so a PDF template's
+     * project_fields entry can fall back to a FIXED field's own configured
+     * display_name/description when the project_fields entry doesn't set its
+     * own (see FormTemplateService).
+     */
+    public Optional<FormFieldConfig> fetchFixedFieldConfig(String label) {
+        return formTitleLabelFieldMap.values().stream()
+                .flatMap(labelFieldMap -> labelFieldMap.values().stream())
+                .filter(config -> config.getFieldType() == FormFieldType.FIXED)
+                .filter(config -> Objects.equals(config.getLabel(), label))
+                .findFirst();
+    }
+
 }

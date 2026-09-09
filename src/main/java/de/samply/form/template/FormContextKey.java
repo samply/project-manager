@@ -6,6 +6,8 @@ import lombok.Getter;
 public enum FormContextKey {
 
     FIELDS("fields"),
+    LAYOUTS("layouts"),
+    LAYOUT_RESOLVER("layoutFieldRows"),
     DATA_TYPE_CLASS("DataType"),
     CURRENT_DATE("currentDate");
 

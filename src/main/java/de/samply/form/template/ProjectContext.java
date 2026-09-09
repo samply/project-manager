@@ -46,9 +46,13 @@ public class ProjectContext {
 
             String replacement = key != null ? context.get(key) : null;
 
+            // Matcher.quoteReplacement is required in both branches: appendReplacement
+            // treats "$" and "\" in its replacement argument specially (backreferences/
+            // escapes), and the fallback text here is "${...}" itself, which otherwise
+            // throws (e.g. "named capturing group is missing trailing '}'") instead of
+            // simply leaving the placeholder in place when its key has no value.
             matcher.appendReplacement(result,
-                    replacement != null ? Matcher.quoteReplacement(replacement)
-                            : matcher.group(0)); // keep placeholder if missing
+                    Matcher.quoteReplacement(replacement != null ? replacement : matcher.group(0)));
         }
 
         matcher.appendTail(result);
