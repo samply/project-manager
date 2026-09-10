@@ -2,6 +2,8 @@ package de.samply.form.template;
 
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
+import de.samply.display.DisplayFormatKey;
+import de.samply.display.DisplayFormatService;
 import de.samply.form.DataType;
 import de.samply.form.DtoFormService;
 import de.samply.form.FormConfig;
@@ -18,7 +20,6 @@ import de.samply.frontend.dto.FormField;
 import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
 import de.samply.pdf.PdfGeneratorException;
-import de.samply.utils.DateUtils;
 import de.samply.utils.FileExtension;
 import de.samply.utils.FormFieldUtils;
 import de.samply.utils.LanguageUtils;
@@ -27,6 +28,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,7 +42,7 @@ public class FormTemplateService {
     private final FormTemplateConfig formTemplateConfig;
     private final String defaultPdfFilename;
     private final DtoFactory dtoFactory;
-    private final String datePattern;
+    private final DisplayFormatService displayFormatService;
     private final ProjectContextFactory projectContextFactory;
     private final ProjectConfigurations frontendProjectConfigurations;
     private final FormConfig formConfig;
@@ -51,7 +54,7 @@ public class FormTemplateService {
                                @Value(ProjectManagerConst.FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV) String defaultPdfFilename,
                                FormTemplateConfig formTemplateConfig,
                                DtoFactory dtoFactory,
-                               @Value(ProjectManagerConst.FORM_TEMPLATE_DATE_PATTERN_SV) String datePattern,
+                               DisplayFormatService displayFormatService,
                                ProjectContextFactory projectContextFactory,
                                ProjectConfigurations frontendProjectConfigurations,
                                FormConfig formConfig) {
@@ -61,7 +64,7 @@ public class FormTemplateService {
         this.formTemplateConfig = formTemplateConfig;
         this.defaultPdfFilename = defaultPdfFilename;
         this.dtoFactory = dtoFactory;
-        this.datePattern = datePattern;
+        this.displayFormatService = displayFormatService;
         this.projectContextFactory = projectContextFactory;
         this.frontendProjectConfigurations = frontendProjectConfigurations;
         this.formConfig = formConfig;
@@ -109,7 +112,12 @@ public class FormTemplateService {
         // Add form variables
         result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
         result.put(FormContextKey.DATA_TYPE_CLASS.getText(), DataType.class);
-        result.put(FormContextKey.CURRENT_DATE.getText(), DateUtils.fetchCurrentDate(datePattern, language));
+        result.put(FormContextKey.CURRENT_DATE.getText(), displayFormatService.format(
+                DisplayFormatKey.LONG_DATE_FORMAT,
+                Instant.now(),
+                language,
+                ZoneId.of(ProjectManagerConst.FORM_FILENAME_TIMESTAMP_ZONE)
+        ));
 
         return result;
     }

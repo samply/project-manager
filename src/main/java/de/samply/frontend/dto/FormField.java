@@ -3,6 +3,7 @@ package de.samply.frontend.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.form.DataType;
+import de.samply.display.DisplayFormatKey;
 import de.samply.form.FormFieldType;
 import lombok.Builder;
 
@@ -37,6 +38,7 @@ public record FormField(
         FormFieldGroup[] groups,
         String[] properties,
         DataType type,
+        DisplayFormatKey displayFormat,
         FormFieldValue[] allowedValues,
         Boolean mandatory,
         // Whether this field can hold several values of its own data type,
@@ -59,7 +61,8 @@ public record FormField(
         Boolean multipleBlock,
         Integer minBlockInstances,
         Integer order,
-        String value
+        String value,
+        @JsonIgnore String displayValue
 ) {
 
     // It can be used in the thymeleaf templates for the forms.
@@ -73,7 +76,7 @@ public record FormField(
                 .filter(v -> Objects.equals(v.label(), value))
                 .map(FormFieldValue::displayName)
                 .findFirst()
-                .orElse(value);
+                .orElse(displayValue != null ? displayValue : value);
     }
 
     // Description of the currently selected allowed value (an ENUM field's

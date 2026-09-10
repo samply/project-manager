@@ -1,6 +1,9 @@
 package de.samply.frontend.dto;
 
+import de.samply.form.FormValueDisplayService;
 import de.samply.bridgehead.BridgeheadsConfiguration;
+import de.samply.display.DisplayFormatKey;
+import de.samply.display.DisplayFormatService;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
 import de.samply.form.FormFieldType;
@@ -19,6 +22,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DtoFactoryDisplayMetadataTest {
 
@@ -94,7 +98,8 @@ class DtoFactoryDisplayMetadataTest {
                 formConfig,
                 new FormTemplateConfig(new ExistingDirectory(templateMetadataDirectory), "en"),
                 "en",
-                mock(ProjectBridgeheadUserService.class));
+                mock(ProjectBridgeheadUserService.class),
+                mock(FormValueDisplayService.class));
         FormFieldConfig fieldConfig = formConfig.fetchFormFieldConfig("patient", "status");
 
         Form draftForm = factory.convertForm("patient", Optional.of("en"), ProjectState.DRAFT);
@@ -181,7 +186,8 @@ class DtoFactoryDisplayMetadataTest {
                 formConfig,
                 new FormTemplateConfig(new ExistingDirectory(templateMetadataDirectory), "en"),
                 "en",
-                mock(ProjectBridgeheadUserService.class));
+                mock(ProjectBridgeheadUserService.class),
+                mock(FormValueDisplayService.class));
 
         FormField field = factory.convert(
                 "project",
@@ -206,5 +212,74 @@ class DtoFactoryDisplayMetadataTest {
                 new com.fasterxml.jackson.databind.ObjectMapper();
         assertThat(objectMapper.writeValueAsString(field)).contains("\"active\":false");
         assertThat(objectMapper.writeValueAsString(activeField)).doesNotContain("\"active\":");
+    }
+
+    @Test
+    void appliesDefaultDisplayFormatToFixedFieldsWithoutAnExplicitOverride(@TempDir Path temporaryDirectory)
+            throws Exception {
+        Path configDirectory = Files.createDirectory(temporaryDirectory.resolve("form-fields"));
+        Path templateMetadataDirectory = Files.createDirectory(temporaryDirectory.resolve("template-metadata"));
+        Files.writeString(configDirectory.resolve("project.json"), """
+                {
+                  "title": "project",
+                  "fields": [
+                    {
+                      "label": "PROJECT_TITLE",
+                      "field_type": "FIXED"
+                    },
+                    {
+                      "label": "ETHICS_VOTE_DATE",
+                      "field_type": "FIXED",
+                      "data_type": "DATE"
+                    },
+                    {
+                      "label": "PROJECT_CREATION_DATE",
+                      "field_type": "FIXED",
+                      "data_type": "TIMESTAMP"
+                    },
+                    {
+                      "label": "PROJECT_APPROVAL_DATE",
+                      "field_type": "FIXED",
+                      "data_type": "DATE",
+                      "display_format": "LONG_DATE_FORMAT"
+                    }
+                  ]
+                }
+                """);
+
+        FormConfig formConfig = new FormConfig(new ExistingDirectory(configDirectory));
+        DisplayFormatService displayFormatService = mock(DisplayFormatService.class);
+        when(displayFormatService.getDefaultDateDisplayFormat()).thenReturn(DisplayFormatKey.DATE_FORMAT);
+        when(displayFormatService.getDefaultTimestampDisplayFormat()).thenReturn(DisplayFormatKey.DATE_TIME_FORMAT);
+        FormValueDisplayService formValueDisplayService = new FormValueDisplayService(displayFormatService);
+        DtoFactory factory = new DtoFactory(
+                mock(BridgeheadsConfiguration.class),
+                mock(FormService.class),
+                mock(UserService.class),
+                formConfig,
+                new FormTemplateConfig(new ExistingDirectory(templateMetadataDirectory), "en"),
+                "en",
+                mock(ProjectBridgeheadUserService.class),
+                formValueDisplayService);
+
+        FormField noDataType = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "PROJECT_TITLE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField dateWithoutOverride = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "ETHICS_VOTE_DATE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField timestampWithoutOverride = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "PROJECT_CREATION_DATE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField dateWithExplicitOverride = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "PROJECT_APPROVAL_DATE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+
+        // No data_type means no temporal default applies - stays null rather than guessing.
+        assertThat(noDataType.displayFormat()).isNull();
+        assertThat(dateWithoutOverride.displayFormat()).isEqualTo(DisplayFormatKey.DATE_FORMAT);
+        assertThat(timestampWithoutOverride.displayFormat()).isEqualTo(DisplayFormatKey.DATE_TIME_FORMAT);
+        // An explicitly configured display_format is never overridden by the default.
+        assertThat(dateWithExplicitOverride.displayFormat()).isEqualTo(DisplayFormatKey.LONG_DATE_FORMAT);
     }
 }

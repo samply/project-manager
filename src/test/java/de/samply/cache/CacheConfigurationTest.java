@@ -18,6 +18,7 @@ class CacheConfigurationTest {
         assertThat(configuration.policy(CacheResource.BACKEND_ASSETS)).isEqualTo(CachePolicy.SHORT);
         assertThat(configuration.policy(CacheResource.PROJECT_DETAIL)).isEqualTo(CachePolicy.NO_STORE);
         assertThat(configuration.policy(CacheResource.BACKEND_ASSETS)).isEqualTo(CachePolicy.SHORT);
+        assertThat(configuration.policy(CacheResource.DISPLAY_FORMATS)).isEqualTo(CachePolicy.SHORT);
         assertThat(configuration.policy(CacheResource.PUBLIC_INFORMATION)).isEqualTo(CachePolicy.LONG);
     }
 

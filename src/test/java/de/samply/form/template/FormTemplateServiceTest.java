@@ -2,6 +2,8 @@ package de.samply.form.template;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.db.model.Project;
+import de.samply.display.DisplayFormatKey;
+import de.samply.display.DisplayFormatService;
 import de.samply.form.DtoFormService;
 import de.samply.form.FormConfig;
 import de.samply.form.FormFieldConfig;
@@ -24,6 +26,8 @@ import org.mockito.ArgumentCaptor;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,7 +67,7 @@ class FormTemplateServiceTest {
 
         FormTemplateService service = new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config, dtoFactory,
-                "yyyy-MM-dd", mock(ProjectContextFactory.class), new ProjectConfigurations(), mock(FormConfig.class));
+                mock(DisplayFormatService.class), mock(ProjectContextFactory.class), new ProjectConfigurations(), mock(FormConfig.class));
 
         assertThat(service.fetchTemplates(project, language))
                 .containsExactlyElementsOf(
@@ -186,7 +190,7 @@ class FormTemplateServiceTest {
         when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(mock(PdfGenerator.class));
         FormTemplateService service = new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config,
-                dtoFactory, "yyyy-MM-dd", mock(ProjectContextFactory.class), new ProjectConfigurations(), mock(FormConfig.class));
+                dtoFactory, mock(DisplayFormatService.class), mock(ProjectContextFactory.class), new ProjectConfigurations(), mock(FormConfig.class));
 
         Map<String, FormField> result = service.fetchFormFields(
                 project, metadata.getTemplate(), "en", new ProjectContext(Map.of()));
@@ -224,7 +228,7 @@ class FormTemplateServiceTest {
         canonicalOrder.setFormTitleOrder(List.of("query", "project"));
         FormTemplateService service = new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config,
-                mock(DtoFactory.class), "yyyy-MM-dd", mock(ProjectContextFactory.class), canonicalOrder, mock(FormConfig.class));
+                mock(DtoFactory.class), mock(DisplayFormatService.class), mock(ProjectContextFactory.class), canonicalOrder, mock(FormConfig.class));
 
         Map<String, FormField> result = service.fetchFormFields(
                 project, metadata.getTemplate(), "en", new ProjectContext(Map.of()));
@@ -285,7 +289,7 @@ class FormTemplateServiceTest {
         when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(mock(PdfGenerator.class));
         FormTemplateService service = new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config,
-                dtoFactory, "yyyy-MM-dd", mock(ProjectContextFactory.class), new ProjectConfigurations(), formConfig);
+                dtoFactory, mock(DisplayFormatService.class), mock(ProjectContextFactory.class), new ProjectConfigurations(), formConfig);
 
         service.fetchFormFields(project, metadata.getTemplate(), "en", new ProjectContext(Map.of()));
 
@@ -318,9 +322,13 @@ class FormTemplateServiceTest {
         FormPdfGeneratorFactory pdfGeneratorFactory = mock(FormPdfGeneratorFactory.class);
         PdfGenerator pdfGenerator = mock(PdfGenerator.class);
         when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(pdfGenerator);
+        DisplayFormatService displayFormatService = mock(DisplayFormatService.class);
+        when(displayFormatService.format(
+                eq(DisplayFormatKey.LONG_DATE_FORMAT), any(Instant.class), eq("en"), eq(ZoneId.of("UTC"))))
+                .thenReturn("September 10, 2026");
         FormTemplateService service = new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config,
-                mock(DtoFactory.class), "yyyy-MM-dd", projectContextFactory, new ProjectConfigurations(), mock(FormConfig.class));
+                mock(DtoFactory.class), displayFormatService, projectContextFactory, new ProjectConfigurations(), mock(FormConfig.class));
 
         service.createFormAsPdf(project, metadata.getTemplate(), Optional.of("en"));
 
@@ -329,6 +337,7 @@ class FormTemplateServiceTest {
                 ArgumentCaptor.forClass(Map.class);
         verify(pdfGenerator).generatePdf(anyString(), contextCaptor.capture());
         assertThat(contextCaptor.getValue())
+                .containsEntry(FormContextKey.CURRENT_DATE.getText(), "September 10, 2026")
                 .containsEntry(FormContextKey.LAYOUTS.getText(), Map.of(
                         "patient", List.of(patientRow),
                         "sample", List.of(sampleRow)));
@@ -359,6 +368,6 @@ class FormTemplateServiceTest {
         when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(mock(PdfGenerator.class));
         return new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config,
-                mock(DtoFactory.class), "yyyy-MM-dd", mock(ProjectContextFactory.class), new ProjectConfigurations(), mock(FormConfig.class));
+                mock(DtoFactory.class), mock(DisplayFormatService.class), mock(ProjectContextFactory.class), new ProjectConfigurations(), mock(FormConfig.class));
     }
 }

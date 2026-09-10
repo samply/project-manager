@@ -9,14 +9,14 @@ import de.samply.db.model.ProjectDocument;
 import de.samply.db.model.QueryOutput;
 import de.samply.db.model.User;
 import de.samply.db.repository.ProjectBridgeheadRepository;
+import de.samply.display.DisplayFormatKey;
+import de.samply.display.DisplayFormatService;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentType;
 import de.samply.query.QueryFormat;
 import de.samply.user.UserService;
-import de.samply.utils.DateUtils;
 import de.samply.utils.UserUtils;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.time.ZoneId;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,19 +34,19 @@ public class ProjectContextFactory {
 
     private final UserService userService;
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
-    private final String datePattern;
+    private final DisplayFormatService displayFormatService;
     private final DocumentService documentService;
     private final ProjectBridgeheadRepository projectBridgeheadRepository;
 
     public ProjectContextFactory(
             UserService userService,
             BridgeheadsConfiguration bridgeheadsConfiguration,
-            @Value(ProjectManagerConst.FORM_TEMPLATE_DATE_PATTERN_SV) String datePattern,
+            DisplayFormatService displayFormatService,
             DocumentService documentService,
             ProjectBridgeheadRepository projectBridgeheadRepository) {
         this.userService = userService;
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
-        this.datePattern = datePattern;
+        this.displayFormatService = displayFormatService;
         this.documentService = documentService;
         this.projectBridgeheadRepository = projectBridgeheadRepository;
     }
@@ -55,7 +56,12 @@ public class ProjectContextFactory {
         result.put(ProjectContextKey.PROJECT_CODE, project.getCode());
         result.put(ProjectContextKey.PROJECT_TITLE, project.getQuery().getLabel());
         result.put(ProjectContextKey.PROJECT_DESCRIPTION, project.getQuery().getDescription());
-        result.put(ProjectContextKey.PROJECT_CREATION_DATE, DateUtils.fetchDate(project.getCreatedAt(), datePattern, language));
+        result.put(ProjectContextKey.PROJECT_CREATION_DATE, displayFormatService.format(
+                DisplayFormatKey.LONG_DATE_FORMAT,
+                project.getCreatedAt(),
+                language,
+                ZoneId.of(ProjectManagerConst.FORM_FILENAME_TIMESTAMP_ZONE)
+        ));
         result.put(ProjectContextKey.ETHICAL_APPROVAL, existsVotum(project).toString());
 
         // F10/Phase 7: native/FIXED fields resolved directly from the Project/

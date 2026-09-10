@@ -3,6 +3,7 @@ package de.samply.frontend.dto;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.*;
+import de.samply.display.DisplayFormatKey;
 import de.samply.form.*;
 import de.samply.form.template.FormTemplateConfig;
 import de.samply.form.template.FormTemplateMetadata;
@@ -34,6 +35,7 @@ public class DtoFactory {
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
     private final FormConfig formConfig;
     private final FormTemplateConfig formTemplateConfig;
+    private final FormValueDisplayService formValueDisplayService;
     private final String defaultLanguage;
 
     // Services
@@ -47,13 +49,15 @@ public class DtoFactory {
                       FormConfig formConfig,
                       FormTemplateConfig formTemplateConfig,
                       @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage,
-                      ProjectBridgeheadUserService projectBridgeheadUserService) {
+                      ProjectBridgeheadUserService projectBridgeheadUserService,
+                      FormValueDisplayService formValueDisplayService) {
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.userService = userService;
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.formService = formService;
         this.formConfig = formConfig;
         this.formTemplateConfig = formTemplateConfig;
+        this.formValueDisplayService = formValueDisplayService;
         this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
     }
 
@@ -268,6 +272,8 @@ public class DtoFactory {
                 .map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                 .map(fields -> fields.get(label.get()))
                 .orElse(null);
+        DataType dataType = Optional.ofNullable(fieldMetadata)
+                .map(FormFieldConfig::getDataType).orElse(null);
         FormFieldBlock blockMetadata = Optional.ofNullable(fieldMetadata)
                 .map(FormFieldConfig::getBlock)
                 .map(block -> formConfig.getBlockLabelformFieldBlockMap().get(block))
@@ -324,10 +330,8 @@ public class DtoFactory {
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getProperties)
                         .orElse(null),
-                label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
-                        .map(tm -> tm.get(label.get()))
-                        .map(FormFieldConfig::getDataType)
-                        .orElse(null),
+                dataType,
+                Optional.ofNullable(fieldMetadata).map(FormFieldConfig::getDisplayFormat).orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getAllowedValues)
@@ -387,7 +391,12 @@ public class DtoFactory {
                         .map(FormFieldBlock::getMinInstances)
                         .orElse(null),
                 label.map(l -> fetchFormFieldOrder(title, l)).orElse(null),
-                value.orElse(null)
+                value.orElse(null),
+                formValueDisplayService.format(
+                        dataType,
+                        value.orElse(null),
+                        language.orElse(null),
+                        Optional.ofNullable(fieldMetadata).map(FormFieldConfig::getDisplayFormat).orElse(null))
         );
     }
 
@@ -492,6 +501,7 @@ public class DtoFactory {
                 convertGroups(formFieldConfig.getGroups(), language),
                 formFieldConfig.getProperties(),
                 formFieldConfig.getDataType(),
+                resolveDisplayFormat(formFieldConfig),
                 convert(formFieldConfig.getAllowedValues(), language),
                 formFieldConfig.isMandatory(),
                 formFieldConfig.isMultiple(),
@@ -525,7 +535,10 @@ public class DtoFactory {
                         .map(FormFieldBlock::getMinInstances)
                         .orElse(null),
                 fetchFormFieldOrder(title, formFieldConfig.getLabel()),
-                value.orElse(null)
+                value.orElse(null),
+                formValueDisplayService.format(
+                        formFieldConfig.getDataType(), value.orElse(null), language.orElse(null),
+                        formFieldConfig.getDisplayFormat())
         );
     }
 
@@ -533,6 +546,20 @@ public class DtoFactory {
         return formTemplateConfig.isProjectFormFieldTitle(title) ?
                 formTemplateConfig.fetchProjectFormFieldOrder(title, label) :
                 formConfig.getFormTitleLabelOrderMap().get(title).get(label);
+    }
+
+    // FIXED entries have no persisted value, so unlike DYNAMIC fields (whose
+    // displayValue already reflects the default applied internally by
+    // FormValueDisplayService.format), an unset display_format would leave
+    // the frontend with no hint of which config key its own native rendering
+    // should follow. Resolve the same default here so a FIXED field's
+    // effective format is never silently null.
+    private DisplayFormatKey resolveDisplayFormat(FormFieldConfig formFieldConfig) {
+        DisplayFormatKey configured = formFieldConfig.getDisplayFormat();
+        if (configured != null || formFieldConfig.getFieldType() != FormFieldType.FIXED) {
+            return configured;
+        }
+        return formValueDisplayService.defaultDisplayFormat(formFieldConfig.getDataType());
     }
 
     private Boolean fetchInactiveFixedFlag(FormFieldConfig fieldConfig) {

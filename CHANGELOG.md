@@ -322,6 +322,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Multiple Fields
 - Generalize Action Explanations as Action Messages while accepting the legacy configuration names
 - PDF design
+- Configurable localized date and time display formats for frontend views and PDFs
 
 
 ### Removed

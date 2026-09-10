@@ -11,6 +11,8 @@ import de.samply.db.model.User;
 import de.samply.db.repository.ProjectBridgeheadRepository;
 import de.samply.document.DocumentService;
 import de.samply.document.DocumentType;
+import de.samply.display.DisplayFormatKey;
+import de.samply.display.DisplayFormatService;
 import de.samply.project.ProjectType;
 import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
@@ -18,6 +20,7 @@ import de.samply.user.UserService;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -26,9 +29,43 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ProjectContextFactoryTest {
+
+    @Test
+    void resolvesProjectCreationDateWithTheLocalizedLongDateFormat() {
+        Project project = projectWithQuery(query -> {
+        });
+        DisplayFormatService displayFormatService = mock(DisplayFormatService.class);
+        when(displayFormatService.format(
+                DisplayFormatKey.LONG_DATE_FORMAT,
+                project.getCreatedAt(),
+                "de",
+                ZoneId.of("UTC")
+        )).thenReturn("1. Januar 2026");
+        DocumentService documentService = documentServiceWithNoDocuments(project);
+        ProjectContextFactory factory = new ProjectContextFactory(
+                mock(UserService.class),
+                mock(BridgeheadsConfiguration.class),
+                displayFormatService,
+                documentService,
+                mock(ProjectBridgeheadRepository.class)
+        );
+
+        Map<String, String> context = factory.createProjectContext(project, "de").fetchContext();
+
+        assertThat(context).containsEntry(
+                ProjectContextKey.PROJECT_CREATION_DATE.getText(), "1. Januar 2026");
+        verify(displayFormatService).format(
+                eq(DisplayFormatKey.LONG_DATE_FORMAT),
+                eq(project.getCreatedAt()),
+                eq("de"),
+                eq(ZoneId.of("UTC"))
+        );
+    }
 
     @Test
     void resolvesNativeFieldsFromTheQueryAndDocumentsWhenPresent() {
@@ -172,7 +209,7 @@ class ProjectContextFactoryTest {
 
         DocumentService documentService = documentServiceWithNoDocuments(project);
         ProjectContextFactory factory = new ProjectContextFactory(
-                userService, bridgeheadsConfiguration, "yyyy-MM-dd", documentService,
+                userService, bridgeheadsConfiguration, displayFormatService(), documentService,
                 mock(ProjectBridgeheadRepository.class));
 
         Map<String, String> context = factory.createProjectContext(project, "en").fetchContext();
@@ -198,7 +235,7 @@ class ProjectContextFactoryTest {
 
         DocumentService documentService = documentServiceWithNoDocuments(project);
         ProjectContextFactory factory = new ProjectContextFactory(
-                userService, mock(BridgeheadsConfiguration.class), "yyyy-MM-dd", documentService,
+                userService, mock(BridgeheadsConfiguration.class), displayFormatService(), documentService,
                 mock(ProjectBridgeheadRepository.class));
 
         Map<String, String> context = factory.createProjectContext(project, "en").fetchContext();
@@ -264,6 +301,17 @@ class ProjectContextFactoryTest {
         BridgeheadsConfiguration configuration = bridgeheadsConfiguration != null
                 ? bridgeheadsConfiguration : mock(BridgeheadsConfiguration.class);
         return new ProjectContextFactory(
-                mock(UserService.class), configuration, "yyyy-MM-dd", documentService, bridgeheadRepository);
+                mock(UserService.class), configuration, displayFormatService(), documentService, bridgeheadRepository);
+    }
+
+    private static DisplayFormatService displayFormatService() {
+        DisplayFormatService service = mock(DisplayFormatService.class);
+        when(service.format(
+                org.mockito.ArgumentMatchers.eq(DisplayFormatKey.LONG_DATE_FORMAT),
+                org.mockito.ArgumentMatchers.any(Instant.class),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.eq(ZoneId.of("UTC"))
+        )).thenReturn("2026-01-01");
+        return service;
     }
 }

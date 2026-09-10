@@ -118,6 +118,11 @@ public class FormTemplateConfig {
         try (InputStream is = Files.newInputStream(path)) {
             FormTemplateMetadata metadata =
                     objectMapper.readValue(is, FormTemplateMetadata.class);
+            if (metadata.getProjectFields() != null) {
+                for (FormFieldConfig field : metadata.getProjectFields()) {
+                    field.validateDisplayFormat();
+                }
+            }
             result.put(metadata.getTemplate(), metadata);
 
         } catch (IOException e) {

@@ -17,6 +17,8 @@ import de.samply.document.DocumentService;
 import de.samply.document.DocumentServiceException;
 import de.samply.document.DocumentType;
 import de.samply.document.DtoDocumentService;
+import de.samply.display.DisplayFormatService;
+import de.samply.display.DisplayFormatsResponse;
 import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
@@ -115,6 +117,7 @@ public class ProjectManagerController {
     private final CacheConfiguration cacheConfiguration;
     private final FeasibilityService feasibilityService;
     private final FeasibilityMapper feasibilityMapper;
+    private final DisplayFormatService displayFormatService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -142,7 +145,8 @@ public class ProjectManagerController {
                                     FrontendConfiguration frontendConfiguration,
                                     CacheConfiguration cacheConfiguration,
                                     FeasibilityService feasibilityService,
-                                    FeasibilityMapper feasibilityMapper) {
+                                    FeasibilityMapper feasibilityMapper,
+                                    DisplayFormatService displayFormatService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -170,6 +174,7 @@ public class ProjectManagerController {
         this.cacheConfiguration = cacheConfiguration;
         this.feasibilityService = feasibilityService;
         this.feasibilityMapper = feasibilityMapper;
+        this.displayFormatService = displayFormatService;
     }
 
     @CacheCategory(CacheResource.PUBLIC_INFORMATION)
@@ -217,6 +222,15 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> ResponseEntity.ok()
                 .cacheControl(cacheConfiguration.cacheControl(CacheResource.FRONTEND_VARIABLES))
                 .body(this.frontendConfiguration.getVariables()));
+    }
+
+    @FrontendAction(action = ProjectManagerConst.FETCH_DISPLAY_FORMATS_ACTION)
+    @CacheCategory(CacheResource.DISPLAY_FORMATS)
+    @GetMapping(value = ProjectManagerConst.FETCH_DISPLAY_FORMATS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DisplayFormatsResponse> fetchDisplayFormats() {
+        return ResponseEntity.ok()
+                .cacheControl(cacheConfiguration.cacheControl(CacheResource.DISPLAY_FORMATS))
+                .body(DisplayFormatsResponse.from(displayFormatService));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)

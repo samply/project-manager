@@ -106,6 +106,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
     public final static String FETCH_VISIBLE_PROJECT_STATES_ACTION = "FETCH_VISIBLE_PROJECT_STATES";
     public final static String FETCH_FRONTEND_VARIABLES_ACTION = "FETCH_FRONTEND_VARIABLES";
+    public final static String FETCH_DISPLAY_FORMATS_ACTION = "FETCH_DISPLAY_FORMATS";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE";
@@ -203,6 +204,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_STATES = "/project/states";
     public final static String FETCH_VISIBLE_PROJECT_STATES = "/project/states/visible";
     public final static String FETCH_FRONTEND_VARIABLES = "/frontend/variables";
+    public final static String FETCH_DISPLAY_FORMATS = "/frontend/display-formats";
     public final static String ARCHIVE_PROJECT = "/project/archive";
     public final static String START_DEVELOP_STAGE = "/project/start-develop";
     public final static String START_PILOT_STAGE = "/project/start-pilot";
@@ -427,6 +429,9 @@ public class ProjectManagerConst {
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG_PATH = "EMAIL_TEMPLATES_CONFIG_PATH";
     public final static String ACTION_MESSAGES_CONFIG_PATH = "ACTION_MESSAGES_CONFIG_PATH";
+    public final static String DISPLAY_FORMATS_CONFIG_PATH = "DISPLAY_FORMATS_CONFIG_PATH";
+    public final static String DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT = "DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT";
+    public final static String DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT = "DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT";
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
     public final static String SAMPLES_TEMPLATES = "SAMPLES_TEMPLATES";
@@ -508,7 +513,6 @@ public class ProjectManagerConst {
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY = "FORM_TEMPLATE_METADATA_DIRECTORY";
     public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME = "FORM_TEMPLATE_DEFAULT_PDF_FILENAME";
     public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
-    public final static String FORM_TEMPLATE_DATE_PATTERN = "FORM_TEMPLATE_DATE_PATTERN";
 
     public final static String SHED_LOCK_MAX_TIME = "SHED_LOCK_MAX_TIME";
     public final static String TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS = "TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS";
@@ -557,6 +561,12 @@ public class ProjectManagerConst {
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_PATH_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG_PATH + BOTTOM_SV;
     public final static String ACTION_MESSAGES_CONFIG_PATH_SV = HEAD_SV + ACTION_MESSAGES_CONFIG_PATH + BOTTOM_SV;
+    public final static String DISPLAY_FORMATS_CONFIG_PATH_SV =
+            HEAD_SV + DISPLAY_FORMATS_CONFIG_PATH + ":" + BOTTOM_SV;
+    public final static String DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT_SV =
+            HEAD_SV + DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT + ":DATE_FORMAT" + BOTTOM_SV;
+    public final static String DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT_SV =
+            HEAD_SV + DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT + ":DATE_TIME_FORMAT" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
     public final static String SAMPLES_TEMPLATES_SV = HEAD_SV + SAMPLES_TEMPLATES + BOTTOM_SV;
@@ -635,7 +645,6 @@ public class ProjectManagerConst {
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY_SV = HEAD_SV + FORM_TEMPLATE_METADATA_DIRECTORY + BOTTOM_SV;
     public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV = HEAD_SV + FORM_TEMPLATE_DEFAULT_PDF_FILENAME + ":form.pdf" + BOTTOM_SV;
     public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;
-    public final static String FORM_TEMPLATE_DATE_PATTERN_SV = HEAD_SV + FORM_TEMPLATE_DATE_PATTERN + ":d. MMMM yyyy" + BOTTOM_SV;
     public final static String SHED_LOCK_MAX_TIME_SV = HEAD_SV + SHED_LOCK_MAX_TIME + ":PT5M" + BOTTOM_SV;
     public final static String TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS_SV = HEAD_SV + TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS + ":5" + BOTTOM_SV;
     public final static String MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS_SV = HEAD_SV + MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS + ":3" + BOTTOM_SV;

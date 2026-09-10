@@ -1,5 +1,6 @@
 package de.samply.frontend.dto;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,6 +19,42 @@ class FormFieldTest {
         FormField field = enumField("unknown", new FormFieldValue("plasma", "Plasma", null, null));
 
         assertThat(field.fetchDisplayValue()).isEqualTo("unknown");
+    }
+
+    @Test
+    void fetchDisplayValueUsesPresentationValueForNonEnumFields() {
+        FormField field = FormField.builder()
+                .value("2026-09-11")
+                .displayValue("11.09.2026")
+                .build();
+
+        assertThat(field.fetchDisplayValue()).isEqualTo("11.09.2026");
+    }
+
+    @Test
+    void allowedValueDisplayNameTakesPrecedenceOverPresentationValue() {
+        FormField field = FormField.builder()
+                .value("plasma")
+                .displayValue("must not be used")
+                .allowedValues(new FormFieldValue[]{new FormFieldValue("plasma", "Plasma", null, null)})
+                .build();
+
+        assertThat(field.fetchDisplayValue()).isEqualTo("Plasma");
+    }
+
+    @Test
+    void presentationValueIsNotExposedInTheFrontendDto() throws Exception {
+        FormField field = FormField.builder()
+                .value("2026-09-11")
+                .displayValue("11.09.2026")
+                .build();
+
+        String json = new ObjectMapper().writeValueAsString(field);
+
+        assertThat(json)
+                .contains("\"value\":\"2026-09-11\"")
+                .doesNotContain("displayValue")
+                .doesNotContain("11.09.2026");
     }
 
     @Test

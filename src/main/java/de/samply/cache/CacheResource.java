@@ -9,6 +9,9 @@ public enum CacheResource {
     /** Backend-provided variables used by the frontend at runtime. */
     FRONTEND_VARIABLES,
 
+    /** Localized display formats exposed to the frontend at runtime. */
+    DISPLAY_FORMATS,
+
     /** API responses containing the project dashboard listing. */
     PROJECT_DASHBOARD,
 

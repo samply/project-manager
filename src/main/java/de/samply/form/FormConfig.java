@@ -110,6 +110,7 @@ public class FormConfig {
             return;
         }
         Arrays.stream(form.getFields()).forEach(field -> {
+            field.validateDisplayFormat();
             if (field.getFieldType() == null) {
                 throw new IllegalArgumentException(
                         "Invalid form configuration in " + configFile + " at form '"

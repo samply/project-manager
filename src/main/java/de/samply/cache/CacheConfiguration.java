@@ -61,7 +61,7 @@ public class CacheConfiguration {
     private CachePolicy stableDefault(CacheResource resource) {
         return switch (resource) {
             case BACKEND_ASSETS -> CachePolicy.NO_CACHE;
-            case FRONTEND_VARIABLES -> CachePolicy.SHORT;
+            case FRONTEND_VARIABLES, DISPLAY_FORMATS -> CachePolicy.SHORT;
             case PUBLIC_INFORMATION -> CachePolicy.LONG;
             case PROJECT_DASHBOARD, PROJECT_DETAIL, FORM_METADATA, REFERENCE_DATA,
                     USER_ROLES, ACTION_AVAILABILITY, FEASIBILITY_STATISTICS,

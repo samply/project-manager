@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 public enum DataType {
@@ -16,7 +17,8 @@ public enum DataType {
     LONG_STRING(String.class),
     ENUM(String.class),
     DATE(LocalDate.class),
-    TIMESTAMP(Instant.class);
+    TIMESTAMP(Instant.class),
+    LOCAL_DATE_TIME(LocalDateTime.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final Class<?> clazz;

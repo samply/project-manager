@@ -2,6 +2,7 @@ package de.samply.form;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.samply.display.DisplayFormatKey;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +32,20 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
 
     @JsonProperty("data_type")
     private DataType dataType;
+
+    /** Optional presentation override; does not affect input or stored values. */
+    @JsonProperty("display_format")
+    private DisplayFormatKey displayFormat;
+
+    public void validateDisplayFormat() {
+        if (displayFormat == null) return;
+        boolean dateOnly = displayFormat == DisplayFormatKey.DATE_FORMAT
+                || displayFormat == DisplayFormatKey.LONG_DATE_FORMAT;
+        if (dataType == DataType.TIMESTAMP || dataType == DataType.LOCAL_DATE_TIME
+                || (dataType == DataType.DATE && dateOnly)) return;
+        throw new IllegalArgumentException("Field '" + label + "': display_format " + displayFormat
+                + " is incompatible with data_type " + dataType);
+    }
 
     // Optional input hint for editable STRING and LONG_STRING fields.
     private String placeholder;
