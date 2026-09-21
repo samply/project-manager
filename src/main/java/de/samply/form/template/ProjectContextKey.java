@@ -25,7 +25,7 @@ public enum ProjectContextKey {
     PROJECT_DESCRIPTION("project-description"),
     PROJECT_CREATION_DATE("project-creation-date"),
     ETHICAL_APPROVAL("ethical-approval"),
-    // F10/Phase 7 (plan-pdf-form-field-parity-2026-09-07.md): native/FIXED
+    // F10/Phase 7 (2026-09-07-plan-pdf-form-field-parity.md): native/FIXED
     // fields the frontend shows outside the dynamic form-field system,
     // resolved here the same way PROJECT_TITLE/PROJECT_DESCRIPTION already
     // are, so a form template's project_fields can reference them.

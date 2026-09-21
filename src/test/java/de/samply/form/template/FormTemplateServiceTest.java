@@ -161,7 +161,7 @@ class FormTemplateServiceTest {
         // A project field configured "active": false is "hidden in the form
         // field configuration" the same way an inactive FIXED/DYNAMIC field
         // is, as opposed to a field only hidden by a frontend-only role/UI
-        // rule - see plan-pdf-form-field-parity-2026-09-07.md point 3.
+        // rule - see 2026-09-07-plan-pdf-form-field-parity.md point 3.
         DtoFormService dtoFormService = mock(DtoFormService.class);
         Project project = new Project();
         FormTemplateMetadata metadata = metadata(true);

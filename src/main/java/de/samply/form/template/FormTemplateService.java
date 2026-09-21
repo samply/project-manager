@@ -307,7 +307,7 @@ public class FormTemplateService {
      * "ETHICS_VOTE_FOR_ALL_SITES") to link it to that field's own configured
      * display_name/description. When this project field's own display_name/
      * description is blank, the linked FIXED field's is used instead - see
-     * plan-pdf-form-field-parity-2026-09-07.md point 2 (2026-09-09 feedback).
+     * 2026-09-07-plan-pdf-form-field-parity.md point 2 (2026-09-09 feedback).
      */
     private FormFieldConfig applyFixedFieldMetadataFallback(FormFieldConfig projectField, String language) {
         if (projectField.getLabel() == null) {
