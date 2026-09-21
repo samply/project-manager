@@ -1,19 +1,22 @@
 package de.samply.display;
 
+import java.util.EnumMap;
 import java.util.Map;
 
 public record DisplayFormatsResponse(
-        String defaultLanguage,
         DisplayFormatKey defaultDateDisplayFormat,
         DisplayFormatKey defaultTimestampDisplayFormat,
-        Map<DisplayFormatKey, Map<String, String>> formats
+        Map<DisplayFormatKey, ResolvedDisplayFormat> formats
 ) {
-    public static DisplayFormatsResponse from(DisplayFormatService service) {
+    public static DisplayFormatsResponse from(DisplayFormatService service, String requestedLanguage) {
+        Map<DisplayFormatKey, ResolvedDisplayFormat> resolved = new EnumMap<>(DisplayFormatKey.class);
+        for (DisplayFormatKey key : DisplayFormatKey.values()) {
+            resolved.put(key, service.resolve(key, requestedLanguage));
+        }
         return new DisplayFormatsResponse(
-                service.getDefaultLanguage(),
                 service.getDefaultDateDisplayFormat(),
                 service.getDefaultTimestampDisplayFormat(),
-                service.getDisplayFormats().getFormats()
+                resolved
         );
     }
 }

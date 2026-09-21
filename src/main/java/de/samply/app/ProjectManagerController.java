@@ -227,10 +227,10 @@ public class ProjectManagerController {
     @FrontendAction(action = ProjectManagerConst.FETCH_DISPLAY_FORMATS_ACTION)
     @CacheCategory(CacheResource.DISPLAY_FORMATS)
     @GetMapping(value = ProjectManagerConst.FETCH_DISPLAY_FORMATS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DisplayFormatsResponse> fetchDisplayFormats() {
+    public ResponseEntity<DisplayFormatsResponse> fetchDisplayFormats(@Language String language) {
         return ResponseEntity.ok()
                 .cacheControl(cacheConfiguration.cacheControl(CacheResource.DISPLAY_FORMATS))
-                .body(DisplayFormatsResponse.from(displayFormatService));
+                .body(DisplayFormatsResponse.from(displayFormatService, language));
     }
 
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
