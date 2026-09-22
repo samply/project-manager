@@ -20,6 +20,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +40,8 @@ public class FeasibilityService {
     private final int resultMaxTries;
     private final String focusProject;
     private final boolean enabled;
+    private final String testFeasibilityResult;
+    private final TestFeasibilityResultResolver testFeasibilityResultResolver;
 
     @Autowired
     public FeasibilityService(
@@ -50,16 +53,18 @@ public class FeasibilityService {
             @Value(ProjectManagerConst.FEASIBILITY_BEAM_RESULT_MAX_TRIES_SV) int resultMaxTries,
             @Value(ProjectManagerConst.FOCUS_LENS_PROJECT_SV) String focusProject,
             @Value(ProjectManagerConst.ENABLE_FEASIBILITY_SV) boolean enabled,
+            @Value(ProjectManagerConst.TEST_FEASIBILITY_RESULT_SV) String testFeasibilityResult,
             WebClientFactory webClientFactory,
             BeamService beamService) {
         this(webClientFactory.createWebClient(beamUrl), beamService, projectManagerId,
-                beamApiKey, beamTtl, resultWaitTime, resultMaxTries, focusProject, enabled);
+                beamApiKey, beamTtl, resultWaitTime, resultMaxTries, focusProject, enabled,
+                testFeasibilityResult);
     }
 
     FeasibilityService(WebClient webClient, BeamService beamService,
                        String projectManagerId, String beamApiKey, String beamTtl,
                        String resultWaitTime, int resultMaxTries, String focusProject,
-                       boolean enabled) {
+                       boolean enabled, String testFeasibilityResult) {
         if (resultMaxTries < 1) {
             throw new IllegalArgumentException("Feasibility Beam result max tries must be at least 1");
         }
@@ -73,12 +78,17 @@ public class FeasibilityService {
         this.resultMaxTries = resultMaxTries;
         this.focusProject = focusProject;
         this.enabled = enabled;
+        this.testFeasibilityResult = testFeasibilityResult;
+        this.testFeasibilityResultResolver = new TestFeasibilityResultResolver(objectMapper, new Random());
     }
 
     public Mono<JsonNode> fetchFeasibility(@NotNull Project project,
                                            @NotNull ProjectBridgehead bridgehead) {
         if (!enabled) {
             return Mono.empty();
+        }
+        if (testFeasibilityResult != null && !testFeasibilityResult.isBlank()) {
+            return Mono.fromCallable(() -> testFeasibilityResultResolver.resolve(testFeasibilityResult));
         }
         BeamRequest request = beamService.generateFeasibilityBeamRequest(
                 project.getQuery().getQuery(), bridgehead.getBridgehead(), focusProject, beamTtl);

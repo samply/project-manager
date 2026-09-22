@@ -296,6 +296,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Researcher Groups
 - Project document constraint
 - Uniform number format
+- Test feasibility result resolver
 
 
 ### Changed

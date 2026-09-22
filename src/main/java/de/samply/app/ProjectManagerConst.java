@@ -462,6 +462,7 @@ public class ProjectManagerConst {
     public final static String FRONTEND_PROJECT_CONFIG_PATH = "FRONTEND_PROJECT_CONFIG_PATH";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
     public final static String ENABLE_FEASIBILITY = "ENABLE_FEASIBILITY";
+    public final static String TEST_FEASIBILITY_RESULT = "TEST_FEASIBILITY_RESULT";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
     public final static String REQUEST_CACHE_LIMIT = "REQUEST_CACHE_LIMIT";
@@ -651,6 +652,7 @@ public class ProjectManagerConst {
     public final static String TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS_SV = HEAD_SV + TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS + ":5" + BOTTOM_SV;
     public final static String MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS_SV = HEAD_SV + MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS + ":3" + BOTTOM_SV;
     public final static String FEASIBILITY_MAPPING_SV = HEAD_SV + FEASIBILITY_MAPPING + ":" + BOTTOM_SV;
+    public final static String TEST_FEASIBILITY_RESULT_SV = HEAD_SV + TEST_FEASIBILITY_RESULT + ":" + BOTTOM_SV;
 
 
     // Async Configuration

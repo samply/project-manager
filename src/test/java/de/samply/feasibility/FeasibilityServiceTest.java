@@ -188,11 +188,41 @@ class FeasibilityServiceTest {
         assertThat(resultRequestCount.get()).isZero();
     }
 
+    @Test
+    void returnsResolvedTestResultInsteadOfContactingBeamWhenConfigured() {
+        String template = "[{\"label\": \"Patients\", \"value\": {{INTEGER}}}, "
+                + "{\"label\": \"Samples\", \"value\": {{INTEGER}}}]";
+
+        StepVerifier.create(createService(true, template).fetchFeasibility(project(), projectBridgehead()))
+                .assertNext(result -> {
+                    assertThat(result.isArray()).isTrue();
+                    assertThat(result.get(0).get("label").asText()).isEqualTo("Patients");
+                    assertThat(result.get(1).get("label").asText()).isEqualTo("Samples");
+                    assertThat(result.get(0).get("value").asInt())
+                            .isNotEqualTo(result.get(1).get("value").asInt());
+                })
+                .verifyComplete();
+
+        assertThat(postedTask.get()).isNull();
+        assertThat(resultRequestCount.get()).isZero();
+    }
+
+    @Test
+    void ignoresTestResultWhenFeasibilityIsDisabled() {
+        StepVerifier.create(createService(false, "[{\"label\": \"Patients\", \"value\": {{INTEGER}}}]")
+                        .fetchFeasibility(project(), projectBridgehead()))
+                .verifyComplete();
+    }
+
     private FeasibilityService createService() {
-        return createService(true);
+        return createService(true, "");
     }
 
     private FeasibilityService createService(boolean enabled) {
+        return createService(enabled, "");
+    }
+
+    private FeasibilityService createService(boolean enabled, String testFeasibilityResult) {
         BridgeheadsConfiguration bridgeheadConfiguration = new BridgeheadsConfiguration();
         BridgeheadsConfiguration.BridgeheadConfig config = new BridgeheadsConfiguration.BridgeheadConfig();
         config.setFocusBeamId(FOCUS_BEAM_ID);
@@ -205,7 +235,7 @@ class FeasibilityServiceTest {
                 .build();
         return new FeasibilityService(webClient, beamService, PROJECT_MANAGER_ID,
                 BEAM_API_KEY, FEASIBILITY_TTL, RESULT_WAIT_TIME, RESULT_MAX_TRIES,
-                FOCUS_PROJECT, enabled);
+                FOCUS_PROJECT, enabled, testFeasibilityResult);
     }
 
     private Project project() {
