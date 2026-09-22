@@ -99,6 +99,11 @@ class FeasibilityServiceTest {
     }
 
     @Test
+    void exposesWhetherFeasibilityIsEnabled() {
+        assertThat(createService().isEnabled()).isTrue();
+    }
+
+    @Test
     void retriesResultRequestUntilFocusAnswers() {
         emptyResultResponses = 2;
 

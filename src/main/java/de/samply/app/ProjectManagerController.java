@@ -314,6 +314,18 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
             OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE,
+            module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    @FrontendAction(action = ProjectManagerConst.IS_FEASIBILITY_ENABLED_ACTION)
+    @CacheCategory(CacheResource.REFERENCE_DATA)
+    @GetMapping(value = ProjectManagerConst.IS_FEASIBILITY_ENABLED,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity isFeasibilityEnabled() {
+        return convertToResponseEntity(feasibilityService::isEnabled);
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
+            OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @ProjectConstraints(queryFormats = {QueryFormat.AST_DATA})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE,

@@ -92,6 +92,10 @@ public class FeasibilityService {
                                 " after " + resultMaxTries + " tries")));
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     private Mono<Void> createTask(BeamRequest request) {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(ProjectManagerConst.BEAM_TASK_PATH).build())

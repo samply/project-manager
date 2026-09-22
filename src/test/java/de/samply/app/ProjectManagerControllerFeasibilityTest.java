@@ -62,6 +62,26 @@ class ProjectManagerControllerFeasibilityTest {
     }
 
     @Test
+    void exposesWhetherFeasibilityIsEnabled() throws Exception {
+        Method endpoint = ProjectManagerController.class.getDeclaredMethod("isFeasibilityEnabled");
+
+        assertThat(endpoint.getAnnotation(GetMapping.class).value())
+                .containsExactly(ProjectManagerConst.IS_FEASIBILITY_ENABLED);
+        assertThat(endpoint.getAnnotation(RoleConstraints.class).organisationRoles())
+                .containsExactly(OrganisationRole.RESEARCHER, OrganisationRole.PROJECT_MANAGER_ADMIN);
+        assertThat(endpoint.getAnnotation(FrontendAction.class).action())
+                .isEqualTo(ProjectManagerConst.IS_FEASIBILITY_ENABLED_ACTION);
+
+        when(feasibilityService.isEnabled()).thenReturn(true);
+
+        ResponseEntity response = controller.isFeasibilityEnabled();
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isEqualTo("true");
+        verify(feasibilityService).isEnabled();
+    }
+
+    @Test
     void returnsFocusResultDirectly() throws Exception {
         Project project = new Project();
         ProjectBridgehead bridgehead = new ProjectBridgehead();
