@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 
-/** Formats fixed ISO values for display only; never rewrites stored or API values. */
+/** Formats canonical values for display only; never rewrites stored or API values. */
 @Service
 public class FormValueDisplayService {
 
@@ -29,6 +29,7 @@ public class FormValueDisplayService {
         DisplayFormatKey key = displayFormat != null ? displayFormat : defaultDisplayFormat(dataType);
         try {
             return switch (dataType) {
+                case INTEGER, DOUBLE -> displayFormatService.formatNumber(value, language);
                 case DATE -> value.matches("\\d{4}-\\d{2}-\\d{2}")
                         ? displayFormatService.format(
                                 key, LocalDate.parse(value), language)

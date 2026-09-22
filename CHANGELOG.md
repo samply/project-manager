@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-09-09]
+## [1.0.0 - 2026-09-22]
 ### Added
 - First version of the project
 - Spring Application
@@ -295,6 +295,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Merged proposed action success and error messages into the action message configuration
 - Researcher Groups
 - Project document constraint
+- Uniform number format
 
 
 ### Changed

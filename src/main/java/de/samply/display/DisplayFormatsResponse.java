@@ -6,7 +6,8 @@ import java.util.Map;
 public record DisplayFormatsResponse(
         DisplayFormatKey defaultDateDisplayFormat,
         DisplayFormatKey defaultTimestampDisplayFormat,
-        Map<DisplayFormatKey, ResolvedDisplayFormat> formats
+        Map<DisplayFormatKey, ResolvedDisplayFormat> formats,
+        String locale
 ) {
     public static DisplayFormatsResponse from(DisplayFormatService service, String requestedLanguage) {
         Map<DisplayFormatKey, ResolvedDisplayFormat> resolved = new EnumMap<>(DisplayFormatKey.class);
@@ -16,7 +17,8 @@ public record DisplayFormatsResponse(
         return new DisplayFormatsResponse(
                 service.getDefaultDateDisplayFormat(),
                 service.getDefaultTimestampDisplayFormat(),
-                resolved
+                resolved,
+                service.resolveLocale(requestedLanguage)
         );
     }
 }

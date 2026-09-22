@@ -29,6 +29,65 @@ import static org.mockito.Mockito.mock;
 class DtoFactoryTemporalDisplayTest {
 
     @Test
+    void numericFieldsKeepCanonicalApiValuesAndRenderLocalizedPdf(@TempDir Path directory) throws Exception {
+        FormConfig config = formConfig(directory);
+        DtoFactory factory = dtoFactory(config, displayFormats("yyyy-MM-dd", "dd.MM.yyyy"), directory);
+        StringBuilder rows = new StringBuilder();
+        String[][] cases = {
+                {"count", "1000", "1,000", "1.000"},
+                {"measurement", "1000.1", "1,000.1", "1.000,1"},
+                {"measurement", "-1000.1234567", "-1,000.1234567", "-1.000,1234567"},
+                {"measurement", "0", "0", "0"}
+        };
+        for (String[] sample : cases) {
+            rows.append("<tr><td>").append(sample[1]).append("</td>");
+            for (int index = 0; index < 2; index++) {
+                String language = index == 0 ? "en" : "de-DE";
+                FormField field = convert(factory, config, sample[0], sample[1], language);
+                ProjectFormField persisted = new ProjectFormField();
+                persisted.setFormTitle("request");
+                persisted.setLabel(sample[0]);
+                persisted.setFieldInstance(2);
+                persisted.setValue(sample[1]);
+                FormField repeated = factory.convert(persisted, Optional.of(language));
+                assertThat(field.fetchDisplayValue()).isEqualTo(sample[index + 2]);
+                assertThat(repeated.fetchDisplayValue()).isEqualTo(field.fetchDisplayValue());
+                assertThat(repeated.fieldInstance()).isEqualTo(2);
+                assertThat(field.value()).isEqualTo(sample[1]);
+                assertThat(persisted.getValue()).isEqualTo(sample[1]);
+                assertThat(new ObjectMapper().writeValueAsString(field))
+                        .contains("\"value\":\"" + sample[1] + "\"").doesNotContain("displayValue");
+                rows.append("<td>").append(field.fetchDisplayValue()).append("</td>");
+            }
+            rows.append("</tr>");
+        }
+        var converter = new de.samply.form.pdf.FormPdfConverter(new ExistingDirectory(directory));
+        byte[] pdf = converter.convert("""
+                <html><head><style>
+                body { font-family: sans-serif; font-size: 12pt; }
+                table { border-collapse: collapse; width: 100%%; }
+                th, td { border: 1px solid #cccccc; padding: 10px; text-align: right; }
+                th { background: #eeeeee; }
+                </style></head><body><h1>Number display formats</h1>
+                <p>Canonical values and localized form values</p>
+                <table><tr><th>Canonical value</th><th>English</th><th>German</th></tr>
+                %s</table></body></html>
+                """.formatted(rows));
+        try (var document = org.apache.pdfbox.Loader.loadPDF(pdf)) {
+            String text = new org.apache.pdfbox.text.PDFTextStripper().getText(document);
+            assertThat(text).contains("1,000.1", "1.000,1", "-1,000.1234567", "-1.000,1234567");
+            assertThat(document.getNumberOfPages()).isEqualTo(1);
+            String previewDirectory = System.getProperty("numberFormatPreviewDirectory");
+            if (previewDirectory != null) {
+                Path preview = Files.createDirectories(Path.of(previewDirectory));
+                Files.write(preview.resolve("number-formats.pdf"), pdf);
+                javax.imageio.ImageIO.write(new org.apache.pdfbox.rendering.PDFRenderer(document)
+                        .renderImageWithDPI(0, 120), "png", preview.resolve("number-formats.png").toFile());
+            }
+        }
+    }
+
+    @Test
     void localizesDateForPdfWhileKeepingTheApiValueCanonical(@TempDir Path temporaryDirectory)
             throws Exception {
         FormConfig formConfig = formConfig(temporaryDirectory);
@@ -172,6 +231,8 @@ class DtoFactoryTemporalDisplayTest {
                 {
                   "title": "request",
                   "fields": [
+                    {"label": "count", "data_type": "INTEGER"},
+                    {"label": "measurement", "data_type": "DOUBLE"},
                     {
                       "label": "planned-start-date",
                       "data_type": "DATE"%s

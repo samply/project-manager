@@ -35,6 +35,7 @@ class ProjectManagerControllerDisplayFormatsTest {
 
     @Test
     void exposesDefaultFormatKeysResolvedPatternsAndCachePolicy() {
+        when(displayFormatService.resolveLocale("de")).thenReturn("de-DE");
         when(displayFormatService.getDefaultDateDisplayFormat()).thenReturn(DisplayFormatKey.DATE_FORMAT);
         when(displayFormatService.getDefaultTimestampDisplayFormat()).thenReturn(DisplayFormatKey.DATE_TIME_FORMAT);
         when(displayFormatService.resolve(DisplayFormatKey.DATE_FORMAT, "de"))
@@ -60,12 +61,13 @@ class ProjectManagerControllerDisplayFormatsTest {
                         DisplayFormatKey.DATE_TIME_FORMAT, new ResolvedDisplayFormat("de", "dd.MM.yyyy HH:mm"),
                         DisplayFormatKey.DATE_TIME_WITH_SECONDS_FORMAT,
                         new ResolvedDisplayFormat("de", "dd.MM.yyyy HH:mm:ss")
-                )));
+                ), "de-DE"));
         verify(displayFormatService).resolve(DisplayFormatKey.DATE_FORMAT, "de");
     }
 
     @Test
     void resolvesWithTheBackendDefaultLanguageWhenNoneIsRequested() {
+        when(displayFormatService.resolveLocale(null)).thenReturn("en");
         when(displayFormatService.getDefaultDateDisplayFormat()).thenReturn(DisplayFormatKey.DATE_FORMAT);
         when(displayFormatService.getDefaultTimestampDisplayFormat()).thenReturn(DisplayFormatKey.DATE_TIME_FORMAT);
         when(displayFormatService.resolve(DisplayFormatKey.DATE_FORMAT, null))
@@ -83,6 +85,7 @@ class ProjectManagerControllerDisplayFormatsTest {
         ResponseEntity<DisplayFormatsResponse> response = controller.fetchDisplayFormats(null);
 
         assertThat(response.getBody().formats().get(DisplayFormatKey.DATE_FORMAT).language()).isEqualTo("en");
+        assertThat(response.getBody().locale()).isEqualTo("en");
         verify(displayFormatService).resolve(DisplayFormatKey.DATE_FORMAT, null);
     }
 }

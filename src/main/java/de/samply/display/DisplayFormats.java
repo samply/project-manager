@@ -11,6 +11,41 @@ import java.util.Map;
 public class DisplayFormats {
 
     private Map<DisplayFormatKey, Map<String, String>> formats = Map.of();
+    private Map<String, String> locales = Map.of();
+    private Map<String, String> legacyNumberFormats = Map.of();
+
+    public Map<String, String> getLocales() {
+        return locales;
+    }
+
+    public void setLocales(Map<String, String> locales) {
+        Map<String, String> normalized = new LinkedHashMap<>();
+        if (locales != null) {
+            locales.forEach((language, locale) -> {
+                String key = LanguageUtils.normalize(language);
+                if (normalized.containsKey(key)) {
+                    throw new IllegalArgumentException("Duplicate locale language: " + language);
+                }
+                normalized.put(key, locale);
+            });
+        }
+        this.locales = Collections.unmodifiableMap(normalized);
+    }
+
+    /** Compatibility reader for the previous numberFormats: {language: {locale}} shape. */
+    @JsonProperty("numberFormats")
+    public void setLegacyNumberFormats(Map<String, NumberDisplayFormat> numberFormats) {
+        Map<String, String> normalized = new LinkedHashMap<>();
+        if (numberFormats != null) {
+            numberFormats.forEach((language, format) -> normalized.put(
+                    LanguageUtils.normalize(language), format == null ? null : format.locale()));
+        }
+        this.legacyNumberFormats = Collections.unmodifiableMap(normalized);
+    }
+
+    Map<String, String> getLegacyNumberFormats() {
+        return legacyNumberFormats;
+    }
 
     public static DisplayFormats of(Map<DisplayFormatKey, Map<String, String>> formats) {
         DisplayFormats result = new DisplayFormats();

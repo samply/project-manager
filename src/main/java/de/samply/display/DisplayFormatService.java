@@ -9,6 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Map;
@@ -85,6 +87,38 @@ public class DisplayFormatService {
         return displayFormats;
     }
 
+    public String resolveLocale(String requestedLanguage) {
+        Map<String, String> overrides = displayFormats.getLocales();
+        if (overrides.isEmpty()) overrides = displayFormats.getLegacyNumberFormats();
+        // Date-format languages define the existing deployment language fallback.
+        String language = resolve(defaultDateDisplayFormat, requestedLanguage).language();
+        String requested = LanguageUtils.normalize(requestedLanguage);
+        if (requested != null && !requested.isBlank()) {
+            if (overrides.containsKey(requested)) return overrides.get(requested);
+            String base = requested.split("-")[0];
+            if (overrides.containsKey(base)) return overrides.get(base);
+        }
+        return overrides.getOrDefault(language, language);
+    }
+
+    public String formatNumber(String value, String requestedLanguage) {
+        if (value == null || !value.matches("-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?")) return value;
+        try {
+            BigDecimal number = new BigDecimal(value).stripTrailingZeros();
+            // Match the browser formatter's precision range. Preserve unusual values
+            // verbatim instead of silently rounding or expanding enormous exponents.
+            if (number.scale() > 100 || (long) number.precision() - number.scale() > 309) return value;
+            NumberFormat formatter = NumberFormat.getNumberInstance(
+                    Locale.forLanguageTag(resolveLocale(requestedLanguage)));
+            formatter.setGroupingUsed(true);
+            formatter.setMaximumFractionDigits(100);
+            formatter.setMinimumFractionDigits(0);
+            return formatter.format(number);
+        } catch (NumberFormatException exception) {
+            return value;
+        }
+    }
+
     public String getDefaultLanguage() {
         return defaultLanguage;
     }
@@ -98,6 +132,22 @@ public class DisplayFormatService {
     }
 
     private void validate() {
+        Map<String, String> locales = displayFormats.getLocales();
+        if (locales.isEmpty()) locales = displayFormats.getLegacyNumberFormats();
+        locales.forEach((language, localeTag) -> {
+            normalizeRequiredLanguage(language, "number-format language");
+            if (localeTag == null || localeTag.isBlank()) {
+                throw new IllegalArgumentException("Missing number-format locale for " + language);
+            }
+            try {
+                Locale locale = new Locale.Builder().setLanguageTag(localeTag).build();
+                boolean supported = java.util.Arrays.stream(NumberFormat.getAvailableLocales())
+                        .anyMatch(available -> available.getLanguage().equals(locale.getLanguage()));
+                if (!supported) throw new IllegalArgumentException("Unsupported locale");
+            } catch (RuntimeException exception) {
+                throw new IllegalArgumentException("Invalid number-format locale for " + language + ": " + localeTag, exception);
+            }
+        });
         Map<DisplayFormatKey, Map<String, String>> formats = displayFormats.getFormats();
         EnumSet<DisplayFormatKey> missingKeys = EnumSet.allOf(DisplayFormatKey.class);
         missingKeys.removeAll(formats.keySet());

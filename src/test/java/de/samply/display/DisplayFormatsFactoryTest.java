@@ -31,6 +31,18 @@ class DisplayFormatsFactoryTest {
 
         assertThat(result.getFormats().get(DisplayFormatKey.DATE_FORMAT))
                 .containsEntry("en-gb", "dd/MM/yyyy");
+        assertThat(result.getLocales()).isEmpty();
+    }
+
+    @Test
+    void loadsOptionalNumberLocales(@TempDir Path directory) throws Exception {
+        Path path = directory.resolve("display-formats.json");
+        Files.writeString(path, """
+                {"locales":{"DE_de":"de-DE","en":"en-US"}}
+                """);
+        assertThat(factory.displayFormats(path).getLocales())
+                .containsEntry("de-de", "de-DE")
+                .containsEntry("en", "en-US");
     }
 
     @Test
