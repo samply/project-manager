@@ -28,6 +28,7 @@ import java.util.Set;
 import java.time.ZoneId;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class ProjectContextFactory {
@@ -124,9 +125,12 @@ public class ProjectContextFactory {
             }
             // Point 1 (2026-09-09): only append " (affiliations)" when there
             // actually are any, so a creator with none doesn't show a
-            // dangling empty "()".
-            result.put(ProjectContextKey.CREATOR_NAME_WITH_AFFILIATIONS,
-                    affiliations.isEmpty() ? creatorName : creatorName + " (" + affiliations + ")");
+            // dangling empty "()". A creator without first and last name
+            // (creatorName null) shows no "null" either.
+            result.put(ProjectContextKey.CREATOR_NAME_WITH_AFFILIATIONS, Stream.of(
+                            creatorName, affiliations.isEmpty() ? null : "(" + affiliations + ")")
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining(" ")));
         });
 
         return new ProjectContext(result);

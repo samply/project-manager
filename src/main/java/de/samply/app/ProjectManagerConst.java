@@ -148,7 +148,6 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_FIELDS_ACTION = "FETCH_PROJECT_FORM_FIELDS";
     public final static String FETCH_PROJECT_FORM_LAYOUTS_ACTION = "FETCH_PROJECT_FORM_LAYOUTS";
     public final static String FETCH_PROJECT_FORM_TEMPLATES_ACTION = "FETCH_FORM_TEMPLATES";
-    public final static String FETCH_BEST_PROJECT_FORM_TEMPLATES_ACTION = "FETCH_BEST_FORM_TEMPLATES";
     public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
     public final static String DOWNLOAD_FORM_AS_PDF_ACTION = "DOWNLOAD_FORM_AS_PDF";
     public final static String FETCH_SELECTED_PROJECT_FORMS_ACTION = "FETCH_SELECTED_PROJECT_FORMS";
@@ -286,7 +285,6 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_FORM_FIELDS = PROJECT_FORMS + "/fields";
     public final static String FETCH_PROJECT_FORM_LAYOUTS = PROJECT_FORMS + "/layouts";
     public final static String FETCH_PROJECT_FORM_TEMPLATES = PROJECT_FORMS + "/templates";
-    public final static String FETCH_BEST_PROJECT_FORM_TEMPLATES = PROJECT_FORMS + "/templates/best";
     public final static String EDIT_PROJECT_FORM_FIELDS = PROJECT_FORMS + "/fields";
     public final static String DELETE_FORM_FIELD_BLOCK = "/project/form/field/block";
     public final static String DELETE_FORM_FIELD_VALUE = "/project/form/field/value";

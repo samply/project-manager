@@ -116,6 +116,11 @@ public class FormFieldConditionContext {
         return context.get(fetchBlock(formField));
     }
 
+    /** Every generated context, for a condition that belongs to no field. */
+    public Collection<StandardEvaluationContext> getAllContexts() {
+        return context.get(NON_BLOCK);
+    }
+
     private String fetchBlock(FormField formField) {
         if (formField.block() == null) {
             return NON_BLOCK;

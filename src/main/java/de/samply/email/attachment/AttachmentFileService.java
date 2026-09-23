@@ -2,12 +2,13 @@ package de.samply.email.attachment;
 
 import de.samply.db.model.Project;
 import de.samply.form.template.FormTemplateService;
-import de.samply.frontend.dto.FormTemplate;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class AttachmentFileService {
 
@@ -33,20 +34,28 @@ public class AttachmentFileService {
             Optional<AttachmentExtra> extra,
             Optional<String> language) {
 
-        return extra
+        // "FORM:<template id>" names the template; plain "FORM" uses the default one.
+        Optional<String> formTemplate = extra
                 .filter(FormExtra.class::isInstance)
                 .map(FormExtra.class::cast)
                 .map(FormExtra::formTemplate)
-                .or(() -> formTemplateService
-                        .fetchTemplates(project, language)
-                        .stream()
-                        .findFirst()
-                        .map(FormTemplate::template))
-                .map(formTemplate -> new FilenameAndFileContent(
-                        formTemplateService.fetchFormFilename(project, formTemplate),
-                        formTemplateService.createFormAsPdf(project, formTemplate, language)
-                ));
+                .or(formTemplateService::fetchDefaultTemplate);
+        if (formTemplate.isEmpty()) {
+            log.warn("Form attachment skipped for project {}: no default form template configured",
+                    project.getCode());
+            return Optional.empty();
+        }
+        // The template was chosen in the configuration, so its condition (which
+        // only decides what the UI offers) does not apply here.
+        if (!formTemplateService.existsTemplate(formTemplate.get())) {
+            log.warn("Form attachment skipped for project {}: unknown form template {}",
+                    project.getCode(), formTemplate.get());
+            return Optional.empty();
+        }
+        return formTemplate.map(template -> new FilenameAndFileContent(
+                formTemplateService.fetchFormFilename(project, template),
+                formTemplateService.createFormAsPdf(project, template, language)
+        ));
     }
-
 
 }

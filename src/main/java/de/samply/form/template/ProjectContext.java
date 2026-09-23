@@ -1,8 +1,8 @@
 package de.samply.form.template;
 
-import de.samply.form.FormFieldConfig;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,20 +17,22 @@ public class ProjectContext {
         this.context = context;
     }
 
-    public FormFieldConfig resolveProjectContext(FormFieldConfig original) {
+    public FormTemplateFieldConfig resolveProjectContext(FormTemplateFieldConfig original) {
         if (original == null || original.getProjectValue() == null) {
             return original;
         }
         return original.toBuilder().projectValue(resolvePlaceholders(original.getProjectValue())).build();
     }
 
+    // A value that is not set (e.g. a creator without name, a project without
+    // title) is "", never "null" - and never a null value, which toMap rejects.
     public Map<String, String> fetchContext() {
         return context
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
                         e -> e.getKey().getText(),
-                        Map.Entry::getValue
+                        e -> Objects.toString(e.getValue(), "")
                 ));
     }
 
@@ -44,7 +46,11 @@ public class ProjectContext {
             String keyText = matcher.group(1);
             ProjectContextKey key = ProjectContextKey.fromText(keyText);
 
-            String replacement = key != null ? context.get(key) : null;
+            // A known key without value resolves to ""; an unknown placeholder
+            // (e.g. a typo in the configuration) is left visible as it is.
+            String replacement = key != null && context.containsKey(key)
+                    ? Objects.toString(context.get(key), "")
+                    : null;
 
             // Matcher.quoteReplacement is required in both branches: appendReplacement
             // treats "$" and "\" in its replacement argument specially (backreferences/

@@ -21,7 +21,8 @@ public enum AttachmentFile {
             return Optional.empty();
         }
 
-        String[] parts = value.split("-", 2);
+        // "FORM" or "FORM:<template id>"
+        String[] parts = value.split(":", 2);
 
         return fromString(parts[0])
                 .map(type -> {

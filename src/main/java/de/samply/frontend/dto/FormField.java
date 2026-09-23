@@ -83,7 +83,8 @@ public record FormField(
     // own value-level description, distinct from labelDescription which
     // describes the field itself). Used in the thymeleaf templates for the
     // forms, to surface this alongside fetchDisplayValue(). Null when there
-    // is no selected value, or no description configured for it.
+    // is no selected value, or no description configured for it. The full
+    // description, else the short one (see fullOrShort).
     @JsonIgnore
     @SuppressWarnings("unused")
     public String fetchDisplayDescription() {
@@ -95,8 +96,43 @@ public record FormField(
                 .findFirst()
                 // Optional.map (unlike Stream.findFirst()) tolerates a mapper
                 // returning null, which description() often does.
-                .map(FormFieldValue::description)
+                .map(FormField::fetchValueDescription)
                 .orElse(null);
+    }
+
+    /**
+     * An allowed value's description for the thymeleaf templates for the
+     * forms: the full description, else the short one - or null if it only
+     * repeats the value's display name (e.g. a unit "µl" described as "µl"),
+     * which would print the same text twice.
+     */
+    public static String fetchValueDescription(FormFieldValue value) {
+        String description = fullOrShort(value.description(), value.shortDescription());
+        return description != null && value.displayName() != null
+                && description.trim().equalsIgnoreCase(value.displayName().trim())
+                ? null
+                : description;
+    }
+
+    // The field's description for the thymeleaf templates for the forms: the
+    // full description, else the short one (see fullOrShort).
+    @JsonIgnore
+    @SuppressWarnings("unused")
+    public String fetchFullLabelDescription() {
+        return fullOrShort(labelDescription, labelShortDescription);
+    }
+
+    /**
+     * The full description, or the short one if the full one is missing or
+     * blank; null if both are. Short descriptions are meant for places with
+     * little room (e.g. the frontend Summary); a generated form document has
+     * room for the full text.
+     */
+    public static String fullOrShort(String description, String shortDescription) {
+        if (description != null && !description.isBlank()) {
+            return description;
+        }
+        return shortDescription != null && !shortDescription.isBlank() ? shortDescription : null;
     }
 
 }

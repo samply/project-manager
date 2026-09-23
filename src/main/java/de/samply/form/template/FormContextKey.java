@@ -7,7 +7,7 @@ public enum FormContextKey {
 
     FIELDS("fields"),
     LAYOUTS("layouts"),
-    LAYOUT_RESOLVER("layoutFieldRows"),
+    DOCUMENT("document"),
     DATA_TYPE_CLASS("DataType"),
     CURRENT_DATE("currentDate");
 

@@ -3,7 +3,6 @@ package de.samply.form.template;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.samply.form.FormFieldConfig;
 import de.samply.utils.FileExtension;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,10 +21,23 @@ public class FormTemplateMetadata {
     // Input template file
     // Without extension: Currently, only HTML files are supported
     private String templateFile;
-    @JsonProperty("form_titles")
-    private String[] formTitles;
-    @JsonProperty("all_form_titles_required")
-    private boolean allFormTitlesRequired = false;
+    // SpEL condition, same syntax as form-field conditions, evaluated against the
+    // fields of the project's selected forms. Absent: the template is always offered.
+    private String condition;
+    // Forms this template prints, restricted from the project's selected forms.
+    // Absent: every selected form.
+    @JsonProperty("include_forms")
+    private String[] includeForms;
+    @JsonProperty("exclude_forms")
+    private String[] excludeForms;
+    // Order of the printed forms (sections): those listed come first, in this
+    // order; the others follow in the deployment's normal order.
+    @JsonProperty("form_titles_in_order")
+    private String[] formTitlesInOrder;
+    // Template used by a plain "FORM" email attachment. At most one template may
+    // set it; a single configured template is the default implicitly.
+    @JsonProperty("default")
+    private boolean defaultTemplate = false;
     // Output filenames
     @JsonProperty("filename_templates")
     private Map<FileExtension, String> extensionFilenameTemplateMap;
@@ -35,8 +47,8 @@ public class FormTemplateMetadata {
     @JsonProperty("display_name")
     private Map<String, String> languageDisplayNameMap;
     @JsonProperty("project_fields")
-    @JsonDeserialize(using = FormFieldConfigDeserializer.class)
-    private FormFieldConfig[] projectFields;
+    @JsonDeserialize(using = FormTemplateFieldConfigDeserializer.class)
+    private FormTemplateFieldConfig[] projectFields;
 
 
 }

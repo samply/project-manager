@@ -1,6 +1,5 @@
 package de.samply.form.template;
 
-import de.samply.form.FormFieldConfig;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,7 +12,7 @@ class ProjectContextTest {
     @Test
     void resolvesAConfiguredPlaceholder() {
         ProjectContext context = new ProjectContext(Map.of(ProjectContextKey.PROJECT_CODE, "PROJ-001"));
-        FormFieldConfig field = FormFieldConfig.builder().projectValue("${project-code}").build();
+        FormTemplateFieldConfig field = FormTemplateFieldConfig.builder().projectValue("${project-code}").build();
 
         assertThat(context.resolveProjectContext(field).getProjectValue()).isEqualTo("PROJ-001");
     }
@@ -26,7 +25,7 @@ class ProjectContextTest {
         // resolvePlaceholders passed the raw "${...}" text into
         // Matcher.appendReplacement without escaping it.
         ProjectContext context = new ProjectContext(Map.of());
-        FormFieldConfig field = FormFieldConfig.builder().projectValue("${not-configured-anywhere}").build();
+        FormTemplateFieldConfig field = FormTemplateFieldConfig.builder().projectValue("${not-configured-anywhere}").build();
 
         assertThatCode(() -> context.resolveProjectContext(field)).doesNotThrowAnyException();
         assertThat(context.resolveProjectContext(field).getProjectValue()).isEqualTo("${not-configured-anywhere}");
@@ -39,15 +38,26 @@ class ProjectContextTest {
         // must be applied to it too, or appendReplacement would misinterpret it.
         ProjectContext context = new ProjectContext(
                 Map.of(ProjectContextKey.ENVIRONMENT_VARIABLES, "PRICE=$5.00"));
-        FormFieldConfig field = FormFieldConfig.builder().projectValue("${environment-variables}").build();
+        FormTemplateFieldConfig field = FormTemplateFieldConfig.builder().projectValue("${environment-variables}").build();
 
         assertThat(context.resolveProjectContext(field).getProjectValue()).isEqualTo("PRICE=$5.00");
     }
 
     @Test
+    void aKeyWithoutValueIsEmptyNeverNull() {
+        Map<ProjectContextKey, String> values = new java.util.HashMap<>();
+        values.put(ProjectContextKey.PROJECT_TITLE, null);
+        ProjectContext context = new ProjectContext(values);
+        FormTemplateFieldConfig field = FormTemplateFieldConfig.builder().projectValue("Title: ${project-title}").build();
+
+        assertThat(context.fetchContext()).containsEntry(ProjectContextKey.PROJECT_TITLE.getText(), "");
+        assertThat(context.resolveProjectContext(field).getProjectValue()).isEqualTo("Title: ");
+    }
+
+    @Test
     void leavesAPlainValueWithNoPlaceholderUnchanged() {
         ProjectContext context = new ProjectContext(Map.of());
-        FormFieldConfig field = FormFieldConfig.builder().projectValue("plain text, no placeholder").build();
+        FormTemplateFieldConfig field = FormTemplateFieldConfig.builder().projectValue("plain text, no placeholder").build();
 
         assertThat(context.resolveProjectContext(field).getProjectValue()).isEqualTo("plain text, no placeholder");
     }

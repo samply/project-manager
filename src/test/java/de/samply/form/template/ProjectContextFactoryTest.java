@@ -219,6 +219,32 @@ class ProjectContextFactoryTest {
     }
 
     @Test
+    void showsOnlyTheAffiliationWhenTheCreatorHasNoName() {
+        // A user without first and last name must not show up as "null (...)".
+        Project project = projectWithQuery(query -> {
+        });
+        UserService userService = mock(UserService.class);
+        User creator = new User();
+        creator.setEmail("creator@example.org");
+        when(userService.fetchUser("creator@example.org")).thenReturn(Optional.of(creator));
+        CreatorUser creatorUser = new CreatorUser();
+        creatorUser.setBridgehead("bridgehead-a");
+        when(userService.fetchCreatorUser("creator@example.org")).thenReturn(Set.of(creatorUser));
+        BridgeheadsConfiguration bridgeheadsConfiguration = mock(BridgeheadsConfiguration.class);
+        when(bridgeheadsConfiguration.getAffiliation("bridgehead-a")).thenReturn(Optional.of("University X"));
+
+        DocumentService documentService = documentServiceWithNoDocuments(project);
+        ProjectContextFactory factory = new ProjectContextFactory(
+                userService, bridgeheadsConfiguration, displayFormatService(), documentService,
+                mock(ProjectBridgeheadRepository.class));
+
+        Map<String, String> context = factory.createProjectContext(project, "en").fetchContext();
+
+        assertThat(context).containsEntry(
+                ProjectContextKey.CREATOR_NAME_WITH_AFFILIATIONS.getText(), "(University X)");
+    }
+
+    @Test
     void omitsParenthesesWhenTheCreatorHasNoAffiliation() {
         // Regression test for point 1 (2026-09-09 feedback): a creator with
         // no known affiliation must show just their name, not a dangling

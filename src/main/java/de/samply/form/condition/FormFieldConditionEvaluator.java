@@ -61,6 +61,26 @@ public class FormFieldConditionEvaluator {
         return evaluateCondition(formField, context.getContext(formField));
     }
 
+    /**
+     * Evaluates a condition that belongs to no field (e.g. a form template's)
+     * against the given fields: met if it holds for any combination of block
+     * instances, same as a field condition. An expression that fails to
+     * evaluate (e.g. it refers to a form that is not present) is not met.
+     */
+    public boolean isConditionMet(@NotNull String condition, @NotNull Collection<FormField> contextFields) {
+        Expression expression = EXPRESSION_PARSER.parseExpression(condition);
+        return new FormFieldConditionContext(contextFields).getAllContexts().stream()
+                .anyMatch(context -> evaluateBooleanExpression(expression, context));
+    }
+
+    /**
+     * Throws {@link org.springframework.expression.ParseException} if the
+     * condition is not a syntactically valid expression.
+     */
+    public void validateSyntax(@NotNull String condition) {
+        EXPRESSION_PARSER.parseExpression(condition);
+    }
+
     private List<FormField> fetchFormFieldsWithConditions(Collection<FormField> formFields) {
         return formFields
                 .stream()

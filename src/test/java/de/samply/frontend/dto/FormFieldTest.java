@@ -90,6 +90,31 @@ class FormFieldTest {
         assertThat(field.fetchDisplayDescription()).isNull();
     }
 
+    @Test
+    void fetchDisplayDescriptionFallsBackToTheShortDescription() {
+        FormField field = enumField("plasma", new FormFieldValue("plasma", "Plasma", " ", "Blood fluid."));
+
+        assertThat(field.fetchDisplayDescription()).isEqualTo("Blood fluid.");
+    }
+
+    @Test
+    void fetchDisplayDescriptionIsNullWhenItOnlyRepeatsTheDisplayName() {
+        // master samples.json: unit values are described by their own name.
+        FormField field = enumField("µl", new FormFieldValue("µl", "µl", " µl ", null));
+
+        assertThat(field.fetchDisplayValue()).isEqualTo("µl");
+        assertThat(field.fetchDisplayDescription()).isNull();
+    }
+
+    @Test
+    void fetchFullLabelDescriptionPrefersTheFullDescription() {
+        assertThat(FormField.builder().labelDescription("Full").labelShortDescription("Short").build()
+                .fetchFullLabelDescription()).isEqualTo("Full");
+        assertThat(FormField.builder().labelDescription("").labelShortDescription("Short").build()
+                .fetchFullLabelDescription()).isEqualTo("Short");
+        assertThat(FormField.builder().labelShortDescription(" ").build().fetchFullLabelDescription()).isNull();
+    }
+
     private static FormField enumField(String value, FormFieldValue... allowedValues) {
         return FormField.builder()
                 .value(value)

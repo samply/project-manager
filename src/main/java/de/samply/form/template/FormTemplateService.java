@@ -11,6 +11,7 @@ import de.samply.form.FormFieldConfig;
 import de.samply.form.FormFieldLayout;
 import de.samply.form.FormFieldLayoutRow;
 import de.samply.form.FormFieldType;
+import de.samply.form.condition.FormFieldConditionEvaluator;
 import de.samply.form.pdf.FormPdfGeneratorFactory;
 import de.samply.form.pdf.FormTemplateServiceException;
 import de.samply.frontend.dto.DtoFactory;
@@ -23,7 +24,10 @@ import de.samply.pdf.PdfGeneratorException;
 import de.samply.utils.FileExtension;
 import de.samply.utils.FormFieldUtils;
 import de.samply.utils.LanguageUtils;
+import de.samply.form.template.FormTemplateFieldPlacement.PlacedField;
+import de.samply.form.template.FormTemplateFieldPlacement.ProjectFieldPlacement;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +37,11 @@ import java.time.ZoneId;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class FormTemplateService {
+
+    private static final String KEEP_FIXED_FIELD_ORDER = "KEEP_FIXED_FIELD_ORDER";
 
     private final DtoFormService dtoFormService;
     private final PdfGenerator pdfGenerator;
@@ -46,6 +53,7 @@ public class FormTemplateService {
     private final ProjectContextFactory projectContextFactory;
     private final ProjectConfigurations frontendProjectConfigurations;
     private final FormConfig formConfig;
+    private final FormFieldConditionEvaluator conditionEvaluator;
 
 
     public FormTemplateService(DtoFormService dtoFormService,
@@ -57,7 +65,8 @@ public class FormTemplateService {
                                DisplayFormatService displayFormatService,
                                ProjectContextFactory projectContextFactory,
                                ProjectConfigurations frontendProjectConfigurations,
-                               FormConfig formConfig) {
+                               FormConfig formConfig,
+                               FormFieldConditionEvaluator conditionEvaluator) {
         this.dtoFormService = dtoFormService;
         this.pdfGenerator = pdfGeneratorFactory.createPdfGenerator();
         this.defaultLanguage = defaultLanguage;
@@ -68,6 +77,42 @@ public class FormTemplateService {
         this.projectContextFactory = projectContextFactory;
         this.frontendProjectConfigurations = frontendProjectConfigurations;
         this.formConfig = formConfig;
+        this.conditionEvaluator = conditionEvaluator;
+        validateTemplateMetadata();
+    }
+
+    /**
+     * Fails startup for configuration that can only be wrong (several default
+     * templates, a condition that is not a valid expression) and warns about
+     * include/exclude/order form titles that match no configured form.
+     */
+    private void validateTemplateMetadata() {
+        Collection<FormTemplateMetadata> templates = formTemplateConfig.getTemplateMetadataMap().values();
+        List<String> defaultTemplates = templates.stream()
+                .filter(FormTemplateMetadata::isDefaultTemplate)
+                .map(FormTemplateMetadata::getTemplate)
+                .sorted()
+                .toList();
+        if (defaultTemplates.size() > 1) {
+            throw new IllegalStateException("Only one form template may be the default: " + defaultTemplates);
+        }
+        Set<String> configuredFormTitles = formConfig.getFormTitleLabelFieldMap().keySet();
+        for (FormTemplateMetadata template : templates) {
+            if (template.getCondition() != null) {
+                try {
+                    conditionEvaluator.validateSyntax(template.getCondition());
+                } catch (RuntimeException e) {
+                    throw new IllegalStateException(
+                            "Invalid condition in form template " + template.getTemplate(), e);
+                }
+            }
+            Stream.of(template.getIncludeForms(), template.getExcludeForms(), template.getFormTitlesInOrder())
+                    .filter(Objects::nonNull)
+                    .flatMap(Arrays::stream)
+                    .filter(formTitle -> !configuredFormTitles.contains(formTitle))
+                    .forEach(formTitle -> log.warn("Form template {} refers to unknown form {}",
+                            template.getTemplate(), formTitle));
+        }
     }
 
     public String fetchFormFilename(@NotNull Project project, String formTemplate) {
@@ -96,19 +141,19 @@ public class FormTemplateService {
         ProjectContext projectContext = projectContextFactory.createProjectContext(project, language);
         //Add project context
         Map<String, Object> result = new HashMap<>(projectContext.fetchContext());
-        // Add form fields
-        Map<String, FormField> fields = fetchFormFields(project, formTemplate, language, projectContext);
+        // Add form fields, in print order
+        List<PlacedField> placedFields = fetchPlacedFields(project, formTemplate, language, projectContext);
+        Map<String, FormField> fields = toFieldsMap(placedFields);
         result.put(FormContextKey.FIELDS.getText(), fields);
         // Add form field layouts, so templates can group fields side by side
         // the same way the frontend does, instead of always one field per row.
         Map<String, List<FormFieldLayoutRow>> layouts = fetchFormLayouts(project, formTemplate, language);
         result.put(FormContextKey.LAYOUTS.getText(), layouts);
-        // Pre-resolve which fields belong together in a layout row, so a
-        // template only needs two simple lookups per field instead of having
-        // to cross-reference fields/layouts itself (SpringEL's collection
-        // selection cannot see outer loop variables, making that impractical
-        // to do reliably inside the template - see FormFieldLayoutResolver).
-        result.put(FormContextKey.LAYOUT_RESOLVER.getText(), FormFieldLayoutResolver.resolve(fields, layouts));
+        // The document structure (headings and rows, layout rows resolved), so
+        // the template only renders it - see FormTemplateDocumentBuilder.
+        result.put(FormContextKey.DOCUMENT.getText(), FormTemplateDocumentBuilder.build(
+                placedFields, fetchSelectedForms(project, language),
+                FormFieldLayoutResolver.resolve(fields, layouts)));
         // Add form variables
         result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
         result.put(FormContextKey.DATA_TYPE_CLASS.getText(), DataType.class);
@@ -128,86 +173,157 @@ public class FormTemplateService {
             @NotNull String language,
             @NotNull ProjectContext projectContext
     ) {
+        return toFieldsMap(fetchPlacedFields(project, formTemplate, language, projectContext));
+    }
+
+    /**
+     * Every field the PDF prints, with its section, in print order - see
+     * {@link FormTemplateFieldPlacement} for the order and {@link #placeProjectField}
+     * for where a project field goes.
+     */
+    public List<PlacedField> fetchPlacedFields(
+            @NotNull Project project,
+            @NotNull String formTemplate,
+            @NotNull String language,
+            @NotNull ProjectContext projectContext
+    ) {
         FormTemplateMetadata template = resolveTemplateMetadata(formTemplate);
+        Set<String> printedFormTitles = fetchPrintedFormTitles(template, project, language);
+        // Fetched for all forms at once, like the frontend does, so conditions
+        // are evaluated against every form's fields (a per-form fetch would
+        // hide a field whose condition refers to another form).
+        Collection<FormField> formFields =
+                dtoFormService.fetchProjectFormFields(Optional.empty(), project, Optional.of(language));
+        Map<String, FormField> fixedEntries = fetchFixedEntriesByLabel(formFields);
 
-        return Stream.concat(
-                        // 1️⃣ ProjectCode fields
-                        Stream.ofNullable(template.getProjectFields())
-                                .flatMap(Arrays::stream)
-                                // A project field configured "active": false is hidden from
-                                // the PDF the same way an inactive FIXED/DYNAMIC field is -
-                                // "hidden in the form field configuration" applies here too,
-                                // as opposed to a field only hidden by frontend-only role/UI
-                                // rules (e.g. an admin-only field), which should still print.
-                                .filter(FormFieldConfig::isActive)
-                                // A project field can leave its own display_name/
-                                // description unset (or explicitly blank) to defer to
-                                // the corresponding FIXED field's own configured
-                                // metadata instead - point 2, 2026-09-09 feedback.
-                                // Precedence: PDF template metadata (this field's own,
-                                // if not blank) > form-field metadata (the linked FIXED
-                                // field's, if not blank) > default (whatever's left,
-                                // typically blank).
-                                .map(field -> applyFixedFieldMetadataFallback(field, language))
-                                .map(projectContext::resolveProjectContext)
-                                .map(field -> dtoFactory.convert(
-                                        formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
-                                        field,
-                                        Optional.empty(),
-                                        Optional.empty(),
-                                        Optional.ofNullable(field.getProjectValue()),
-                                        Optional.of(language)
-                                )),
+        List<ProjectFieldPlacement> projectFields = Stream.ofNullable(template.getProjectFields())
+                .flatMap(Arrays::stream)
+                // A project field configured "active": false is hidden from
+                // the PDF the same way an inactive FIXED/DYNAMIC field is -
+                // "hidden in the form field configuration" applies here too,
+                // as opposed to a field only hidden by frontend-only role/UI
+                // rules (e.g. an admin-only field), which should still print.
+                .filter(FormFieldConfig::isActive)
+                // Likewise when the FIXED entry it links to is inactive, or its
+                // condition does not hold (the frontend hides the native field).
+                .filter(config -> !isInactive(fixedEntries.get(config.getLabel())))
+                .map(config -> placeProjectField(
+                        formTemplate, config, fixedEntries.get(config.getLabel()), language, projectContext))
+                .toList();
 
-                        // 2️⃣ Form fields from formService (raw, base + override)
-                        fetchApplicableFormTitles(template, project, language)
-                                .flatMap(formTitle -> dtoFormService.fetchProjectFormFields(
-                                        Optional.of(formTitle), project, Optional.of(language)).stream())
-                )
-                // FIXED entries are metadata references for native frontend
-                // fields, not form-template/PDF values.
+        // FIXED entries are metadata references for native frontend fields,
+        // not form-template/PDF values.
+        List<FormField> dynamicFields = formFields.stream()
                 .filter(field -> field.fieldType() != FormFieldType.FIXED)
-                // Group by the deployment's canonical section order (point 1,
-                // 2026-09-09 feedback), not FormFieldUtils.FORM_FIELD_COMPARATOR's
-                // alphabetical-by-title-string order. Each per-title fetch above
-                // is already correctly sorted internally (block instance/order/
-                // label) by DtoFormService; Stream.sorted is stable, so comparing
-                // by title index alone regroups titles into the right sequence
-                // without disturbing that existing within-title order.
-                .sorted(fetchPdfFieldOrderComparator())
+                .filter(field -> printedFormTitles.contains(field.title()))
+                .toList();
+
+        return FormTemplateFieldPlacement.place(fetchSectionOrder(template, printedFormTitles), projectFields, dynamicFields);
+    }
+
+    /**
+     * A project field's section, in order of precedence: its own form_title;
+     * else the form of the FIXED entry its label links to (where the frontend
+     * shows the native field); else none - the header block. A section that is
+     * not printed also means the header block (see FormTemplateFieldPlacement).
+     * <p>
+     * Following a FIXED entry, the field takes that entry's order among the
+     * form's fields - unless the entry keeps the native order
+     * (KEEP_FIXED_FIELD_ORDER), or form_title moved it to another form: then it
+     * goes to the start of its section, where the frontend puts native fields.
+     */
+    private ProjectFieldPlacement placeProjectField(
+            String formTemplate, FormTemplateFieldConfig config, FormField fixedEntry,
+            String language, ProjectContext projectContext) {
+        // A project field can leave its own display_name/description unset (or
+        // explicitly blank) to defer to the linked FIXED field's own configured
+        // metadata. Precedence: PDF template metadata (this field's own, if not
+        // blank) > form-field metadata (the linked FIXED field's, if not blank)
+        // > default (whatever's left, typically blank).
+        FormTemplateFieldConfig resolved =
+                projectContext.resolveProjectContext(applyFixedFieldMetadataFallback(config, language));
+        FormField field = dtoFactory.convert(
+                formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
+                resolved,
+                Optional.empty(),
+                Optional.empty(),
+                Optional.ofNullable(resolved.getProjectValue()),
+                Optional.of(language));
+
+        String fixedEntryForm = fixedEntry != null ? fixedEntry.title() : null;
+        String section = config.getFormTitle() != null ? config.getFormTitle() : fixedEntryForm;
+        boolean takesFixedEntryOrder = fixedEntry != null
+                && section != null && section.equals(fixedEntryForm)
+                && !hasProperty(fixedEntry, KEEP_FIXED_FIELD_ORDER);
+        return new ProjectFieldPlacement(field, section, takesFixedEntryOrder ? fixedEntry.order() : null);
+    }
+
+    /**
+     * FIXED entries by label, like the frontend: a label configured more than
+     * once is ignored (the frontend warns and ignores it too).
+     */
+    private Map<String, FormField> fetchFixedEntriesByLabel(Collection<FormField> formFields) {
+        Map<String, List<FormField>> byLabel = formFields.stream()
+                .filter(field -> field.fieldType() == FormFieldType.FIXED)
+                .collect(Collectors.groupingBy(FormField::label));
+        Map<String, FormField> result = new HashMap<>();
+        byLabel.forEach((label, entries) -> {
+            if (entries.size() == 1) {
+                result.put(label, entries.getFirst());
+            } else {
+                log.warn("Ignoring duplicate FIXED form-field key {}", label);
+            }
+        });
+        return result;
+    }
+
+    private static boolean isInactive(FormField fixedEntry) {
+        return fixedEntry != null && Boolean.FALSE.equals(fixedEntry.active());
+    }
+
+    private static boolean hasProperty(FormField field, String property) {
+        return field.properties() != null && Arrays.asList(field.properties()).contains(property);
+    }
+
+    /**
+     * The order of the printed forms: first those the template lists in its
+     * form_titles_in_order, in that order; then the others in the deployment's
+     * canonical section order (the frontend Summary's,
+     * {@link ProjectConfigurations#getFormTitleOrder()}); a form missing from
+     * both (config drift) comes last rather than being dropped.
+     */
+    private List<String> fetchSectionOrder(FormTemplateMetadata template, Set<String> printedFormTitles) {
+        List<String> result = new ArrayList<>();
+        Stream.ofNullable(template.getFormTitlesInOrder())
+                .flatMap(Arrays::stream)
+                .filter(printedFormTitles::contains)
+                .filter(title -> !result.contains(title))
+                .forEach(result::add);
+        frontendProjectConfigurations.getFormTitleOrder().stream()
+                .filter(printedFormTitles::contains)
+                .filter(title -> !result.contains(title))
+                .forEach(result::add);
+        printedFormTitles.stream()
+                .filter(title -> !result.contains(title))
+                .sorted()
+                .forEach(result::add);
+        return result;
+    }
+
+    private Map<String, Form> fetchSelectedForms(Project project, String language) {
+        return dtoFormService.fetchSelectedForms(project, Optional.of(language)).stream()
+                .collect(Collectors.toMap(Form::title, form -> form, (first, _) -> first));
+    }
+
+    private static Map<String, FormField> toFieldsMap(List<PlacedField> placedFields) {
+        return placedFields.stream()
+                .map(PlacedField::field)
                 .collect(FormFieldUtils.formFieldMapCollector());
     }
 
     /**
-     * Orders PDF fields by the same canonical section order the frontend
-     * Summary uses ({@link ProjectConfigurations#getFormTitleOrder()}), so a
-     * generated PDF's section sequence matches what the user already sees
-     * there instead of an arbitrary alphabetical-by-title-string order.
-     * Project fields (the synthetic "identity" section: name, email, request
-     * ID, etc.) always come first, matching their current placement and
-     * their role as a cover-page-style summary.
-     */
-    private Comparator<FormField> fetchPdfFieldOrderComparator() {
-        List<String> canonicalOrder = frontendProjectConfigurations.getFormTitleOrder();
-        Map<String, Integer> titleIndex = new HashMap<>();
-        for (int i = 0; i < canonicalOrder.size(); i++) {
-            titleIndex.putIfAbsent(canonicalOrder.get(i), i);
-        }
-        return Comparator.comparingInt(field -> fetchTitleOrderIndex(field, titleIndex));
-    }
-
-    private int fetchTitleOrderIndex(FormField field, Map<String, Integer> titleIndex) {
-        if (formTemplateConfig.isProjectFormFieldTitle(field.title())) {
-            return -1;
-        }
-        // A title missing from the canonical order (config drift) sorts last
-        // rather than being dropped or crashing.
-        return titleIndex.getOrDefault(field.title(), Integer.MAX_VALUE);
-    }
-
-    /**
-     * Layout rows for every form title applicable to this project/template,
-     * keyed by form title, in the same scope as {@link #fetchFormFields}.
+     * Layout rows for every form this template prints, keyed by form title, in
+     * the same scope as {@link #fetchFormFields}.
      * Flattened from {@link FormFieldLayout}'s own grouping (which has no
      * rendering significance of its own) down to a plain list of rows, since
      * a template only needs "which fields render together in one row" - not
@@ -216,11 +332,11 @@ public class FormTemplateService {
      */
     private Map<String, List<FormFieldLayoutRow>> fetchFormLayouts(
             @NotNull Project project, @NotNull String formTemplate, @NotNull String language) {
-        FormTemplateMetadata template = resolveTemplateMetadata(formTemplate);
+        Set<String> printedFormTitles = fetchPrintedFormTitles(
+                resolveTemplateMetadata(formTemplate), project, language);
 
-        return fetchApplicableFormTitles(template, project, language)
-                .map(title -> dtoFormService.fetchFormLayouts(Optional.of(title)))
-                .flatMap(layoutsByTitle -> layoutsByTitle.entrySet().stream())
+        return dtoFormService.fetchFormLayouts(Optional.empty()).entrySet().stream()
+                .filter(entry -> printedFormTitles.contains(entry.getKey()))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         entry -> entry.getValue().stream()
@@ -230,68 +346,97 @@ public class FormTemplateService {
                         LinkedHashMap::new));
     }
 
-    private Stream<String> fetchApplicableFormTitles(
-            FormTemplateMetadata template, Project project, String language) {
-        Stream<String> configuredFormTitles = Arrays.stream(template.getFormTitles());
-        if (template.isAllFormTitlesRequired()) {
-            return configuredFormTitles;
+    /**
+     * The project's selected forms, restricted to the template's include_forms
+     * (if set) and without its exclude_forms.
+     */
+    private Set<String> fetchPrintedFormTitles(FormTemplateMetadata template, Project project, String language) {
+        Set<String> result = new HashSet<>(fetchSelectedFormTitles(project, Optional.of(language)));
+        if (template.getIncludeForms() != null) {
+            result.retainAll(Set.of(template.getIncludeForms()));
         }
+        if (template.getExcludeForms() != null) {
+            Arrays.asList(template.getExcludeForms()).forEach(result::remove);
+        }
+        return result;
+    }
 
-        Set<String> selectedFormTitles = dtoFormService
-                .fetchSelectedForms(project, Optional.of(language)).stream()
+    private Set<String> fetchSelectedFormTitles(Project project, Optional<String> language) {
+        return dtoFormService.fetchSelectedForms(project, language).stream()
                 .map(Form::title)
                 .collect(Collectors.toSet());
-        return configuredFormTitles.filter(selectedFormTitles::contains);
     }
 
-    private List<FormTemplateMetadata> fetchValidMetadata(Project project, Optional<String> language) {
-
-        // Fetch all selected forms for the project and extract their titles into a Set
-        //  is used for O(1) lookup when checking if a title is contained
-        Set<String> selectedFormTitles = dtoFormService.fetchSelectedForms(project, language).stream()
-                .map(Form::title)
-                .collect(Collectors.toSet());
-
-        return formTemplateConfig.getTemplateMetadataMap().values().stream()
-                .filter(metadata -> matchesSelectedForms(metadata, selectedFormTitles))
-                .toList();
-    }
-
-    private boolean matchesSelectedForms(
-            FormTemplateMetadata metadata, Set<String> selectedFormTitles) {
-        Stream<String> formTitles = Arrays.stream(metadata.getFormTitles());
-        return metadata.isAllFormTitlesRequired()
-                ? formTitles.allMatch(selectedFormTitles::contains)
-                : formTitles.anyMatch(selectedFormTitles::contains);
-    }
-
+    /**
+     * Every configured template whose condition holds for this project (a
+     * template without condition always does). Sorted by template id, so the
+     * order is stable (templates are loaded into a HashMap).
+     */
     public List<FormTemplate> fetchTemplates(@NotNull Project project, Optional<String> language) {
-
-        // Convert all valid metadata objects into DTOs (FormTemplate)
-        // This method returns ALL matching templates without ranking
-        return fetchValidMetadata(project, language).stream()
+        List<FormTemplateMetadata> templates = formTemplateConfig.getTemplateMetadataMap().values().stream()
+                .sorted(Comparator.comparing(FormTemplateMetadata::getTemplate))
+                .toList();
+        // Fetched once, and only if some template has a condition at all.
+        Collection<FormField> conditionFields = templates.stream().anyMatch(t -> t.getCondition() != null)
+                ? fetchConditionFields(project, language)
+                : List.of();
+        return templates.stream()
+                .filter(template -> isConditionMet(template, conditionFields))
                 .map(metadata -> dtoFactory.convert(metadata, language))
                 .toList();
     }
 
-    public List<FormTemplate> fetchBestTemplates(@NotNull Project project, Optional<String> language) {
+    /**
+     * Whether this template exists and its condition holds for the project -
+     * the same rule {@link #fetchTemplates} applies, for the PDF download,
+     * which receives the template id from the UI.
+     */
+    public boolean isTemplateAvailable(@NotNull Project project, String formTemplate, Optional<String> language) {
+        return formTemplateConfig.getTemplate(formTemplate)
+                .map(template -> template.getCondition() == null
+                        || isConditionMet(template, fetchConditionFields(project, language)))
+                .orElse(false);
+    }
 
-        // Step 1: Get all templates that match their configured form-title requirement
-        List<FormTemplateMetadata> validTemplates = fetchValidMetadata(project, language);
+    /**
+     * Whether this template is configured, regardless of its condition. For
+     * callers that chose the template explicitly (email attachments), where
+     * the condition, which only decides what the UI offers, does not apply.
+     */
+    public boolean existsTemplate(String formTemplate) {
+        return formTemplateConfig.getTemplate(formTemplate).isPresent();
+    }
 
-        // Step 2: Compute the "score" of each template
-        // Here, the score is the number of form titles configured for the template
-        int maxScore = validTemplates.stream()
-                .mapToInt(metadata -> metadata.getFormTitles().length)
-                .max()
-                .orElse(0); // fallback if list is empty
+    /**
+     * The template marked "default", or the only configured template.
+     */
+    public Optional<String> fetchDefaultTemplate() {
+        Collection<FormTemplateMetadata> templates = formTemplateConfig.getTemplateMetadataMap().values();
+        if (templates.size() == 1) {
+            return Optional.of(templates.iterator().next().getTemplate());
+        }
+        return templates.stream()
+                .filter(FormTemplateMetadata::isDefaultTemplate)
+                .map(FormTemplateMetadata::getTemplate)
+                .findFirst();
+    }
 
-        // Step 3: Keep only templates that have the maximum score
-        // → i.e., the most specific / most complete templates
-        return validTemplates.stream()
-                .filter(metadata -> metadata.getFormTitles().length == maxScore)
-                // Step 4: Convert the remaining metadata into DTOs for output
-                .map(metadata -> dtoFactory.convert(metadata, language))
+    private boolean isConditionMet(FormTemplateMetadata template, Collection<FormField> conditionFields) {
+        return template.getCondition() == null
+                || conditionEvaluator.isConditionMet(template.getCondition(), conditionFields);
+    }
+
+    /**
+     * What a template condition sees: the dynamic fields of the project's
+     * selected forms (all of them, not only the forms the template prints),
+     * as the backend returns them - fields hidden by their own condition are
+     * already left out.
+     */
+    private Collection<FormField> fetchConditionFields(Project project, Optional<String> language) {
+        Set<String> selectedFormTitles = fetchSelectedFormTitles(project, language);
+        return dtoFormService.fetchProjectFormFields(Optional.empty(), project, language).stream()
+                .filter(field -> field.fieldType() != FormFieldType.FIXED)
+                .filter(field -> selectedFormTitles.contains(field.title()))
                 .toList();
     }
 
@@ -309,7 +454,7 @@ public class FormTemplateService {
      * description is blank, the linked FIXED field's is used instead - see
      * 2026-09-07-plan-pdf-form-field-parity.md point 2 (2026-09-09 feedback).
      */
-    private FormFieldConfig applyFixedFieldMetadataFallback(FormFieldConfig projectField, String language) {
+    private FormTemplateFieldConfig applyFixedFieldMetadataFallback(FormTemplateFieldConfig projectField, String language) {
         if (projectField.getLabel() == null) {
             return projectField;
         }
@@ -318,8 +463,8 @@ public class FormTemplateService {
                 .orElse(projectField);
     }
 
-    private FormFieldConfig mergeBlankDisplayMetadata(
-            FormFieldConfig projectField, FormFieldConfig fixedConfig, String language) {
+    private FormTemplateFieldConfig mergeBlankDisplayMetadata(
+            FormTemplateFieldConfig projectField, FormFieldConfig fixedConfig, String language) {
         boolean needsDisplayName = isBlankFor(projectField.getDisplayName(), language)
                 && !isBlankFor(fixedConfig.getDisplayName(), language);
         boolean needsDescription = isBlankFor(projectField.getDescription(), language)

@@ -86,9 +86,4 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
     // It should be written as in FormField.java
     private String condition;
 
-    // This field is intended for project values to be displayed as form fields in a form.
-    // e.g. "${project-code}": This will be replaced with the value of the project code.
-    @JsonProperty("value")
-    private String projectValue;
-
 }

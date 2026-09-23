@@ -4,15 +4,14 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import de.samply.form.FormFieldConfig;
 
 import java.io.IOException;
 import java.util.UUID;
 
-public class FormFieldConfigDeserializer extends JsonDeserializer<FormFieldConfig[]> {
+public class FormTemplateFieldConfigDeserializer extends JsonDeserializer<FormTemplateFieldConfig[]> {
 
     @Override
-    public FormFieldConfig[] deserialize(JsonParser p, DeserializationContext context) throws IOException {
+    public FormTemplateFieldConfig[] deserialize(JsonParser p, DeserializationContext context) throws IOException {
 
         JsonNode node = p.getCodec().readTree(p);
 
@@ -20,13 +19,13 @@ public class FormFieldConfigDeserializer extends JsonDeserializer<FormFieldConfi
             throw new IOException("Expected an array for projectFields");
         }
 
-        FormFieldConfig[] fields = new FormFieldConfig[node.size()];
+        FormTemplateFieldConfig[] fields = new FormTemplateFieldConfig[node.size()];
 
         for (int i = 0; i < node.size(); i++) {
             JsonNode fieldNode = node.get(i);
 
             // Use ObjectMapper to deserialize the individual object
-            FormFieldConfig field = p.getCodec().treeToValue(fieldNode, FormFieldConfig.class);
+            FormTemplateFieldConfig field = p.getCodec().treeToValue(fieldNode, FormTemplateFieldConfig.class);
 
             // Generate a UUID if the label is missing or empty
             if (field.getLabel() == null || field.getLabel().isBlank()) {
