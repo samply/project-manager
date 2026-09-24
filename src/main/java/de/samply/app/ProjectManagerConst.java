@@ -91,6 +91,7 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_BRIDGEHEADS_ACTION = "FETCH_PROJECT_BRIDGEHEADS";
     public final static String FETCH_PROJECT_TYPES_ACTION = "FETCH_PROJECT_TYPES";
     public final static String FETCH_PROJECTS_ACTION = "FETCH_PROJECTS";
+    public final static String CREATE_QUERY_AND_DESIGN_PROJECT_ACTION = "CREATE_QUERY_AND_DESIGN_PROJECT";
     public final static String FETCH_PUBLICATIONS_ACTION = "FETCH_PUBLICATIONS";
     public final static String FETCH_FINAL_REPORTS_ACTION = "FETCH_FINAL_REPORTS";
     public final static String FETCH_OTHER_DOCUMENTS_ACTION = "FETCH_OTHER_DOCUMENTS";
@@ -298,6 +299,8 @@ public class ProjectManagerConst {
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
+    // Marker in a redirect URL: the frontend shows the success message of this action once and removes the marker
+    public final static String ACTION_FEEDBACK = "action-feedback";
     public final static String PROJECT_CREATOR_EMAIL = "project-creator-email";
     public final static String PROJECT_CONFIGURATION = "project-configuration";
     public final static String PROJECT_CONFIGURATION_SEPARATOR = ",";

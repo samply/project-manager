@@ -301,6 +301,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form configs validator
 - Project code generator
 - Exporter query label template
+- Create request from the dashboard (empty query, no sites)
+- Project-level endpoints work for projects without sites; each action reports whether it needs a site (bridgeheadRequired)
+- Editing a project with an empty list of sites removes all sites
+- Action feedback marker in the redirect URL after creating or editing a request
 
 
 ### Changed

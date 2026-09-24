@@ -12,12 +12,15 @@ import de.samply.security.SessionUser;
 import de.samply.user.roles.RolesExtractor;
 import de.samply.utils.AspectUtils;
 import de.samply.utils.LanguageUtils;
+import de.samply.utils.ParamMetaUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.lang.reflect.Method;
+import java.util.stream.IntStream;
 import java.util.*;
 
 @Service
@@ -126,8 +129,17 @@ public class FrontendService {
                         resolvedMessages.map(ResolvedActionMessages::explanation).orElse(null),
                         resolvedMessages.map(ResolvedActionMessages::successMessage).orElse(null),
                         resolvedMessages.map(ResolvedActionMessages::errorMessage).orElse(null),
-                        resolvedMessages.map(ResolvedActionMessages::priority).orElse(null)
+                        resolvedMessages.map(ResolvedActionMessages::priority).orElse(null),
+                        requiresBridgehead(method)
                 ));
+    }
+
+    static boolean requiresBridgehead(Method method) {
+        return IntStream.range(0, method.getParameterCount())
+                .mapToObj(index -> new MethodParameter(method, index))
+                .filter(parameter -> parameter.hasParameterAnnotation(Bridgehead.class))
+                .map(ParamMetaUtils::extractParamMeta)
+                .anyMatch(paramMeta -> paramMeta != null && paramMeta.required());
     }
 
     private String fetchHttpMethod(Method method) {

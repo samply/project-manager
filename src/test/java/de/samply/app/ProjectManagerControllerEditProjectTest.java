@@ -16,6 +16,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +45,8 @@ class ProjectManagerControllerEditProjectTest {
                 .thenReturn(Optional.of("frankfurt"));
         when(frontendService.fetchExplorerRedirectUri(
                 ProjectManagerConst.PROJECT_VIEW_SITE,
-                Map.of(ProjectManagerConst.PROJECT_CODE, project.getCode())))
+                Map.of(ProjectManagerConst.PROJECT_CODE, project.getCode(),
+                        ProjectManagerConst.ACTION_FEEDBACK, ProjectManagerConst.EDIT_PROJECT_ACTION)))
                 .thenReturn(Map.of("url", "project-url"));
 
         var response = controller.editProject(
@@ -53,5 +56,29 @@ class ProjectManagerControllerEditProjectTest {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         verify(projectService).updateBridgeheads(
                 project, new String[]{"essen", "frankfurt"});
+    }
+
+    @Test
+    void removesAllBridgeheadsWhenAnEmptyListIsSent() {
+        Project project = new Project();
+        project.setCode("project-code");
+
+        controller.editProject(
+                null, null, new String[0], null, null, null, null, null, null,
+                null, null, null, null, null, project);
+
+        verify(projectService).updateBridgeheads(project, new String[0]);
+    }
+
+    @Test
+    void keepsBridgeheadsWhenNoneAreSent() {
+        Project project = new Project();
+        project.setCode("project-code");
+
+        controller.editProject(
+                null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, project);
+
+        verify(projectService, never()).updateBridgeheads(any(), any());
     }
 }

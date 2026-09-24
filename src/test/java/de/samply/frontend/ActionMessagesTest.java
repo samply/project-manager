@@ -102,7 +102,7 @@ class ActionMessagesTest {
     void actionResponseUsesCamelCaseMessageProperties() throws Exception {
         Action action = new Action(
                 "/project", "POST", new String[]{"project-code"},
-                "Complete the project.", "Project submitted.", "Project submission failed.", 100
+                "Complete the project.", "Project submitted.", "Project submission failed.", 100, true
         );
 
         JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(action));
@@ -111,5 +111,6 @@ class ActionMessagesTest {
         assertThat(json.get("errorMessage").textValue()).isEqualTo("Project submission failed.");
         assertThat(json.has("success-message")).isFalse();
         assertThat(json.has("error-message")).isFalse();
+        assertThat(json.get("bridgeheadRequired").booleanValue()).isTrue();
     }
 }

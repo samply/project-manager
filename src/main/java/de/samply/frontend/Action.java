@@ -7,6 +7,8 @@ public record Action(
         String explanation,
         String successMessage,
         String errorMessage,
-        Integer priority
+        Integer priority,
+        // The endpoint needs a site: it can only be called in a context with a site (not for a project without sites)
+        boolean bridgeheadRequired
 ) {
 }
