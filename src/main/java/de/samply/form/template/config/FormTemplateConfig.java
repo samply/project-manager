@@ -1,11 +1,14 @@
 package de.samply.form.template.config;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.app.ProjectManagerConst;
 import de.samply.form.core.model.FormFieldConfig;
 import de.samply.utils.directory.ExistingDirectory;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,12 +17,18 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Configuration
 public class FormTemplateConfig {
 
@@ -33,7 +42,9 @@ public class FormTemplateConfig {
             @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage
     ) {
         this.defaultLanguage = defaultLanguage;
-        this.templateMetadataMap = loadTemplates(new ObjectMapper(), templatesDir.path());
+        // A key twice in one JSON object is an error with file and line.
+        this.templateMetadataMap = loadTemplates(new ObjectMapper(
+                JsonFactory.builder().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build()), templatesDir.path());
         this.templateLabelOrderMap = loadTemplateLabelOrderMap(templateMetadataMap);
     }
 
@@ -108,13 +119,21 @@ public class FormTemplateConfig {
 
     private Map<String, FormTemplateMetadata> loadTemplates(ObjectMapper objectMapper, Stream<Path> paths) {
         Map<String, FormTemplateMetadata> result = new HashMap<>();
+        List<String> duplicates = new ArrayList<>();
         paths
                 .filter(p -> p.toString().endsWith(".json"))
-                .forEach(path -> loadTemplates(objectMapper, result, path));
+                .sorted()
+                .forEach(path -> loadTemplates(objectMapper, result, path, duplicates));
+        if (!duplicates.isEmpty()) {
+            duplicates.forEach(duplicate -> log.error("Invalid form template configuration: {}", duplicate));
+            throw new IllegalStateException(duplicates.size() + " identifier(s) configured twice: "
+                    + String.join("; ", duplicates));
+        }
         return result;
     }
 
-    private void loadTemplates(ObjectMapper objectMapper, Map<String, FormTemplateMetadata> result, Path path) {
+    private void loadTemplates(ObjectMapper objectMapper, Map<String, FormTemplateMetadata> result, Path path,
+                               List<String> duplicates) {
         try (InputStream is = Files.newInputStream(path)) {
             FormTemplateMetadata metadata =
                     objectMapper.readValue(is, FormTemplateMetadata.class);
@@ -122,8 +141,19 @@ public class FormTemplateConfig {
                 for (FormFieldConfig field : metadata.getProjectFields()) {
                     field.validateDisplayFormat();
                 }
+                // Labels left out get a generated one (see the deserializer), so
+                // only configured labels can repeat.
+                Set<String> labels = new HashSet<>();
+                Arrays.stream(metadata.getProjectFields()).map(FormFieldConfig::getLabel)
+                        .filter(label -> !labels.add(label))
+                        .distinct()
+                        .forEach(label -> duplicates.add("project field label '" + label + "' in "
+                                + path.getFileName() + ", template '" + metadata.getTemplate() + "'"));
             }
-            result.put(metadata.getTemplate(), metadata);
+            if (result.putIfAbsent(metadata.getTemplate(), metadata) != null) {
+                duplicates.add("template '" + metadata.getTemplate() + "' in " + path.getFileName()
+                        + " and another metadata file");
+            }
 
         } catch (IOException e) {
             throw new UncheckedIOException(

@@ -277,7 +277,7 @@ public class DtoFactory {
                 .map(FormFieldConfig::getDataType).orElse(null);
         FormFieldBlock blockMetadata = Optional.ofNullable(fieldMetadata)
                 .map(FormFieldConfig::getBlock)
-                .map(block -> formConfig.getBlockLabelformFieldBlockMap().get(block))
+                .map(block -> formConfig.fetchBlock(title, block))
                 .orElse(null);
 
         return new FormField(
@@ -325,7 +325,7 @@ public class DtoFactory {
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getGroups)
-                        .map(groups -> convertGroups(groups, language))
+                        .map(groups -> convertGroups(title, groups, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
@@ -357,21 +357,21 @@ public class DtoFactory {
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getBlock)
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(DisplayMetadata::getDisplayName)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getBlock)
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(DisplayMetadata::getDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getBlock)
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
@@ -382,13 +382,13 @@ public class DtoFactory {
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getBlock)
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(FormFieldBlock::getMultiple)
                         .orElse(null),
                 label.map(_ -> formConfig.getFormTitleLabelFieldMap().get(title))
                         .map(tm -> tm.get(label.get()))
                         .map(FormFieldConfig::getBlock)
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(FormFieldBlock::getMinInstances)
                         .orElse(null),
                 label.map(l -> fetchFormFieldOrder(title, l)).orElse(null),
@@ -421,14 +421,14 @@ public class DtoFactory {
                 .orElse(null);
     }
 
-    private FormFieldGroup[] convertGroups(String[] groups, Optional<String> language) {
+    private FormFieldGroup[] convertGroups(String title, String[] groups, Optional<String> language) {
         if (groups == null) {
             return null;
         }
         return Arrays.stream(groups)
                 .map(group -> Map.entry(
                         group,
-                        formConfig.getGroupsDisplayMetadataMap().get(group)
+                        formConfig.fetchGroup(title, group)
                 ))
                 .filter(entry -> entry.getValue() != null)
                 .map(entry -> {
@@ -471,7 +471,7 @@ public class DtoFactory {
                              Optional<String> value, Optional<String> language, ProjectState projectState) {
         ContextualDisplayMetadata titleMetadata = formConfig.getFormTitleDisplaMetadataMap().get(title);
         FormFieldBlock blockMetadata = Optional.ofNullable(formFieldConfig.getBlock())
-                .map(block -> formConfig.getBlockLabelformFieldBlockMap().get(block))
+                .map(block -> formConfig.fetchBlock(title, block))
                 .orElse(null);
 
         return new FormField(
@@ -499,7 +499,7 @@ public class DtoFactory {
                 fetchDisplayInfo(formFieldConfig, true, language, projectState),
                 fetchDisplayInfo(formFieldConfig, false, language, projectState),
                 formFieldConfig.getPlaceholder(),
-                convertGroups(formFieldConfig.getGroups(), language),
+                convertGroups(title, formFieldConfig.getGroups(), language),
                 formFieldConfig.getProperties(),
                 formFieldConfig.getDataType(),
                 resolveDisplayFormat(formFieldConfig),
@@ -509,17 +509,17 @@ public class DtoFactory {
                 formFieldConfig.getAsFile(),
                 formFieldConfig.getBlock(),
                 Optional.ofNullable(formFieldConfig.getBlock())
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(DisplayMetadata::getDisplayName)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
                 Optional.ofNullable(formFieldConfig.getBlock())
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(DisplayMetadata::getDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
                 Optional.ofNullable(formFieldConfig.getBlock())
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
@@ -528,11 +528,11 @@ public class DtoFactory {
                 blockInstance.orElse(null),
                 fieldInstance.orElse(null),
                 Optional.ofNullable(formFieldConfig.getBlock())
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(FormFieldBlock::getMultiple)
                         .orElse(null),
                 Optional.ofNullable(formFieldConfig.getBlock())
-                        .map(b -> formConfig.getBlockLabelformFieldBlockMap().get(b))
+                        .map(b -> formConfig.fetchBlock(title, b))
                         .map(FormFieldBlock::getMinInstances)
                         .orElse(null),
                 fetchFormFieldOrder(title, formFieldConfig.getLabel()),

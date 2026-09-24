@@ -116,6 +116,12 @@ public class FormTemplateService {
                     throw new IllegalStateException(
                             "Invalid condition in form template " + template.getTemplate(), e);
                 }
+                // A condition on a field that does not exist would never hold.
+                List<String> missing = formConfig.findMissingReferences(template.getCondition());
+                if (!missing.isEmpty()) {
+                    throw new IllegalStateException("Condition in form template " + template.getTemplate()
+                            + " refers to field(s) that do not exist: " + String.join(", ", missing));
+                }
             }
             Stream.of(template.getIncludeForms(), template.getExcludeForms())
                     .filter(Objects::nonNull)

@@ -15,4 +15,6 @@ public interface ProjectFormRepository extends JpaRepository<ProjectForm, Long> 
 
     Optional<ProjectForm> findByProjectAndFormTitle(Project project, String formTitle);
 
+    boolean existsByFormTitle(String formTitle);
+
 }

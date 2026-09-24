@@ -48,6 +48,8 @@ public class DtoFormService {
                 .getFormTitleLabelFieldMap()
                 .keySet()
                 .stream()
+                // An inactive form is only offered to a project that uses it (so it can be unselected).
+                .filter(title -> !formConfig.isFormInactive(title) || formService.isFormInUse(project, title))
                 .map(title -> dtoFactory.convert(
                         title,
                         Optional.empty(),
@@ -135,6 +137,9 @@ public class DtoFormService {
                                 .stream()
                                 .filter(projectAndForms -> projectAndForms.forms() != null)
                                 .flatMap(projectAndForms -> Arrays.stream(projectAndForms.forms()))
+                                // An inactive form only for a project that uses it.
+                                .filter(form -> !formConfig.isFormInactive(form.title())
+                                        || formService.isFormInUse(project, form.title()))
                                 .map(form -> dtoFactory.convertForm(form.title(), language, project.getState()))
                 )
                 // Remove duplicates

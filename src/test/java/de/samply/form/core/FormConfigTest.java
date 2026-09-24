@@ -61,7 +61,12 @@ class FormConfigTest {
         Files.writeString(configDirectory.resolve("patient.json"), """
                 {
                   "title": "patient",
-                  "fields": [],
+                  "fields": [
+                    {"label": "patient-id", "data_type": "STRING"},
+                    {"label": "birth-date", "data_type": "DATE"},
+                    {"label": "height", "data_type": "INTEGER"},
+                    {"label": "weight", "data_type": "INTEGER"}
+                  ],
                   "layouts": [
                     {
                       "rows": [

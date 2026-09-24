@@ -16,6 +16,11 @@ public class FormMetadataConfig extends ContextualDisplayMetadata {
 
     private String title;
 
+    // An inactive form is no longer offered to projects that do not use it yet;
+    // projects that selected it or have values in it keep it. Used to replace
+    // a form (e.g. by "<title>-v2") without orphaning stored values.
+    private boolean active = true;
+
     // Groups are categories and subcategories used to organize form fields.
     private Map<String, DisplayMetadata> groups;
 

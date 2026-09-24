@@ -321,6 +321,18 @@ class FormTemplateServiceTest {
     }
 
     @Test
+    void failsStartupWithAConditionOnAFieldThatDoesNotExist() {
+        FormTemplateMetadata request = metadata("request");
+        request.setCondition("['ethics']['nope']['value'] == 'approved'");
+        FormConfig formConfig = mock(FormConfig.class);
+        when(formConfig.findMissingReferences(request.getCondition())).thenReturn(List.of("ethics.nope"));
+
+        assertThatThrownBy(() -> service(mock(DtoFormService.class), formConfig, request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Condition in form template request refers to field(s) that do not exist: ethics.nope");
+    }
+
+    @Test
     void failsStartupWhenATemplateListsAFormTitleTwice() {
         FormTemplateMetadata metadata = metadata("request");
         metadata.setForms(new FormTemplateForm[]{section("project"), section("query"), section("project")});
@@ -648,6 +660,11 @@ class FormTemplateServiceTest {
 
     /** A service whose configuration holds exactly these templates. */
     private FormTemplateService service(DtoFormService dtoFormService, FormTemplateMetadata... templates) {
+        return service(dtoFormService, mock(FormConfig.class), templates);
+    }
+
+    private FormTemplateService service(DtoFormService dtoFormService, FormConfig formConfig,
+                                        FormTemplateMetadata... templates) {
         FormTemplateConfig config = mock(FormTemplateConfig.class);
         Map<String, FormTemplateMetadata> byId = Arrays.stream(templates)
                 .collect(Collectors.toMap(FormTemplateMetadata::getTemplate, t -> t));
@@ -663,7 +680,7 @@ class FormTemplateServiceTest {
         return new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config, dtoFactory,
                 mock(DisplayFormatService.class), mock(ProjectContextFactory.class), new ProjectConfigurations(),
-                mock(FormConfig.class), conditionEvaluator());
+                formConfig, conditionEvaluator());
     }
 
     private static FormTemplateFieldConfig.FormTemplateFieldConfigBuilder<?, ?> projectField(String label) {

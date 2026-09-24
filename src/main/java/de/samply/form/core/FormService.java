@@ -188,6 +188,17 @@ public class FormService {
         return projectFormRepository.findByProject(project);
     }
 
+    /**
+     * Whether the project uses this form: it selected it, or has a non-blank
+     * value in one of its fields. An inactive form stays part of a project
+     * that uses it, and is no longer offered to any other.
+     */
+    public boolean isFormInUse(@NotNull Project project, @NotNull String formTitle) {
+        return projectFormRepository.findByProjectAndFormTitle(project, formTitle).isPresent()
+                || projectFormFieldRepository.findByProjectAndFormTitle(project, formTitle).stream()
+                .anyMatch(field -> field.getValue() != null && !field.getValue().isBlank());
+    }
+
     @Transactional
     public void addSelectedForm(@NotNull Project project, @NotNull String formTitle) {
         projectFormRepository
@@ -197,6 +208,9 @@ public class FormService {
                         () -> {
                             if (!formConfig.getFormTitleLabelFieldMap().containsKey(formTitle)) {
                                 throw new IllegalArgumentException("Form title not found: " + formTitle);
+                            }
+                            if (formConfig.isFormInactive(formTitle) && !isFormInUse(project, formTitle)) {
+                                throw new IllegalArgumentException("Form is inactive: " + formTitle);
                             }
 
                             ProjectForm projectForm = new ProjectForm();
@@ -245,9 +259,11 @@ public class FormService {
 
         Set<String> newTitles = new HashSet<>(formTitles);
 
-        // Determine what to ADD
+        // Determine what to ADD - an inactive form only for a project that
+        // already has values in it (a selected one is not added anyway)
         Set<String> toAdd = new HashSet<>(newTitles);
         toAdd.removeAll(existingTitles);
+        toAdd.removeIf(title -> formConfig.isFormInactive(title) && !isFormInUse(project, title));
 
         // Determine what to REMOVE
         Set<String> toRemove = new HashSet<>(existingTitles);
