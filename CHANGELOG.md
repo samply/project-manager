@@ -300,6 +300,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form templates rules
 - Form configs validator
 - Project code generator
+- Exporter query label template
 
 
 ### Changed

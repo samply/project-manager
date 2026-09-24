@@ -427,8 +427,7 @@ public class ProjectManagerConst {
     public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE = "WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE";
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS = "PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS";
     public final static String PROJECT_ID_TEMPLATE = "PROJECT_ID_TEMPLATE";
-    public final static String PROJECT_ID_EXPORTER_LENGTH = "PROJECT_ID_EXPORTER_LENGTH";
-    public final static String PROJECT_ID_EXPORTER_START = "PROJECT_ID_EXPORTER_START";
+    public final static String EXPORTER_QUERY_LABEL_TEMPLATE = "EXPORTER_QUERY_LABEL_TEMPLATE";
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG_PATH = "EMAIL_TEMPLATES_CONFIG_PATH";
     public final static String ACTION_MESSAGES_CONFIG_PATH = "ACTION_MESSAGES_CONFIG_PATH";
@@ -563,10 +562,8 @@ public class ProjectManagerConst {
             HEAD_SV + PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS + ":90" + BOTTOM_SV;
     public final static String PROJECT_ID_TEMPLATE_SV =
             HEAD_SV + PROJECT_ID_TEMPLATE + ":" + BOTTOM_SV;
-    public final static String PROJECT_ID_EXPORTER_LENGTH_SV =
-            HEAD_SV + PROJECT_ID_EXPORTER_LENGTH + ":5" + BOTTOM_SV;
-    public final static String PROJECT_ID_EXPORTER_START_SV =
-            HEAD_SV + PROJECT_ID_EXPORTER_START + ":0" + BOTTOM_SV;
+    public final static String EXPORTER_QUERY_LABEL_TEMPLATE_SV =
+            HEAD_SV + EXPORTER_QUERY_LABEL_TEMPLATE + ":" + BOTTOM_SV;
     public final static String PROJECT_MANAGER_EMAIL_FROM_SV =
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_PATH_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG_PATH + BOTTOM_SV;
