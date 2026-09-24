@@ -2,7 +2,7 @@ package de.samply.project;
 
 import de.samply.db.model.Project;
 import de.samply.db.repository.ProjectRepository;
-import de.samply.form.FormService;
+import de.samply.form.core.FormService;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.notification.NotificationService;
 import de.samply.query.QueryPersistenceService;

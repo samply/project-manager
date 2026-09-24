@@ -3,7 +3,7 @@ package de.samply.project;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.*;
 import de.samply.db.repository.ProjectRepository;
-import de.samply.form.FormService;
+import de.samply.form.core.FormService;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.Form;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;

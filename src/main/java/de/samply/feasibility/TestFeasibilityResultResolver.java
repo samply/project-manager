@@ -2,7 +2,7 @@ package de.samply.feasibility;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.samply.form.DataType;
+import de.samply.form.core.model.DataType;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 /**
  * Resolves a TEST_FEASIBILITY_RESULT template into a JsonNode by substituting
  * each {{DATA_TYPE}} placeholder (e.g. {{INTEGER}}) with an independently
- * random value of that de.samply.form.DataType, formatted as a valid JSON
+ * random value of that de.samply.form.core.model.DataType, formatted as a valid JSON
  * literal (quoted for string-like types, unquoted otherwise) so the template
  * author never has to add quotes themselves.
  * <p>

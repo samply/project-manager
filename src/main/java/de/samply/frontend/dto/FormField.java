@@ -2,9 +2,9 @@ package de.samply.frontend.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import de.samply.form.DataType;
 import de.samply.display.DisplayFormatKey;
-import de.samply.form.FormFieldType;
+import de.samply.form.core.model.DataType;
+import de.samply.form.core.model.FormFieldType;
 import lombok.Builder;
 
 import java.util.Arrays;
@@ -39,7 +39,7 @@ public record FormField(
         String[] properties,
         DataType type,
         DisplayFormatKey displayFormat,
-        FormFieldValue[] allowedValues,
+        FormFieldAllowedValue[] allowedValues,
         Boolean mandatory,
         // Whether this field can hold several values of its own data type,
         // independently of any block-level "multiple" (multipleBlock below).
@@ -74,7 +74,7 @@ public record FormField(
                 .stream()
                 .flatMap(Arrays::stream)
                 .filter(v -> Objects.equals(v.label(), value))
-                .map(FormFieldValue::displayName)
+                .map(FormFieldAllowedValue::displayName)
                 .findFirst()
                 .orElse(displayValue != null ? displayValue : value);
     }
@@ -106,7 +106,7 @@ public record FormField(
      * repeats the value's display name (e.g. a unit "µl" described as "µl"),
      * which would print the same text twice.
      */
-    public static String fetchValueDescription(FormFieldValue value) {
+    public static String fetchValueDescription(FormFieldAllowedValue value) {
         String description = fullOrShort(value.description(), value.shortDescription());
         return description != null && value.displayName() != null
                 && description.trim().equalsIgnoreCase(value.displayName().trim())

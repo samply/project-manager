@@ -1,0 +1,198 @@
+package de.samply.form.core;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.samply.app.ProjectManagerConst;
+import de.samply.form.core.model.ContextualDisplayMetadata;
+import de.samply.form.core.model.DataType;
+import de.samply.form.core.model.DisplayInfo;
+import de.samply.form.core.model.DisplayMetadata;
+import de.samply.form.core.model.FormFieldBlock;
+import de.samply.form.core.model.FormFieldConfig;
+import de.samply.form.core.model.FormFieldLayout;
+import de.samply.form.core.model.FormFieldType;
+import de.samply.form.core.model.FormMetadataConfig;
+import de.samply.utils.directory.ExistingDirectory;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+
+@Slf4j
+@Configuration
+@Getter
+public class FormConfig {
+
+    private final Map<String, FormFieldBlock> blockLabelformFieldBlockMap = new HashMap<>();
+    private final Map<String, ContextualDisplayMetadata> formTitleDisplaMetadataMap = new HashMap<>();
+    private final Map<String, DisplayMetadata> groupsDisplayMetadataMap = new HashMap<>();
+    private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
+    private final Map<String, Map<String, Integer>> formTitleLabelOrderMap = new HashMap<>();
+    private final Map<String, List<FormFieldLayout>> formTitleLayoutsMap = new HashMap<>();
+    public FormConfig(@Value(ProjectManagerConst.FORM_FIELDS_DIRECTORY_SV) ExistingDirectory configDir
+    ) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try (Stream<Path> files = Files.list(configDir.path())) {
+            files
+                    .filter(path -> path.toString().endsWith(".json"))
+                    .sorted() // deterministic order
+                    .forEach(path -> loadConfigFile(path, objectMapper));
+        } catch (IOException e) {
+            log.error("Failed to read form config directory {}", configDir, e);
+        }
+    }
+
+    private void loadConfigFile(Path configFile, ObjectMapper objectMapper) {
+        try {
+            FormMetadataConfig formMetadataConfig =
+                    objectMapper.readValue(configFile.toFile(), FormMetadataConfig.class);
+
+            validateContextualInformation(formMetadataConfig, configFile);
+            validateFieldTypes(formMetadataConfig, configFile);
+
+            // Title metadata
+            formTitleDisplaMetadataMap.put(
+                    formMetadataConfig.getTitle(),
+                    formMetadataConfig.fetchDisplayMetadata()
+            );
+
+            // Layouts
+            List<FormFieldLayout> layouts = formTitleLayoutsMap.computeIfAbsent(
+                    formMetadataConfig.getTitle(), _ -> new ArrayList<>());
+            if (formMetadataConfig.getLayouts() != null) {
+                layouts.addAll(Arrays.asList(formMetadataConfig.getLayouts()));
+            }
+
+            // Group metadata
+            if (formMetadataConfig.getGroups() != null) {
+                groupsDisplayMetadataMap.putAll(formMetadataConfig.getGroups());
+            }
+
+            // Fields + order
+            Map<String, FormFieldConfig> fieldMap =
+                    formTitleLabelFieldMap.computeIfAbsent(
+                            formMetadataConfig.getTitle(),
+                            _ -> new HashMap<>()
+                    );
+
+            Map<String, Integer> orderMap =
+                    formTitleLabelOrderMap.computeIfAbsent(
+                            formMetadataConfig.getTitle(),
+                            _ -> new HashMap<>()
+                    );
+
+            FormFieldConfig[] fields = Optional.ofNullable(formMetadataConfig.getFields())
+                    .orElseGet(() -> new FormFieldConfig[0]);
+            AtomicInteger counter = new AtomicInteger(1);
+            Arrays.stream(fields).forEach(field -> {
+                fieldMap.put(field.getLabel(), field);
+                orderMap.put(field.getLabel(), counter.getAndIncrement());
+            });
+
+            // Block metadata
+            if (formMetadataConfig.getBlocks() != null) {
+                Arrays.stream(formMetadataConfig.getBlocks()).forEach(fieldBlock ->
+                        blockLabelformFieldBlockMap.put(fieldBlock.getLabel(), fieldBlock));
+            }
+
+            log.info(
+                    "Loaded {} form fields from {}",
+                    fields.length,
+                    configFile.getFileName()
+            );
+
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to read form config file " + configFile + ": " + e.getMessage(), e);
+        }
+    }
+
+    private void validateFieldTypes(FormMetadataConfig form, Path configFile) {
+        if (form.getFields() == null) {
+            return;
+        }
+        Arrays.stream(form.getFields()).forEach(field -> {
+            field.validateDisplayFormat();
+            if (field.getFieldType() == null) {
+                throw new IllegalArgumentException(
+                        "Invalid form configuration in " + configFile + " at form '"
+                                + form.getTitle() + "', field '" + field.getLabel()
+                        + "': field_type must be DYNAMIC or FIXED");
+            }
+            if (field.getPlaceholder() != null && !field.getPlaceholder().isBlank()
+                    && field.getDataType() != DataType.STRING
+                    && field.getDataType() != DataType.LONG_STRING) {
+                throw new IllegalArgumentException(
+                        "Invalid form configuration in " + configFile + " at form '"
+                                + form.getTitle() + "', field '" + field.getLabel()
+                                + "': placeholder is only supported for STRING and LONG_STRING fields");
+            }
+        });
+    }
+
+    private void validateContextualInformation(FormMetadataConfig form, Path configFile) {
+        validateContextualInformation(form, configFile, "form '" + form.getTitle() + "'");
+
+        if (form.getFields() != null) {
+            Arrays.stream(form.getFields()).forEach(field -> validateContextualInformation(
+                    field,
+                    configFile,
+                    "form '" + form.getTitle() + "', field '" + field.getLabel() + "'"));
+        }
+
+        if (form.getBlocks() != null) {
+            Arrays.stream(form.getBlocks()).forEach(block -> validateContextualInformation(
+                    block,
+                    configFile,
+                    "form '" + form.getTitle() + "', block '" + block.getLabel() + "'"));
+        }
+    }
+
+    private void validateContextualInformation(
+            ContextualDisplayMetadata metadata, Path configFile, String location) {
+        validateDisplayInfo(metadata.getPreInfo(), configFile, location + ".pre_info");
+        validateDisplayInfo(metadata.getPostInfo(), configFile, location + ".post_info");
+    }
+
+    private void validateDisplayInfo(DisplayInfo info, Path configFile, String location) {
+        if (info != null && info.getProjectStates() != null && info.getProjectStates().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Invalid form configuration in " + configFile + " at " + location
+                            + ": project_states must not be empty; omit project_states to allow all states");
+        }
+    }
+
+    public FormFieldConfig fetchFormFieldConfig(String formTitle, String formLabel) {
+        return formTitleLabelFieldMap.getOrDefault(formTitle, new HashMap<>()).get(formLabel);
+    }
+
+    public List<FormFieldConfig> fetchFieldsByTitleAndBlock(String title, String block) {
+        return formTitleLabelFieldMap.getOrDefault(title, Map.of()).values().stream()
+                .filter(config -> Objects.equals(config.getBlock(), block))
+                .toList();
+    }
+
+    /**
+     * Finds a configured FIXED field by its native label (e.g. "ETHICS_VOTE_FOR_ALL_SITES"),
+     * regardless of which form title it's declared under - FIXED labels are
+     * native/global keys, not scoped to one title. Used so a PDF template's
+     * project_fields entry can fall back to a FIXED field's own configured
+     * display_name/description when the project_fields entry doesn't set its
+     * own (see FormTemplateService).
+     */
+    public Optional<FormFieldConfig> fetchFixedFieldConfig(String label) {
+        return formTitleLabelFieldMap.values().stream()
+                .flatMap(labelFieldMap -> labelFieldMap.values().stream())
+                .filter(config -> config.getFieldType() == FormFieldType.FIXED)
+                .filter(config -> Objects.equals(config.getLabel(), label))
+                .findFirst();
+    }
+
+}

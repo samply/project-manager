@@ -4,9 +4,10 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.*;
 import de.samply.display.DisplayFormatKey;
-import de.samply.form.*;
-import de.samply.form.template.FormTemplateConfig;
-import de.samply.form.template.FormTemplateMetadata;
+import de.samply.form.core.*;
+import de.samply.form.core.model.*;
+import de.samply.form.template.config.FormTemplateConfig;
+import de.samply.form.template.config.FormTemplateMetadata;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
@@ -400,18 +401,18 @@ public class DtoFactory {
         );
     }
 
-    private FormFieldValue[] convert(de.samply.form.FormFieldValue[] values, Optional<String> language) {
+    private FormFieldAllowedValue[] convert(de.samply.form.core.model.FormFieldAllowedValue[] values, Optional<String> language) {
         return Optional.ofNullable(values)
                 .map(Arrays::stream)
                 .map(stream -> stream
                         .map(value -> convert(value, language))
-                        .toArray(FormFieldValue[]::new))
+                        .toArray(FormFieldAllowedValue[]::new))
                 .orElse(null);
     }
 
-    private FormFieldValue convert(de.samply.form.FormFieldValue value, Optional<String> language) {
+    private FormFieldAllowedValue convert(de.samply.form.core.model.FormFieldAllowedValue value, Optional<String> language) {
         return Optional.ofNullable(value)
-                .map(v -> new FormFieldValue(
+                .map(v -> new FormFieldAllowedValue(
                         v.getLabel(),
                         fetchValue(v.getDisplayName(), language),
                         fetchValue(v.getDescription(), language),

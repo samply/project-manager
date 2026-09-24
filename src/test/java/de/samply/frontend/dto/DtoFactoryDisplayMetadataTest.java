@@ -1,14 +1,14 @@
 package de.samply.frontend.dto;
 
-import de.samply.form.FormValueDisplayService;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.display.DisplayFormatKey;
 import de.samply.display.DisplayFormatService;
-import de.samply.form.FormConfig;
-import de.samply.form.FormFieldConfig;
-import de.samply.form.FormFieldType;
-import de.samply.form.FormService;
-import de.samply.form.template.FormTemplateConfig;
+import de.samply.form.core.FormConfig;
+import de.samply.form.core.FormService;
+import de.samply.form.core.FormValueDisplayService;
+import de.samply.form.core.model.FormFieldConfig;
+import de.samply.form.core.model.FormFieldType;
+import de.samply.form.template.config.FormTemplateConfig;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.state.ProjectState;
 import de.samply.user.UserService;
@@ -140,7 +140,7 @@ class DtoFactoryDisplayMetadataTest {
                 .extracting(FormFieldGroup::shortDescription)
                 .isEqualTo("Identity short");
         assertThat(draftField.allowedValues()).singleElement()
-                .extracting(FormFieldValue::shortDescription)
+                .extracting(FormFieldAllowedValue::shortDescription)
                 .isEqualTo("Active short");
 
         String json = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(draftField);

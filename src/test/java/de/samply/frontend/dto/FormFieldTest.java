@@ -9,14 +9,14 @@ class FormFieldTest {
 
     @Test
     void fetchDisplayValueReturnsTheMatchingAllowedValuesDisplayName() {
-        FormField field = enumField("plasma", new FormFieldValue("plasma", "Plasma", null, null));
+        FormField field = enumField("plasma", new FormFieldAllowedValue("plasma", "Plasma", null, null));
 
         assertThat(field.fetchDisplayValue()).isEqualTo("Plasma");
     }
 
     @Test
     void fetchDisplayValueFallsBackToTheRawValueWhenNoAllowedValueMatches() {
-        FormField field = enumField("unknown", new FormFieldValue("plasma", "Plasma", null, null));
+        FormField field = enumField("unknown", new FormFieldAllowedValue("plasma", "Plasma", null, null));
 
         assertThat(field.fetchDisplayValue()).isEqualTo("unknown");
     }
@@ -36,7 +36,7 @@ class FormFieldTest {
         FormField field = FormField.builder()
                 .value("plasma")
                 .displayValue("must not be used")
-                .allowedValues(new FormFieldValue[]{new FormFieldValue("plasma", "Plasma", null, null)})
+                .allowedValues(new FormFieldAllowedValue[]{new FormFieldAllowedValue("plasma", "Plasma", null, null)})
                 .build();
 
         assertThat(field.fetchDisplayValue()).isEqualTo("Plasma");
@@ -60,7 +60,7 @@ class FormFieldTest {
     @Test
     void fetchDisplayDescriptionReturnsTheMatchingAllowedValuesDescription() {
         FormField field = enumField("plasma",
-                new FormFieldValue("plasma", "Plasma", "The fluid component of blood.", null));
+                new FormFieldAllowedValue("plasma", "Plasma", "The fluid component of blood.", null));
 
         assertThat(field.fetchDisplayDescription()).isEqualTo("The fluid component of blood.");
     }
@@ -70,7 +70,7 @@ class FormFieldTest {
         // Regression test: a null description used to throw a NullPointerException
         // (Stream.findFirst() rejects a found null element), crashing PDF
         // generation for any ENUM field whose selected value has no description.
-        FormField field = enumField("ml", new FormFieldValue("ml", "ml", null, null));
+        FormField field = enumField("ml", new FormFieldAllowedValue("ml", "ml", null, null));
 
         assertThat(field.fetchDisplayDescription()).isNull();
     }
@@ -78,7 +78,7 @@ class FormFieldTest {
     @Test
     void fetchDisplayDescriptionIsNullWhenNoAllowedValueMatches() {
         FormField field = enumField("unknown",
-                new FormFieldValue("plasma", "Plasma", "The fluid component of blood.", null));
+                new FormFieldAllowedValue("plasma", "Plasma", "The fluid component of blood.", null));
 
         assertThat(field.fetchDisplayDescription()).isNull();
     }
@@ -92,7 +92,7 @@ class FormFieldTest {
 
     @Test
     void fetchDisplayDescriptionFallsBackToTheShortDescription() {
-        FormField field = enumField("plasma", new FormFieldValue("plasma", "Plasma", " ", "Blood fluid."));
+        FormField field = enumField("plasma", new FormFieldAllowedValue("plasma", "Plasma", " ", "Blood fluid."));
 
         assertThat(field.fetchDisplayDescription()).isEqualTo("Blood fluid.");
     }
@@ -100,7 +100,7 @@ class FormFieldTest {
     @Test
     void fetchDisplayDescriptionIsNullWhenItOnlyRepeatsTheDisplayName() {
         // master samples.json: unit values are described by their own name.
-        FormField field = enumField("µl", new FormFieldValue("µl", "µl", " µl ", null));
+        FormField field = enumField("µl", new FormFieldAllowedValue("µl", "µl", " µl ", null));
 
         assertThat(field.fetchDisplayValue()).isEqualTo("µl");
         assertThat(field.fetchDisplayDescription()).isNull();
@@ -115,7 +115,7 @@ class FormFieldTest {
         assertThat(FormField.builder().labelShortDescription(" ").build().fetchFullLabelDescription()).isNull();
     }
 
-    private static FormField enumField(String value, FormFieldValue... allowedValues) {
+    private static FormField enumField(String value, FormFieldAllowedValue... allowedValues) {
         return FormField.builder()
                 .value(value)
                 .allowedValues(allowedValues)

@@ -6,11 +6,11 @@ import de.samply.db.model.ProjectFormField;
 import de.samply.display.DisplayFormatKey;
 import de.samply.display.DisplayFormatService;
 import de.samply.display.DisplayFormats;
-import de.samply.form.DataType;
-import de.samply.form.FormConfig;
-import de.samply.form.FormService;
-import de.samply.form.FormValueDisplayService;
-import de.samply.form.template.FormTemplateConfig;
+import de.samply.form.core.FormConfig;
+import de.samply.form.core.FormService;
+import de.samply.form.core.FormValueDisplayService;
+import de.samply.form.core.model.DataType;
+import de.samply.form.template.config.FormTemplateConfig;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.user.UserService;
 import de.samply.utils.directory.ExistingDirectory;
@@ -61,7 +61,7 @@ class DtoFactoryTemporalDisplayTest {
             }
             rows.append("</tr>");
         }
-        var converter = new de.samply.form.pdf.FormPdfConverter(new ExistingDirectory(directory));
+        var converter = new de.samply.form.template.pdf.FormPdfConverter(new ExistingDirectory(directory));
         byte[] pdf = converter.convert("""
                 <html><head><style>
                 body { font-family: sans-serif; font-size: 12pt; }
