@@ -15,3 +15,10 @@ CREATE TABLE samply.form_history
 ALTER TABLE samply.form_history
     ADD CONSTRAINT uq_form_history_form_title_version
         UNIQUE (form_title, version);
+
+-- Counter behind the {{SEQUENCE:n}} token of PROJECT_ID_TEMPLATE.
+CREATE SEQUENCE samply.project_code_seq START WITH 1;
+
+-- Final guard against duplicate project codes generated from PROJECT_ID_TEMPLATE.
+ALTER TABLE samply.project
+    ADD CONSTRAINT uq_project_code UNIQUE (code);

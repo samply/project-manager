@@ -7,6 +7,7 @@ import de.samply.db.model.Query;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectBridgeheadService;
+import de.samply.project.code.ProjectCodeGenerator;
 import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectState;
@@ -17,6 +18,7 @@ import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.ScopeNotActiveException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -36,6 +38,10 @@ import java.util.function.Consumer;
 @Service
 public class ProjectEventService implements ProjectEventActions {
 
+    /** Attempts to insert a new project before a project code conflict is given up. */
+    static final int MAX_PROJECT_SAVE_ATTEMPTS = 3;
+    private static final String PROJECT_CODE_CONSTRAINT = "uq_project_code";
+
     // Services
     private final NotificationService notificationService;
     private final ProjectService projectService;
@@ -49,6 +55,7 @@ public class ProjectEventService implements ProjectEventActions {
     private final SessionUser sessionUser;
 
     private final int projectExpirationTimeInDays;
+    private final ProjectCodeGenerator projectCodeGenerator;
 
 
     public ProjectEventService(NotificationService notificationService,
@@ -57,6 +64,7 @@ public class ProjectEventService implements ProjectEventActions {
                                LogUtils logUtils,
                                SessionUser sessionUser,
                                @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays,
+                               ProjectCodeGenerator projectCodeGenerator,
                                UserService userService,
                                QueryService queryService,
                                ProjectBridgeheadService projectBridgeheadService) {
@@ -68,6 +76,7 @@ public class ProjectEventService implements ProjectEventActions {
         this.projectBridgeheadService = projectBridgeheadService;
         this.sessionUser = sessionUser;
         this.projectExpirationTimeInDays = projectExpirationTimeInDays;
+        this.projectCodeGenerator = projectCodeGenerator;
         this.userService = userService;
     }
 
@@ -143,20 +152,20 @@ public class ProjectEventService implements ProjectEventActions {
         if (queryOptional.isEmpty()) {
             throw new ProjectEventActionsException("Query not found");
         }
-        String projectCode = generateProjectCode();
-        createProjectAsDraft(
-                projectCode,
-                project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)),
+        Project project = createProjectAsDraft(
+                generateProjectCode(),
+                savedProject -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, savedProject)),
                 queryOptional.get());
-        return projectCode;
+        // The code may have been replaced while saving, see saveProjectWithUniqueCode
+        return project.getCode();
     }
 
     private String generateProjectCode() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, ProjectManagerConst.PROJECT_CODE_SIZE);
+        return projectCodeGenerator.generate();
     }
 
 
-    private void createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer, Query query) {
+    private Project createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer, Query query) {
         Project project = new Project();
         project.setCode(projectCode);
         project.setCreatorEmail(sessionUser.getEmail());
@@ -169,11 +178,41 @@ public class ProjectEventService implements ProjectEventActions {
                 this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
         stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
             project.setState(stateMachine.getState().getId());
-            projectConsumer.accept(saveProject(project));
+            projectConsumer.accept(saveProjectWithUniqueCode(project));
             userService.addCreatorIfNotExists();
             this.notificationService.createNotification(project, null, sessionUser.getEmail(),
                     OperationType.CHANGE_PROJECT_STATE, "Design project", null, null);
         });
+        return project;
+    }
+
+    /**
+     * Inserts a new project. The generator only hands out unused codes, but two
+     * concurrent requests can still get the same code before either is saved; the
+     * unique constraint then rejects the second insert, which retries with a new code.
+     */
+    private Project saveProjectWithUniqueCode(Project project) {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                return saveProject(project);
+            } catch (DataIntegrityViolationException e) {
+                if (attempt >= MAX_PROJECT_SAVE_ATTEMPTS || !isProjectCodeConflict(e)) {
+                    throw e;
+                }
+                project.setId(null);
+                project.setCode(generateProjectCode());
+            }
+        }
+    }
+
+    private boolean isProjectCodeConflict(DataIntegrityViolationException exception) {
+        for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+            if (cause instanceof org.hibernate.exception.ConstraintViolationException violation
+                    && PROJECT_CODE_CONSTRAINT.equalsIgnoreCase(violation.getConstraintName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private LocalDate createExpirationDate() {

@@ -299,6 +299,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Test feasibility result resolver
 - Form templates rules
 - Form configs validator
+- Project code generator
 
 
 ### Changed

@@ -72,6 +72,8 @@ public class ExporterService {
     private final String exporterApiKey;
     private final String coderBeamIdSuffix;
     private final String testCoderFileBeamId;
+    private final int projectIdExporterLength;
+    private final int projectIdExporterStart;
 
     private final String beamWaitTime;
     private final String beamWaitCount;
@@ -93,6 +95,8 @@ public class ExporterService {
             @Value(ProjectManagerConst.MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES_SV) int maxTimeToWaitFocusTaskInMinutes,
             @Value(ProjectManagerConst.CODER_BEAM_ID_SUFFIX_SV) String coderBeamIdSuffix,
             @Value(ProjectManagerConst.CODER_TEST_FILE_BEAM_ID_SV) String testCoderFileBeamId,
+            @Value(ProjectManagerConst.PROJECT_ID_EXPORTER_LENGTH_SV) int projectIdExporterLength,
+            @Value(ProjectManagerConst.PROJECT_ID_EXPORTER_START_SV) int projectIdExporterStart,
             SessionUser sessionUser,
             BeamService beamService,
             NotificationService notificationService,
@@ -118,6 +122,14 @@ public class ExporterService {
         this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
         this.coderBeamIdSuffix = coderBeamIdSuffix;
         this.testCoderFileBeamId = testCoderFileBeamId;
+        if (projectIdExporterLength < 1) {
+            throw new IllegalArgumentException("PROJECT_ID_EXPORTER_LENGTH must be greater than zero");
+        }
+        if (projectIdExporterStart < 0) {
+            throw new IllegalArgumentException("PROJECT_ID_EXPORTER_START must not be negative");
+        }
+        this.projectIdExporterLength = projectIdExporterLength;
+        this.projectIdExporterStart = projectIdExporterStart;
         this.emailService = emailService;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
         this.webClient = webClientFactory.createWebClient(focusUrl);
@@ -372,8 +384,10 @@ public class ExporterService {
     private String fetchLabel(@NotNull ProjectBridgeheadAndType projectBridgeheadAndType) {
         ProjectBridgehead projectBridgehead = projectBridgeheadAndType.projectBridgehead();
         ProjectType projectType = projectBridgeheadAndType.projectType();
+        String projectCode = projectBridgehead.getProject().getCode();
+        int start = Math.min(projectIdExporterStart, projectCode.length());
         String label = "[" + projectType.name() + "-"
-                + projectBridgehead.getProject().getCode().substring(0, 5) + "] "
+                + projectCode.substring(start, Math.min(start + projectIdExporterLength, projectCode.length())) + "] "
                 + projectBridgehead.getProject().getQuery().getLabel();
         return (projectBridgehead
                 .fetchExecution(projectType)

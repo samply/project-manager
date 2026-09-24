@@ -205,7 +205,8 @@ public class CoderService {
 
     public String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         String email = projectBridgeheadUser.getEmail().substring(0, projectBridgeheadUser.getEmail().indexOf("@")).replaceAll("[^a-zA-Z0-9]", "");
-        String projectCode = projectBridgeheadUser.getProjectBridgehead().getProject().getCode();
+        // Coder workspace names and Beam app IDs only accept alphanumeric characters here
+        String projectCode = projectBridgeheadUser.getProjectBridgehead().getProject().getCode().replaceAll("[^a-zA-Z0-9]", "");
         String state = projectBridgeheadUser.getProjectBridgehead().getProject().getState().toString().toLowerCase().substring(0, 3); // Only three first characters
 
         String coderAppId = email + projectCode + state;
@@ -217,8 +218,8 @@ public class CoderService {
             int maxProjectCodeLength = (projectCode.length() / 2 > surplus)
                     ? projectCode.length() / 2
                     : projectCode.length() - surplus;
-            // Trim the projectCode to the calculated length
-            projectCode = projectCode.substring(0, maxProjectCodeLength);
+            // Trim the projectCode to the calculated length, keeping its most distinctive end
+            projectCode = projectCode.substring(projectCode.length() - maxProjectCodeLength);
             // Rebuild the coderAppId with the reduced projectCode
             coderAppId = email + projectCode + state;
             // If the coderAppId is still too long, reduce the email length

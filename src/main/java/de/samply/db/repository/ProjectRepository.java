@@ -17,6 +17,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, JpaSpec
 
     Optional<Project> findByCode(String projectCode);
 
+    boolean existsByCode(String projectCode);
+
+    @Query(value = "SELECT nextval('samply.project_code_seq')", nativeQuery = true)
+    long nextProjectCodeSequenceValue();
+
     @Query("SELECT p FROM Project p WHERE p.expiresAt < :expirationTime AND p.state IN :states")
     List<Project> findByExpiresAtBeforeAndStateIn(LocalDate expirationTime, Set<ProjectState> states);
 
