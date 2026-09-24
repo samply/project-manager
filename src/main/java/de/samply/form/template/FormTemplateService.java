@@ -83,8 +83,10 @@ public class FormTemplateService {
 
     /**
      * Fails startup for configuration that can only be wrong (several default
-     * templates, a condition that is not a valid expression) and warns about
-     * include/exclude/order form titles that match no configured form.
+     * templates, a condition that is not a valid expression, a section listed
+     * twice) and warns about include/exclude form titles that match no
+     * configured form and project fields placed in a section that exists
+     * neither as a form nor in the template's forms.
      */
     private void validateTemplateMetadata() {
         Collection<FormTemplateMetadata> templates = formTemplateConfig.getTemplateMetadataMap().values();
@@ -106,11 +108,24 @@ public class FormTemplateService {
                             "Invalid condition in form template " + template.getTemplate(), e);
                 }
             }
-            Stream.of(template.getIncludeForms(), template.getExcludeForms(), template.getFormTitlesInOrder())
+            Stream.of(template.getIncludeForms(), template.getExcludeForms())
                     .filter(Objects::nonNull)
                     .flatMap(Arrays::stream)
                     .filter(formTitle -> !configuredFormTitles.contains(formTitle))
                     .forEach(formTitle -> log.warn("Form template {} refers to unknown form {}",
+                            template.getTemplate(), formTitle));
+            List<String> sections = fetchTemplateForms(template).map(FormTemplateForm::getTitle).toList();
+            if (sections.stream().distinct().count() < sections.size()) {
+                throw new IllegalStateException(
+                        "Form template " + template.getTemplate() + " lists a form title twice: " + sections);
+            }
+            Stream.ofNullable(template.getProjectFields())
+                    .flatMap(Arrays::stream)
+                    .map(FormTemplateFieldConfig::getFormTitle)
+                    .filter(Objects::nonNull)
+                    .filter(formTitle -> !configuredFormTitles.contains(formTitle) && !sections.contains(formTitle))
+                    .forEach(formTitle -> log.warn(
+                            "Form template {} places a project field in unknown section {} (it goes to the header)",
                             template.getTemplate(), formTitle));
         }
     }
@@ -152,7 +167,7 @@ public class FormTemplateService {
         // The document structure (headings and rows, layout rows resolved), so
         // the template only renders it - see FormTemplateDocumentBuilder.
         result.put(FormContextKey.DOCUMENT.getText(), FormTemplateDocumentBuilder.build(
-                placedFields, fetchSelectedForms(project, language),
+                placedFields, fetchSections(resolveTemplateMetadata(formTemplate), project, language),
                 FormFieldLayoutResolver.resolve(fields, layouts)));
         // Add form variables
         result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
@@ -286,17 +301,19 @@ public class FormTemplateService {
     }
 
     /**
-     * The order of the printed forms: first those the template lists in its
-     * form_titles_in_order, in that order; then the others in the deployment's
-     * canonical section order (the frontend Summary's,
+     * The order of the sections: first those the template lists in its
+     * forms, in that order - an existing form only if it is printed, a
+     * template-only section always (it is printed only if a field is placed
+     * in it); then the other printed forms in the deployment's canonical
+     * section order (the frontend Summary's,
      * {@link ProjectConfigurations#getFormTitleOrder()}); a form missing from
      * both (config drift) comes last rather than being dropped.
      */
     private List<String> fetchSectionOrder(FormTemplateMetadata template, Set<String> printedFormTitles) {
         List<String> result = new ArrayList<>();
-        Stream.ofNullable(template.getFormTitlesInOrder())
-                .flatMap(Arrays::stream)
-                .filter(printedFormTitles::contains)
+        fetchTemplateForms(template)
+                .map(FormTemplateForm::getTitle)
+                .filter(title -> printedFormTitles.contains(title) || !isConfiguredForm(title))
                 .filter(title -> !result.contains(title))
                 .forEach(result::add);
         frontendProjectConfigurations.getFormTitleOrder().stream()
@@ -310,9 +327,45 @@ public class FormTemplateService {
         return result;
     }
 
-    private Map<String, Form> fetchSelectedForms(Project project, String language) {
-        return dtoFormService.fetchSelectedForms(project, Optional.of(language)).stream()
-                .collect(Collectors.toMap(Form::title, form -> form, (first, _) -> first));
+    /**
+     * Heading metadata per section: the selected forms' own, overridden by
+     * the template's forms entry where that sets a display name or
+     * description, plus the template-only sections.
+     */
+    private Map<String, Form> fetchSections(FormTemplateMetadata template, Project project, String language) {
+        Map<String, Form> result = dtoFormService.fetchSelectedForms(project, Optional.of(language)).stream()
+                .collect(Collectors.toMap(Form::title, form -> form, (first, _) -> first, HashMap::new));
+        fetchTemplateForms(template).forEach(section -> {
+            Form form = result.getOrDefault(section.getTitle(), new Form(section.getTitle(), null, null, null));
+            result.put(section.getTitle(), new Form(
+                    form.title(),
+                    override(section.getDisplayName(), language, form.titleDisplayName()),
+                    override(section.getDescription(), language, form.titleDescription()),
+                    override(section.getShortDescription(), language, form.titleShortDescription()),
+                    form.titlePreInfo(),
+                    form.titlePostInfo()));
+        });
+        return result;
+    }
+
+    private static Stream<FormTemplateForm> fetchTemplateForms(FormTemplateMetadata template) {
+        return Stream.ofNullable(template.getForms())
+                .flatMap(Arrays::stream)
+                .filter(section -> section.getTitle() != null && !section.getTitle().isBlank());
+    }
+
+    private boolean isConfiguredForm(String title) {
+        return formConfig.getFormTitleLabelFieldMap().containsKey(title);
+    }
+
+    // The template's text in this language (else the default language), if
+    // set and not blank; otherwise the form's own.
+    private String override(Map<String, String> templateValues, String language, String formValue) {
+        if (templateValues == null) {
+            return formValue;
+        }
+        String value = templateValues.getOrDefault(language, templateValues.get(defaultLanguage));
+        return value != null && !value.isBlank() ? value : formValue;
     }
 
     private static Map<String, FormField> toFieldsMap(List<PlacedField> placedFields) {

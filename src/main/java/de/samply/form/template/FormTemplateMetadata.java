@@ -30,10 +30,12 @@ public class FormTemplateMetadata {
     private String[] includeForms;
     @JsonProperty("exclude_forms")
     private String[] excludeForms;
-    // Order of the printed forms (sections): those listed come first, in this
-    // order; the others follow in the deployment's normal order.
-    @JsonProperty("form_titles_in_order")
-    private String[] formTitlesInOrder;
+    // Sections, in order: those listed come first, in this order; the other
+    // printed forms follow in the deployment's normal order. An entry can
+    // override an existing form's display name/description, or define a new,
+    // template-only section (see FormTemplateForm).
+    @JsonProperty("forms")
+    private FormTemplateForm[] forms;
     // Template used by a plain "FORM" email attachment. At most one template may
     // set it; a single configured template is the default implicitly.
     @JsonProperty("default")

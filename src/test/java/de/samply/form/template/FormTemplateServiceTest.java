@@ -20,6 +20,8 @@ import de.samply.frontend.dto.FormField;
 import de.samply.frontend.dto.FormTemplate;
 import de.samply.pdf.PdfGenerator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
@@ -72,15 +74,31 @@ class FormTemplateServiceTest {
     }
 
     @Test
-    void rejectsTheRemovedFormTitlesKey() {
+    void readsFormsAsPlainTitlesOrWithDisplayMetadata() throws Exception {
+        FormTemplateMetadata metadata = new ObjectMapper().readValue("""
+                {
+                  "template": "request",
+                  "forms": [
+                    "query",
+                    {"title": "overview", "display_name": {"en": "Overview"}}
+                  ]
+                }
+                """, FormTemplateMetadata.class);
+
+        assertThat(metadata.getForms()).extracting(FormTemplateForm::getTitle)
+                .containsExactly("query", "overview");
+        assertThat(metadata.getForms()[1].getDisplayName()).containsEntry("en", "Overview");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "\"form_titles\": [\"patient\", \"sample\"]",
+            "\"all_form_titles_required\": true"})
+    void rejectsTheRemovedFormTitlesKeys(String removedKey) {
         // Removed together with template selection by form: a leftover key in
         // a deployment's config must fail loudly instead of being ignored.
-        assertThatThrownBy(() -> new ObjectMapper().readValue("""
-                {
-                  "template": "project-overview",
-                  "form_titles": ["patient", "sample"]
-                }
-                """, FormTemplateMetadata.class))
+        assertThatThrownBy(() -> new ObjectMapper().readValue(
+                "{\"template\": \"project-overview\", " + removedKey + "}", FormTemplateMetadata.class))
                 .isInstanceOf(UnrecognizedPropertyException.class);
     }
 
@@ -216,24 +234,92 @@ class FormTemplateServiceTest {
     }
 
     @Test
-    void theTemplatesFormTitlesInOrderComesFirstAndTheOtherFormsKeepTheNormalOrder() {
+    void theTemplatesFormsComeFirstAndTheOtherFormsKeepTheNormalOrder() {
         DtoFormService dtoFormService = mock(DtoFormService.class);
         Project project = new Project();
         FormTemplateMetadata metadata = metadata();
-        // "samples" is not printed (not selected): it is skipped.
-        metadata.setFormTitlesInOrder(new String[]{"funding", "samples", "project"});
+        // "samples" is an existing form that is not printed (not selected): skipped,
+        // and a project field placed there goes to the header.
+        metadata.setForms(new FormTemplateForm[]{
+                section("funding"), section("samples"), section("project")});
+        metadata.setProjectFields(new FormTemplateFieldConfig[]{projectField("volume").formTitle("samples").build()});
         selectForms(dtoFormService, project, "query", "project", "ethics", "funding");
         when(dtoFormService.fetchProjectFormFields(Optional.empty(), project, Optional.of("en"))).thenReturn(List.of(
                 dynamicField("query", "cohort", 1), dynamicField("project", "title", 1),
                 dynamicField("ethics", "vote", 1), dynamicField("funding", "budget", 1)));
         ProjectConfigurations order = new ProjectConfigurations();
         order.setFormTitleOrder(List.of("query", "project", "ethics", "funding"));
-        FormTemplateService service = projectFieldsService(dtoFormService, metadata, order);
+        FormTemplateService service = projectFieldsService(dtoFormService, metadata, order,
+                formConfigWithForms("query", "project", "ethics", "funding", "samples"));
 
         List<String> sections = service.fetchPlacedFields(project, metadata.getTemplate(), "en", new ProjectContext(Map.of()))
-                .stream().map(FormTemplateFieldPlacement.PlacedField::section).toList();
+                .stream().map(field -> field.section() + " " + field.field().label()).toList();
 
-        assertThat(sections).containsExactly("funding", "project", "query", "ethics");
+        assertThat(sections).containsExactly(
+                "null volume", "funding budget", "project title", "query cohort", "ethics vote");
+    }
+
+    @Test
+    void aTemplateOnlySectionHoldsItsProjectFieldsAndTheTemplateCanRenameAForm() throws Exception {
+        DtoFormService dtoFormService = mock(DtoFormService.class);
+        Project project = new Project();
+        FormTemplateMetadata metadata = metadata();
+        FormTemplateForm overview = section("overview");
+        overview.setDisplayName(Map.of("en", "Overview"));
+        overview.setDescription(Map.of("en", "The request at a glance"));
+        FormTemplateForm project2 = section("project");
+        project2.setDisplayName(Map.of("en", "Study"));
+        metadata.setForms(new FormTemplateForm[]{overview, project2, section("empty")});
+        metadata.setProjectFields(new FormTemplateFieldConfig[]{projectField("PROJECT_TITLE").formTitle("overview").build()});
+        when(dtoFormService.fetchSelectedForms(project, Optional.of("en"))).thenReturn(List.of(
+                new Form("project", "Project", "About the project", null)));
+        when(dtoFormService.fetchProjectFormFields(Optional.empty(), project, Optional.of("en")))
+                .thenReturn(List.of(dynamicField("project", "acronym", 1)));
+        FormTemplateConfig config = mock(FormTemplateConfig.class);
+        when(config.getTemplate(metadata.getTemplate())).thenReturn(Optional.of(metadata));
+        when(config.fetchProjectFormFieldTitle(metadata.getTemplate())).thenReturn("project-fields");
+        when(config.fetchTemplateFile(metadata.getTemplate())).thenReturn(Optional.of("request"));
+        when(config.fetchAllFormVariables(metadata.getTemplate(), "en")).thenReturn(Map.of());
+        ProjectContextFactory projectContextFactory = mock(ProjectContextFactory.class);
+        when(projectContextFactory.createProjectContext(project, "en")).thenReturn(new ProjectContext(Map.of()));
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        when(dtoFactory.convert(anyString(), any(FormFieldConfig.class), any(), any(), any(), any()))
+                .thenAnswer(invocation -> FormField.builder()
+                        .title(invocation.getArgument(0))
+                        .label(((FormFieldConfig) invocation.getArgument(1)).getLabel())
+                        .labelDisplayName(((FormFieldConfig) invocation.getArgument(1)).getLabel())
+                        .fieldType(FormFieldType.DYNAMIC)
+                        .build());
+        FormPdfGeneratorFactory pdfGeneratorFactory = mock(FormPdfGeneratorFactory.class);
+        PdfGenerator pdfGenerator = mock(PdfGenerator.class);
+        when(pdfGeneratorFactory.createPdfGenerator()).thenReturn(pdfGenerator);
+        FormTemplateService service = new FormTemplateService(
+                dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config, dtoFactory,
+                mock(DisplayFormatService.class), projectContextFactory, new ProjectConfigurations(),
+                formConfigWithForms("project"), conditionEvaluator());
+
+        service.createFormAsPdf(project, metadata.getTemplate(), Optional.of("en"));
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Map<String, Object>> contextCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(pdfGenerator).generatePdf(anyString(), contextCaptor.capture());
+        FormTemplateDocument document = (FormTemplateDocument) contextCaptor.getValue()
+                .get(FormContextKey.DOCUMENT.getText());
+        // "empty" has no field: no heading.
+        assertThat(document.nodes()).filteredOn(FormTemplateDocument.SectionHeading.class::isInstance)
+                .extracting(node -> ((FormTemplateDocument.SectionHeading) node))
+                .extracting(heading -> heading.form().titleDisplayName() + " | " + heading.description())
+                .containsExactly("Overview | The request at a glance", "Study | About the project");
+    }
+
+    @Test
+    void failsStartupWhenATemplateListsAFormTitleTwice() {
+        FormTemplateMetadata metadata = metadata("request");
+        metadata.setForms(new FormTemplateForm[]{section("project"), section("query"), section("project")});
+
+        assertThatThrownBy(() -> service(mock(DtoFormService.class), metadata))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("twice");
     }
 
     @Test
@@ -586,8 +672,28 @@ class FormTemplateServiceTest {
     }
 
     /** A service converting project fields into FormFields with their label. */
+    private static FormTemplateForm section(String title) {
+        return FormTemplateForm.builder().title(title).build();
+    }
+
+    private static FormConfig formConfigWithForms(String... titles) {
+        FormConfig formConfig = mock(FormConfig.class);
+        Map<String, Map<String, FormFieldConfig>> forms = new java.util.HashMap<>();
+        for (String title : titles) {
+            forms.put(title, Map.of());
+        }
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(forms);
+        return formConfig;
+    }
+
     private FormTemplateService projectFieldsService(
             DtoFormService dtoFormService, FormTemplateMetadata metadata, ProjectConfigurations order) {
+        return projectFieldsService(dtoFormService, metadata, order, mock(FormConfig.class));
+    }
+
+    private FormTemplateService projectFieldsService(
+            DtoFormService dtoFormService, FormTemplateMetadata metadata, ProjectConfigurations order,
+            FormConfig formConfig) {
         FormTemplateConfig config = mock(FormTemplateConfig.class);
         when(config.getTemplate(metadata.getTemplate())).thenReturn(Optional.of(metadata));
         when(config.fetchProjectFormFieldTitle(metadata.getTemplate())).thenReturn("project-fields");
@@ -603,7 +709,7 @@ class FormTemplateServiceTest {
         return new FormTemplateService(
                 dtoFormService, pdfGeneratorFactory, "en", "form.pdf", config, dtoFactory,
                 mock(DisplayFormatService.class), mock(ProjectContextFactory.class), order,
-                mock(FormConfig.class), conditionEvaluator());
+                formConfig, conditionEvaluator());
     }
 
     private FormTemplateService formTemplateService(
