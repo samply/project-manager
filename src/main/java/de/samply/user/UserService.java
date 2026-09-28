@@ -184,6 +184,12 @@ public class UserService {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
 
+    public List<OrganisationRole> fetchOrganisationRoles() {
+        return Arrays.stream(OrganisationRole.values())
+                .filter(role -> sessionUser.getUserOrganisationRoles().containsAnyRole(role))
+                .toList();
+    }
+
     public synchronized void addUserInformationIfNotExists(String email, String firstName, String lastName) {
         if (StringUtils.hasText(email) && (StringUtils.hasText(firstName) || StringUtils.hasText(lastName))) {
             Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);

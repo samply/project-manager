@@ -430,7 +430,8 @@ public class ProjectManagerController {
 
     // Called by the explorer (query and sites) and by the dashboard's "Create request" button
     // (empty query with its format, no sites: the creator defines the query in the project view)
-    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     // Also in the project view: its success message is shown there after the redirect
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
@@ -775,6 +776,16 @@ public class ProjectManagerController {
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
     ) {
         return convertToResponseEntity(QueryFormat::values);
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_ORGANISATION_ROLES_ACTION)
+    @CacheCategory(CacheResource.USER_ROLES)
+    @GetMapping(value = ProjectManagerConst.FETCH_ORGANISATION_ROLES)
+    public ResponseEntity fetchOrganisationRoles() {
+        return convertToResponseEntity(userService::fetchOrganisationRoles);
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,

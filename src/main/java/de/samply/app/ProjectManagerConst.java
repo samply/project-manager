@@ -123,6 +123,7 @@ public class ProjectManagerConst {
     public final static String IS_FEASIBILITY_ENABLED_ACTION = "IS_FEASIBILITY_ENABLED";
     public final static String FETCH_FEASIBILITY_ACTION = "FETCH_FEASIBILITY";
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
+    public final static String FETCH_ORGANISATION_ROLES_ACTION = "FETCH_ORGANISATION_ROLES";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
     public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION = "ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT";
     public final static String ADD_USER_TO_MAILING_BLACK_LIST_ACTION = "ADD_USER_TO_MAILING_BLACK_LIST";
@@ -264,6 +265,7 @@ public class ProjectManagerConst {
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE = "/autocomplete-users";
     public final static String FETCH_PROJECT_USERS = "/project/users";
     public final static String FETCH_CURRENT_USER = "/current-user";
+    public final static String FETCH_ORGANISATION_ROLES = "/organisation-roles";
     public final static String EXIST_INVITED_USERS = "/invited-users/exists";
     public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL = "/project/bridgehead/results/url";
     public final static String ADD_PROJECT_RESULTS_URL = "/project/results/url";
