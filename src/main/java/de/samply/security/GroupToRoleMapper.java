@@ -3,12 +3,13 @@ package de.samply.security;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.user.roles.OrganisationRole;
+import de.samply.user.roles.UserOrganisationRoles;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class GroupToRoleMapper {
@@ -36,25 +37,21 @@ public class GroupToRoleMapper {
 
     private final ProjectManagerAdminGroups projectManagerAdminGroups;
 
-    private final SessionUser sessionUser;
-
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
     private Boolean adminOverUser;
 
 
-    private final Map<String, OrganisationRole> groupToRoleMapCache = new HashMap<>();
+    private final Map<String, OrganisationRole> groupToRoleMapCache = new ConcurrentHashMap<>();
 
     public GroupToRoleMapper(
             ProjectManagerAdminGroups projectManagerAdminGroups,
-            SessionUser sessionUser,
             BridgeheadsConfiguration bridgeheadsConfiguration) {
         this.projectManagerAdminGroups = projectManagerAdminGroups;
-        this.sessionUser = sessionUser;
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
     }
 
-    public OrganisationRole getRoleFromGroup(String group) {
+    public OrganisationRole getRoleFromGroup(String group, UserOrganisationRoles userOrganisationRoles) {
         group = removeSlashFromStart(group);
         OrganisationRole organisationRole = groupToRoleMapCache.get(group);
         if (organisationRole == null) {
@@ -71,7 +68,7 @@ public class GroupToRoleMapper {
                 groupToRoleMapCache.put(group, organisationRole);
             }
         }
-        organisationRole = addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole);
+        organisationRole = addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole, userOrganisationRoles);
         final String normalizedGroup = group;
         boolean globalResearcher = researcherGroups.stream()
                 .map(String::trim)
@@ -79,14 +76,14 @@ public class GroupToRoleMapper {
                 .map(this::removeSlashFromStart)
                 .anyMatch(normalizedGroup::equals);
         if (globalResearcher) {
-            sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(OrganisationRole.RESEARCHER);
+            userOrganisationRoles.addRoleNotDependentOnBridgehead(OrganisationRole.RESEARCHER);
             // Preserve existing administrative or bridgehead roles if a group overlaps.
             if (organisationRole == null) organisationRole = OrganisationRole.RESEARCHER;
         }
         return organisationRole;
     }
 
-    private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole) {
+    private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole, UserOrganisationRoles userOrganisationRoles) {
         if (organisationRole != null) {
             String bridgehead = switch (organisationRole) {
                 case RESEARCHER -> extractBridgehead(bridgeheadUserGroupPrefix, bridgeheadUserGroupSuffix, group);
@@ -95,9 +92,9 @@ public class GroupToRoleMapper {
                 default -> null;
             };
             if (bridgehead == null) {
-                sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(organisationRole);
+                userOrganisationRoles.addRoleNotDependentOnBridgehead(organisationRole);
             } else if (bridgeheadsConfiguration.isRegisteredBridgehead(bridgehead)) {
-                sessionUser.getUserOrganisationRoles().addBridgeheadRole(bridgehead, organisationRole);
+                userOrganisationRoles.addBridgeheadRole(bridgehead, organisationRole);
             } else {
                 organisationRole = null;
             }

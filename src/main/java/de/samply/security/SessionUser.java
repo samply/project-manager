@@ -20,7 +20,8 @@ public class SessionUser {
     private String email;
     private String firstName;
     private String lastName;
-    private UserOrganisationRoles userOrganisationRoles = new UserOrganisationRoles();
+    // Replaced as a whole on every request (never reset and refilled), because parallel requests share the session.
+    private volatile UserOrganisationRoles userOrganisationRoles = new UserOrganisationRoles();
 
     public SessionUser(@Value(ProjectManagerConst.SECURITY_ENABLED_SV) boolean isSecurityEnabled) {
         if (!isSecurityEnabled) {
@@ -33,10 +34,6 @@ public class SessionUser {
 
     public Set<String> getBridgeheads() {
         return getUserOrganisationRoles().getBridgeheads();
-    }
-
-    public void resetUserOrganisationRoles() {
-        userOrganisationRoles = new UserOrganisationRoles();
     }
 
 }

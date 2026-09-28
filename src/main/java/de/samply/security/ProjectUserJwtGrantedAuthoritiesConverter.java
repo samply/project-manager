@@ -1,6 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.user.roles.UserOrganisationRoles;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,9 +49,10 @@ public class ProjectUserJwtGrantedAuthoritiesConverter implements Converter<Jwt,
         if (sessionUser.getFirstName() == null && sessionUser.getLastName() == null) {
             sessionUser.setLastName(jwt.getClaimAsString(fullNameClaim));
         }
-        sessionUser.resetUserOrganisationRoles();
+        UserOrganisationRoles userOrganisationRoles = new UserOrganisationRoles();
         Collection<GrantedAuthority> grantedAuthorities = grantedAuthoritiesExtractor.extractAuthoritiesFromGroups(
-                jwt.getClaimAsStringList(groupClaim));
+                jwt.getClaimAsStringList(groupClaim), userOrganisationRoles);
+        sessionUser.setUserOrganisationRoles(userOrganisationRoles);
         newUsersImporter.importNewUsers();
         return grantedAuthorities;
     }

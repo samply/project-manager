@@ -1,6 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.user.roles.UserOrganisationRoles;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -48,15 +49,15 @@ public class OidcProjectUserService extends OidcUserService {
         if (sessionUser.getFirstName() == null && sessionUser.getLastName() == null) {
             sessionUser.setLastName(userInfo.getFullName());
         }
-        sessionUser.resetUserOrganisationRoles();
-
-        Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo);
+        UserOrganisationRoles userOrganisationRoles = new UserOrganisationRoles();
+        Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo, userOrganisationRoles);
+        sessionUser.setUserOrganisationRoles(userOrganisationRoles);
         newUsersImporter.importNewUsers();
 
         return new DefaultOidcUser(mappedAuthorities, idToken, userInfo);
     }
 
-    public Collection<? extends GrantedAuthority> extractAuthoritiesFromGroups(OidcUserInfo userInfo)
+    public Collection<? extends GrantedAuthority> extractAuthoritiesFromGroups(OidcUserInfo userInfo, UserOrganisationRoles userOrganisationRoles)
             throws OAuth2AuthenticationException {
 
         Map<String, Object> claims = userInfo.getClaims();
@@ -65,7 +66,7 @@ public class OidcProjectUserService extends OidcUserService {
         if (groupsObj instanceof Collection<?> collection) {
             return grantedAuthoritiesExtractor.extractAuthoritiesFromGroups(collection.stream()
                     .map(Object::toString)
-                    .toList());
+                    .toList(), userOrganisationRoles);
         }
 
         throw new OAuth2AuthenticationException("No groups found");
