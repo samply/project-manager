@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.security.SessionUser;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -102,7 +103,8 @@ class ActionMessagesTest {
     void actionResponseUsesCamelCaseMessageProperties() throws Exception {
         Action action = new Action(
                 "/project", "POST", new String[]{"project-code"},
-                "Complete the project.", "Project submitted.", "Project submission failed.", 100, true
+                "Complete the project.", "Project submitted.", "Project submission failed.", 100, true,
+                List.of("CREATOR")
         );
 
         JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(action));
@@ -112,5 +114,6 @@ class ActionMessagesTest {
         assertThat(json.has("success-message")).isFalse();
         assertThat(json.has("error-message")).isFalse();
         assertThat(json.get("bridgeheadRequired").booleanValue()).isTrue();
+        assertThat(json.get("emailRecipients").get(0).textValue()).isEqualTo("CREATOR");
     }
 }

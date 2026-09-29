@@ -7,6 +7,7 @@ import de.samply.app.ProjectManagerController;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.email.EmailRecipientType;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.RolesExtractor;
@@ -130,8 +131,20 @@ public class FrontendService {
                         resolvedMessages.map(ResolvedActionMessages::successMessage).orElse(null),
                         resolvedMessages.map(ResolvedActionMessages::errorMessage).orElse(null),
                         resolvedMessages.map(ResolvedActionMessages::priority).orElse(null),
-                        requiresBridgehead(method)
+                        requiresBridgehead(method),
+                        fetchEmailRecipients(method)
                 ));
+    }
+
+    // The recipients of the emails sent when the action succeeds (@EmailSender). Not @EmailSenderIfError, which only
+    // sends when the action fails, and not the user who performs the action (SESSION_USER).
+    static List<String> fetchEmailRecipients(Method method) {
+        return Arrays.stream(method.getAnnotationsByType(EmailSender.class))
+                .flatMap(emailSender -> Arrays.stream(emailSender.recipients()))
+                .filter(recipient -> recipient != EmailRecipientType.SESSION_USER)
+                .map(Enum::name)
+                .distinct()
+                .toList();
     }
 
     static boolean requiresBridgehead(Method method) {
