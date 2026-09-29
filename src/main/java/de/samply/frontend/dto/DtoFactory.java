@@ -90,7 +90,7 @@ public class DtoFactory {
         return result;
     }
 
-    private String fetchEmailUserName(String email) {
+    public String fetchEmailUserName(String email) {
         return UserUtils.extractFullName(userService.fetchUser(email));
     }
 
@@ -144,9 +144,17 @@ public class DtoFactory {
     }
 
     public Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
+        return convert(notification, userActionSupplier, this::fetchEmailUserName);
+    }
+
+    // userNameResolver: email -> full name; lets a caller converting many notifications look each user up once.
+    public Notification convert(@NotNull de.samply.db.model.Notification notification,
+                                Supplier<NotificationUserAction> userActionSupplier,
+                                Function<String, String> userNameResolver) {
         return new Notification(
                 notification.getId(),
                 notification.getEmail(),
+                notification.getEmail() != null ? userNameResolver.apply(notification.getEmail()) : null,
                 notification.getTimestamp(),
                 notification.getProject().getCode(),
                 notification.getBridgehead(),

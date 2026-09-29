@@ -10,6 +10,8 @@ import java.time.Instant;
 public record Notification(
         Long id,
         String email,
+        // Full name of the user behind the email, if known
+        String userName,
         Instant timestamp,
         String projectCode,
         String bridgehead,
