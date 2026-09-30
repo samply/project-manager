@@ -9,6 +9,8 @@ public enum FormContextKey {
     LAYOUTS("layouts"),
     DOCUMENT("document"),
     DATA_TYPE_CLASS("DataType"),
+    // FormTemplateHtml: shows configured texts that contain HTML
+    HTML("html"),
     CURRENT_DATE("currentDate");
 
     private final String text;

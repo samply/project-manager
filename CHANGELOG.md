@@ -348,3 +348,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Only one user session at the same time
 - Update query outputs correctly
 - REST Service: Fetch actions batch (several read actions in one request)
+- Form PDF: configured texts with HTML (links, formatting) shown as in the frontend

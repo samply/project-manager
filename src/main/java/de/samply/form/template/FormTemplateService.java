@@ -187,6 +187,7 @@ public class FormTemplateService {
         // Add form variables
         result.putAll(formTemplateConfig.fetchAllFormVariables(formTemplate, language));
         result.put(FormContextKey.DATA_TYPE_CLASS.getText(), DataType.class);
+        result.put(FormContextKey.HTML.getText(), new FormTemplateHtml());
         result.put(FormContextKey.CURRENT_DATE.getText(), displayFormatService.format(
                 DisplayFormatKey.LONG_DATE_FORMAT,
                 Instant.now(),
