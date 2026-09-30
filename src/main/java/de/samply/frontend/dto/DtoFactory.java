@@ -157,6 +157,7 @@ public class DtoFactory {
                 notification.getEmail() != null ? userNameResolver.apply(notification.getEmail()) : null,
                 notification.getTimestamp(),
                 notification.getProject().getCode(),
+                notification.getProject().getQuery() != null ? notification.getProject().getQuery().getLabel() : null,
                 notification.getProject().getState(),
                 notification.getBridgehead(),
                 fetchHumanReadableBridgehead(notification.getBridgehead()),

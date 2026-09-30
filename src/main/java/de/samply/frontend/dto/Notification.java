@@ -15,6 +15,8 @@ public record Notification(
         String userName,
         Instant timestamp,
         String projectCode,
+        // Title of the request
+        String projectLabel,
         // Current phase of the request, not the phase at the time of the notification
         ProjectState projectState,
         String bridgehead,
