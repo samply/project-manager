@@ -268,6 +268,28 @@ class FormTemplateServiceTest {
     }
 
     @Test
+    void blockFieldsWithoutABlockInstanceAreNotPrinted() {
+        DtoFormService dtoFormService = mock(DtoFormService.class);
+        Project project = new Project();
+        FormTemplateMetadata metadata = metadata();
+        selectForms(dtoFormService, project, "project");
+        // "name" without an instance is only the structure of a block nobody filled in.
+        when(dtoFormService.fetchProjectFormFields(Optional.empty(), project, Optional.of("en"))).thenReturn(List.of(
+                dynamicField("project", "title", 1),
+                dynamicField("project", "name", 2).toBuilder().block("collaborators").build(),
+                dynamicField("project", "site", 3).toBuilder().block("sites").blockInstance(1).build()));
+        ProjectConfigurations order = new ProjectConfigurations();
+        order.setFormTitleOrder(List.of("project"));
+        FormTemplateService service = projectFieldsService(dtoFormService, metadata, order,
+                formConfigWithForms("project"));
+
+        List<String> labels = service.fetchPlacedFields(project, metadata.getTemplate(), "en", new ProjectContext(Map.of()))
+                .stream().map(field -> field.field().label()).toList();
+
+        assertThat(labels).containsExactly("title", "site");
+    }
+
+    @Test
     void aTemplateOnlySectionHoldsItsProjectFieldsAndTheTemplateCanRenameAForm() throws Exception {
         DtoFormService dtoFormService = mock(DtoFormService.class);
         Project project = new Project();

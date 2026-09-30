@@ -208,12 +208,9 @@ class FormTemplateDocumentBuilderTest {
     @Test
     void neverPrintsNullInABlockTitle() {
         List<Node> nodes = build(Map.of(),
-                placed(field("p", "name").block("collaborators").blockDisplayName("Collaborator")
-                        .multipleBlock(true).build(), "p"),
                 placed(field("p", "site").block("sites").blockInstance(2).multipleBlock(true).build(), "p"));
 
-        assertThat(describe(nodes)).containsExactly(
-                "section p", "block Collaborator | null", "row name", "block 2 | null", "row site");
+        assertThat(describe(nodes)).containsExactly("section p", "block 2 | null", "row site");
     }
 
     private static PlacedField collaborator(int instance, String label) {

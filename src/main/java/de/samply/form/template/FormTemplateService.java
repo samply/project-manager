@@ -246,6 +246,10 @@ public class FormTemplateService {
         List<FormField> dynamicFields = formFields.stream()
                 .filter(field -> field.fieldType() != FormFieldType.FIXED)
                 .filter(field -> printedFormTitles.contains(field.title()))
+                // A block field without a block instance only tells the
+                // frontend the block's structure (a block nobody filled in):
+                // there is nothing to print.
+                .filter(field -> field.block() == null || field.blockInstance() != null)
                 .toList();
 
         return FormTemplateFieldPlacement.place(fetchSectionOrder(template, printedFormTitles), projectFields, dynamicFields);

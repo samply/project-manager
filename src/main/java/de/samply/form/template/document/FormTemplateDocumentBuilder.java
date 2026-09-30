@@ -136,7 +136,8 @@ public final class FormTemplateDocumentBuilder {
     }
 
     // A repeatable block's instances are numbered, e.g. "Collaborator 2". A
-    // missing display name or instance is left out, never printed as "null".
+    // missing display name is left out, never printed as "null". (Block fields
+    // without an instance do not get here: FormTemplateService filters them.)
     private static String fetchBlockTitle(FormField field) {
         return Stream.of(field.blockDisplayName(),
                         Boolean.TRUE.equals(field.multipleBlock()) ? field.blockInstance() : null)
