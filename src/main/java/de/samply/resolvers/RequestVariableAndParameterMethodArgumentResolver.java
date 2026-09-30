@@ -200,8 +200,10 @@ public class RequestVariableAndParameterMethodArgumentResolver implements Handle
             }
         }
 
-        // --- value is not a String, e.g., already a Map/LinkedHashMap from elsewhere ---
-        return objectMapper.convertValue(value, targetType);
+        // --- value is not a String, e.g., already a Map/LinkedHashMap from the JSON body ---
+        // The generic type, so that e.g. the values of a Map<String, SomeRecord> become SomeRecord and not Map
+        return objectMapper.convertValue(value,
+                objectMapper.getTypeFactory().constructType(parameter.getGenericParameterType()));
     }
 
     private Class<?> getListElementType(MethodParameter parameter) {

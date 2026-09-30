@@ -26,6 +26,8 @@ public class ProjectManagerConst {
     public final static String VOTUM_ACTIONS_MODULE = "VOTUM_ACTIONS";
     public final static String EXPORT_MODULE = "EXPORT";
     public final static String TOKEN_MANAGER_MODULE = "TOKEN_MANAGER";
+    // Actions about the frontend actions themselves, e.g. calling several of them in one request
+    public final static String ACTIONS_MODULE = "ACTIONS";
 
     // Actions
     public final static String SET_DEVELOPER_USER_ACTION = "SET_DEVELOPER_USER";
@@ -102,6 +104,7 @@ public class ProjectManagerConst {
     public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION = "REQUEST_CHANGES_IN_PROJECT_ANALYSIS";
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
+    public final static String FETCH_ACTIONS_BATCH_ACTION = "FETCH_ACTIONS_BATCH";
     public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
     public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT";
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
@@ -164,6 +167,7 @@ public class ProjectManagerConst {
     public final static String TEST = "/test";
     public final static String ACTIONS = "/actions";
     public final static String ALL_ACTIONS = "/all-actions";
+    public final static String FETCH_ACTIONS_BATCH = "/actions/batch/results";
     public final static String FETCH_PROJECTS = "/projects";
     public final static String SET_DEVELOPER_USER = "/developer";
     public final static String SET_PILOT_USER = "/pilot-user";
@@ -314,6 +318,8 @@ public class ProjectManagerConst {
     public final static String EXPLORER_IDS = "explorer-ids";
     public final static String PARTIAL_EMAIL = "partial-email";
     public final static String SITE = "site";
+    public final static String ACTIONS_BATCH_REQUESTS = "requests";
+    public final static String ACTIONS_BATCH_RESULTS = "results";
     public final static String EMAIL = "email";
     public final static String QUERY = "query";
     public final static String QUERY_FORMAT = "query-format";
@@ -507,6 +513,10 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE = "EXPORTER_CORE_POOL_SIZE";
     public final static String EXPORTER_MAX_POOL_SIZE = "EXPORTER_MAX_POOL_SIZE";
     public final static String EXPORTER_QUEUE_CAPACITY = "EXPORTER_QUEUE_CAPACITY";
+
+    public final static String ACTIONS_BATCH_CORE_POOL_SIZE = "ACTIONS_BATCH_CORE_POOL_SIZE";
+    public final static String ACTIONS_BATCH_MAX_POOL_SIZE = "ACTIONS_BATCH_MAX_POOL_SIZE";
+    public final static String ACTIONS_BATCH_QUEUE_CAPACITY = "ACTIONS_BATCH_QUEUE_CAPACITY";
     public final static String TEST_EMAIL_DOMAINS = "TEST_EMAIL_DOMAINS";
 
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 = "DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64";
@@ -641,6 +651,12 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE_SV = HEAD_SV + EXPORTER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
     public final static String EXPORTER_MAX_POOL_SIZE_SV = HEAD_SV + EXPORTER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
+
+    // All batches share these threads: they limit how many entries run at once, and with it how many database
+    // connections batches take (half of the pool by default). Entries beyond the queue run on the request's thread.
+    public final static String ACTIONS_BATCH_CORE_POOL_SIZE_SV = HEAD_SV + ACTIONS_BATCH_CORE_POOL_SIZE + ":10" + BOTTOM_SV;
+    public final static String ACTIONS_BATCH_MAX_POOL_SIZE_SV = HEAD_SV + ACTIONS_BATCH_MAX_POOL_SIZE + ":10" + BOTTOM_SV;
+    public final static String ACTIONS_BATCH_QUEUE_CAPACITY_SV = HEAD_SV + ACTIONS_BATCH_QUEUE_CAPACITY + ":1000" + BOTTOM_SV;
     public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":en" + BOTTOM_SV;
 
     public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS + ":" + BOTTOM_SV;
@@ -668,6 +684,7 @@ public class ProjectManagerConst {
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
     public final static String ASYNC_NOTIFICATION_EXECUTOR = "notification";
     public final static String ASYNC_EXPORTER_EXECUTOR = "exporter";
+    public final static String ASYNC_ACTIONS_BATCH_EXECUTOR = "actions-batch";
 
     // Thymeleaf
     public final static int THYMELEAF_PROCESSOR_PRECEDENCE = 1000;

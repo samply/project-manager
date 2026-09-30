@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.annotations.*;
+import de.samply.batch.ActionsBatchRequest;
+import de.samply.batch.ActionsBatchService;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.cache.CacheCategory;
 import de.samply.cache.CacheConfiguration;
@@ -118,6 +120,7 @@ public class ProjectManagerController {
     private final FeasibilityService feasibilityService;
     private final FeasibilityMapper feasibilityMapper;
     private final DisplayFormatService displayFormatService;
+    private final ActionsBatchService actionsBatchService;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -146,7 +149,8 @@ public class ProjectManagerController {
                                     CacheConfiguration cacheConfiguration,
                                     FeasibilityService feasibilityService,
                                     FeasibilityMapper feasibilityMapper,
-                                    DisplayFormatService displayFormatService) {
+                                    DisplayFormatService displayFormatService,
+                                    ActionsBatchService actionsBatchService) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -175,6 +179,7 @@ public class ProjectManagerController {
         this.feasibilityService = feasibilityService;
         this.feasibilityMapper = feasibilityMapper;
         this.displayFormatService = displayFormatService;
+        this.actionsBatchService = actionsBatchService;
     }
 
     @CacheCategory(CacheResource.PUBLIC_INFORMATION)
@@ -213,6 +218,21 @@ public class ProjectManagerController {
         return convertToResponseEntity(() ->
                 this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(project),
                         Optional.ofNullable(bridgehead), Optional.ofNullable(language), false));
+    }
+
+    // Several read actions (GET endpoints) in one request: {"requests": {id: {"action": ..., "params": {...}}}}.
+    // POST only because browsers send no body with GET; it changes nothing. Every entry is answered on its own,
+    // with the response or the error of its endpoint, so the batch itself is answered with 200.
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.ACTIONS_MODULE)
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.ACTIONS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_ACTIONS_BATCH_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.FETCH_ACTIONS_BATCH, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity fetchActionsBatch(
+            @RequestVariable(name = ProjectManagerConst.ACTIONS_BATCH_REQUESTS) Map<String, ActionsBatchRequest> requests
+    ) {
+        return convertToResponseEntity(() ->
+                Map.of(ProjectManagerConst.ACTIONS_BATCH_RESULTS, actionsBatchService.fetchActionsBatch(requests)));
     }
 
     @FrontendAction(action = ProjectManagerConst.FETCH_FRONTEND_VARIABLES_ACTION)

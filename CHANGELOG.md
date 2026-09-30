@@ -347,3 +347,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Full name if the first or last name is missing
 - Only one user session at the same time
 - Update query outputs correctly
+- REST Service: Fetch actions batch (several read actions in one request)

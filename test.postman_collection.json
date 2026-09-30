@@ -107,6 +107,39 @@
       "response": []
     },
     {
+      "name": "Fetch Actions Batch",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requests\": {\n    \"states\": {\"action\": \"FETCH_VISIBLE_PROJECT_STATES\"},\n    \"project\": {\"action\": \"FETCH_PROJECT\", \"params\": {\"project-code\": \"TEST-2026-0001\"}}\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8097/actions/batch/results",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8097",
+          "path": [
+            "actions",
+            "batch",
+            "results"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Actions Navigation",
       "request": {
         "auth": {
