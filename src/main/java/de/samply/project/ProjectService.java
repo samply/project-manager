@@ -20,6 +20,7 @@ import jakarta.persistence.criteria.*;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,19 +127,15 @@ public class ProjectService {
         projectBridgeheadService.saveBridgehead(projectBridgehead);
     }
 
+    /**
+     * Every project the current user can see, by the same visibility rule as the dashboard's
+     * project list (see buildUserVisibilitySpecification), so the dashboard filters offer
+     * exactly what that list contains.
+     */
     public List<Project> fetchAllUserVisibleProjects() {
-        // Fetch projects as a project manager
-        if (isProjectManagerAdmin()) {
-            return projectRepository.findAll();
-        }
-        Set<String> bridgeheads = sessionUser.getBridgeheads();
-        // Fetch projects as bridgehead admin
-        // We make an assumption: A bridgehead admin is bridgehead admin in all of their bridgeheads.
-        if (isBridgeheadAdmin()) {
-            return projectRepository.findByBridgeheadsOrCreator(sessionUser.getEmail(), bridgeheads);
-        }
-        // Fetch projects as a researcher
-        return projectBridgeheadUserService.fetchProjects(sessionUser.getEmail());
+        return projectRepository.findAll(
+                buildUserVisibilitySpecification(isProjectManagerAdmin()),
+                Sort.by(Sort.Direction.DESC, Project_.MODIFIED_AT));
     }
 
     public ProjectState[] fetchVisibleProjectStates() {
