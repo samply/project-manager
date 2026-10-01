@@ -27,7 +27,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -143,13 +142,13 @@ public class DtoFactory {
                 .removeIf(o -> !dtoTypes.contains(o.getProjectType()));
     }
 
-    public Notification convert(@NotNull de.samply.db.model.Notification notification, Supplier<NotificationUserAction> userActionSupplier) {
-        return convert(notification, userActionSupplier, this::fetchEmailUserName);
+    public Notification convert(@NotNull de.samply.db.model.Notification notification, boolean read) {
+        return convert(notification, read, this::fetchEmailUserName);
     }
 
     // userNameResolver: email -> full name; lets a caller converting many notifications look each user up once.
     public Notification convert(@NotNull de.samply.db.model.Notification notification,
-                                Supplier<NotificationUserAction> userActionSupplier,
+                                boolean read,
                                 Function<String, String> userNameResolver) {
         return new Notification(
                 notification.getId(),
@@ -165,7 +164,7 @@ public class DtoFactory {
                 notification.getDetails(),
                 notification.getError(),
                 notification.getHttpStatus(),
-                userActionSupplier.get().isRead()
+                read
         );
     }
 

@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 @Service
@@ -81,34 +82,28 @@ public class NotificationService {
         }
     }
 
-    @Async(ProjectManagerConst.ASYNC_NOTIFICATION_EXECUTOR)
+    // Not @Async: the session user is only available on the request thread, and the UI reloads the notifications
+    // right after this call.
     public void setNotificationAsRead(@NotNull Long notificationId) {
-        NotificationUserAction notificationUserAction = fetchNotificationUserAction(notificationId);
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationServiceException("Notification " + notificationId + " not found"));
+        String email = sessionUser.getEmail();
+        NotificationUserAction notificationUserAction = notificationUserActionRepository
+                .findFirstByNotificationAndEmailOrderByIdAsc(notification, email)
+                .orElseGet(() -> {
+                    NotificationUserAction newNotificationUserAction = new NotificationUserAction();
+                    newNotificationUserAction.setNotification(notification);
+                    newNotificationUserAction.setEmail(email);
+                    return newNotificationUserAction;
+                });
         notificationUserAction.setRead(true);
         notificationUserAction.setModifiedAt(Instant.now());
         notificationUserActionRepository.save(notificationUserAction);
     }
 
-    public NotificationUserAction fetchNotificationUserAction(@NotNull Long notificationId) {
-        Optional<Notification> notificationOptional = notificationRepository.findById(notificationId);
-        if (notificationOptional.isEmpty()) {
-            throw new NotificationServiceException("Notification " + notificationId + " not found");
-        }
-        return fetchNotificationUserAction(notificationOptional.get());
-    }
-
-    public NotificationUserAction fetchNotificationUserAction(@NotNull Notification notification) {
-        Optional<NotificationUserAction> notificationUserActionOptional = notificationUserActionRepository.findByNotification(notification);
-        NotificationUserAction notificationUserAction;
-        if (notificationUserActionOptional.isEmpty()) {
-            notificationUserAction = new NotificationUserAction();
-            notificationUserAction.setNotification(notification);
-            notificationUserAction.setEmail(sessionUser.getEmail());
-            notificationUserActionRepository.save(notificationUserAction);
-        } else {
-            notificationUserAction = notificationUserActionOptional.get();
-        }
-        return notificationUserAction;
+    // A notification without a row for the session user is unread: fetching notifications writes nothing.
+    public Set<Long> fetchReadNotificationIds() {
+        return notificationUserActionRepository.findReadNotificationIds(sessionUser.getEmail());
     }
 
 
