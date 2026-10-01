@@ -39,6 +39,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.time.Instant;
@@ -276,7 +277,7 @@ public class FormTemplateService {
         // blank) > form-field metadata (the linked FIXED field's, if not blank)
         // > default (whatever's left, typically blank).
         FormTemplateFieldConfig resolved =
-                projectContext.resolveProjectContext(applyFixedFieldMetadataFallback(config, language));
+                projectContext.resolveProjectContext(applyFixedFieldMetadataFallback(config, fixedEntry, language));
         FormField field = dtoFactory.convert(
                 formTemplateConfig.fetchProjectFormFieldTitle(formTemplate),
                 resolved,
@@ -526,28 +527,27 @@ public class FormTemplateService {
      * display_name/description. When this project field's own display_name/
      * description is blank, the linked FIXED field's is used instead - see
      * 2026-09-07-plan-pdf-form-field-parity.md point 2 (2026-09-09 feedback).
+     * The FIXED entry is the one the project's fields resolved, already in the
+     * PDF's language: of a FIXED field configured several times, the instance
+     * the project shows.
      */
-    private FormTemplateFieldConfig applyFixedFieldMetadataFallback(FormTemplateFieldConfig projectField, String language) {
-        if (projectField.getLabel() == null) {
+    private FormTemplateFieldConfig applyFixedFieldMetadataFallback(
+            FormTemplateFieldConfig projectField, FormField fixedEntry, String language) {
+        if (fixedEntry == null) {
             return projectField;
         }
-        return formConfig.fetchFixedFieldConfig(projectField.getLabel())
-                .map(fixedConfig -> mergeBlankDisplayMetadata(projectField, fixedConfig, language))
-                .orElse(projectField);
-    }
-
-    private FormTemplateFieldConfig mergeBlankDisplayMetadata(
-            FormTemplateFieldConfig projectField, FormFieldConfig fixedConfig, String language) {
         boolean needsDisplayName = isBlankFor(projectField.getDisplayName(), language)
-                && !isBlankFor(fixedConfig.getDisplayName(), language);
+                && StringUtils.hasText(fixedEntry.labelDisplayName());
         boolean needsDescription = isBlankFor(projectField.getDescription(), language)
-                && !isBlankFor(fixedConfig.getDescription(), language);
+                && StringUtils.hasText(fixedEntry.labelDescription());
         if (!needsDisplayName && !needsDescription) {
             return projectField;
         }
         return projectField.toBuilder()
-                .displayName(needsDisplayName ? fixedConfig.getDisplayName() : projectField.getDisplayName())
-                .description(needsDescription ? fixedConfig.getDescription() : projectField.getDescription())
+                .displayName(needsDisplayName ? Map.of(language, fixedEntry.labelDisplayName())
+                        : projectField.getDisplayName())
+                .description(needsDescription ? Map.of(language, fixedEntry.labelDescription())
+                        : projectField.getDescription())
                 .build();
     }
 

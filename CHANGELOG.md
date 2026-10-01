@@ -306,6 +306,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Editing a project with an empty list of sites removes all sites
 - Action feedback marker in the redirect URL after creating or editing a request
 - Email recipients in fronend actions
+- Form field instances: a field label configured several times in a form; the first instance whose condition holds is shown
 
 
 ### Changed

@@ -356,6 +356,19 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VALUE = "default";
     public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VARIABLE = "default-var";
 
+    // Form configuration files: JSON properties
+    public final static String FORM_CONFIG_FIELDS = "fields";
+    public final static String FORM_CONFIG_BLOCKS = "blocks";
+    public final static String FORM_CONFIG_LABEL = "label";
+    public final static String FORM_CONFIG_ACTIVE = "active";
+    public final static String FORM_CONFIG_MULTIPLE = "multiple";
+    public final static String FORM_CONFIG_BLOCK = "block";
+    public final static String FORM_CONFIG_FIELD_TYPE = "field_type";
+    public final static String FORM_CONFIG_DATA_TYPE = "data_type";
+    public final static String FORM_CONFIG_DISPLAY_FORMAT = "display_format";
+    public final static String FORM_CONFIG_ALLOWED_VALUES = "allowed_values";
+    public final static String FORM_CONFIG_AS_FILE = "as_file";
+
     // Application Properties
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";

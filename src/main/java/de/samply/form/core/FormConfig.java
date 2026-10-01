@@ -24,9 +24,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -38,7 +39,11 @@ public class FormConfig {
     private final Map<String, Map<String, FormFieldBlock>> formTitleBlockMap = new HashMap<>();
     private final Map<String, ContextualDisplayMetadata> formTitleDisplaMetadataMap = new HashMap<>();
     private final Map<String, Map<String, DisplayMetadata>> formTitleGroupMap = new HashMap<>();
+    // A label can be configured several times in a form ("instances", tried in order by their conditions, see
+    // FormFieldConfig.condition). This map holds the first instance, for callers without project values.
     private final Map<String, Map<String, FormFieldConfig>> formTitleLabelFieldMap = new HashMap<>();
+    // Every instance of a label, in configuration order.
+    private final Map<String, Map<String, List<FormFieldConfig>>> formTitleLabelInstancesMap = new HashMap<>();
     private final Map<String, Map<String, Integer>> formTitleLabelOrderMap = new HashMap<>();
     private final Map<String, List<FormFieldLayout>> formTitleLayoutsMap = new HashMap<>();
     // Each form's configuration file as JSON (one file per form title) - the
@@ -49,6 +54,8 @@ public class FormConfig {
     private final Map<String, String> fixedLabelFormTitleMap = new HashMap<>();
     // Identifiers configured twice, found while loading (see validateUniqueness).
     private final List<String> duplicates = new ArrayList<>();
+    // Instances of a field label that do not fit together, found while loading (see validateInstances).
+    private final List<String> invalidInstances = new ArrayList<>();
 
     public FormConfig(@Value(ProjectManagerConst.FORM_FIELDS_DIRECTORY_SV) ExistingDirectory configDir
     ) {
@@ -67,12 +74,17 @@ public class FormConfig {
         }
 
         List<String> brokenReferences = findBrokenReferences();
-        if (!duplicates.isEmpty() || !brokenReferences.isEmpty()) {
+        if (!duplicates.isEmpty() || !invalidInstances.isEmpty() || !brokenReferences.isEmpty()) {
             duplicates.forEach(duplicate -> log.error("Invalid form configuration: configured twice: {}", duplicate));
+            invalidInstances.forEach(instance -> log.error("Invalid form configuration: {}", instance));
             brokenReferences.forEach(reference -> log.error("Invalid form configuration: {}", reference));
             List<String> problems = new ArrayList<>();
             if (!duplicates.isEmpty()) {
                 problems.add(duplicates.size() + " identifier(s) configured twice: " + String.join("; ", duplicates));
+            }
+            if (!invalidInstances.isEmpty()) {
+                problems.add(invalidInstances.size() + " field(s) with instances that do not fit together: "
+                        + String.join("; ", invalidInstances));
             }
             if (!brokenReferences.isEmpty()) {
                 problems.add(brokenReferences.size() + " reference(s) to something not configured: "
@@ -91,17 +103,24 @@ public class FormConfig {
      * field would never hold, without any error.
      */
     public List<String> findMissingReferences(String condition) {
-        if (condition == null) {
-            return List.of();
+        return findReferences(condition).stream()
+                .filter(reference -> fetchFormFieldConfig(reference.form(), reference.label()) == null)
+                .map(ConditionReference::toString)
+                .toList();
+    }
+
+    /** A form field a condition refers to. */
+    private record ConditionReference(String form, String label) {
+        @Override
+        public String toString() {
+            return form + "." + label;
         }
-        List<String> result = new ArrayList<>();
-        Matcher matcher = CONDITION_REFERENCE.matcher(condition);
-        while (matcher.find()) {
-            if (fetchFormFieldConfig(matcher.group(1), matcher.group(2)) == null) {
-                result.add(matcher.group(1) + "." + matcher.group(2));
-            }
-        }
-        return result;
+    }
+
+    private static List<ConditionReference> findReferences(String condition) {
+        return condition == null ? List.of() : CONDITION_REFERENCE.matcher(condition).results()
+                .map(match -> new ConditionReference(match.group(1), match.group(2)))
+                .toList();
     }
 
     /**
@@ -117,7 +136,9 @@ public class FormConfig {
             String where = file.getFileName() + ", form '" + formTitle + "'";
             Map<String, FormFieldConfig> fields = formTitleLabelFieldMap.getOrDefault(formTitle, Map.of());
             Map<String, Integer> order = formTitleLabelOrderMap.getOrDefault(formTitle, Map.of());
-            fields.values().stream()
+            // Every instance of a label: each has its own block, groups and condition.
+            formTitleLabelInstancesMap.getOrDefault(formTitle, Map.of()).values().stream()
+                    .flatMap(List::stream)
                     .sorted(Comparator.comparing(field -> order.getOrDefault(field.getLabel(), Integer.MAX_VALUE)))
                     .forEach(field -> {
                         String fieldWhere = where + ", field '" + field.getLabel() + "'";
@@ -194,24 +215,20 @@ public class FormConfig {
             }
 
             // Fields + order
-            Map<String, FormFieldConfig> fieldMap =
-                    formTitleLabelFieldMap.computeIfAbsent(
-                            formMetadataConfig.getTitle(),
-                            _ -> new HashMap<>()
-                    );
-
-            Map<String, Integer> orderMap =
-                    formTitleLabelOrderMap.computeIfAbsent(
-                            formMetadataConfig.getTitle(),
-                            _ -> new HashMap<>()
-                    );
+            String title = formMetadataConfig.getTitle();
+            Map<String, FormFieldConfig> fieldMap = formTitleLabelFieldMap.computeIfAbsent(title, _ -> new HashMap<>());
+            Map<String, Integer> orderMap = formTitleLabelOrderMap.computeIfAbsent(title, _ -> new HashMap<>());
+            Map<String, List<FormFieldConfig>> instancesMap =
+                    formTitleLabelInstancesMap.computeIfAbsent(title, _ -> new LinkedHashMap<>());
 
             FormFieldConfig[] fields = Optional.ofNullable(formMetadataConfig.getFields())
                     .orElseGet(() -> new FormFieldConfig[0]);
-            AtomicInteger counter = new AtomicInteger(1);
-            Arrays.stream(fields).forEach(field -> {
-                fieldMap.put(field.getLabel(), field);
-                orderMap.put(field.getLabel(), counter.getAndIncrement());
+            Arrays.stream(fields).forEach(field ->
+                    instancesMap.computeIfAbsent(field.getLabel(), _ -> new ArrayList<>()).add(field));
+            // A label configured several times keeps the first instance and its position.
+            instancesMap.forEach((label, instances) -> {
+                fieldMap.put(label, instances.getFirst());
+                orderMap.put(label, orderMap.size() + 1);
             });
 
             // Block metadata
@@ -235,16 +252,22 @@ public class FormConfig {
     }
 
     /**
-     * Identifiers that must be unique: field labels and block labels within
-     * the form, allowed-value labels within their field, and FIXED labels
-     * across all forms. (Group ids are keys of one JSON object, so a duplicate
+     * Identifiers that must be unique: block labels within the form,
+     * allowed-value labels within their field, and FIXED labels across all
+     * forms. A field label may repeat within the form only as instances (see
+     * validateInstances). (Group ids are keys of one JSON object, so a duplicate
      * is already a parse error; form titles are checked per file.)
      */
     private void validateUniqueness(FormMetadataConfig form, Path configFile) {
         String where = configFile.getFileName() + ", form '" + form.getTitle() + "'";
         FormFieldConfig[] fields = Optional.ofNullable(form.getFields()).orElseGet(() -> new FormFieldConfig[0]);
-        findDuplicates(Arrays.stream(fields).map(FormFieldConfig::getLabel).toList())
-                .forEach(label -> duplicates.add("field label '" + label + "' in " + where));
+        Arrays.stream(fields)
+                .filter(field -> field.getLabel() != null)
+                .collect(Collectors.groupingBy(FormFieldConfig::getLabel, LinkedHashMap::new, Collectors.toList()))
+                .entrySet().stream()
+                .filter(labelInstances -> labelInstances.getValue().size() > 1)
+                .forEach(labelInstances -> validateInstances(
+                        form.getTitle(), labelInstances.getKey(), labelInstances.getValue(), where));
         for (FormFieldConfig field : fields) {
             if (field.getAllowedValues() != null) {
                 findDuplicates(Arrays.stream(field.getAllowedValues()).map(value -> value.getLabel()).toList())
@@ -253,7 +276,8 @@ public class FormConfig {
             }
             if (field.getFieldType() == FormFieldType.FIXED && field.getLabel() != null) {
                 String otherForm = fixedLabelFormTitleMap.putIfAbsent(field.getLabel(), form.getTitle());
-                if (otherForm != null) {
+                // Instances of a FIXED field within one form are allowed, the same label in another form is not.
+                if (otherForm != null && !otherForm.equals(form.getTitle())) {
                     duplicates.add("FIXED field label '" + field.getLabel() + "' in forms '" + otherForm
                             + "' and '" + form.getTitle() + "'");
                 }
@@ -264,6 +288,44 @@ public class FormConfig {
                     .forEach(block -> duplicates.add("block label '" + block + "' in " + where));
         }
     }
+
+    /**
+     * A label configured more than once: its instances are tried in order and the first whose condition holds is
+     * used, so every instance but the last needs a condition (the last one may be the default). They describe one
+     * stored value, so what defines that value must be the same in all of them. A condition referring to the field
+     * itself would choose the instance by the value that instance shows.
+     */
+    private void validateInstances(String formTitle, String label, List<FormFieldConfig> instances, String where) {
+        String fieldWhere = "field label '" + label + "' in " + where;
+        if (instances.subList(0, instances.size() - 1).stream()
+                .anyMatch(instance -> instance.getCondition() == null || instance.getCondition().isBlank())) {
+            duplicates.add(fieldWhere + " (configured " + instances.size()
+                    + " times: every instance but the last needs a condition)");
+        }
+        FormFieldConfig first = instances.getFirst();
+        List<String> differences = SHARED_INSTANCE_ATTRIBUTES.stream()
+                .filter(attribute -> instances.stream().anyMatch(instance ->
+                        !Objects.equals(attribute.getValue().apply(first), attribute.getValue().apply(instance))))
+                .map(Map.Entry::getKey)
+                .toList();
+        if (!differences.isEmpty()) {
+            invalidInstances.add(fieldWhere + ": its instances differ in " + String.join(", ", differences)
+                    + ", which must be the same in all of them");
+        }
+        ConditionReference itself = new ConditionReference(formTitle, label);
+        IntStream.range(0, instances.size())
+                .filter(i -> findReferences(instances.get(i).getCondition()).contains(itself))
+                .forEach(i -> invalidInstances.add(
+                        fieldWhere + ": the condition of instance " + (i + 1) + " refers to the field itself"));
+    }
+
+    // What defines a field's stored value: the same in all instances of a label.
+    private static final List<Map.Entry<String, Function<FormFieldConfig, Object>>> SHARED_INSTANCE_ATTRIBUTES = List.of(
+            Map.entry(ProjectManagerConst.FORM_CONFIG_DATA_TYPE, FormFieldConfig::getDataType),
+            Map.entry(ProjectManagerConst.FORM_CONFIG_FIELD_TYPE, FormFieldConfig::getFieldType),
+            Map.entry(ProjectManagerConst.FORM_CONFIG_MULTIPLE, FormFieldConfig::isMultiple),
+            Map.entry(ProjectManagerConst.FORM_CONFIG_BLOCK, FormFieldConfig::getBlock),
+            Map.entry(ProjectManagerConst.FORM_CONFIG_AS_FILE, FormFieldConfig::getAsFile));
 
     private static Set<String> findDuplicates(List<String> values) {
         Set<String> seen = new HashSet<>();
@@ -331,26 +393,15 @@ public class FormConfig {
         return formTitleLabelFieldMap.getOrDefault(formTitle, new HashMap<>()).get(formLabel);
     }
 
+    /** Every instance of a field, in configuration order; empty if the field is not configured. */
+    public List<FormFieldConfig> fetchFormFieldConfigs(String formTitle, String formLabel) {
+        return formTitleLabelInstancesMap.getOrDefault(formTitle, Map.of()).getOrDefault(formLabel, List.of());
+    }
+
     public List<FormFieldConfig> fetchFieldsByTitleAndBlock(String title, String block) {
         return formTitleLabelFieldMap.getOrDefault(title, Map.of()).values().stream()
                 .filter(config -> Objects.equals(config.getBlock(), block))
                 .toList();
-    }
-
-    /**
-     * Finds a configured FIXED field by its native label (e.g. "ETHICS_VOTE_FOR_ALL_SITES"),
-     * regardless of which form title it's declared under - FIXED labels are
-     * native/global keys, not scoped to one title. Used so a PDF template's
-     * project_fields entry can fall back to a FIXED field's own configured
-     * display_name/description when the project_fields entry doesn't set its
-     * own (see FormTemplateService).
-     */
-    public Optional<FormFieldConfig> fetchFixedFieldConfig(String label) {
-        return formTitleLabelFieldMap.values().stream()
-                .flatMap(labelFieldMap -> labelFieldMap.values().stream())
-                .filter(config -> config.getFieldType() == FormFieldType.FIXED)
-                .filter(config -> Objects.equals(config.getLabel(), label))
-                .findFirst();
     }
 
 }

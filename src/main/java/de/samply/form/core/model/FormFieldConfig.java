@@ -2,6 +2,7 @@ package de.samply.form.core.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.samply.app.ProjectManagerConst;
 import de.samply.display.DisplayFormatKey;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,15 +27,15 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
     // KEEP_FIXED_FIELD_ORDER, active state and condition are interpreted as
     // metadata for the native field; no value is persisted as a dynamic form
     // field.
-    @JsonProperty("field_type")
+    @JsonProperty(ProjectManagerConst.FORM_CONFIG_FIELD_TYPE)
     @Builder.Default
     private FormFieldType fieldType = FormFieldType.DYNAMIC;
 
-    @JsonProperty("data_type")
+    @JsonProperty(ProjectManagerConst.FORM_CONFIG_DATA_TYPE)
     private DataType dataType;
 
     /** Optional presentation override; does not affect input or stored values. */
-    @JsonProperty("display_format")
+    @JsonProperty(ProjectManagerConst.FORM_CONFIG_DISPLAY_FORMAT)
     private DisplayFormatKey displayFormat;
 
     public void validateDisplayFormat() {
@@ -43,14 +44,14 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
                 || displayFormat == DisplayFormatKey.LONG_DATE_FORMAT;
         if (dataType == DataType.TIMESTAMP || dataType == DataType.LOCAL_DATE_TIME
                 || (dataType == DataType.DATE && dateOnly)) return;
-        throw new IllegalArgumentException("Field '" + label + "': display_format " + displayFormat
-                + " is incompatible with data_type " + dataType);
+        throw new IllegalArgumentException("Field '" + label + "': " + ProjectManagerConst.FORM_CONFIG_DISPLAY_FORMAT
+                + " " + displayFormat + " is incompatible with " + ProjectManagerConst.FORM_CONFIG_DATA_TYPE + " " + dataType);
     }
 
     // Optional input hint for editable STRING and LONG_STRING fields.
     private String placeholder;
 
-    @JsonProperty("allowed_values")
+    @JsonProperty(ProjectManagerConst.FORM_CONFIG_ALLOWED_VALUES)
     private FormFieldAllowedValue[] allowedValues;
 
     private boolean mandatory;
@@ -76,7 +77,7 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
     private String block;
 
     // This field can also be provided as a file
-    @JsonProperty("as_file")
+    @JsonProperty(ProjectManagerConst.FORM_CONFIG_AS_FILE)
     private Boolean asFile;
 
     // Condition for displaying the form field based on SpEL expression (e.g., "<label>.<value> == '12345'")
@@ -84,6 +85,13 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
     // e.g. "condition": "['samples']['liquid_type']['value'] == 'other'"
     // The first element is the title, the second is the label, and the third one is an element from FormField.java (for frontend)
     // It should be written as in FormField.java
+    // A label can be configured several times in a form ("instances"): the
+    // instances are tried in order and the first whose condition holds is
+    // shown, like if / else if. Every instance but the last needs a
+    // condition; the last one without a condition is the default. All
+    // instances describe one stored value, so data_type, field_type,
+    // multiple, block and as_file must be the same in all of them (see
+    // FormConfig.validateInstances).
     private String condition;
 
 }

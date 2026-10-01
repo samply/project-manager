@@ -2,6 +2,7 @@ package de.samply.form.core;
 
 import de.samply.db.model.Project;
 import de.samply.form.core.condition.FormFieldConditionEvaluator;
+import de.samply.form.core.model.FormFieldConfig;
 import de.samply.form.core.model.FormFieldLayout;
 import de.samply.form.core.model.FormFieldType;
 import de.samply.frontend.dto.DtoFactory;
@@ -84,23 +85,31 @@ public class DtoFormService {
                 .stream()
                 .filter(field -> field.getFieldType() == FormFieldType.DYNAMIC)
                 // Keep inactive definitions only when this project already has
-                // persisted data that still needs to be represented.
-                .filter(field -> field.isActive() || persistedLabels.contains(field.getLabel()))
+                // persisted data that still needs to be represented. A field with
+                // several instances is kept if one of them is active; which one
+                // is shown is decided with the conditions (resolveInstances).
+                .filter(field -> isAnyInstanceActive(formTitle, field) || persistedLabels.contains(field.getLabel()))
                 .map(field ->
                         dtoFactory.convert(formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(),
                                 language, project.getState()))
                 .toList();
     }
 
+    private boolean isAnyInstanceActive(String formTitle, FormFieldConfig field) {
+        return field.isActive() || formConfig.fetchFormFieldConfigs(formTitle, field.getLabel()).stream()
+                .anyMatch(FormFieldConfig::isActive);
+    }
+
     private Stream<FormField> fetchFixedFormFieldMetadata(
             @NotNull String formTitle, @NotNull Project project, Optional<String> language,
-            Collection<FormField> conditionContext) {
+            FormFieldConditionEvaluator.InstanceResolver instanceResolver) {
         // FIXED entries describe frontend-owned fields. Their supported
         // configuration metadata is returned once,
         // including when inactive, so the frontend can override/suppress its
         // native field. They deliberately bypass persisted values, blocks and
         // field-instance expansion. Conditions are evaluated against the
-        // dynamic fields, but a false condition is represented as active=false
+        // dynamic fields, but a field without a matching instance is
+        // represented as active=false (with its first instance's metadata)
         // instead of removing the fixed metadata from the response.
         return formConfig
                 .getFormTitleLabelFieldMap()
@@ -111,9 +120,23 @@ public class DtoFormService {
                 .map(field -> dtoFactory.convert(
                         formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(),
                         language, project.getState()))
-                .map(field -> formFieldConditionEvaluator.isVisible(field, conditionContext)
-                        ? field
-                        : field.toBuilder().active(Boolean.FALSE).build());
+                .map(field -> instanceResolver.resolve(field)
+                        .map(instance -> applyInstance(field, instance, project, language))
+                        .orElseGet(() -> field.toBuilder().active(Boolean.FALSE).build()));
+    }
+
+    /**
+     * A field as its chosen instance describes it, with its own value and
+     * block/field instance. Fields are built from the first instance, so
+     * that one needs no rebuild.
+     */
+    private FormField applyInstance(FormField field, FormFieldConfig instance, Project project, Optional<String> language) {
+        if (instance == formConfig.fetchFormFieldConfigs(field.title(), field.label()).getFirst()) {
+            return field;
+        }
+        return dtoFactory.convert(field.title(), instance, Optional.ofNullable(field.blockInstance()),
+                Optional.ofNullable(field.fieldInstance()), Optional.ofNullable(field.value()), language,
+                project.getState());
     }
 
     private List<FormField> fetchProjectFormFieldsWithValues(@NotNull String formTitle, @NotNull Project project, Optional<String> language) {
@@ -153,13 +176,12 @@ public class DtoFormService {
                 .toList();
     }
 
+    // valuedFields: the fields that actually have a value saved for this project,
+    // each tagged with a concrete blockInstance.
     private Stream<FormField> fetchBaseAndOverrideFormFields(
-            @NotNull String formTitle, @NotNull Project project, Optional<String> language
+            @NotNull String formTitle, List<FormField> valuedFields, @NotNull Project project,
+            Optional<String> language
     ) {
-        // "valued" fields: the fields that actually have a value saved for this project,
-        // each tagged with a concrete blockInstance.
-        List<FormField> valuedFields = fetchProjectFormFieldsWithValues(formTitle, project, language);
-
         // Load persisted labels first, so filtering the base configuration does not
         // remove inactive fields that were used before they became inactive.
         Set<String> persistedLabels = valuedFields.stream()
@@ -345,19 +367,51 @@ public class DtoFormService {
                 .map(List::of)
                 .orElseGet(() -> formConfig.getFormTitleLabelFieldMap().keySet().stream().toList());
 
-        Collection<FormField> dynamicFields = formFieldConditionEvaluator.filter(formTitles.stream()
-                .flatMap(title -> fetchBaseAndOverrideFormFields(title, project, language))
-                .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
-                .collect(FormFieldUtils.formFieldMapCollector())
-                .values());
+        Map<String, List<FormField>> valuedFieldsByTitle = formTitles.stream()
+                .collect(Collectors.toMap(Function.identity(),
+                        title -> fetchProjectFormFieldsWithValues(title, project, language)));
 
-        return Stream.concat(
-                        dynamicFields.stream(),
-                        formTitles.stream().flatMap(title -> fetchFixedFormFieldMetadata(
-                                title, project, language, dynamicFields)))
+        Collection<FormField> candidateFields = formTitles.stream()
+                .flatMap(title -> fetchBaseAndOverrideFormFields(
+                        title, valuedFieldsByTitle.get(title), project, language))
                 .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
                 .collect(FormFieldUtils.formFieldMapCollector())
                 .values();
+        List<FormField> dynamicFields = resolveInstances(candidateFields, valuedFieldsByTitle, project, language);
+
+        FormFieldConditionEvaluator.InstanceResolver fixedFieldResolver =
+                formFieldConditionEvaluator.instanceResolver(dynamicFields);
+        return Stream.concat(
+                        dynamicFields.stream(),
+                        formTitles.stream().flatMap(title -> fetchFixedFormFieldMetadata(
+                                title, project, language, fixedFieldResolver)))
+                .sorted(FormFieldUtils.FORM_FIELD_COMPARATOR)
+                .collect(FormFieldUtils.formFieldMapCollector())
+                .values();
+    }
+
+    /**
+     * Each field as the instance it shows - the first whose condition is met,
+     * evaluated against all candidate fields - or left out if none is. An
+     * inactive instance is shown only if the project has stored data for the
+     * field, as for a field configured once.
+     */
+    private List<FormField> resolveInstances(
+            Collection<FormField> candidateFields, Map<String, List<FormField>> valuedFieldsByTitle,
+            Project project, Optional<String> language) {
+        FormFieldConditionEvaluator.InstanceResolver instanceResolver =
+                formFieldConditionEvaluator.instanceResolver(candidateFields);
+        return candidateFields.stream()
+                .flatMap(field -> instanceResolver.resolve(field)
+                        .filter(instance -> instance.isActive() || hasStoredData(field, valuedFieldsByTitle))
+                        .map(instance -> applyInstance(field, instance, project, language))
+                        .stream())
+                .toList();
+    }
+
+    private boolean hasStoredData(FormField field, Map<String, List<FormField>> valuedFieldsByTitle) {
+        return valuedFieldsByTitle.getOrDefault(field.title(), List.of()).stream()
+                .anyMatch(valuedField -> Objects.equals(valuedField.label(), field.label()));
     }
 
     public Map<String, List<FormFieldLayout>> fetchFormLayouts(Optional<String> formTitle) {

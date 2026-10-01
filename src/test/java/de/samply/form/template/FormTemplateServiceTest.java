@@ -388,18 +388,13 @@ class FormTemplateServiceTest {
                         .projectValue("${query-format}").build()
         });
         FormConfig formConfig = mock(FormConfig.class);
-        when(formConfig.fetchFixedFieldConfig("ETHICS_VOTE_FOR_ALL_SITES")).thenReturn(Optional.of(
-                FormFieldConfig.builder()
-                        .label("ETHICS_VOTE_FOR_ALL_SITES")
-                        .fieldType(FormFieldType.FIXED)
-                        .description(Map.of("en", "Upload ethics vote file (optional)"))
-                        .build()));
-        when(formConfig.fetchFixedFieldConfig("QUERY_FORMAT")).thenReturn(Optional.of(
-                FormFieldConfig.builder()
-                        .label("QUERY_FORMAT")
-                        .fieldType(FormFieldType.FIXED)
-                        .displayName(Map.of("en", "Query format (form-field metadata)"))
-                        .build()));
+        // The FIXED entries as the project's fields resolved them (of a FIXED
+        // field with several instances, the one the project shows).
+        List<FormField> fixedEntries = List.of(
+                fixedEntry("ethics", "ETHICS_VOTE_FOR_ALL_SITES", 1)
+                        .labelDescription("Upload ethics vote file (optional)").build(),
+                fixedEntry("query", "QUERY_FORMAT", 1)
+                        .labelDisplayName("Query format (form-field metadata)").build());
         DtoFactory dtoFactory = mock(DtoFactory.class);
         ArgumentCaptor<FormFieldConfig> convertedConfig = ArgumentCaptor.forClass(FormFieldConfig.class);
         when(dtoFactory.convert(anyString(), convertedConfig.capture(), any(), any(), any(), any()))
@@ -409,7 +404,7 @@ class FormTemplateServiceTest {
                         .fieldType(FormFieldType.DYNAMIC)
                         .build());
         when(dtoFormService.fetchProjectFormFields(any(), eq(project), eq(Optional.of("en"))))
-                .thenReturn(List.of());
+                .thenReturn(fixedEntries);
         FormTemplateConfig config = mock(FormTemplateConfig.class);
         when(config.getTemplate(metadata.getTemplate())).thenReturn(Optional.of(metadata));
         when(config.fetchProjectFormFieldTitle(metadata.getTemplate())).thenReturn("project-fields");

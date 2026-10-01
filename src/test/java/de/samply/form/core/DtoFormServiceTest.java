@@ -28,7 +28,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 
 class DtoFormServiceTest {
 
@@ -104,7 +103,7 @@ class DtoFormServiceTest {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         FormConfig formConfig = mock(FormConfig.class);
         DtoProjectService dtoProjectService = mock(DtoProjectService.class);
-        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        FormFieldConditionEvaluator conditionEvaluator = new FormFieldConditionEvaluator(formConfig);
         DtoFormService service = new DtoFormService(
                 formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
 
@@ -121,7 +120,7 @@ class DtoFormServiceTest {
                 .thenReturn(formField(title, "type", 1));
         when(dtoFactory.convert(eq(title), eq(volumeConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(formField(title, "volume", 2));
-        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        stubInstances(formConfig, title, typeConfig, volumeConfig);
 
         Collection<FormField> result = service.fetchProjectFormFields(
                 Optional.of(title), project, language);
@@ -139,7 +138,7 @@ class DtoFormServiceTest {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         FormConfig formConfig = mock(FormConfig.class);
         DtoProjectService dtoProjectService = mock(DtoProjectService.class);
-        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        FormFieldConditionEvaluator conditionEvaluator = new FormFieldConditionEvaluator(formConfig);
         DtoFormService service = new DtoFormService(
                 formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
 
@@ -165,7 +164,7 @@ class DtoFormServiceTest {
         when(dtoFactory.convert(persistedTag2, language)).thenReturn(valuedTag2);
         when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
-        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        stubInstances(formConfig, title, tagsConfig);
 
         Collection<FormField> result = service.fetchProjectFormFields(
                 Optional.of(title), project, language);
@@ -185,7 +184,7 @@ class DtoFormServiceTest {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         FormConfig formConfig = mock(FormConfig.class);
         DtoProjectService dtoProjectService = mock(DtoProjectService.class);
-        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        FormFieldConditionEvaluator conditionEvaluator = new FormFieldConditionEvaluator(formConfig);
         DtoFormService service = new DtoFormService(
                 formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
 
@@ -200,7 +199,7 @@ class DtoFormServiceTest {
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
         when(dtoFactory.convert(eq(title), eq(tagsConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
-        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        stubInstances(formConfig, title, tagsConfig);
 
         Collection<FormField> result = service.fetchProjectFormFields(
                 Optional.of(title), project, language);
@@ -226,7 +225,7 @@ class DtoFormServiceTest {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         FormConfig formConfig = mock(FormConfig.class);
         DtoProjectService dtoProjectService = mock(DtoProjectService.class);
-        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        FormFieldConditionEvaluator conditionEvaluator = new FormFieldConditionEvaluator(formConfig);
         DtoFormService service = new DtoFormService(
                 formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
 
@@ -256,7 +255,7 @@ class DtoFormServiceTest {
         when(dtoFactory.convert(block2Publication1, language)).thenReturn(valuedBlock2Publication1);
         when(dtoFactory.convert(eq(title), eq(publicationConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
-        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        stubInstances(formConfig, title, publicationConfig);
 
         Collection<FormField> result = service.fetchProjectFormFields(
                 Optional.of(title), project, language);
@@ -275,7 +274,7 @@ class DtoFormServiceTest {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         FormConfig formConfig = mock(FormConfig.class);
         DtoProjectService dtoProjectService = mock(DtoProjectService.class);
-        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        FormFieldConditionEvaluator conditionEvaluator = new FormFieldConditionEvaluator(formConfig);
         DtoFormService service = new DtoFormService(
                 formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
 
@@ -291,7 +290,7 @@ class DtoFormServiceTest {
         when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of());
         when(dtoFactory.convert(eq(title), eq(activeConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(formField(title, "active", null, 1, null));
-        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        stubInstances(formConfig, title, activeConfig, inactiveConfig);
 
         Collection<FormField> result = service.fetchProjectFormFields(
                 Optional.of(title), project, language);
@@ -305,7 +304,7 @@ class DtoFormServiceTest {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         FormConfig formConfig = mock(FormConfig.class);
         DtoProjectService dtoProjectService = mock(DtoProjectService.class);
-        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        FormFieldConditionEvaluator conditionEvaluator = new FormFieldConditionEvaluator(formConfig);
         DtoFormService service = new DtoFormService(
                 formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
 
@@ -324,7 +323,7 @@ class DtoFormServiceTest {
         when(dtoFactory.convert(persistedField, language)).thenReturn(valuedField);
         when(dtoFactory.convert(eq(title), eq(inactiveConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(baseField);
-        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        stubInstances(formConfig, title, inactiveConfig);
 
         Collection<FormField> result = service.fetchProjectFormFields(
                 Optional.of(title), project, language);
@@ -343,7 +342,7 @@ class DtoFormServiceTest {
         DtoFactory dtoFactory = mock(DtoFactory.class);
         FormConfig formConfig = mock(FormConfig.class);
         DtoProjectService dtoProjectService = mock(DtoProjectService.class);
-        FormFieldConditionEvaluator conditionEvaluator = mock(FormFieldConditionEvaluator.class);
+        FormFieldConditionEvaluator conditionEvaluator = new FormFieldConditionEvaluator(formConfig);
         DtoFormService service = new DtoFormService(
                 formService, dtoFactory, formConfig, dtoProjectService, conditionEvaluator);
 
@@ -378,11 +377,7 @@ class DtoFormServiceTest {
                 .thenReturn(fixedDto);
         when(dtoFactory.convert(eq(title), eq(dynamicConfig), any(), any(), any(), eq(language), any()))
                 .thenReturn(dynamicDto);
-        when(conditionEvaluator.filter(any())).thenAnswer(invocation -> {
-            Collection<FormField> fields = invocation.getArgument(0);
-            assertThat(fields).extracting(FormField::label).containsExactly("methodology");
-            return fields;
-        });
+        stubInstances(formConfig, title, fixedConfig, dynamicConfig);
 
         Collection<FormField> result = service.fetchProjectFormFields(
                 Optional.of(title), project, language);
@@ -394,7 +389,148 @@ class DtoFormServiceTest {
                                 "PROJECT_TITLE", FormFieldType.FIXED, false, 1),
                         org.assertj.core.groups.Tuple.tuple(
                                 "methodology", FormFieldType.DYNAMIC, null, 2));
-        verify(conditionEvaluator).filter(any());
+    }
+
+    @Test
+    void showsTheMatchingInstanceWithTheStoredValue() {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoFormService service = new DtoFormService(formService, dtoFactory, formConfig,
+                mock(DtoProjectService.class), new FormFieldConditionEvaluator(formConfig));
+
+        String title = "samples";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig liquidConfig = formFieldConfig("liquid_type", null);
+        FormFieldConfig bloodVolume = formFieldConfig("volume", null);
+        bloodVolume.setCondition("['samples']['liquid_type']['value'] == 'blood'");
+        bloodVolume.setMandatory(true);
+        FormFieldConfig defaultVolume = formFieldConfig("volume", null);
+        ProjectFormField storedLiquid = mock(ProjectFormField.class);
+        ProjectFormField storedVolume = mock(ProjectFormField.class);
+        FormField rebuiltVolume = formField(title, "volume", null, 2, "5").toBuilder().mandatory(false).build();
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
+                Map.of(title, Map.of("liquid_type", liquidConfig, "volume", bloodVolume)));
+        when(formConfig.fetchFormFieldConfigs(title, "liquid_type")).thenReturn(List.of(liquidConfig));
+        when(formConfig.fetchFormFieldConfigs(title, "volume")).thenReturn(List.of(bloodVolume, defaultVolume));
+        when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of(storedLiquid, storedVolume));
+        when(dtoFactory.convert(storedLiquid, language)).thenReturn(formField(title, "liquid_type", null, 1, "saliva"));
+        when(dtoFactory.convert(storedVolume, language)).thenReturn(
+                formField(title, "volume", null, 2, "5").toBuilder().mandatory(true).build());
+        when(dtoFactory.convert(eq(title), eq(liquidConfig), any(), any(), any(), eq(language), any()))
+                .thenReturn(formField(title, "liquid_type", null, 1, null));
+        when(dtoFactory.convert(eq(title), eq(bloodVolume), any(), any(), any(), eq(language), any()))
+                .thenReturn(formField(title, "volume", null, 2, null));
+        when(dtoFactory.convert(eq(title), eq(defaultVolume), eq(Optional.empty()), eq(Optional.empty()),
+                eq(Optional.of("5")), eq(language), any()))
+                .thenReturn(rebuiltVolume);
+
+        Collection<FormField> result = service.fetchProjectFormFields(Optional.of(title), project, language);
+
+        assertThat(result)
+                .extracting(FormField::label, FormField::value, FormField::mandatory)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple("liquid_type", "saliva", null),
+                        org.assertj.core.groups.Tuple.tuple("volume", "5", false));
+    }
+
+    @Test
+    void hidesAMatchingInactiveInstanceUnlessTheFieldHasStoredData() {
+        assertThat(fetchWithInactiveDefaultVolume(false)).extracting(FormField::label)
+                .containsExactly("liquid_type");
+        assertThat(fetchWithInactiveDefaultVolume(true)).extracting(FormField::label)
+                .containsExactly("liquid_type", "volume");
+    }
+
+    // liquid_type is "saliva": volume matches its second, inactive instance.
+    private Collection<FormField> fetchWithInactiveDefaultVolume(boolean volumeStored) {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoFormService service = new DtoFormService(formService, dtoFactory, formConfig,
+                mock(DtoProjectService.class), new FormFieldConditionEvaluator(formConfig));
+
+        String title = "samples";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig liquidConfig = formFieldConfig("liquid_type", null);
+        FormFieldConfig bloodVolume = formFieldConfig("volume", null);
+        bloodVolume.setCondition("['samples']['liquid_type']['value'] == 'blood'");
+        FormFieldConfig inactiveVolume = formFieldConfig("volume", null);
+        inactiveVolume.setActive(false);
+        ProjectFormField storedLiquid = mock(ProjectFormField.class);
+        ProjectFormField storedVolume = mock(ProjectFormField.class);
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(
+                Map.of(title, Map.of("liquid_type", liquidConfig, "volume", bloodVolume)));
+        when(formConfig.fetchFormFieldConfigs(title, "liquid_type")).thenReturn(List.of(liquidConfig));
+        when(formConfig.fetchFormFieldConfigs(title, "volume")).thenReturn(List.of(bloodVolume, inactiveVolume));
+        when(formService.fetchProjectFormFields(title, project)).thenReturn(
+                volumeStored ? List.of(storedLiquid, storedVolume) : List.of(storedLiquid));
+        when(dtoFactory.convert(storedLiquid, language)).thenReturn(formField(title, "liquid_type", null, 1, "saliva"));
+        when(dtoFactory.convert(storedVolume, language)).thenReturn(formField(title, "volume", null, 2, "5"));
+        when(dtoFactory.convert(eq(title), eq(liquidConfig), any(), any(), any(), eq(language), any()))
+                .thenReturn(formField(title, "liquid_type", null, 1, null));
+        when(dtoFactory.convert(eq(title), eq(bloodVolume), any(), any(), any(), eq(language), any()))
+                .thenReturn(formField(title, "volume", null, 2, null));
+        when(dtoFactory.convert(eq(title), eq(inactiveVolume), any(), any(), any(), eq(language), any()))
+                .thenReturn(formField(title, "volume", null, 2, "5"));
+
+        return service.fetchProjectFormFields(Optional.of(title), project, language);
+    }
+
+    @Test
+    void aFixedFieldShowsItsMatchingInstanceOrIsInactiveWithoutOne() {
+        assertThat(fetchFixedTitle("internal"))
+                .extracting(FormField::labelDisplayName, FormField::active)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("Internal title", null));
+        assertThat(fetchFixedTitle("external"))
+                .extracting(FormField::labelDisplayName, FormField::active)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("Title", false));
+    }
+
+    // PROJECT_TITLE has a single, conditional instance after its first: internal → "Internal title".
+    private List<FormField> fetchFixedTitle(String type) {
+        FormService formService = mock(FormService.class);
+        DtoFactory dtoFactory = mock(DtoFactory.class);
+        FormConfig formConfig = mock(FormConfig.class);
+        DtoFormService service = new DtoFormService(formService, dtoFactory, formConfig,
+                mock(DtoProjectService.class), new FormFieldConditionEvaluator(formConfig));
+
+        String title = "project";
+        Optional<String> language = Optional.empty();
+        Project project = new Project();
+        FormFieldConfig typeConfig = formFieldConfig("type", null);
+        FormFieldConfig firstTitle = formFieldConfig("PROJECT_TITLE", null);
+        firstTitle.setFieldType(FormFieldType.FIXED);
+        firstTitle.setCondition("['project']['type']['value'] == 'none'");
+        FormFieldConfig internalTitle = formFieldConfig("PROJECT_TITLE", null);
+        internalTitle.setFieldType(FormFieldType.FIXED);
+        internalTitle.setCondition("['project']['type']['value'] == 'internal'");
+        ProjectFormField storedType = mock(ProjectFormField.class);
+        Map<String, FormFieldConfig> configuredFields = new LinkedHashMap<>();
+        configuredFields.put("type", typeConfig);
+        configuredFields.put("PROJECT_TITLE", firstTitle);
+
+        when(formConfig.getFormTitleLabelFieldMap()).thenReturn(Map.of(title, configuredFields));
+        when(formConfig.fetchFormFieldConfigs(title, "type")).thenReturn(List.of(typeConfig));
+        when(formConfig.fetchFormFieldConfigs(title, "PROJECT_TITLE")).thenReturn(List.of(firstTitle, internalTitle));
+        when(formService.fetchProjectFormFields(title, project)).thenReturn(List.of(storedType));
+        when(dtoFactory.convert(storedType, language)).thenReturn(formField(title, "type", null, 1, type));
+        when(dtoFactory.convert(eq(title), eq(typeConfig), any(), any(), any(), eq(language), any()))
+                .thenReturn(formField(title, "type", null, 1, null));
+        when(dtoFactory.convert(eq(title), eq(firstTitle), any(), any(), any(), eq(language), any()))
+                .thenReturn(FormField.builder().title(title).label("PROJECT_TITLE").fieldType(FormFieldType.FIXED)
+                        .labelDisplayName("Title").order(2).build());
+        when(dtoFactory.convert(eq(title), eq(internalTitle), any(), any(), any(), eq(language), any()))
+                .thenReturn(FormField.builder().title(title).label("PROJECT_TITLE").fieldType(FormFieldType.FIXED)
+                        .labelDisplayName("Internal title").order(2).build());
+
+        return service.fetchProjectFormFields(Optional.of(title), project, language).stream()
+                .filter(field -> field.fieldType() == FormFieldType.FIXED)
+                .toList();
     }
 
     @Test
@@ -435,6 +571,13 @@ class DtoFormServiceTest {
                 formConfig,
                 mock(DtoProjectService.class),
                 mock(FormFieldConditionEvaluator.class));
+    }
+
+    // Each config as the only instance of its label.
+    private static void stubInstances(FormConfig formConfig, String title, FormFieldConfig... configs) {
+        for (FormFieldConfig config : configs) {
+            when(formConfig.fetchFormFieldConfigs(title, config.getLabel())).thenReturn(List.of(config));
+        }
     }
 
     private FormFieldConfig formFieldConfig(String label, @SuppressWarnings("SameParameterValue") String block) {

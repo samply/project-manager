@@ -126,6 +126,40 @@ class FormDefinitionComparatorTest {
         assertThat(compare(RECORDED, form)).isEmpty();
     }
 
+    @Test
+    void anAllowedValueIsOnlyRemovedWhenNoInstanceOffersItAnymore() {
+        String recorded = """
+                {"title": "samples", "fields": [
+                  {"label": "unit", "data_type": "ENUM", "condition": "true",
+                   "allowed_values": [{"label": "ml"}]},
+                  {"label": "unit", "data_type": "ENUM", "allowed_values": [{"label": "g"}]}
+                ]}""";
+        // "ml" moves to the second instance; "g" is dropped from both.
+        String current = """
+                {"title": "samples", "fields": [
+                  {"label": "unit", "data_type": "ENUM", "condition": "true",
+                   "allowed_values": [{"label": "kg"}]},
+                  {"label": "unit", "data_type": "ENUM", "allowed_values": [{"label": "ml"}]}
+                ]}""";
+
+        assertThat(compare(recorded, current))
+                .extracting(FormDefinitionConflict::label, FormDefinitionConflict::kind, FormDefinitionConflict::oldValue)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("unit", Kind.ALLOWED_VALUES_REMOVED, "g"));
+    }
+
+    @Test
+    void aFieldConfiguredOnceThatGetsInstancesIsCompatible() {
+        String recorded = """
+                {"title": "samples", "fields": [{"label": "volume", "data_type": "STRING"}]}""";
+        String current = """
+                {"title": "samples", "fields": [
+                  {"label": "volume", "data_type": "STRING", "mandatory": true, "condition": "true"},
+                  {"label": "volume", "data_type": "STRING"}
+                ]}""";
+
+        assertThat(compare(recorded, current)).isEmpty();
+    }
+
     private static List<FormDefinitionConflict> compare(String recorded, String current) {
         try {
             JsonNode before = OBJECT_MAPPER.readTree(recorded);

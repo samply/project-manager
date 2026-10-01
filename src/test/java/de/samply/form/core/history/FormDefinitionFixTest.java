@@ -75,6 +75,32 @@ class FormDefinitionFixTest {
     }
 
     @Test
+    void everyInstanceOfAChangedFieldIsKeptInactiveAndRelabelled() throws Exception {
+        String recorded = """
+                [{"title": "samples", "fields": [
+                  {"label": "volume", "data_type": "STRING", "condition": "A"},
+                  {"label": "volume", "data_type": "STRING", "condition": "B"}
+                ]}]""";
+        String current = """
+                [{"title": "samples", "fields": [
+                  {"label": "volume", "data_type": "INTEGER", "condition": "C"},
+                  {"label": "volume", "data_type": "INTEGER"}
+                ]}]""";
+
+        String explanation = FormDefinitionFix.explain("samples", 2, tree(recorded), tree(current), List.of(
+                new FormDefinitionConflict("samples", "volume", Kind.DATA_TYPE_CHANGED, "STRING", "INTEGER")));
+
+        String snippet = explanation.substring(explanation.indexOf("Field \"volume\":"));
+        // Both recorded instances, inactive and in order, then both current ones under one new label.
+        assertThat(snippet.indexOf("\"condition\" : \"A\"")).isPositive()
+                .isLessThan(snippet.indexOf("\"condition\" : \"B\""));
+        assertThat(snippet.split("\"active\" : false", -1)).hasSize(3);
+        assertThat(snippet.indexOf("\"condition\" : \"B\"")).isLessThan(snippet.indexOf("\"condition\" : \"C\""));
+        assertThat(snippet.split("\"label\" : \"volume-v2\"", -1)).hasSize(3);
+        assertThat(snippet).doesNotContain("volume-v3");
+    }
+
+    @Test
     void theNextLabelCountsUpAndSkipsLabelsInUse() {
         assertThat(FormDefinitionFix.nextLabel("status", Set.of())).isEqualTo("status-v2");
         assertThat(FormDefinitionFix.nextLabel("status-v2", Set.of())).isEqualTo("status-v3");

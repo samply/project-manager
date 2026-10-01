@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.samply.app.ProjectManagerConst;
 import de.samply.form.core.history.FormDefinitionConflict.Kind;
 import jakarta.validation.constraints.NotNull;
 
@@ -70,8 +71,9 @@ public final class FormDefinitionFix {
                     """.formatted(nextLabel(formTitle, Set.of()))).toString();
         }
 
-        Map<String, JsonNode> recordedFields = fieldsByLabel(recorded);
-        Set<String> usedLabels = new LinkedHashSet<>(fieldsByLabel(current).keySet());
+        Map<String, List<JsonNode>> recordedFields = instancesByLabel(recorded);
+        Map<String, List<JsonNode>> currentFields = instancesByLabel(current);
+        Set<String> usedLabels = new LinkedHashSet<>(currentFields.keySet());
         Map<String, List<FormDefinitionConflict>> byField = conflicts.stream()
                 .filter(conflict -> conflict.label() != null)
                 .collect(Collectors.groupingBy(FormDefinitionConflict::label, LinkedHashMap::new, Collectors.toList()));
@@ -81,19 +83,23 @@ public final class FormDefinitionFix {
                 file ("fields"), keep the recorded field inactive - projects keep their values under it - \
                 and, for a changed field, add its new definition under a new label:
                 """);
+        // A field configured several times ("instances") is kept and relabelled with all its instances.
         byField.forEach((label, fieldConflicts) -> {
-            JsonNode recordedField = recordedFields.get(label);
-            if (recordedField == null) {
+            List<JsonNode> recordedInstances = recordedFields.get(label);
+            if (recordedInstances == null) {
                 return;
             }
             result.append("\nField \"").append(label).append("\":\n\n")
-                    .append(indent(write(inactive(recordedField))));
+                    .append(recordedInstances.stream()
+                            .map(field -> indent(write(inactive(field))))
+                            .collect(Collectors.joining(",\n")));
             boolean removed = fieldConflicts.stream().anyMatch(conflict -> conflict.kind() == Kind.FIELD_REMOVED);
-            JsonNode currentField = fieldsByLabel(current).get(label);
-            if (!removed && currentField != null) {
+            List<JsonNode> currentInstances = currentFields.get(label);
+            if (!removed && currentInstances != null) {
                 String newLabel = nextLabel(label, usedLabels);
                 usedLabels.add(newLabel);
-                result.append(",\n").append(indent(write(relabelled(currentField, newLabel))));
+                currentInstances.forEach(field ->
+                        result.append(",\n").append(indent(write(relabelled(field, newLabel)))));
             }
             result.append('\n');
         });
@@ -123,7 +129,7 @@ public final class FormDefinitionFix {
 
     private static JsonNode inactive(JsonNode field) {
         ObjectNode copy = field.deepCopy();
-        copy.put("active", false);
+        copy.put(ProjectManagerConst.FORM_CONFIG_ACTIVE, false);
         return copy;
     }
 
@@ -133,7 +139,7 @@ public final class FormDefinitionFix {
         JsonNode copy = definition.deepCopy();
         FormDefinitionFactory.files(copy).forEach(file -> {
             if (file instanceof ObjectNode form) {
-                form.put("active", false);
+                form.put(ProjectManagerConst.FORM_CONFIG_ACTIVE, false);
             }
         });
         return copy;
@@ -141,21 +147,17 @@ public final class FormDefinitionFix {
 
     private static JsonNode relabelled(JsonNode field, String label) {
         ObjectNode copy = field.deepCopy();
-        copy.put("label", label);
+        copy.put(ProjectManagerConst.FORM_CONFIG_LABEL, label);
         return copy;
     }
 
-    private static Map<String, JsonNode> fieldsByLabel(JsonNode definition) {
-        Map<String, JsonNode> result = new LinkedHashMap<>();
-        for (JsonNode file : FormDefinitionFactory.files(definition)) {
-            for (JsonNode field : file.path("fields")) {
-                JsonNode label = field.get("label");
-                if (label != null && !label.isNull()) {
-                    result.putIfAbsent(label.asText(), field);
-                }
-            }
-        }
-        return result;
+    // Every instance of each label, in configuration order.
+    private static Map<String, List<JsonNode>> instancesByLabel(JsonNode definition) {
+        return FormDefinitionFactory.files(definition).stream()
+                .flatMap(file -> file.path(ProjectManagerConst.FORM_CONFIG_FIELDS).valueStream())
+                .filter(field -> field.hasNonNull(ProjectManagerConst.FORM_CONFIG_LABEL))
+                .collect(Collectors.groupingBy(field -> field.get(ProjectManagerConst.FORM_CONFIG_LABEL).asText(),
+                        LinkedHashMap::new, Collectors.toList()));
     }
 
     private static String write(JsonNode node) {
