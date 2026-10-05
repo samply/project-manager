@@ -636,8 +636,9 @@ public class DtoFactory {
         }
         finalUser.ifPresent(user -> email.set(Optional.of(user.getEmail())));
         email.get().flatMap(userService::fetchUser).ifPresent(tempUser -> {
-            firstName.set(Optional.of(tempUser.getFirstName()));
-            lastName.set(Optional.of(tempUser.getLastName()));
+            // A user's names can be missing (e.g. no last name in the identity provider)
+            firstName.set(Optional.ofNullable(tempUser.getFirstName()));
+            lastName.set(Optional.ofNullable(tempUser.getLastName()));
         });
         return Optional.of(new Results(null, null, fetchValue(email), fetchValue(firstName), fetchValue(lastName),
                 fetchProjectResultsUrl(project, finalUser),

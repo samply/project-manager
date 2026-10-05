@@ -198,13 +198,16 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.ACTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity fetchActions(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE, required = false) Project project,
-            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead,
+            // The actions depend on the bridgehead (the bridgehead roles count only for their bridgehead): the answer
+            // has the actions without a bridgehead under "" and those of each given bridgehead under its id, so that
+            // a page asks once (comma-separated ids)
+            @Bridgeheads @RequestParameter(name = ProjectManagerConst.BRIDGEHEADS, required = false) List<ProjectBridgehead> bridgeheads,
             @Language String language,
             @RequestParameter(name = ProjectManagerConst.SITE) String site
     ) {
-        return convertToResponseEntity(() ->
-                this.frontendService.fetchModuleActionPackage(site, Optional.ofNullable(project),
-                        Optional.ofNullable(bridgehead), Optional.ofNullable(language), true));
+        return convertToResponseEntity(() -> this.frontendService.fetchModuleActionPackagesByBridgehead(site,
+                Optional.ofNullable(project), Optional.ofNullable(bridgeheads).orElse(List.of()),
+                Optional.ofNullable(language)));
     }
 
     @CacheCategory(CacheResource.ACTION_AVAILABILITY)
@@ -853,7 +856,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_RESEARCH_ENVIRONMENT_URL)
     public ResponseEntity fetchResearchEnvironmentUrl(
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(coderService::getResearchEnvironmentUrl);
     }
@@ -1132,7 +1135,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.FETCH_PROJECT_BRIDGEHEAD_RESULTS)
     public ResponseEntity fetchProjectBridgeheadResults(
             @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(() -> dtoProjectBridgeheadService.fetchResults(project));
     }
@@ -1166,7 +1169,7 @@ public class ProjectManagerController {
     @PostMapping(value = ProjectManagerConst.ADD_PROJECT_RESULTS_URL)
     public ResponseEntity addProjectResultsUrl(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead,
             @RequestVariable(name = ProjectManagerConst.RESULTS_URL) String resultsUrl
     ) {
         return convertToResponseEntity(() -> projectService.addProjectResultUrl(project, resultsUrl));
@@ -1184,7 +1187,7 @@ public class ProjectManagerController {
     @PutMapping(value = ProjectManagerConst.ACCEPT_PROJECT_RESULTS_URL)
     public ResponseEntity acceptProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.acceptResultsByCreator(project));
     }
@@ -1201,7 +1204,7 @@ public class ProjectManagerController {
     @PutMapping(value = ProjectManagerConst.REJECT_PROJECT_RESULTS_URL)
     public ResponseEntity rejectProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.rejectResultsForCreator(project));
     }
@@ -1218,7 +1221,7 @@ public class ProjectManagerController {
     @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_PROJECT_RESULTS_URL)
     public ResponseEntity requestChangesInProjectResultsUrlByCreator(
             @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
-            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+            @SuppressWarnings("unused") @Bridgehead @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(() -> projectService.requestChangesInResultsForCreator(project));
     }
@@ -1543,8 +1546,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
-            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN},
-            organisationRoles = {OrganisationRole.RESEARCHER})
+            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -1885,7 +1887,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.APPROVAL,
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.APPROVAL,
             ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)

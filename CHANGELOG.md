@@ -350,3 +350,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update query outputs correctly
 - REST Service: Fetch actions batch (several read actions in one request)
 - Form PDF: configured texts with HTML (links, formatting) shown as in the frontend
+- The description of a bridgehead's ethics vote can be fetched in DRAFT, like its upload and download
+- GET actions: one action package without a bridgehead (under "") and one per bridgehead given in the parameter bridgeheads (comma-separated ids), in one request; the parameter bridgehead is gone
+- Results of the project (fetch the bridgeheads' results; send, accept, reject or request changes in the results URL) and the research environment URL no longer require a bridgehead: it only identified the user's role
+- Removing a document no longer requires the organisation role RESEARCHER: the project manager admin can remove documents
+- Fetch project results: no error 500 when the final user has no first or last name

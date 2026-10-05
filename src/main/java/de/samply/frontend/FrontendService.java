@@ -80,6 +80,20 @@ public class FrontendService {
         return moduleActionMap;
     }
 
+    /**
+     * The action package without a bridgehead (under "") and of each given bridgehead (under its id): which actions
+     * are allowed depends on the bridgehead, because the bridgehead roles count only for their bridgehead. Empty
+     * entries (an empty id in the request) are skipped.
+     */
+    public Map<String, Map<String, Map<String, Action>>> fetchModuleActionPackagesByBridgehead(
+            String site, Optional<Project> project, List<ProjectBridgehead> bridgeheads, Optional<String> language) {
+        Map<String, Map<String, Map<String, Action>>> result = new LinkedHashMap<>();
+        result.put("", fetchModuleActionPackage(site, project, Optional.empty(), language, true));
+        bridgeheads.stream().filter(Objects::nonNull).forEach(bridgehead -> result.putIfAbsent(bridgehead.getBridgehead(),
+                fetchModuleActionPackage(site, project, Optional.of(bridgehead), language, true)));
+        return result;
+    }
+
     @SuppressWarnings("rawtypes") // For Optional<ResponseEntity>. Otherwise, it would be too complex
     private void fetchModuleActionsPackages(Map<String, Map<String, Action>> moduleActionsMap,
                                             String rootPath,
