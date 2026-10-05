@@ -225,7 +225,8 @@ public class ProjectManagerController {
 
     // Several read actions (GET endpoints) in one request: {"requests": {id: {"action": ..., "params": {...}}}}.
     // POST only because browsers send no body with GET; it changes nothing. Every entry is answered on its own,
-    // with the response or the error of its endpoint, so the batch itself is answered with 200.
+    // with the response or the error of its endpoint, so the batch itself is answered with 200 - unless it has more
+    // entries than allowed: then it is refused as a whole (docs/actions-batch-security.md).
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.ACTIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ACTIONS_BATCH_ACTION)
@@ -234,6 +235,10 @@ public class ProjectManagerController {
     public ResponseEntity fetchActionsBatch(
             @RequestVariable(name = ProjectManagerConst.ACTIONS_BATCH_REQUESTS) Map<String, ActionsBatchRequest> requests
     ) {
+        if (requests != null && requests.size() > actionsBatchService.getMaxEntries()) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body("At most " + actionsBatchService.getMaxEntries() + " entries per batch");
+        }
         return convertToResponseEntity(() ->
                 Map.of(ProjectManagerConst.ACTIONS_BATCH_RESULTS, actionsBatchService.fetchActionsBatch(requests)));
     }

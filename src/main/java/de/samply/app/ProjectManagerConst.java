@@ -530,6 +530,7 @@ public class ProjectManagerConst {
     public final static String ACTIONS_BATCH_CORE_POOL_SIZE = "ACTIONS_BATCH_CORE_POOL_SIZE";
     public final static String ACTIONS_BATCH_MAX_POOL_SIZE = "ACTIONS_BATCH_MAX_POOL_SIZE";
     public final static String ACTIONS_BATCH_QUEUE_CAPACITY = "ACTIONS_BATCH_QUEUE_CAPACITY";
+    public final static String ACTIONS_BATCH_MAX_ENTRIES = "ACTIONS_BATCH_MAX_ENTRIES";
     public final static String TEST_EMAIL_DOMAINS = "TEST_EMAIL_DOMAINS";
 
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 = "DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64";
@@ -670,6 +671,8 @@ public class ProjectManagerConst {
     public final static String ACTIONS_BATCH_CORE_POOL_SIZE_SV = HEAD_SV + ACTIONS_BATCH_CORE_POOL_SIZE + ":10" + BOTTOM_SV;
     public final static String ACTIONS_BATCH_MAX_POOL_SIZE_SV = HEAD_SV + ACTIONS_BATCH_MAX_POOL_SIZE + ":10" + BOTTOM_SV;
     public final static String ACTIONS_BATCH_QUEUE_CAPACITY_SV = HEAD_SV + ACTIONS_BATCH_QUEUE_CAPACITY + ":1000" + BOTTOM_SV;
+    // Entries per batch: a batch with more is refused as a whole (the frontend sends a few dozen at most)
+    public final static String ACTIONS_BATCH_MAX_ENTRIES_SV = HEAD_SV + ACTIONS_BATCH_MAX_ENTRIES + ":100" + BOTTOM_SV;
     public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":en" + BOTTOM_SV;
 
     public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS + ":" + BOTTOM_SV;

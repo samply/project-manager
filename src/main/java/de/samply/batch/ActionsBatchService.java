@@ -16,6 +16,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -67,6 +68,7 @@ public class ActionsBatchService {
     private final ObjectProvider<RequestMappingHandlerMapping> handlerMappingProvider;
     private final ObjectProvider<RequestMappingHandlerAdapter> handlerAdapterProvider;
     private final ThreadPoolTaskExecutor executor;
+    private final int maxEntries;
 
     // Same output settings as the controller, which serializes the answers of the endpoints
     private final ObjectMapper objectMapper = new ObjectMapper()
@@ -80,10 +82,17 @@ public class ActionsBatchService {
     public ActionsBatchService(
             @Qualifier("requestMappingHandlerMapping") ObjectProvider<RequestMappingHandlerMapping> handlerMappingProvider,
             @Qualifier("requestMappingHandlerAdapter") ObjectProvider<RequestMappingHandlerAdapter> handlerAdapterProvider,
-            @Qualifier(ProjectManagerConst.ASYNC_ACTIONS_BATCH_EXECUTOR) ThreadPoolTaskExecutor executor) {
+            @Qualifier(ProjectManagerConst.ASYNC_ACTIONS_BATCH_EXECUTOR) ThreadPoolTaskExecutor executor,
+            @Value(ProjectManagerConst.ACTIONS_BATCH_MAX_ENTRIES_SV) int maxEntries) {
         this.handlerMappingProvider = handlerMappingProvider;
         this.handlerAdapterProvider = handlerAdapterProvider;
         this.executor = executor;
+        this.maxEntries = maxEntries;
+    }
+
+    /** A batch with more entries is refused as a whole, before any entry runs (see the controller). */
+    public int getMaxEntries() {
+        return maxEntries;
     }
 
     /**
@@ -155,14 +164,18 @@ public class ActionsBatchService {
             invocable.setParameterNameDiscoverer(new DefaultParameterNameDiscoverer());
             return invocable.invokeForRequest(new ServletWebRequest(entryRequest), new ModelAndViewContainer());
         } finally {
-            attributes.requestCompleted();
-            // An entry can also run on the thread of the batch request (executor saturated): leave it as it was
-            if (previousAttributes != null) {
-                RequestContextHolder.setRequestAttributes(previousAttributes);
-                SecurityContextHolder.setContext(previousSecurityContext);
-            } else {
-                RequestContextHolder.resetRequestAttributes();
-                SecurityContextHolder.clearContext();
+            try {
+                attributes.requestCompleted();
+            } finally {
+                // Also when a destruction callback of a request-scoped bean fails. An entry can also run on the thread
+                // of the batch request (executor saturated): leave it as it was
+                if (previousAttributes != null) {
+                    RequestContextHolder.setRequestAttributes(previousAttributes);
+                    SecurityContextHolder.setContext(previousSecurityContext);
+                } else {
+                    RequestContextHolder.resetRequestAttributes();
+                    SecurityContextHolder.clearContext();
+                }
             }
         }
     }

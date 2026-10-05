@@ -1,5 +1,6 @@
 package de.samply.batch;
 
+import de.samply.annotations.Bridgehead;
 import de.samply.annotations.FrontendAction;
 import de.samply.annotations.ProjectCode;
 import de.samply.annotations.RequestParameter;
@@ -13,19 +14,30 @@ import de.samply.aop.RoleConstraintsAspect;
 import de.samply.aop.StateConstraintsAspect;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadExecution;
+import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.Query;
 import de.samply.document.DocumentService;
+import de.samply.project.ProjectBridgeheadConverter;
+import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectConverter;
 import de.samply.project.ProjectService;
+import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
 import de.samply.query.QueryFormat;
+import de.samply.query.QueryState;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import de.samply.resolvers.AnnotatedParametersWrapper;
 import de.samply.resolvers.LanguageArgumentResolver;
@@ -64,6 +76,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -76,6 +89,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -103,7 +117,20 @@ class ActionsBatchServiceTest {
     private static final String ONLY_AST_DATA = "ONLY_AST_DATA";
     private static final String ALL_CONSTRAINTS = "ALL_CONSTRAINTS";
     private static final String PROJECT = "TEST-0001";
+    private static final String BROKEN_SCOPE = "BROKEN_SCOPE";
+    private static final String ONLY_ACCEPTED_BRIDGEHEAD = "ONLY_ACCEPTED_BRIDGEHEAD";
+    private static final String ONLY_FINISHED_QUERY = "ONLY_FINISHED_QUERY";
+    private static final String ONLY_ACCEPTED_USER = "ONLY_ACCEPTED_USER";
+    private static final String ONLY_BRIDGEHEAD_ADMIN = "ONLY_BRIDGEHEAD_ADMIN";
+    private static final String ONLY_DOCUMENT_CREATOR = "ONLY_DOCUMENT_CREATOR";
+    private static final String BRIDGEHEAD = "tum";
+    private static final String OTHER_BRIDGEHEAD = "lmu";
+    private static final long DOCUMENT_ID = 7L;
     private static final Map<String, Object> PROJECT_PARAMS = Map.of(ProjectManagerConst.PROJECT_CODE, PROJECT);
+    private static final Map<String, Object> BRIDGEHEAD_PARAMS =
+            Map.of(ProjectManagerConst.PROJECT_CODE, PROJECT, ProjectManagerConst.BRIDGEHEAD, BRIDGEHEAD);
+    private static final Map<String, Object> DOCUMENT_PARAMS =
+            Map.of(ProjectManagerConst.PROJECT_CODE, PROJECT, ProjectManagerConst.DOCUMENT_ID, DOCUMENT_ID);
 
     @Autowired
     private ActionsBatchService actionsBatchService;
@@ -115,13 +142,20 @@ class ActionsBatchServiceTest {
     private ProjectService projectService;
     @Autowired
     private OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
+    @Autowired
+    private ProjectBridgeheadService projectBridgeheadService;
+    @Autowired
+    private ProjectBridgeheadUserService projectBridgeheadUserService;
+    @Autowired
+    private DocumentService documentService;
 
     private MockMvc mockMvc;
     private MockHttpSession session;
 
     @BeforeEach
     void bindBatchRequest() {
-        Mockito.reset(projectService, organisationRoleToProjectRoleMapper);
+        Mockito.reset(projectService, organisationRoleToProjectRoleMapper, projectBridgeheadService,
+                projectBridgeheadUserService, documentService);
         session = new MockHttpSession();
         MockHttpServletRequest batchRequest = new MockHttpServletRequest("POST", ProjectManagerConst.FETCH_ACTIONS_BATCH);
         batchRequest.setSession(session);
@@ -205,6 +239,34 @@ class ActionsBatchServiceTest {
         assertThat(results.get("unknown").errorCode()).isEqualTo(404);
         assertThat(results.get("download").errorCode()).isEqualTo(406);
         assertThat(results.get("noAction").errorCode()).isEqualTo(400);
+    }
+
+    @Test
+    void refusesANestedBatch() {
+        // The batch endpoint is a POST and a batch only calls GET endpoints
+        ActionsBatchResult result = fetch(Map.of("nested",
+                entry(ProjectManagerConst.FETCH_ACTIONS_BATCH_ACTION, Map.of()))).get("nested");
+        assertThat(result.errorCode()).isEqualTo(405);
+    }
+
+    @Test
+    void cleansTheWorkerThreadEvenWhenARequestScopeCallbackFails() throws Exception {
+        ThreadPoolTaskExecutor oneThread = new ThreadPoolTaskExecutor();
+        oneThread.setCorePoolSize(1);
+        oneThread.setMaxPoolSize(1);
+        oneThread.initialize();
+        try {
+            ActionsBatchService service = new ActionsBatchService(
+                    webApplicationContext.getBeanProvider(RequestMappingHandlerMapping.class),
+                    webApplicationContext.getBeanProvider(RequestMappingHandlerAdapter.class), oneThread, 100);
+            assertThat(service.fetchActionsBatch(Map.of("id", entry(BROKEN_SCOPE, Map.of()))).get("id").errorCode())
+                    .isEqualTo(500);
+            boolean clean = oneThread.submit(() -> RequestContextHolder.getRequestAttributes() == null
+                    && SecurityContextHolder.getContext().getAuthentication() == null).get(2, TimeUnit.SECONDS);
+            assertThat(clean).isTrue();
+        } finally {
+            oneThread.shutdown();
+        }
     }
 
     @Test
@@ -308,7 +370,105 @@ class ActionsBatchServiceTest {
         assertThat(result.response()).isNull();
     }
 
-    private void givenProject(ProjectState state, QueryFormat queryFormat) throws Exception {
+    // The constraints on a bridgehead of the project: the bridgehead is resolved from its id like in the application
+
+    @Test
+    void refusesAnEntryOfABridgeheadInAnotherState() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.CREATED, QueryState.CREATED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_BRIDGEHEAD, "/only-accepted-bridgehead", BRIDGEHEAD_PARAMS, 405);
+        // Without a bridgehead the bridgehead constraint cannot hold
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_BRIDGEHEAD, "/only-accepted-bridgehead", PROJECT_PARAMS, 405);
+
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.CREATED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_BRIDGEHEAD, "/only-accepted-bridgehead", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfAQueryInAnotherState() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.SENDING);
+        assertSameStatusAsEndpoint(ONLY_FINISHED_QUERY, "/only-finished-query", BRIDGEHEAD_PARAMS, 405);
+
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        assertSameStatusAsEndpoint(ONLY_FINISHED_QUERY, "/only-finished-query", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfAUserInAnotherStateInTheProject() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        ProjectBridgehead bridgehead = givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        when(organisationRoleToProjectRoleMapper.map(any())).thenReturn(Optional.empty());
+        // Not invited at the bridgehead
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 405);
+
+        givenUserState(bridgehead, UserProjectState.REQUEST_CHANGES);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 405);
+
+        givenUserState(bridgehead, UserProjectState.ACCEPTED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void theCreatorPassesTheUserStateWithTheResultsStateOfTheProject() throws Exception {
+        Project project = givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        givenProjectRole(ProjectRole.CREATOR);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 405);
+
+        project.setCreatorResultsState(UserProjectState.ACCEPTED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void aRoleAtOneBridgeheadDoesNotCountAtAnother() throws Exception {
+        // The bridgehead roles count only for the bridgehead sent with the call (docs/bridgehead-context.md in the UI)
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        givenBridgeheadRole(OTHER_BRIDGEHEAD, ProjectRole.BRIDGEHEAD_ADMIN);
+        assertSameStatusAsEndpoint(ONLY_BRIDGEHEAD_ADMIN, "/only-bridgehead-admin", BRIDGEHEAD_PARAMS, 405);
+        // Without a bridgehead a bridgehead admin is not a bridgehead admin
+        givenBridgeheadRole(BRIDGEHEAD, ProjectRole.BRIDGEHEAD_ADMIN);
+        assertSameStatusAsEndpoint(ONLY_BRIDGEHEAD_ADMIN, "/only-bridgehead-admin", PROJECT_PARAMS, 405);
+
+        assertSameStatusAsEndpoint(ONLY_BRIDGEHEAD_ADMIN, "/only-bridgehead-admin", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfADocumentOfSomeoneElse() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        when(documentService.isDocumentCreatorOrProjectManagerAdmin(any(), eq(DOCUMENT_ID))).thenReturn(false);
+        assertSameStatusAsEndpoint(ONLY_DOCUMENT_CREATOR, "/only-document-creator", DOCUMENT_PARAMS, 405);
+
+        when(documentService.isDocumentCreatorOrProjectManagerAdmin(any(), eq(DOCUMENT_ID))).thenReturn(true);
+        assertSameStatusAsEndpoint(ONLY_DOCUMENT_CREATOR, "/only-document-creator", DOCUMENT_PARAMS, 200);
+    }
+
+    private ProjectBridgehead givenBridgehead(ProjectBridgeheadState state, QueryState queryState) throws Exception {
+        ProjectBridgeheadExecution execution = new ProjectBridgeheadExecution();
+        execution.setQueryState(queryState);
+        ProjectBridgehead bridgehead = new ProjectBridgehead();
+        bridgehead.setBridgehead(BRIDGEHEAD);
+        bridgehead.setState(state);
+        bridgehead.setExecutions(new HashSet<>(Set.of(execution)));
+        when(projectBridgeheadService.fetchProjectBridgehead(PROJECT, BRIDGEHEAD)).thenReturn(Optional.of(bridgehead));
+        return bridgehead;
+    }
+
+    private void givenUserState(ProjectBridgehead bridgehead, UserProjectState state) {
+        ProjectBridgeheadUser user = new ProjectBridgeheadUser();
+        user.setProjectState(state);
+        when(projectBridgeheadUserService.fetchFirstUsersOrderByModifiedAtDesc(any(), eq(bridgehead)))
+                .thenReturn(Optional.of(user));
+    }
+
+    private void givenBridgeheadRole(String bridgehead, ProjectRole role) {
+        UserProjectRoles roles = new UserProjectRoles();
+        roles.addBridgeheadRole(bridgehead, role);
+        when(organisationRoleToProjectRoleMapper.map(any())).thenReturn(Optional.of(roles));
+    }
+
+    private Project givenProject(ProjectState state, QueryFormat queryFormat) throws Exception {
         Query query = new Query();
         query.setQueryFormat(queryFormat);
         Project project = new Project();
@@ -316,6 +476,7 @@ class ActionsBatchServiceTest {
         project.setState(state);
         project.setQuery(query);
         when(projectService.fetchProject(PROJECT)).thenReturn(project);
+        return project;
     }
 
     private void givenProjectRole(ProjectRole role) {
@@ -395,6 +556,7 @@ class ActionsBatchServiceTest {
         }
 
         // The batch endpoint with the parameter of the real one; answers "id=response or error code" per entry
+        @FrontendAction(action = ProjectManagerConst.FETCH_ACTIONS_BATCH_ACTION)
         @PostMapping(ProjectManagerConst.FETCH_ACTIONS_BATCH)
         public ResponseEntity<String> fetchActionsBatch(
                 @RequestVariable(name = ProjectManagerConst.ACTIONS_BATCH_REQUESTS) Map<String, ActionsBatchRequest> requests
@@ -454,6 +616,15 @@ class ActionsBatchServiceTest {
             return ResponseEntity.ok("true");
         }
 
+        @FrontendAction(action = BROKEN_SCOPE)
+        @GetMapping("/broken-scope")
+        public ResponseEntity<String> brokenScope() {
+            RequestContextHolder.currentRequestAttributes().registerDestructionCallback("broken", () -> {
+                throw new IllegalStateException("scope cleanup failed");
+            }, RequestAttributes.SCOPE_REQUEST);
+            return ResponseEntity.ok("true");
+        }
+
         @FrontendAction(action = TEXT)
         @GetMapping("/text")
         public ResponseEntity<String> text() {
@@ -492,6 +663,52 @@ class ActionsBatchServiceTest {
             return ResponseEntity.ok("true");
         }
 
+        // The constraints on a bridgehead of the project, the bridgehead resolved from its id like in the real controller
+        @StateConstraints(projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
+        @FrontendAction(action = ONLY_ACCEPTED_BRIDGEHEAD)
+        @GetMapping("/only-accepted-bridgehead")
+        public ResponseEntity<String> onlyAcceptedBridgehead(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @StateConstraints(queryStates = {QueryState.FINISHED})
+        @FrontendAction(action = ONLY_FINISHED_QUERY)
+        @GetMapping("/only-finished-query")
+        public ResponseEntity<String> onlyFinishedQuery(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @StateConstraints(userProjectStates = {UserProjectState.ACCEPTED})
+        @FrontendAction(action = ONLY_ACCEPTED_USER)
+        @GetMapping("/only-accepted-user")
+        public ResponseEntity<String> onlyAcceptedUser(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+        @FrontendAction(action = ONLY_BRIDGEHEAD_ADMIN)
+        @GetMapping("/only-bridgehead-admin")
+        public ResponseEntity<String> onlyBridgeheadAdmin(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @ProjectConstraints(documentCreatorOrProjectManagerAdmin = true)
+        @FrontendAction(action = ONLY_DOCUMENT_CREATOR)
+        @GetMapping("/only-document-creator")
+        public ResponseEntity<String> onlyDocumentCreator(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @RequestParameter(name = ProjectManagerConst.DOCUMENT_ID) Long documentId) {
+            return ResponseEntity.ok("true");
+        }
+
         // All three kinds at once, as on many real endpoints
         @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER}, projectRoles = {ProjectRole.CREATOR})
         @StateConstraints(projectStates = {ProjectState.REVIEW})
@@ -511,7 +728,7 @@ class ActionsBatchServiceTest {
     @Import({TestController.class, RequestVariableAndParameterMethodArgumentResolver.class, LanguageArgumentResolver.class,
             RequestBodyCache.class, AnnotatedParametersWrapper.class, ConstraintsService.class,
             RoleConstraintsAspect.class, StateConstraintsAspect.class, ProjectConstraintsAspect.class,
-            ProjectConverter.class})
+            ProjectConverter.class, ProjectBridgeheadConverter.class})
     static class TestConfiguration implements WebMvcConfigurer {
 
         @Autowired
@@ -520,16 +737,24 @@ class ActionsBatchServiceTest {
         private LanguageArgumentResolver languageArgumentResolver;
         @Autowired
         private ProjectConverter projectConverter;
+        @Autowired
+        private ProjectBridgeheadConverter projectBridgeheadConverter;
 
         // The application registers its converters automatically; here the one that loads a project by its code
         @Override
         public void addFormatters(FormatterRegistry registry) {
             registry.addConverter(projectConverter);
+            registry.addConverter(projectBridgeheadConverter);
         }
 
         @Bean
         ProjectService projectService() {
             return Mockito.mock(ProjectService.class);
+        }
+
+        @Bean
+        ProjectBridgeheadService projectBridgeheadService() {
+            return Mockito.mock(ProjectBridgeheadService.class);
         }
 
         @Bean
@@ -576,7 +801,7 @@ class ActionsBatchServiceTest {
                 @Qualifier("requestMappingHandlerMapping") ObjectProvider<RequestMappingHandlerMapping> handlerMapping,
                 @Qualifier("requestMappingHandlerAdapter") ObjectProvider<RequestMappingHandlerAdapter> handlerAdapter,
                 @Qualifier(ProjectManagerConst.ASYNC_ACTIONS_BATCH_EXECUTOR) ThreadPoolTaskExecutor executor) {
-            return new ActionsBatchService(handlerMapping, handlerAdapter, executor);
+            return new ActionsBatchService(handlerMapping, handlerAdapter, executor, 100);
         }
 
     }
