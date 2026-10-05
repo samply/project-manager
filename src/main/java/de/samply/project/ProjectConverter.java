@@ -1,6 +1,7 @@
 package de.samply.project;
 
 import de.samply.annotations.Bridgehead;
+import de.samply.batch.ActionsBatchLookups;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.resolvers.AnnotatedParametersWrapper;
@@ -31,7 +32,14 @@ public class ProjectConverter implements Converter<String, Project> {
                 annotatedParametersWrapper.getResolved(Bridgehead.class, ProjectBridgehead.class);
         return projectBridgeheadOptional
                 .map(ProjectBridgehead::getProject)
-                .orElse(projectService.fetchProject(projectCode));
+                .orElseGet(() -> fetchProject(projectCode));
+    }
+
+    // In an actions batch, once per batch
+    private Project fetchProject(String projectCode) {
+        return ActionsBatchLookups.current()
+                .map(lookups -> lookups.project(projectCode, () -> projectService.fetchProject(projectCode)))
+                .orElseGet(() -> projectService.fetchProject(projectCode));
     }
 
 }

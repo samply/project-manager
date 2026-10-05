@@ -68,6 +68,49 @@ One shared thread pool (`actions-batch` in `ProjectManagerAsyncConfiguration`) a
   entry runs on the thread of its own batch request instead of being rejected.
 - No timeout per entry, because of requirement 2. The single endpoints have none either.
 
+## Projects and bridgeheads: loaded once per batch
+
+Most entries of a batch name the same project and bridgehead (`project-code`, `bridgehead`), and each entry converted
+them again: one database query per entry for the project and one for the bridgehead. `ActionsBatchLookups` keeps them
+for one batch:
+
+- The batch creates one `ActionsBatchLookups` (two `ConcurrentHashMap`s: projects by code, bridgeheads by project
+  code and bridgehead) and gives it to every entry request as a request attribute; the entries' other attributes stay
+  their own.
+- `ProjectConverter` and `ProjectBridgeheadConverter` use it when the current request is a batch entry
+  (`ActionsBatchLookups.current()`), and load as before otherwise. Only the conversion is cached: `ProjectService` and
+  `ProjectBridgeheadService` are unchanged.
+- `computeIfAbsent`: entries asking at the same time wait for one load. A load that fails (an exception, or a project
+  that is not found) is not kept, so each entry tries again and answers as before.
+- The lookups end with the batch. Nothing is kept across requests, not even in the same session; requests outside a
+  batch and background jobs never use them. No Hibernate cache is involved (a general look at the database access is
+  `plans/2026-10-06-plan-database-access-optimization.md`).
+
+**Assumption:** the entries share the same entity objects (detached, as the converters always returned them, since
+`open-in-view` is false). That is safe because a batch only runs read actions (GET) that do not change them. If an
+entry ever changed a project or bridgehead in memory, the other entries of the batch would see it.
+
+Tests (`ActionsBatchServiceTest`): a batch of 8 entries loads the project and the bridgehead once; nothing is kept
+across batches or for the endpoints called on their own; a project that is not found is looked up again.
+
+**Measured on the running application (2026-10-06).** Batches sent directly to `POST /actions/batch/results`, every
+entry `FETCH_PROJECT_ROLES` for the same project and bridgehead (TEST-2026-0004, `jurassic-park`), as project manager
+admin. Counted: the reads of the two tables in PostgreSQL (`pg_stat_user_tables`, sequential / index scans), read 15
+seconds after each batch because PostgreSQL publishes the counters of an idle connection with a delay.
+
+| Batch | `project` (seq / index) | `project_bridgehead` (seq / index) |
+|---|---|---|
+| 1 entry | 4 / 2, then 3 / 2 | 1 / 0, then 1 / 0 |
+| 20 entries | 3 / 2, then 7 / 6 | 1 / 0, then 2 / 1 |
+| no batch, 15 s | 1 / 0 | 0 / 0 |
+
+A batch of 20 entries reads the tables about as often as a batch of 1; without the lookups every entry loaded the
+project and the bridgehead itself (about 20 more reads of each table). The run with 7 / 6 is within the noise of the
+background reads (the line without a batch). All entries answered as before (200).
+
+Also checked in the browser: the request view of TEST-2026-0004 as project manager admin and as creator is unchanged
+(next steps, More actions, bridgehead overview, documents, results), without errors.
+
 ## Proposal: move to structured concurrency when it is final
 
 **When:** with the move to the first LTS version of Java in which structured concurrency is final. If it becomes final

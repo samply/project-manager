@@ -18,7 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * The request of one entry of an actions batch, as its endpoint sees it: a GET without a body whose parameters are
  * the entry's parameters. Headers and session are those of the batch request.
  * <p>
- * Attributes are kept per entry: Spring stores request-scoped beans there, and every entry needs its own.
+ * Attributes are kept per entry: Spring stores request-scoped beans there, and every entry needs its own. Only the
+ * lookups of the batch (projects and bridgeheads, {@link ActionsBatchLookups}) are the same for all its entries.
  */
 public class ActionsBatchEntryRequest extends HttpServletRequestWrapper {
 
@@ -26,9 +27,11 @@ public class ActionsBatchEntryRequest extends HttpServletRequestWrapper {
     private final Map<String, String[]> parameters;
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
-    public ActionsBatchEntryRequest(HttpServletRequest batchRequest, HttpSession session, Map<String, String> parameters) {
+    public ActionsBatchEntryRequest(HttpServletRequest batchRequest, HttpSession session, Map<String, String> parameters,
+                                    ActionsBatchLookups lookups) {
         super(batchRequest);
         this.session = session;
+        attributes.put(ActionsBatchLookups.REQUEST_ATTRIBUTE, lookups);
         Map<String, String[]> parameterValues = new java.util.LinkedHashMap<>();
         parameters.forEach((name, value) -> parameterValues.put(name, new String[]{value}));
         this.parameters = Collections.unmodifiableMap(parameterValues);

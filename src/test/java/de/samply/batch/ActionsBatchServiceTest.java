@@ -38,6 +38,9 @@ import java.util.Optional;
 import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import de.samply.resolvers.AnnotatedParametersWrapper;
 import de.samply.resolvers.LanguageArgumentResolver;
@@ -442,6 +445,54 @@ class ActionsBatchServiceTest {
 
         when(documentService.isDocumentCreatorOrProjectManagerAdmin(any(), eq(DOCUMENT_ID))).thenReturn(true);
         assertSameStatusAsEndpoint(ONLY_DOCUMENT_CREATOR, "/only-document-creator", DOCUMENT_PARAMS, 200);
+    }
+
+    // The projects and bridgeheads of the entries are loaded once per batch (ActionsBatchLookups)
+
+    @Test
+    void aBatchLoadsEachProjectAndBridgeheadOnce() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        Map<String, ActionsBatchRequest> requests = new LinkedHashMap<>();
+        for (int i = 0; i < 8; i++) {
+            requests.put("entry" + i, entry(ONLY_ACCEPTED_BRIDGEHEAD, BRIDGEHEAD_PARAMS));
+        }
+
+        Map<String, ActionsBatchResult> results = fetch(requests);
+
+        results.values().forEach(result -> assertThat(result.errorCode()).isNull());
+        verify(projectService, times(1)).fetchProject(PROJECT);
+        verify(projectBridgeheadService, times(1)).fetchProjectBridgehead(PROJECT, BRIDGEHEAD);
+    }
+
+    @Test
+    void nothingIsKeptAcrossBatchesOrOutsideABatch() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+
+        fetch(Map.of("entry", entry(ONLY_ACCEPTED_BRIDGEHEAD, BRIDGEHEAD_PARAMS)));
+        fetch(Map.of("entry", entry(ONLY_ACCEPTED_BRIDGEHEAD, BRIDGEHEAD_PARAMS)));
+        verify(projectService, times(2)).fetchProject(PROJECT);
+
+        // The endpoint called on its own loads every time
+        MockHttpServletRequestBuilder request = withSession("/only-accepted-bridgehead");
+        BRIDGEHEAD_PARAMS.forEach((name, value) -> request.param(name, String.valueOf(value)));
+        mockMvc.perform(request);
+        mockMvc.perform(request);
+        verify(projectService, times(4)).fetchProject(PROJECT);
+    }
+
+    @Test
+    void aFailedLoadIsNotKept() throws Exception {
+        when(projectService.fetchProject(PROJECT)).thenReturn(null);
+
+        Map<String, ActionsBatchResult> results = fetch(Map.of(
+                "first", entry(ONLY_IN_REVIEW, PROJECT_PARAMS),
+                "second", entry(ONLY_IN_REVIEW, PROJECT_PARAMS)));
+
+        results.values().forEach(result -> assertThat(result.errorCode()).isEqualTo(404));
+        // Every entry looks again (the argument resolution even asks twice for a missing project), unlike a found one
+        verify(projectService, atLeast(2)).fetchProject(PROJECT);
     }
 
     private ProjectBridgehead givenBridgehead(ProjectBridgeheadState state, QueryState queryState) throws Exception {

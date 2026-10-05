@@ -105,11 +105,13 @@ public class ActionsBatchService {
                 ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         HttpSession session = batchRequest.getSession();
         SecurityContext securityContext = SecurityContextHolder.getContext();
+        // The projects and bridgeheads the entries resolve, loaded once for the whole batch
+        ActionsBatchLookups lookups = new ActionsBatchLookups();
 
         // runEntry answers its own failures; exceptionally only covers an entry that could not be run at all
         Map<String, CompletableFuture<ActionsBatchResult>> futures = new LinkedHashMap<>();
         requests.forEach((id, entry) -> futures.put(id, executor
-                .submitCompletable(() -> runEntry(entry, batchRequest, session, securityContext))
+                .submitCompletable(() -> runEntry(entry, batchRequest, session, lookups, securityContext))
                 .exceptionally(e -> {
                     log.warn("Entry '{}' of an actions batch failed", id, e);
                     return toErrorResult(e.getCause() != null ? e.getCause() : e, System.nanoTime());
@@ -123,7 +125,7 @@ public class ActionsBatchService {
     }
 
     private ActionsBatchResult runEntry(ActionsBatchRequest entry, HttpServletRequest batchRequest, HttpSession session,
-                                        SecurityContext securityContext) {
+                                        ActionsBatchLookups lookups, SecurityContext securityContext) {
         long start = System.nanoTime();
         try {
             if (entry == null || entry.action() == null) {
@@ -139,7 +141,7 @@ public class ActionsBatchService {
             }
             Map<String, String> parameters = toParameters(entry.params());
             Object answer = invoke(invoker, handlerMethod,
-                    new ActionsBatchEntryRequest(batchRequest, session, parameters), securityContext);
+                    new ActionsBatchEntryRequest(batchRequest, session, parameters, lookups), securityContext);
             return toResult(action, answer, start);
         } catch (Throwable e) {
             return toErrorResult(e, start);

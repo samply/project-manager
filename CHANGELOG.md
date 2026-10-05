@@ -308,6 +308,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Email recipients in fronend actions
 - Form field instances: a field label configured several times in a form; the first instance whose condition holds is shown
 - Actions batch: at most ACTIONS_BATCH_MAX_ENTRIES entries per batch (default 100, else 413); docs/actions-batch-security.md explains why the batch is safe
+- Actions batch: the projects and bridgeheads of the entries (project-code, bridgehead) are loaded once per batch instead of once per entry
 
 
 ### Changed

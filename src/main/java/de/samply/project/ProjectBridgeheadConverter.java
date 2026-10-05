@@ -1,6 +1,7 @@
 package de.samply.project;
 
 import de.samply.annotations.ProjectCode;
+import de.samply.batch.ActionsBatchLookups;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.resolvers.AnnotatedParametersWrapper;
@@ -37,6 +38,13 @@ public class ProjectBridgeheadConverter implements Converter<String, ProjectBrid
                 .or(() -> annotatedParametersWrapper.getRaw(ProjectCode.class, String.class))
                 .orElseThrow(() -> new IllegalArgumentException("ProjectCode code not found"));
 
+        // In an actions batch, once per batch
+        return ActionsBatchLookups.current()
+                .map(lookups -> lookups.bridgehead(projectCode, bridgehead, () -> load(projectCode, bridgehead)))
+                .orElseGet(() -> load(projectCode, bridgehead));
+    }
+
+    private ProjectBridgehead load(String projectCode, String bridgehead) {
         return projectBridgeheadService
                 .fetchProjectBridgehead(projectCode, bridgehead)
                 .orElseThrow(() -> new IllegalArgumentException("Bridgehead " + bridgehead + " not found for project " + projectCode));
