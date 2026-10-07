@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 public class EmailSenderAspect {
 
     // Services
-    private final EmailService emailService;
+    private final EmailSendingService emailSendingService;
     private final SessionUser sessionUser;
     private final UserService userService;
     private final ProjectBridgeheadService projectBridgeheadService;
@@ -45,14 +45,14 @@ public class EmailSenderAspect {
     private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
     private final EmailKeyValuesFactory emailKeyValuesFactory;
 
-    public EmailSenderAspect(EmailService emailService,
+    public EmailSenderAspect(EmailSendingService emailSendingService,
                              SessionUser sessionUser,
                              UserService userService,
                              ProjectBridgeheadService projectBridgeheadService,
                              ProjectBridgeheadUserService projectBridgeheadUserService,
                              OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
                              EmailKeyValuesFactory emailKeyValuesFactory) {
-        this.emailService = emailService;
+        this.emailSendingService = emailSendingService;
         this.sessionUser = sessionUser;
         this.userService = userService;
         this.projectBridgeheadService = projectBridgeheadService;
@@ -156,7 +156,7 @@ public class EmailSenderAspect {
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
     protected void sendEmail(EmailRecipient emailRecipient, Supplier<EmailTemplateType> emailTemplateTypeSupplier) {
         try {
-            emailService.sendEmail(emailRecipient.getEmail(), emailRecipient.getProject(), emailRecipient.getBridgehead(),
+            emailSendingService.sendEmail(emailRecipient.getEmail(), emailRecipient.getProject(), emailRecipient.getBridgehead(),
                     emailRecipient.getRole(), emailTemplateTypeSupplier.get(), emailKeyValuesFactory.newInstance().add(emailRecipient));
         } catch (EmailServiceException e) {
             throw new RuntimeException(e);

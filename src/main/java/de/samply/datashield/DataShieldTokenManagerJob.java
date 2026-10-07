@@ -10,7 +10,7 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadDataShield;
 import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.email.EmailService;
+import de.samply.email.EmailSendingService;
 import de.samply.modules.OptionalModule;
 import de.samply.email.EmailServiceException;
 import de.samply.email.EmailTemplateType;
@@ -45,7 +45,7 @@ public class DataShieldTokenManagerJob {
     private final ProjectBridgeheadService projectBridgeheadService;
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
     private final DataShieldTokenManagerService tokenManagerService;
-    private final EmailService emailService;
+    private final EmailSendingService emailSendingService;
     private final AppRegisterService appRegisterService;
 
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
@@ -54,7 +54,7 @@ public class DataShieldTokenManagerJob {
                                      ProjectBridgeheadService projectBridgeheadService,
                                      ProjectBridgeheadUserService projectBridgeheadUserService,
                                      DataShieldTokenManagerService tokenManagerService,
-                                     EmailService emailService,
+                                     EmailSendingService emailSendingService,
                                      BridgeheadsConfiguration bridgeheadsConfiguration,
                                      AppRegisterService appRegisterService
     ) {
@@ -62,7 +62,7 @@ public class DataShieldTokenManagerJob {
         this.projectBridgeheadService = projectBridgeheadService;
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.tokenManagerService = tokenManagerService;
-        this.emailService = emailService;
+        this.emailSendingService = emailSendingService;
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.appRegisterService = appRegisterService;
     }
@@ -143,7 +143,7 @@ public class DataShieldTokenManagerJob {
 
     private void sendEmail(String email, Project project, ProjectBridgehead bridgehead, EmailTemplateType type, ProjectRole projectRole) {
         try {
-            emailService.sendEmail(email, Optional.ofNullable(project), Optional.ofNullable(bridgehead), projectRole, type);
+            emailSendingService.sendEmail(email, Optional.ofNullable(project), Optional.ofNullable(bridgehead), projectRole, type);
         } catch (EmailServiceException e) {
             throw new RuntimeException(e);
         }

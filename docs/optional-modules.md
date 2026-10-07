@@ -19,7 +19,7 @@ used in this backend) and not a frontend module (`@FrontendSiteModule`, a part o
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
 | `EXPORTER` | `ENABLE_EXPORTER` | - | Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; without it, queries stay "to be sent" |
 | `FEASIBILITY` | `ENABLE_FEASIBILITY` | - | Feasibility queries to the bridgeheads through Beam |
-| `EMAILS` | `ENABLE_EMAILS` | - | Sending emails |
+| `EMAILS` | `ENABLE_EMAILS` | - | Sending emails through SMTP; rendering the templates (`EmailService`) is always possible |
 
 DataSHIELD implies the research environment; the research environment works without DataSHIELD. If an enabled module
 requires a disabled one, the backend does not start and says which variable to change.
@@ -68,4 +68,10 @@ starting the backend.
 `DATASHIELD`: the interface `DataShieldService` only has what the controller needs (project status, authentication
 script); the DataSHIELD job belongs to the same module and uses `DataShieldTokenManagerService` directly.
 
-Status (2026-10-07): moved onto the mechanism: FEASIBILITY, EXPORTER, RESEARCH_ENVIRONMENT, DATASHIELD. Next: EMAILS.
+`EMAILS`: `EmailService` only renders the templates (always there: the Credentials Sharing Tool shows rendered
+templates without sending them); sending goes through `EmailSendingService` (`SmtpEmailSendingService` or
+`DisabledEmailSendingService`, which logs the email). The SMTP beans (`MailSenderConfiguration`) belong to the module,
+so the SMTP settings are only needed with emails enabled. (The interface is not called `EmailSender`: that name is
+taken by the annotation `@EmailSender`.)
+
+Status (2026-10-07): all modules use the mechanism.

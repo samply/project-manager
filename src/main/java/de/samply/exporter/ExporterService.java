@@ -8,7 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.*;
 import de.samply.email.EmailKeyValuesFactory;
-import de.samply.email.EmailService;
+import de.samply.email.EmailSendingService;
 import de.samply.email.EmailTemplateType;
 import de.samply.beam.BeamRequest;
 import de.samply.beam.BeamService;
@@ -62,7 +62,7 @@ public class ExporterService {
     private final ResearchEnvironmentService researchEnvironmentService;
     private final NotificationService notificationService;
     private final ProjectBridgeheadService projectBridgeheadService;
-    private final EmailService emailService;
+    private final EmailSendingService emailSendingService;
     private final UserService userService;
 
     @Getter
@@ -95,7 +95,7 @@ public class ExporterService {
             BeamService beamService,
             NotificationService notificationService,
             WebClientFactory webClientFactory,
-            EmailService emailService,
+            EmailSendingService emailSendingService,
             EmailKeyValuesFactory emailKeyValuesFactory,
             UserService userService) {
         this.researchEnvironmentService = researchEnvironmentService;
@@ -115,7 +115,7 @@ public class ExporterService {
         this.beamWaitCount = beamWaitCount;
         this.maxTimeToWaitFocusTaskInMinutes = maxTimeToWaitFocusTaskInMinutes;
         this.exporterQueryLabelTemplate = exporterQueryLabelTemplate;
-        this.emailService = emailService;
+        this.emailSendingService = emailSendingService;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
         this.webClient = webClientFactory.createWebClient(focusUrl);
         this.exporterApiKey = exporterApiKey;
@@ -511,7 +511,7 @@ public class ExporterService {
     private void sendEmail(ProjectBridgehead projectBridgehead, @SuppressWarnings("SameParameterValue") EmailTemplateType templateType) {
         userService
                 .fetchBridgeheadAdmin(projectBridgehead)
-                .forEach(bridgeheadAdmin -> emailService.sendEmail(
+                .forEach(bridgeheadAdmin -> emailSendingService.sendEmail(
                         bridgeheadAdmin.getEmail(),
                         Optional.of(projectBridgehead.getProject()),
                         Optional.of(projectBridgehead),

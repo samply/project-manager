@@ -1,5 +1,7 @@
 package de.samply.email;
 
+import de.samply.annotations.ModuleComponent;
+import de.samply.modules.OptionalModule;
 import de.samply.app.ProjectManagerConst;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,6 +12,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
+@ModuleComponent(OptionalModule.EMAILS)
 public class MailSenderConfiguration {
 
     @Bean

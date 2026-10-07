@@ -5,7 +5,7 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadExecution;
 import de.samply.email.EmailKeyValuesFactory;
-import de.samply.email.EmailService;
+import de.samply.email.EmailSendingService;
 import de.samply.email.EmailTemplateType;
 import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectBridgeheadService;
@@ -38,7 +38,7 @@ public class ExporterJob {
 
     // Services
     private final ExporterService exporterService;
-    private final EmailService emailService;
+    private final EmailSendingService emailSendingService;
     private final UserService userService;
     private final ProjectBridgeheadService projectBridgeheadService;
 
@@ -47,13 +47,13 @@ public class ExporterJob {
 
     public ExporterJob(
             ExporterService exporterService,
-            EmailService emailService,
+            EmailSendingService emailSendingService,
             UserService userService,
             ProjectBridgeheadService projectBridgeheadService,
             EmailKeyValuesFactory emailKeyValuesFactory) {
         this.exporterService = exporterService;
         this.projectBridgeheadService = projectBridgeheadService;
-        this.emailService = emailService;
+        this.emailSendingService = emailSendingService;
         this.userService = userService;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
     }
@@ -154,7 +154,7 @@ public class ExporterJob {
     private void sendEmail(ProjectBridgehead projectBridgehead, EmailTemplateType templateType) {
         userService.fetchBridgeheadAdmin(projectBridgehead)
                 .forEach(bridgeheadAdmin ->
-                        emailService.sendEmail(
+                        emailSendingService.sendEmail(
                                 bridgeheadAdmin.getEmail(),
                                 Optional.of(projectBridgehead.getProject()),
                                 Optional.of(projectBridgehead),

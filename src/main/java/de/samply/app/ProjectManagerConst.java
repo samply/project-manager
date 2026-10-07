@@ -622,7 +622,6 @@ public class ProjectManagerConst {
     public final static String BEAM_URL_SV = HEAD_SV + BEAM_URL + BOTTOM_SV;
     public final static String BEAM_API_KEY_SV = HEAD_SV + BEAM_API_KEY + BOTTOM_SV;
     public final static String FOCUS_LENS_PROJECT_SV = HEAD_SV + FOCUS_LENS_PROJECT + ":default_obfuscation" + BOTTOM_SV;
-    public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String MAILING_BLACK_LIST_FILE_PATH_SV =
             HEAD_SV + MAILING_BLACK_LIST_FILE_PATH + ":" + BOTTOM_SV;
     public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
