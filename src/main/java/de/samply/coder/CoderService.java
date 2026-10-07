@@ -53,7 +53,7 @@ public class CoderService {
             NotificationService notificationService,
             CoderConfiguration coderConfiguration,
             WebClientFactory webClientFactory,
-            @Value(ProjectManagerConst.ENABLE_CODER_SV) boolean coderEnabled,
+            @Value(ProjectManagerConst.ENABLE_RESEARCH_ENVIRONMENT_SV) boolean coderEnabled,
             @Value(ProjectManagerConst.CODER_BASE_URL_SV) String coderBaseUrl,
             @Value(ProjectManagerConst.CODER_ORGANISATION_ID_SV) String coderOrganizationId,
             @Value(ProjectManagerConst.CODER_CREATE_PATH_SV) String coderCreatePath,

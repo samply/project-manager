@@ -57,7 +57,7 @@ public class DataShieldTokenManagerJob {
                                      EmailService emailService,
                                      BridgeheadsConfiguration bridgeheadsConfiguration,
                                      AppRegisterService appRegisterService,
-                                     @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive
+                                     @Value(ProjectManagerConst.ENABLE_DATASHIELD_SV) boolean isTokenManagerActive
     ) {
         this.coderService = coderService;
         this.projectBridgeheadService = projectBridgeheadService;

@@ -34,7 +34,7 @@ public class AppRegisterService {
             @Value(ProjectManagerConst.APP_REGISTER_BASE_URL_SV) String appRegisterBaseUrl,
             @Value(ProjectManagerConst.APP_REGISTER_API_KEY_SV) String appRegisterApiKey,
             @Value(ProjectManagerConst.APP_REGISTER_AUTHORIZATION_FORMAT_SV) String authorizationFormat,
-            @Value(ProjectManagerConst.ENABLE_APP_REGISTER_SV) boolean appRegisterEnabled,
+            @Value(ProjectManagerConst.ENABLE_RESEARCH_ENVIRONMENT_SV) boolean appRegisterEnabled,
             WebClientFactory webClientFactory,
             CoderService coderService,
             NotificationService notificationService) {

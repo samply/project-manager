@@ -71,7 +71,7 @@ public class DataShieldTokenManagerService {
                                          ProjectBridgeheadUserService projectBridgeheadUserService,
                                          NotificationService notificationService,
                                          BridgeheadsConfiguration bridgeheadsConfiguration,
-                                         @Value(ProjectManagerConst.ENABLE_TOKEN_MANAGER_SV) boolean isTokenManagerActive) {
+                                         @Value(ProjectManagerConst.ENABLE_DATASHIELD_SV) boolean isTokenManagerActive) {
         this.sessionUser = sessionUser;
         this.webClientFactory = webClientFactory;
         this.projectBridgeheadService = projectBridgeheadService;

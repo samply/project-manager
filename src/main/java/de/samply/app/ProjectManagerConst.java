@@ -481,7 +481,7 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CRON_EXPRESSION = "EXPORTER_CRON_EXPRESSION";
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION = "CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION";
     public final static String EXPLORER_URL = "EXPLORER_URL";
-    public final static String ENABLE_TOKEN_MANAGER = "ENABLE_TOKEN_MANAGER";
+    public final static String ENABLE_DATASHIELD = "ENABLE_DATASHIELD";
     public final static String EXPLORER_REDIRECT_URI_PARAMETER = "EXPLORER_REDIRECT_URI_PARAMETER";
     public final static String FRONTEND_PROJECT_CONFIG_PATH = "FRONTEND_PROJECT_CONFIG_PATH";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
@@ -513,7 +513,7 @@ public class ProjectManagerConst {
 
     public final static String CODER_BEAM_ID_SUFFIX = "CODER_BEAM_ID_SUFFIX";
     public final static String CODER_TEST_FILE_BEAM_ID = "CODER_TEST_FILE_BEAM_ID";
-    public final static String ENABLE_CODER = "ENABLE_CODER";
+    public final static String ENABLE_RESEARCH_ENVIRONMENT = "ENABLE_RESEARCH_ENVIRONMENT";
 
     public final static String EMAIL_SENDER_CORE_POOL_SIZE = "EMAIL_SENDER_CORE_POOL_SIZE";
     public final static String EMAIL_SENDER_MAX_POOL_SIZE = "EMAIL_SENDER_MAX_POOL_SIZE";
@@ -539,7 +539,6 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_BASE_URL = "APP_REGISTER_BASE_URL";
     public final static String APP_REGISTER_API_KEY = "APP_REGISTER_API_KEY";
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT = "APP_REGISTER_AUTHORIZATION_FORMAT";
-    public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
 
     public final static String FORM_RESOURCES_DIRECTORY = "FORM_RESOURCES_DIRECTORY";
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY = "FORM_TEMPLATE_METADATA_DIRECTORY";
@@ -626,7 +625,7 @@ public class ProjectManagerConst {
     public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
     public final static String MAILING_BLACK_LIST_FILE_PATH_SV =
             HEAD_SV + MAILING_BLACK_LIST_FILE_PATH + ":" + BOTTOM_SV;
-    public final static String ENABLE_TOKEN_MANAGER_SV = HEAD_SV + ENABLE_TOKEN_MANAGER + ":true" + BOTTOM_SV;
+    public final static String ENABLE_DATASHIELD_SV = HEAD_SV + ENABLE_DATASHIELD + ":true" + BOTTOM_SV;
     public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;
     public final static String ENABLE_FEASIBILITY_SV = HEAD_SV + ENABLE_FEASIBILITY + ":true" + BOTTOM_SV;
     public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
@@ -652,7 +651,7 @@ public class ProjectManagerConst {
     public final static String CACHE_POLICY_SHORT_MAX_AGE_SECONDS_SV = HEAD_SV + CACHE_POLICY_SHORT_MAX_AGE_SECONDS + ":300" + BOTTOM_SV;
     public final static String CACHE_POLICY_LONG_MAX_AGE_SECONDS_SV = HEAD_SV + CACHE_POLICY_LONG_MAX_AGE_SECONDS + ":86400" + BOTTOM_SV;
 
-    public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
+    public final static String ENABLE_RESEARCH_ENVIRONMENT_SV = HEAD_SV + ENABLE_RESEARCH_ENVIRONMENT + ":true" + BOTTOM_SV;
 
     public final static String EMAIL_SENDER_CORE_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
     public final static String EMAIL_SENDER_MAX_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
@@ -683,7 +682,6 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_BASE_URL_SV = HEAD_SV + APP_REGISTER_BASE_URL + BOTTOM_SV;
     public final static String APP_REGISTER_API_KEY_SV = HEAD_SV + APP_REGISTER_API_KEY + BOTTOM_SV;
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":ApiKey {}" + BOTTOM_SV;
-    public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
 
     public final static String FORM_RESOURCES_DIRECTORY_SV = HEAD_SV + FORM_RESOURCES_DIRECTORY + BOTTOM_SV;
     public final static String FORM_TEMPLATE_METADATA_DIRECTORY_SV = HEAD_SV + FORM_TEMPLATE_METADATA_DIRECTORY + BOTTOM_SV;
