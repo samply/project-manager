@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -36,6 +37,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 @Service
 @ModuleComponent(OptionalModule.RESEARCH_ENVIRONMENT)
+// Only for the IDE: at runtime only this or DisabledResearchEnvironmentService exists (module condition). IntelliJ does not
+// evaluate the condition and would report two candidates for ResearchEnvironmentService.
+@Primary
 public class CoderResearchEnvironmentService implements ResearchEnvironmentService {
 
     private final ProjectCoderRepository projectCoderRepository;

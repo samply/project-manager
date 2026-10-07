@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -30,6 +31,9 @@ import java.util.stream.Collectors;
  */
 @Service
 @ModuleComponent(OptionalModule.FEASIBILITY)
+// Only for the IDE: at runtime only this or DisabledFeasibilityService exists (module condition). IntelliJ does not
+// evaluate the condition and would report two candidates for FeasibilityService.
+@Primary
 public class BeamFeasibilityService implements FeasibilityService {
 
     private static final String SUCCEEDED_STATUS = "succeeded";

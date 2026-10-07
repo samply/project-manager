@@ -29,6 +29,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -54,6 +55,9 @@ import java.util.function.Supplier;
 @Service
 @Slf4j
 @ModuleComponent(OptionalModule.DATASHIELD)
+// Only for the IDE: at runtime only this or DisabledDataShieldService exists (module condition). IntelliJ does not
+// evaluate the condition and would report two candidates for DataShieldService.
+@Primary
 public class DataShieldTokenManagerService implements DataShieldService {
 
 

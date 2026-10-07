@@ -23,6 +23,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -37,6 +38,9 @@ import java.util.Optional;
 @Service
 @Slf4j
 @ModuleComponent(OptionalModule.EMAILS)
+// Only for the IDE: at runtime only this or DisabledEmailSendingService exists (module condition). IntelliJ does not
+// evaluate the condition and would report two candidates for EmailSendingService.
+@Primary
 public class SmtpEmailSendingService implements EmailSendingService {
 
     private final String emailFrom;

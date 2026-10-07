@@ -43,7 +43,10 @@ every bean.
    its jobs, its configuration. Spring creates them only when X is enabled.
 2. Code outside the module depends on an **interface**, never on the implementation. Next to the real implementation
    (`@ModuleComponent(X)`) there is a **disabled stand-in** (`@ModuleStandIn(X)`) that implements the same interface
-   and is created when the module is disabled. Per method it does nothing (side effects, logged at debug), returns a neutral value (answers the
+   and is created when the module is disabled. The real implementation also carries `@Primary`: at runtime only
+   one of the two exists, but IntelliJ does not evaluate the module condition (neither ours nor Spring Boot's
+   `@ConditionalOnBooleanProperty`, tried 2026-10-07) and would otherwise report "Could not autowire. There is more
+   than one bean". `ModuleDependenciesTest` checks it. Per method it does nothing (side effects, logged at debug), returns a neutral value (answers the
    UI shows), or throws `IllegalStateException` (calls that are a programming error when the module is disabled).
 3. For a new module: side effects are better triggered by events (`@EventListener` in the module) than by calls from
    outside - a disabled module then has no listener, and needs no stand-in for them.

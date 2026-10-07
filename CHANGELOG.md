@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Research environment as optional module: ResearchEnvironmentService interface, CoderResearchEnvironmentService (formerly CoderService), DisabledResearchEnvironmentService; AppRegisterService, CoderJob and CoderConfiguration (coder/*.json) only exist when ENABLE_RESEARCH_ENVIRONMENT is not false; the Beam ID of the workspace for the file transfer comes from the research environment (CODER_BEAM_ID_SUFFIX, CODER_TEST_FILE_BEAM_ID no longer read by ExporterService); the research environment URL in emails only when enabled
 - DataSHIELD as optional module: DataShieldService interface (what the controller needs), DataShieldTokenManagerService, DisabledDataShieldService; DataShieldTokenManagerJob; TOKEN_MANAGER_URL only needed when ENABLE_DATASHIELD is not false
 - Emails as optional module: EmailService only renders; EmailSendingService (SmtpEmailSendingService, DisabledEmailSendingService) sends; MailSenderConfiguration (SMTP) only exists when ENABLE_EMAILS is not false
-- ModuleDependenciesTest: only classes of the same (or a requiring) module may inject a module class
+- ModuleDependenciesTest: only classes of the same (or a requiring) module may inject a module class; the real implementation of an interface with a stand-in is @Primary (for IntelliJ, which does not evaluate the module conditions)
 - Spring Application
 - State Machine for a project
 - Project states and event states
