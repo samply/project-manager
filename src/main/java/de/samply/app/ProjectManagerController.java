@@ -10,7 +10,6 @@ import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.cache.CacheCategory;
 import de.samply.cache.CacheConfiguration;
 import de.samply.cache.CacheResource;
-import de.samply.coder.CoderService;
 import de.samply.datashield.DataShieldTokenManagerService;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
@@ -29,6 +28,7 @@ import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
 import de.samply.modules.OptionalModule;
 import de.samply.modules.OptionalModules;
+import de.samply.researchenvironment.ResearchEnvironmentService;
 import de.samply.form.core.DtoFormService;
 import de.samply.form.core.FormService;
 import de.samply.form.template.FormTemplateService;
@@ -113,7 +113,7 @@ public class ProjectManagerController {
     private final ProjectConfigurations frontendProjectConfigurations;
     private final DtoFactory dtoFactory;
     private final EmailService emailService;
-    private final CoderService coderService;
+    private final ResearchEnvironmentService researchEnvironmentService;
     private final FormService formService;
     private final DtoFormService dtoFormService;
     private final FormTemplateService formTemplateService;
@@ -144,7 +144,7 @@ public class ProjectManagerController {
                                     ProjectConfigurations frontendProjectConfigurations,
                                     DtoFactory dtoFactory,
                                     EmailService emailService,
-                                    CoderService coderService,
+                                    ResearchEnvironmentService researchEnvironmentService,
                                     FormService formService,
                                     DtoFormService dtoFormService,
                                     FormTemplateService formTemplateService,
@@ -174,7 +174,7 @@ public class ProjectManagerController {
         this.frontendProjectConfigurations = frontendProjectConfigurations;
         this.dtoFactory = dtoFactory;
         this.emailService = emailService;
-        this.coderService = coderService;
+        this.researchEnvironmentService = researchEnvironmentService;
         this.formService = formService;
         this.dtoFormService = dtoFormService;
         this.formTemplateService = formTemplateService;
@@ -868,7 +868,7 @@ public class ProjectManagerController {
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
             @SuppressWarnings("unused") @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead
     ) {
-        return convertToResponseEntity(coderService::getResearchEnvironmentUrl);
+        return convertOptionalToResponseEntity(researchEnvironmentService::fetchResearchEnvironmentUrl);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
@@ -882,7 +882,7 @@ public class ProjectManagerController {
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(
-                () -> coderService.existsUserResearchEnvironmentWorkspace(project, bridgehead));
+                () -> researchEnvironmentService.existsUserResearchEnvironmentWorkspace(project, bridgehead));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})

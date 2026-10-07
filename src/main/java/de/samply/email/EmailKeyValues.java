@@ -49,7 +49,8 @@ public class EmailKeyValues {
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.projectBridgeheadService = projectBridgeheadService;
         keyValues.putAll(emailContext.getContext());
-        addKeyValue(EmailContextKey.RESEARCH_ENVIRONMENT_URL, researchEnvironmentUrl);
+        // Without the research environment module there is no URL: the key is left out
+        addKeyValue(EmailContextKey.RESEARCH_ENVIRONMENT_URL, () -> researchEnvironmentUrl);
     }
 
     public EmailKeyValues add(EmailRecipient emailRecipient) {

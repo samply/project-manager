@@ -1,8 +1,8 @@
 package de.samply.datashield;
 
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
-import de.samply.coder.CoderService;
 import de.samply.datashield.dto.DataShieldProjectStatus;
 import de.samply.datashield.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.datashield.dto.DataShieldTokenStatus;
@@ -11,6 +11,7 @@ import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadDataShield;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.email.EmailService;
+import de.samply.modules.OptionalModule;
 import de.samply.email.EmailServiceException;
 import de.samply.email.EmailTemplateType;
 import de.samply.project.ProjectBridgeheadService;
@@ -19,10 +20,10 @@ import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
 import de.samply.register.AppRegisterService;
+import de.samply.researchenvironment.ResearchEnvironmentService;
 import de.samply.user.roles.ProjectRole;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -36,10 +37,11 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Component
+@ModuleComponent(OptionalModule.DATASHIELD)
 public class DataShieldTokenManagerJob {
 
     // Services
-    private final CoderService coderService;
+    private final ResearchEnvironmentService coderService;
     private final ProjectBridgeheadService projectBridgeheadService;
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
     private final DataShieldTokenManagerService tokenManagerService;
@@ -48,16 +50,13 @@ public class DataShieldTokenManagerJob {
 
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
-    private final boolean isTokenManagerActive;
-
-    public DataShieldTokenManagerJob(CoderService coderService,
+    public DataShieldTokenManagerJob(ResearchEnvironmentService coderService,
                                      ProjectBridgeheadService projectBridgeheadService,
                                      ProjectBridgeheadUserService projectBridgeheadUserService,
                                      DataShieldTokenManagerService tokenManagerService,
                                      EmailService emailService,
                                      BridgeheadsConfiguration bridgeheadsConfiguration,
-                                     AppRegisterService appRegisterService,
-                                     @Value(ProjectManagerConst.ENABLE_DATASHIELD_SV) boolean isTokenManagerActive
+                                     AppRegisterService appRegisterService
     ) {
         this.coderService = coderService;
         this.projectBridgeheadService = projectBridgeheadService;
@@ -66,19 +65,16 @@ public class DataShieldTokenManagerJob {
         this.emailService = emailService;
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.appRegisterService = appRegisterService;
-        this.isTokenManagerActive = isTokenManagerActive;
     }
 
     @Scheduled(cron = ProjectManagerConst.MANAGE_TOKENS_CRON_EXPRESSION_SV)
     public void manageTokens() {
-        if (isTokenManagerActive) {
-            log.debug("Starting DataSHIELD Job...");
-            Mono.when(
-                    manageActiveUsers(),
-                    manageInactiveUsers(),
-                    manageInactiveProjects()).block();
-            log.debug("DataSHIELD Job finished");
-        }
+        log.debug("Starting DataSHIELD Job...");
+        Mono.when(
+                manageActiveUsers(),
+                manageInactiveUsers(),
+                manageInactiveProjects()).block();
+        log.debug("DataSHIELD Job finished");
     }
 
     private Mono<Void> manageActiveUsers() {

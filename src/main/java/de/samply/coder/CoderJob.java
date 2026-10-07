@@ -1,13 +1,16 @@
 package de.samply.coder;
 
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.exporter.ExporterService;
+import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.query.QueryState;
 import de.samply.register.AppRegisterService;
+import de.samply.researchenvironment.ResearchEnvironmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,15 +21,16 @@ import java.util.List;
 
 @Slf4j
 @Component
+@ModuleComponent(OptionalModule.RESEARCH_ENVIRONMENT)
 public class CoderJob {
 
     // Services
-    private final CoderService coderService;
+    private final ResearchEnvironmentService coderService;
     private final ExporterService exporterService;
     private final AppRegisterService appRegisterService;
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
 
-    public CoderJob(CoderService coderService,
+    public CoderJob(ResearchEnvironmentService coderService,
                     ExporterService exporterService,
                     AppRegisterService appRegisterService,
                     ProjectBridgeheadUserService projectBridgeheadUserService

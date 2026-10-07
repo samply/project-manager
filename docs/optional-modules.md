@@ -57,4 +57,13 @@ classes. Whether a module is enabled (e.g. for the frontend): `OptionalModules.i
 `EXPORTER` shows the event way: `ProjectBridgeheadService` publishes `SendQueryToBridgeheadEvent`, and
 `ExporterJobTrigger` (in the module) listens. When the module is disabled there is no listener - nothing to stand in for.
 
-Status (2026-10-07): moved onto the mechanism: FEASIBILITY, EXPORTER. Next: DATASHIELD, RESEARCH_ENVIRONMENT, EMAILS.
+`RESEARCH_ENVIRONMENT`: the interface `ResearchEnvironmentService` lives in the neutral package
+`de.samply.researchenvironment` (with its stand-in), the Coder implementation `CoderResearchEnvironmentService` in
+`de.samply.coder` - another implementation can replace Coder without touching the callers.
+
+`ModuleDependenciesTest` checks the whole codebase: a class of module X may only be injected by classes of X or of a
+module that requires X. Everything else must use the module's interface. It finds a forgotten dependency without
+starting the backend.
+
+Status (2026-10-07): moved onto the mechanism: FEASIBILITY, EXPORTER, RESEARCH_ENVIRONMENT (and the DataSHIELD job).
+Next: DATASHIELD (token manager service), EMAILS.

@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - ENABLE_RESEARCH_ENVIRONMENT (formerly ENABLE_CODER) and ENABLE_DATASHIELD (formerly ENABLE_TOKEN_MANAGER), without fallback to the former names. App register follows ENABLE_RESEARCH_ENVIRONMENT; ENABLE_APP_REGISTER is no longer read
 - Feasibility as optional module: FeasibilityService interface, BeamFeasibilityService, DisabledFeasibilityService (@ModuleStandIn)
 - Exporter as optional module: ExporterJob and ExporterJobTrigger (the listener of SendQueryToBridgeheadEvent, moved out of QueryEventService) only exist when ENABLE_EXPORTER is not false
+- Research environment as optional module: ResearchEnvironmentService interface, CoderResearchEnvironmentService (formerly CoderService), DisabledResearchEnvironmentService; AppRegisterService, CoderJob and CoderConfiguration (coder/*.json) only exist when ENABLE_RESEARCH_ENVIRONMENT is not false; the Beam ID of the workspace for the file transfer comes from the research environment (CODER_BEAM_ID_SUFFIX, CODER_TEST_FILE_BEAM_ID no longer read by ExporterService); the research environment URL in emails only when enabled
+- DataShieldTokenManagerJob only exists when ENABLE_DATASHIELD is not false
+- ModuleDependenciesTest: only classes of the same (or a requiring) module may inject a module class
 - Spring Application
 - State Machine for a project
 - Project states and event states

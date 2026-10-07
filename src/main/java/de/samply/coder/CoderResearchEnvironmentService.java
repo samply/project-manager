@@ -1,5 +1,6 @@
 package de.samply.coder;
 
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.coder.request.CreateRequestBody;
 import de.samply.coder.request.Response;
@@ -9,12 +10,13 @@ import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.ProjectCoder;
 import de.samply.db.repository.ProjectCoderRepository;
+import de.samply.modules.OptionalModule;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectType;
+import de.samply.researchenvironment.ResearchEnvironmentService;
 import de.samply.utils.WebClientFactory;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -28,11 +30,13 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Research environment implemented with Coder: creates and deletes the users' workspaces through the Coder API.
+ */
 @Slf4j
 @Service
-public class CoderService {
-
-    private final boolean coderEnabled;
+@ModuleComponent(OptionalModule.RESEARCH_ENVIRONMENT)
+public class CoderResearchEnvironmentService implements ResearchEnvironmentService {
 
     private final ProjectCoderRepository projectCoderRepository;
     private final NotificationService notificationService;
@@ -42,25 +46,26 @@ public class CoderService {
     private final String coderCreatePath;
     private final String coderDeletePath;
     private final String coderSessionToken;
-    @Getter
     private final String researchEnvironmentUrl;
+    private final String coderBeamIdSuffix;
+    private final String testCoderFileBeamId;
 
     private final int coderWorkspaceMaxLength;
 
 
-    public CoderService(
+    public CoderResearchEnvironmentService(
             ProjectCoderRepository projectCoderRepository,
             NotificationService notificationService,
             CoderConfiguration coderConfiguration,
             WebClientFactory webClientFactory,
-            @Value(ProjectManagerConst.ENABLE_RESEARCH_ENVIRONMENT_SV) boolean coderEnabled,
             @Value(ProjectManagerConst.CODER_BASE_URL_SV) String coderBaseUrl,
             @Value(ProjectManagerConst.CODER_ORGANISATION_ID_SV) String coderOrganizationId,
             @Value(ProjectManagerConst.CODER_CREATE_PATH_SV) String coderCreatePath,
             @Value(ProjectManagerConst.CODER_DELETE_PATH_SV) String coderDeletePath,
             @Value(ProjectManagerConst.CODER_SESSION_TOKEN_SV) String coderSessionToken,
-            @Value(ProjectManagerConst.CODER_WORKSPACE_NAME_MAX_LENGTH_SV) int coderWorkspaceMaxLength) {
-        this.coderEnabled = coderEnabled;
+            @Value(ProjectManagerConst.CODER_WORKSPACE_NAME_MAX_LENGTH_SV) int coderWorkspaceMaxLength,
+            @Value(ProjectManagerConst.CODER_BEAM_ID_SUFFIX_SV) String coderBeamIdSuffix,
+            @Value(ProjectManagerConst.CODER_TEST_FILE_BEAM_ID_SV) String testCoderFileBeamId) {
         this.projectCoderRepository = projectCoderRepository;
         this.notificationService = notificationService;
         this.coderConfiguration = coderConfiguration;
@@ -72,6 +77,8 @@ public class CoderService {
 
         this.webClient = webClientFactory.createWebClient(coderBaseUrl);
         this.researchEnvironmentUrl = coderBaseUrl;
+        this.coderBeamIdSuffix = coderBeamIdSuffix;
+        this.testCoderFileBeamId = testCoderFileBeamId;
     }
 
     private String replaceVariablesInPath(String path, Map<String, String> pathVariables) {
@@ -88,21 +95,20 @@ public class CoderService {
         return "{" + variable + "}";
     }
 
+    @Override
     public Mono<ProjectCoder> createWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
-        if (coderEnabled) {
-            if (projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(projectBridgeheadUser).isEmpty()) {
-                ProjectCoder projectCoder = generateProjectCoder(projectBridgeheadUser);
-                CreateRequestBody createRequestBody = generateCreateRequestBody(projectCoder);
-                return createWorkspace(projectCoder, createRequestBody).flatMap(response -> {
-                    projectCoder.setWorkspaceId(response.getLatestBuild().getWorkspaceId());
-                    projectCoderRepository.save(projectCoder);
-                    notificationService.createNotification(projectBridgeheadUser.getProjectBridgehead().getProject(),
-                            projectBridgeheadUser.getProjectBridgehead().getBridgehead(), projectBridgeheadUser.getEmail(),
-                            OperationType.CREATE_CODER_WORKSPACE,
-                            "Created workspace " + projectCoder.getWorkspaceId(), null, null);
-                    return Mono.just(projectCoder);
-                });
-            }
+        if (projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(projectBridgeheadUser).isEmpty()) {
+            ProjectCoder projectCoder = generateProjectCoder(projectBridgeheadUser);
+            CreateRequestBody createRequestBody = generateCreateRequestBody(projectCoder);
+            return createWorkspace(projectCoder, createRequestBody).flatMap(response -> {
+                projectCoder.setWorkspaceId(response.getLatestBuild().getWorkspaceId());
+                projectCoderRepository.save(projectCoder);
+                notificationService.createNotification(projectBridgeheadUser.getProjectBridgehead().getProject(),
+                        projectBridgeheadUser.getProjectBridgehead().getBridgehead(), projectBridgeheadUser.getEmail(),
+                        OperationType.CREATE_CODER_WORKSPACE,
+                        "Created workspace " + projectCoder.getWorkspaceId(), null, null);
+                return Mono.just(projectCoder);
+            });
         }
         return Mono.empty();
     }
@@ -142,32 +148,28 @@ public class CoderService {
         return projectCoder;
     }
 
+    @Override
     public Flux<ProjectCoder> deleteAllWorkspaces(@NotNull String projectCode, @NotNull String bridgehead) {
         return Flux.fromIterable(projectCoderRepository.findDistinctByProjectCodeAndBridgeheadIfNotDeleted(projectCode, bridgehead))
                 .flatMap(this::deleteWorkspace);
     }
 
+    @Override
     public Mono<ProjectCoder> deleteWorkspace(@NotNull ProjectBridgeheadUser user) {
-        if (coderEnabled) {
-            Optional<ProjectCoder> projectCoder = projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
-            if (projectCoder.isPresent()) {
-                return deleteWorkspace(projectCoder.get());
-            }
-        }
-        return Mono.empty();
+        return projectCoderRepository.findFirstByProjectBridgeheadUserAndDeletedAtIsNullOrderByCreatedAtDesc(user)
+                .map(this::deleteWorkspace)
+                .orElseGet(Mono::empty);
     }
 
+    @Override
     public Mono<ProjectCoder> deleteWorkspace(@NotNull ProjectCoder projectCoder) {
-        if (coderEnabled) {
-            return deleteWorkspaceInCoder(projectCoder).doOnSuccess(_ -> {
-                projectCoder.setDeletedAt(Instant.now());
-                projectCoderRepository.save(projectCoder);
-                notificationService.createNotification(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
-                        projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(), projectCoder.getProjectBridgeheadUser().getEmail(), OperationType.DELETE_CODER_WORKSPACE,
-                        "Deleted workspace " + projectCoder.getWorkspaceId(), null, null);
-            }).flatMap(_ -> Mono.just(projectCoder));
-        }
-        return Mono.empty();
+        return deleteWorkspaceInCoder(projectCoder).doOnSuccess(_ -> {
+            projectCoder.setDeletedAt(Instant.now());
+            projectCoderRepository.save(projectCoder);
+            notificationService.createNotification(projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
+                    projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(), projectCoder.getProjectBridgeheadUser().getEmail(), OperationType.DELETE_CODER_WORKSPACE,
+                    "Deleted workspace " + projectCoder.getWorkspaceId(), null, null);
+        }).flatMap(_ -> Mono.just(projectCoder));
     }
 
     private Mono<Response> deleteWorkspaceInCoder(ProjectCoder projectCoder) {
@@ -244,6 +246,7 @@ public class CoderService {
         return email.substring(0, email.indexOf("@")).replace(".", "");
     }
 
+    @Override
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) {
         List<ProjectCoder> projectCoder = this.projectCoderRepository
                 .findByBridgeheadAndProjectCodeOrderedByCreatedAtDesc(bridgehead.getBridgehead(), project.getCode());
@@ -251,17 +254,31 @@ public class CoderService {
     }
 
 
+    @Override
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         List<ProjectCoder> projectCoders = this.projectCoderRepository.findByProjectBridgeheadUserOrderByCreatedAtDesc(projectBridgeheadUser);
         return !projectCoders.isEmpty() && projectCoders.getFirst().getDeletedAt() == null;
     }
 
+    @Override
     public List<ProjectCoder> fetchCoderOrderedByCreatedAtDesc(String projectCode, String bridgehead, String email) {
         return projectCoderRepository.findByBridgeheadAndProjectCodeAndEmailOrderedByCreatedAtDesc(bridgehead, projectCode, email);
     }
 
+    @Override
     public void saveCoder(ProjectCoder projectCoder) {
         projectCoderRepository.save(projectCoder);
+    }
+
+    @Override
+    public Optional<String> fetchResearchEnvironmentUrl() {
+        return Optional.of(researchEnvironmentUrl);
+    }
+
+    // Moved from ExporterService: the exporter sends the export file to the workspace's Beam app
+    @Override
+    public String fetchFileBeamId(@NotNull ProjectCoder projectCoder) {
+        return Objects.requireNonNullElseGet(testCoderFileBeamId, () -> projectCoder.getAppId() + ((coderBeamIdSuffix.startsWith(".")) ? "" : ".") + coderBeamIdSuffix);
     }
 
 }
