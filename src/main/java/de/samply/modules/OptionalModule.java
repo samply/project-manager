@@ -19,7 +19,7 @@ public enum OptionalModule {
     RESEARCH_ENVIRONMENT(ProjectManagerConst.ENABLE_RESEARCH_ENVIRONMENT),
     /** DataSHIELD: Opal tokens through the token manager; every user gets a research environment workspace. */
     DATASHIELD(ProjectManagerConst.ENABLE_DATASHIELD, RESEARCH_ENVIRONMENT),
-    /** Job that polls the exporter for the status of the exports (sending queries is always possible). */
+    /** Sends the scheduled queries to the bridgeheads through the exporter and follows the exports. */
     EXPORTER(ProjectManagerConst.ENABLE_EXPORTER),
     /** Feasibility queries to the bridgeheads through Beam. */
     FEASIBILITY(ProjectManagerConst.ENABLE_FEASIBILITY),

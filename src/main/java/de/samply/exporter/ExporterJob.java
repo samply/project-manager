@@ -1,11 +1,13 @@
 package de.samply.exporter;
 
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadExecution;
 import de.samply.email.EmailKeyValuesFactory;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
+import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryState;
@@ -13,7 +15,6 @@ import de.samply.user.UserService;
 import de.samply.user.roles.ProjectRole;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -24,11 +25,15 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * Sends the scheduled queries to the bridgeheads through the exporter and follows the exports until their results are
+ * there. Part of the optional module EXPORTER: without it, queries stay "to be sent".
+ */
 @Slf4j
 @Component
+@ModuleComponent(OptionalModule.EXPORTER)
 public class ExporterJob {
 
-    private final boolean enabled;
     private final Set<ProjectState> activeStates = Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL);
 
     // Services
@@ -41,13 +46,11 @@ public class ExporterJob {
 
 
     public ExporterJob(
-            @Value(ProjectManagerConst.ENABLE_EXPORTER_SV) boolean enabled,
             ExporterService exporterService,
             EmailService emailService,
             UserService userService,
             ProjectBridgeheadService projectBridgeheadService,
             EmailKeyValuesFactory emailKeyValuesFactory) {
-        this.enabled = enabled;
         this.exporterService = exporterService;
         this.projectBridgeheadService = projectBridgeheadService;
         this.emailService = emailService;
@@ -58,17 +61,15 @@ public class ExporterJob {
     @Scheduled(cron = ProjectManagerConst.EXPORTER_CRON_EXPRESSION_SV)
     @SchedulerLock(name = ProjectManagerConst.EXPORTER_JOB_NAME)
     public void checkExports() {
-        if (enabled) {
-            log.debug("Exporter Job started");
-            Mono.when(
-                    checkQueriesToSend(),
-                    checkQueriesToSendAndExecute(),
-                    checkQueriesAlreadySent(),
-                    checkQueriesAlreadySentToBeExecuted(),
-                    checkQueriesAlreadyExecutingStep1(),
-                    checkQueriesAlreadyExecutingStep2()).block();
-            log.debug("Exporter Job finished");
-        }
+        log.debug("Exporter Job started");
+        Mono.when(
+                checkQueriesToSend(),
+                checkQueriesToSendAndExecute(),
+                checkQueriesAlreadySent(),
+                checkQueriesAlreadySentToBeExecuted(),
+                checkQueriesAlreadyExecutingStep1(),
+                checkQueriesAlreadyExecutingStep2()).block();
+        log.debug("Exporter Job finished");
     }
 
     private Mono<Void> checkQueriesToSend() {

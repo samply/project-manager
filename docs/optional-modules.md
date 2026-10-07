@@ -17,7 +17,7 @@ used in this backend) and not a frontend module (`@FrontendSiteModule`, a part o
 |---|---|---|---|
 | `RESEARCH_ENVIRONMENT` | `ENABLE_RESEARCH_ENVIRONMENT` | - | Research environment workspaces, implemented with Coder; each workspace is registered as a Beam app (app register) |
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
-| `EXPORTER` | `ENABLE_EXPORTER` | - | Polls the exporter for the status of the exports (sending queries is always possible) |
+| `EXPORTER` | `ENABLE_EXPORTER` | - | Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; without it, queries stay "to be sent" |
 | `FEASIBILITY` | `ENABLE_FEASIBILITY` | - | Feasibility queries to the bridgeheads through Beam |
 | `EMAILS` | `ENABLE_EMAILS` | - | Sending emails |
 
@@ -54,4 +54,7 @@ Example: `FeasibilityService` (interface), `BeamFeasibilityService` (`@ModuleCom
 `@ConditionalOnMissingBean`: Spring only supports the latter reliably in auto-configuration, not on component-scanned
 classes. Whether a module is enabled (e.g. for the frontend): `OptionalModules.isEnabled(module)`.
 
-Status (2026-10-07): moved onto the mechanism: FEASIBILITY. Next: EXPORTER, DATASHIELD, RESEARCH_ENVIRONMENT, EMAILS.
+`EXPORTER` shows the event way: `ProjectBridgeheadService` publishes `SendQueryToBridgeheadEvent`, and
+`ExporterJobTrigger` (in the module) listens. When the module is disabled there is no listener - nothing to stand in for.
+
+Status (2026-10-07): moved onto the mechanism: FEASIBILITY, EXPORTER. Next: DATASHIELD, RESEARCH_ENVIRONMENT, EMAILS.
