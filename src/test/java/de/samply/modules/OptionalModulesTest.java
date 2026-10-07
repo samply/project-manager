@@ -1,6 +1,7 @@
 package de.samply.modules;
 
 import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ModuleStandIn;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ class OptionalModulesTest {
     void createsModuleComponentsWhenTheModuleIsEnabledOrUnset() {
         contextRunner.withPropertyValues("ENABLE_FEASIBILITY=true", RESEARCH_ENVIRONMENT_TEST_URL)
                 .run(context -> assertThat(context).hasSingleBean(FeasibilityBean.class)
+                        .doesNotHaveBean(DisabledFeasibilityBean.class)
                         .hasSingleBean(ResearchEnvironmentBean.class));
     }
 
@@ -32,6 +34,7 @@ class OptionalModulesTest {
     void doesNotCreateModuleComponentsWhenTheModuleIsDisabled() {
         contextRunner.withPropertyValues("ENABLE_FEASIBILITY=false", RESEARCH_ENVIRONMENT_TEST_URL)
                 .run(context -> assertThat(context).doesNotHaveBean(FeasibilityBean.class)
+                        .hasSingleBean(DisabledFeasibilityBean.class)
                         .hasSingleBean(ResearchEnvironmentBean.class));
     }
 
@@ -61,6 +64,9 @@ class OptionalModulesTest {
     static class FeasibilityBean {
     }
 
+    static class DisabledFeasibilityBean {
+    }
+
     record ResearchEnvironmentBean(String url) {
     }
 
@@ -71,6 +77,12 @@ class OptionalModulesTest {
         @ModuleComponent(OptionalModule.FEASIBILITY)
         FeasibilityBean feasibilityBean() {
             return new FeasibilityBean();
+        }
+
+        @Bean
+        @ModuleStandIn(OptionalModule.FEASIBILITY)
+        DisabledFeasibilityBean disabledFeasibilityBean() {
+            return new DisabledFeasibilityBean();
         }
 
     }

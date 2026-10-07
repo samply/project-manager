@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FeasibilityServiceTest {
+class BeamFeasibilityServiceTest {
 
     private static final String PROJECT_MANAGER_ID = "project-manager.central.broker";
     private static final String BEAM_API_KEY = "beam-secret";
@@ -96,11 +96,6 @@ class FeasibilityServiceTest {
                 .startsWith("/v1/tasks/" + request.get("id").asText() + "/results?")
                 .contains("wait_time=" + RESULT_WAIT_TIME)
                 .contains("wait_count=1");
-    }
-
-    @Test
-    void exposesWhetherFeasibilityIsEnabled() {
-        assertThat(createService().isEnabled()).isTrue();
     }
 
     @Test
@@ -180,20 +175,11 @@ class FeasibilityServiceTest {
     }
 
     @Test
-    void doesNotContactBeamWhenFeasibilityIsDisabled() {
-        StepVerifier.create(createService(false).fetchFeasibility(project(), projectBridgehead()))
-                .verifyComplete();
-
-        assertThat(postedTask.get()).isNull();
-        assertThat(resultRequestCount.get()).isZero();
-    }
-
-    @Test
     void returnsResolvedTestResultInsteadOfContactingBeamWhenConfigured() {
         String template = "[{\"label\": \"Patients\", \"value\": {{INTEGER}}}, "
                 + "{\"label\": \"Samples\", \"value\": {{INTEGER}}}]";
 
-        StepVerifier.create(createService(true, template).fetchFeasibility(project(), projectBridgehead()))
+        StepVerifier.create(createService(template).fetchFeasibility(project(), projectBridgehead()))
                 .assertNext(result -> {
                     assertThat(result.isArray()).isTrue();
                     assertThat(result.get(0).get("label").asText()).isEqualTo("Patients");
@@ -207,22 +193,11 @@ class FeasibilityServiceTest {
         assertThat(resultRequestCount.get()).isZero();
     }
 
-    @Test
-    void ignoresTestResultWhenFeasibilityIsDisabled() {
-        StepVerifier.create(createService(false, "[{\"label\": \"Patients\", \"value\": {{INTEGER}}}]")
-                        .fetchFeasibility(project(), projectBridgehead()))
-                .verifyComplete();
-    }
-
     private FeasibilityService createService() {
-        return createService(true, "");
+        return createService("");
     }
 
-    private FeasibilityService createService(boolean enabled) {
-        return createService(enabled, "");
-    }
-
-    private FeasibilityService createService(boolean enabled, String testFeasibilityResult) {
+    private FeasibilityService createService(String testFeasibilityResult) {
         BridgeheadsConfiguration bridgeheadConfiguration = new BridgeheadsConfiguration();
         BridgeheadsConfiguration.BridgeheadConfig config = new BridgeheadsConfiguration.BridgeheadConfig();
         config.setFocusBeamId(FOCUS_BEAM_ID);
@@ -233,9 +208,9 @@ class FeasibilityServiceTest {
         WebClient webClient = WebClient.builder()
                 .baseUrl("http://localhost:" + server.getAddress().getPort())
                 .build();
-        return new FeasibilityService(webClient, beamService, PROJECT_MANAGER_ID,
+        return new BeamFeasibilityService(webClient, beamService, PROJECT_MANAGER_ID,
                 BEAM_API_KEY, FEASIBILITY_TTL, RESULT_WAIT_TIME, RESULT_MAX_TRIES,
-                FOCUS_PROJECT, enabled, testFeasibilityResult);
+                FOCUS_PROJECT, testFeasibilityResult);
     }
 
     private Project project() {

@@ -27,6 +27,8 @@ import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
 import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
+import de.samply.modules.OptionalModule;
+import de.samply.modules.OptionalModules;
 import de.samply.form.core.DtoFormService;
 import de.samply.form.core.FormService;
 import de.samply.form.template.FormTemplateService;
@@ -121,6 +123,7 @@ public class ProjectManagerController {
     private final FeasibilityMapper feasibilityMapper;
     private final DisplayFormatService displayFormatService;
     private final ActionsBatchService actionsBatchService;
+    private final OptionalModules optionalModules;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -150,7 +153,8 @@ public class ProjectManagerController {
                                     FeasibilityService feasibilityService,
                                     FeasibilityMapper feasibilityMapper,
                                     DisplayFormatService displayFormatService,
-                                    ActionsBatchService actionsBatchService) {
+                                    ActionsBatchService actionsBatchService,
+                                    OptionalModules optionalModules) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -180,6 +184,7 @@ public class ProjectManagerController {
         this.feasibilityMapper = feasibilityMapper;
         this.displayFormatService = displayFormatService;
         this.actionsBatchService = actionsBatchService;
+        this.optionalModules = optionalModules;
     }
 
     @CacheCategory(CacheResource.PUBLIC_INFORMATION)
@@ -349,7 +354,7 @@ public class ProjectManagerController {
     @GetMapping(value = ProjectManagerConst.IS_FEASIBILITY_ENABLED,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity isFeasibilityEnabled() {
-        return convertToResponseEntity(feasibilityService::isEnabled);
+        return convertToResponseEntity(() -> optionalModules.isEnabled(OptionalModule.FEASIBILITY));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,

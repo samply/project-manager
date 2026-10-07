@@ -11,6 +11,8 @@ import de.samply.db.model.ProjectBridgehead;
 import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
 import de.samply.frontend.dto.FeasibilityItem;
+import de.samply.modules.OptionalModule;
+import de.samply.modules.OptionalModules;
 import de.samply.project.state.ProjectState;
 import de.samply.query.QueryFormat;
 import de.samply.user.roles.OrganisationRole;
@@ -40,6 +42,9 @@ class ProjectManagerControllerFeasibilityTest {
 
     @Mock
     private FeasibilityMapper feasibilityMapper;
+
+    @Mock
+    private OptionalModules optionalModules;
 
     @InjectMocks
     private ProjectManagerController controller;
@@ -72,13 +77,13 @@ class ProjectManagerControllerFeasibilityTest {
         assertThat(endpoint.getAnnotation(FrontendAction.class).action())
                 .isEqualTo(ProjectManagerConst.IS_FEASIBILITY_ENABLED_ACTION);
 
-        when(feasibilityService.isEnabled()).thenReturn(true);
+        when(optionalModules.isEnabled(OptionalModule.FEASIBILITY)).thenReturn(true);
 
         ResponseEntity response = controller.isFeasibilityEnabled();
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isEqualTo("true");
-        verify(feasibilityService).isEnabled();
+        verify(optionalModules).isEnabled(OptionalModule.FEASIBILITY);
     }
 
     @Test

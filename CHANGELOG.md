@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First version of the project
 - Optional modules (`OptionalModule`, `@ModuleComponent`): beans of a disabled module are not created; start stops if an enabled module requires a disabled one; start-up log of the enabled modules (docs/optional-modules.md)
 - ENABLE_RESEARCH_ENVIRONMENT (formerly ENABLE_CODER) and ENABLE_DATASHIELD (formerly ENABLE_TOKEN_MANAGER), without fallback to the former names. App register follows ENABLE_RESEARCH_ENVIRONMENT; ENABLE_APP_REGISTER is no longer read
+- Feasibility as optional module: FeasibilityService interface, BeamFeasibilityService, DisabledFeasibilityService (@ModuleStandIn)
 - Spring Application
 - State Machine for a project
 - Project states and event states

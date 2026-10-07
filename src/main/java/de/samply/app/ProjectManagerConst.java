@@ -627,7 +627,6 @@ public class ProjectManagerConst {
             HEAD_SV + MAILING_BLACK_LIST_FILE_PATH + ":" + BOTTOM_SV;
     public final static String ENABLE_DATASHIELD_SV = HEAD_SV + ENABLE_DATASHIELD + ":true" + BOTTOM_SV;
     public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;
-    public final static String ENABLE_FEASIBILITY_SV = HEAD_SV + ENABLE_FEASIBILITY + ":true" + BOTTOM_SV;
     public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
             HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 * * * * *'}" + BOTTOM_SV;
     public final static String EXPORTER_CRON_EXPRESSION_SV =

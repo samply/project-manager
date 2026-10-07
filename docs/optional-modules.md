@@ -42,11 +42,16 @@ every bean.
 1. Put `@ModuleComponent(OptionalModule.X)` on every bean that only exists for module X: its service implementation,
    its jobs, its configuration. Spring creates them only when X is enabled.
 2. Code outside the module depends on an **interface**, never on the implementation. Next to the real implementation
-   (`@ModuleComponent(X)`) there is a **disabled stand-in** that implements the same interface and is created when the
-   module is disabled. Per method it does nothing (side effects, logged at debug), returns a neutral value (answers the
+   (`@ModuleComponent(X)`) there is a **disabled stand-in** (`@ModuleStandIn(X)`) that implements the same interface
+   and is created when the module is disabled. Per method it does nothing (side effects, logged at debug), returns a neutral value (answers the
    UI shows), or throws `IllegalStateException` (calls that are a programming error when the module is disabled).
 3. For a new module: side effects are better triggered by events (`@EventListener` in the module) than by calls from
    outside - a disabled module then has no listener, and needs no stand-in for them.
 4. Add the module to `OptionalModule`, with its variable and the modules it requires, and to the table above.
 
-Status (2026-10-07): the mechanism exists (step 1 of the plan); the modules are being moved onto it one by one.
+Example: `FeasibilityService` (interface), `BeamFeasibilityService` (`@ModuleComponent(FEASIBILITY)`) and
+`DisabledFeasibilityService` (`@ModuleStandIn(FEASIBILITY)`). Use `@ModuleStandIn` for the stand-in, not
+`@ConditionalOnMissingBean`: Spring only supports the latter reliably in auto-configuration, not on component-scanned
+classes. Whether a module is enabled (e.g. for the frontend): `OptionalModules.isEnabled(module)`.
+
+Status (2026-10-07): moved onto the mechanism: FEASIBILITY. Next: EXPORTER, DATASHIELD, RESEARCH_ENVIRONMENT, EMAILS.
