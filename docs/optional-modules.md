@@ -65,5 +65,7 @@ classes. Whether a module is enabled (e.g. for the frontend): `OptionalModules.i
 module that requires X. Everything else must use the module's interface. It finds a forgotten dependency without
 starting the backend.
 
-Status (2026-10-07): moved onto the mechanism: FEASIBILITY, EXPORTER, RESEARCH_ENVIRONMENT (and the DataSHIELD job).
-Next: DATASHIELD (token manager service), EMAILS.
+`DATASHIELD`: the interface `DataShieldService` only has what the controller needs (project status, authentication
+script); the DataSHIELD job belongs to the same module and uses `DataShieldTokenManagerService` directly.
+
+Status (2026-10-07): moved onto the mechanism: FEASIBILITY, EXPORTER, RESEARCH_ENVIRONMENT, DATASHIELD. Next: EMAILS.

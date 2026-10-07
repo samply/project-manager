@@ -10,7 +10,7 @@ import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.cache.CacheCategory;
 import de.samply.cache.CacheConfiguration;
 import de.samply.cache.CacheResource;
-import de.samply.datashield.DataShieldTokenManagerService;
+import de.samply.datashield.DataShieldService;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectDocument;
@@ -102,7 +102,7 @@ public class ProjectManagerController {
     private final DocumentService documentService;
     private final DtoDocumentService dtoDocumentService;
     private final ExporterService exporterService;
-    private final DataShieldTokenManagerService dataShieldTokenManagerService;
+    private final DataShieldService dataShieldService;
     private final ProjectService projectService;
     private final DtoProjectService dtoProjectService;
     private final ProjectBridgeheadService projectBridgeheadService;
@@ -133,7 +133,7 @@ public class ProjectManagerController {
                                     DocumentService documentService,
                                     DtoDocumentService dtoDocumentService,
                                     ExporterService exporterService,
-                                    DataShieldTokenManagerService dataShieldTokenManagerService,
+                                    DataShieldService dataShieldService,
                                     ProjectService projectService,
                                     DtoProjectService dtoProjectService,
                                     ProjectBridgeheadService projectBridgeheadService,
@@ -163,7 +163,7 @@ public class ProjectManagerController {
         this.documentService = documentService;
         this.dtoDocumentService = dtoDocumentService;
         this.exporterService = exporterService;
-        this.dataShieldTokenManagerService = dataShieldTokenManagerService;
+        this.dataShieldService = dataShieldService;
         this.projectService = projectService;
         this.dtoProjectService = dtoProjectService;
         this.projectBridgeheadService = projectBridgeheadService;
@@ -2291,7 +2291,7 @@ public class ProjectManagerController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" +
                         ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_PREFIX + project.getCode()
                         + ProjectManagerConst.AUTHENTICATION_SCRIPT_FILENAME_SUFFIX + "\"")
-                .body(this.dataShieldTokenManagerService.fetchAuthenticationScript(project, bridgehead));
+                .body(this.dataShieldService.fetchAuthenticationScript(project, bridgehead));
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL,
@@ -2307,7 +2307,7 @@ public class ProjectManagerController {
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(
-                () -> this.dataShieldTokenManagerService.fetchProjectStatus(project, bridgehead).block());
+                () -> this.dataShieldService.fetchProjectStatus(project, bridgehead).block());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.DEVELOPER, ProjectRole.PILOT, ProjectRole.FINAL})
@@ -2322,7 +2322,7 @@ public class ProjectManagerController {
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(
-                () -> this.dataShieldTokenManagerService.existsAuthenticationScript(project, bridgehead));
+                () -> this.dataShieldService.existsAuthenticationScript(project, bridgehead));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})

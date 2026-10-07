@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Feasibility as optional module: FeasibilityService interface, BeamFeasibilityService, DisabledFeasibilityService (@ModuleStandIn)
 - Exporter as optional module: ExporterJob and ExporterJobTrigger (the listener of SendQueryToBridgeheadEvent, moved out of QueryEventService) only exist when ENABLE_EXPORTER is not false
 - Research environment as optional module: ResearchEnvironmentService interface, CoderResearchEnvironmentService (formerly CoderService), DisabledResearchEnvironmentService; AppRegisterService, CoderJob and CoderConfiguration (coder/*.json) only exist when ENABLE_RESEARCH_ENVIRONMENT is not false; the Beam ID of the workspace for the file transfer comes from the research environment (CODER_BEAM_ID_SUFFIX, CODER_TEST_FILE_BEAM_ID no longer read by ExporterService); the research environment URL in emails only when enabled
-- DataShieldTokenManagerJob only exists when ENABLE_DATASHIELD is not false
+- DataSHIELD as optional module: DataShieldService interface (what the controller needs), DataShieldTokenManagerService, DisabledDataShieldService; DataShieldTokenManagerJob; TOKEN_MANAGER_URL only needed when ENABLE_DATASHIELD is not false
 - ModuleDependenciesTest: only classes of the same (or a requiring) module may inject a module class
 - Spring Application
 - State Machine for a project

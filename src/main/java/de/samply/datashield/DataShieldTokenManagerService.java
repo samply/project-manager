@@ -1,5 +1,7 @@
 package de.samply.datashield;
 
+import de.samply.annotations.ModuleComponent;
+import de.samply.modules.OptionalModule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -44,9 +46,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * DataSHIELD through the token manager: creates, refreshes and removes the users' Opal tokens and provides their
+ * authentication script. Part of the optional module DATASHIELD. The controller uses it through {@link DataShieldService};
+ * the DataSHIELD job (same module) uses it directly.
+ */
 @Service
 @Slf4j
-public class DataShieldTokenManagerService {
+@ModuleComponent(OptionalModule.DATASHIELD)
+public class DataShieldTokenManagerService implements DataShieldService {
 
 
     // Services
@@ -60,8 +68,6 @@ public class DataShieldTokenManagerService {
 
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
-    private final boolean isTokenManagerActive;
-
     private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     public DataShieldTokenManagerService(SessionUser sessionUser,
@@ -70,23 +76,17 @@ public class DataShieldTokenManagerService {
                                          ProjectBridgeheadService projectBridgeheadService,
                                          ProjectBridgeheadUserService projectBridgeheadUserService,
                                          NotificationService notificationService,
-                                         BridgeheadsConfiguration bridgeheadsConfiguration,
-                                         @Value(ProjectManagerConst.ENABLE_DATASHIELD_SV) boolean isTokenManagerActive) {
+                                         BridgeheadsConfiguration bridgeheadsConfiguration) {
         this.sessionUser = sessionUser;
         this.webClientFactory = webClientFactory;
         this.projectBridgeheadService = projectBridgeheadService;
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.notificationService = notificationService;
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
-        this.isTokenManagerActive = isTokenManagerActive;
         this.webClient = webClientFactory.createWebClient(tokenManagerUrl);
     }
 
     public Mono<Void> generateTokensInOpal(@NotNull Project project, @NotNull ProjectBridgehead bridgehead, @NotNull String email, Supplier<Mono> ifSuccessMonoSupplier) throws DataShieldTokenManagerServiceException {
-        if (!isTokenManagerActive) {
-            log.error("Token manager is not active. It couldn't generate token in opal for project {} and bridgehead {} and user {}", project.getCode(), bridgehead.getBridgehead(), email);
-            return Mono.empty();
-        }
         List<ProjectBridgehead> bridgeheads = List.of(bridgehead);
         List<String> tokenManagerIds = fetchTokenManagerIds(bridgeheads);
         if (!tokenManagerIds.isEmpty()) {
@@ -150,9 +150,6 @@ public class DataShieldTokenManagerService {
     }
 
     public Mono<DataShieldTokenManagerTokenStatus> fetchTokenStatus(@NotNull Project project, @NotNull ProjectBridgehead bridgehead, @NotNull String email) {
-        if (!isTokenManagerActive) {
-            return Mono.just(new DataShieldTokenManagerTokenStatus(project.getCode(), bridgehead.getBridgehead(), email, null, DataShieldProjectStatus.INACTIVE, DataShieldTokenStatus.INACTIVE));
-        }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
             String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKEN_STATUS)
@@ -189,10 +186,8 @@ public class DataShieldTokenManagerService {
         }
     }
 
+    @Override
     public Mono<DataShieldTokenManagerProjectStatus> fetchProjectStatus(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) {
-        if (!isTokenManagerActive) {
-            return Mono.just(new DataShieldTokenManagerProjectStatus(project.getCode(), bridgehead.getBridgehead(), DataShieldProjectStatus.INACTIVE));
-        }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
             log.debug("Fetching DataSHIELD project status for project {} and bridgehead {}", project, bridgehead);
@@ -216,10 +211,8 @@ public class DataShieldTokenManagerService {
         }
     }
 
+    @Override
     public Resource fetchAuthenticationScript(Project project, ProjectBridgehead bridgehead) throws DataShieldTokenManagerServiceException {
-        if (!isTokenManagerActive) {
-            return new ByteArrayResource("Token Manager inactive".getBytes());
-        }
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(project, bridgehead, sessionUser.getEmail()));
         if (!tokenManagerIds.isEmpty()) {
             log.debug("Fetching authentication script for project {} and bridgehead {}", project, bridgehead);
@@ -237,10 +230,8 @@ public class DataShieldTokenManagerService {
         throw new DataShieldTokenManagerServiceException("Script could not be generated for project " + project + " and user " + sessionUser.getEmail());
     }
 
+    @Override
     public Boolean existsAuthenticationScript(Project project, ProjectBridgehead bridgehead) {
-        if (!isTokenManagerActive) {
-            return false;
-        }
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(project, bridgehead, sessionUser.getEmail()));
         log.debug("Checking if authentication script exists for project {} and bridgehead {}", project, bridgehead);
         return Boolean.valueOf(webClient.post()
@@ -260,10 +251,6 @@ public class DataShieldTokenManagerService {
 
 
     public Mono<Void> refreshToken(@NotNull Project project, @NotNull ProjectBridgehead bridgehead, @NotNull String email, Supplier<Mono> ifSuccessMonoSupplier) throws DataShieldTokenManagerServiceException {
-        if (!isTokenManagerActive) {
-            log.error("Token Manager inactive in project manager. It couldn't refresh token for project {} and bridgehead {} and user {}", project, bridgehead, email);
-            return Mono.empty();
-        }
         List<String> tokenManagerIds = fetchTokenManagerIds(fetchProjectBridgeheads(project, bridgehead, email));
         if (!tokenManagerIds.isEmpty()) {
             TokenParams tokenParams = new TokenParams(email, project.getCode(), tokenManagerIds);
@@ -286,10 +273,6 @@ public class DataShieldTokenManagerService {
     }
 
     public Mono<Void> removeTokens(@NotNull Project project, @NotNull ProjectBridgehead bridgehead, @NotNull String email, Supplier<Mono> ifSuccessMonoSupplier) {
-        if (!isTokenManagerActive) {
-            log.error("Token Manager inactive in project manager. It couldn't remove tokens for project {} and bridgehead {} and user {}", project, bridgehead, email);
-            return Mono.empty();
-        }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
             String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_TOKENS)
@@ -315,10 +298,6 @@ public class DataShieldTokenManagerService {
     }
 
     public Mono<Void> removeProjectAndTokens(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) {
-        if (!isTokenManagerActive) {
-            log.error("Token Manager inactive in project manager. It cannot remove tokens for project {} and bridgehead {}", project, bridgehead);
-            return Mono.empty();
-        }
         Optional<String> tokenManagerId = fetchTokenManagerId(bridgehead);
         if (tokenManagerId.isPresent()) {
             String uri = UriComponentsBuilder.fromPath(ProjectManagerConst.TOKEN_MANAGER_ROOT + ProjectManagerConst.TOKEN_MANAGER_PROJECT)

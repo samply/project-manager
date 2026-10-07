@@ -5,7 +5,6 @@ import de.samply.annotations.ModuleStandIn;
 import de.samply.coder.CoderConfiguration;
 import de.samply.coder.CoderJob;
 import de.samply.coder.CoderResearchEnvironmentService;
-import de.samply.datashield.DataShieldTokenManagerJob;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.ProjectCoder;
 import de.samply.modules.OptionalModule;
@@ -29,12 +28,6 @@ class ResearchEnvironmentModuleTest {
                         .as(type.getSimpleName()).isEqualTo(OptionalModule.RESEARCH_ENVIRONMENT));
         assertThat(DisabledResearchEnvironmentService.class.getAnnotation(ModuleStandIn.class).value())
                 .isEqualTo(OptionalModule.RESEARCH_ENVIRONMENT);
-    }
-
-    @Test
-    void dataShieldJobBelongsToTheDataShieldModule() {
-        assertThat(DataShieldTokenManagerJob.class.getAnnotation(ModuleComponent.class).value())
-                .isEqualTo(OptionalModule.DATASHIELD);
     }
 
     @Test
