@@ -1,6 +1,7 @@
 package de.samply.email.attachment;
 
 import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleTest;
 import de.samply.db.model.Project;
 import de.samply.form.template.FormTemplateService;
 import de.samply.modules.OptionalModule;
@@ -13,6 +14,8 @@ import java.util.Optional;
 @Slf4j
 @Service
 @ConditionalOnModule(OptionalModule.EMAILS)
+// Also in test mode: the emails are rendered and logged instead of sent
+@ConditionalOnModuleTest(OptionalModule.EMAILS)
 public class AttachmentFileService {
 
     private final FormTemplateService formTemplateService;

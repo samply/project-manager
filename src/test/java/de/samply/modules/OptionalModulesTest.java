@@ -70,10 +70,10 @@ class OptionalModulesTest {
 
     @Test
     void stopsTheStartOnTestModeOfAModuleWithoutOne() {
-        contextRunner.withPropertyValues("ENABLE_EMAILS=test", RESEARCH_ENVIRONMENT_TEST_URL)
+        contextRunner.withPropertyValues("ENABLE_DATASHIELD=test", RESEARCH_ENVIRONMENT_TEST_URL)
                 .run(context -> assertThat(context).hasFailed().getFailure()
                         .rootCause()
-                        .hasMessageContaining("ENABLE_EMAILS=test: module EMAILS has no test mode"));
+                        .hasMessageContaining("ENABLE_DATASHIELD=test: module DATASHIELD has no test mode"));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package de.samply.aop;
 
 import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleTest;
 import de.samply.annotations.EmailSender;
 import de.samply.annotations.EmailSenderIfError;
 import de.samply.annotations.EmailSenders;
@@ -37,6 +38,8 @@ import java.util.function.Supplier;
 @Component
 @Aspect
 @ConditionalOnModule(OptionalModule.EMAILS)
+// Also in test mode: the emails are rendered and logged instead of sent
+@ConditionalOnModuleTest(OptionalModule.EMAILS)
 public class EmailSenderAspect {
 
     // Services

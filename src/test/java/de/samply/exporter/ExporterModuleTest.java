@@ -5,9 +5,16 @@ import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.modules.OptionalModule;
 import de.samply.project.SendQueryToBridgeheadEvent;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.util.ClassUtils;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,6 +37,29 @@ class ExporterModuleTest {
                 .isEqualTo(OptionalModule.EXPORTER);
         assertThat(ExporterQueryLabelTemplate.class.getAnnotation(ConditionalOnModule.class).value())
                 .isEqualTo(OptionalModule.EXPORTER);
+    }
+
+    // The real classes under Spring's own condition evaluation, for each value of ENABLE_EXPORTER
+    @ParameterizedTest
+    @CsvSource({
+            "true, BeamExporterService",
+            "test, TestExporterService",
+            "false, DisabledExporterService"
+    })
+    void eachModeCreatesItsExporterService(String mode, String expectedService) {
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false,
+                new MockEnvironment().withProperty("ENABLE_EXPORTER", mode));
+        scanner.addIncludeFilter(new AssignableTypeFilter(ExporterService.class));
+        scanner.addIncludeFilter(new AssignableTypeFilter(ExporterJob.class));
+        scanner.addIncludeFilter(new AssignableTypeFilter(ExporterJobTrigger.class));
+
+        List<String> found = scanner.findCandidateComponents("de.samply.exporter").stream()
+                .map(candidate -> ClassUtils.getShortName(candidate.getBeanClassName()))
+                .toList();
+
+        // The job and its trigger run in the real and in the test mode
+        assertThat(found).containsExactlyInAnyOrderElementsOf("false".equals(mode)
+                ? List.of(expectedService) : List.of(expectedService, "ExporterJob", "ExporterJobTrigger"));
     }
 
     @Test

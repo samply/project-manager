@@ -26,8 +26,11 @@ public enum OptionalModule {
 
     /** Beam: the connection to the bridgeheads that feasibility and exporter share. Implicit. */
     BEAM(null),
-    /** Sends the scheduled queries to the bridgeheads through the exporter and follows the exports. */
-    EXPORTER(ProjectManagerConst.ENABLE_EXPORTER, BEAM),
+    /**
+     * Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; test mode: the
+     * queries go through all their states without Beam, nothing is exported.
+     */
+    EXPORTER(ProjectManagerConst.ENABLE_EXPORTER, true, BEAM),
     /** Feasibility queries to the bridgeheads through Beam; test mode: random results from TEST_FEASIBILITY_RESULT. */
     FEASIBILITY(ProjectManagerConst.ENABLE_FEASIBILITY, true, BEAM),
     /**
@@ -37,8 +40,11 @@ public enum OptionalModule {
     RESEARCH_ENVIRONMENT(ProjectManagerConst.ENABLE_RESEARCH_ENVIRONMENT, EXPORTER),
     /** DataSHIELD: Opal tokens through the token manager; every user gets a research environment workspace. */
     DATASHIELD(ProjectManagerConst.ENABLE_DATASHIELD, RESEARCH_ENVIRONMENT),
-    /** Sending emails (rendering the templates is always possible). */
-    EMAILS(ProjectManagerConst.ENABLE_EMAILS);
+    /**
+     * Sending emails (rendering the templates is always possible); test mode: everything runs as when sending, but the
+     * emails are written to the log (EMAILS_TEST_LOG: summary or full).
+     */
+    EMAILS(ProjectManagerConst.ENABLE_EMAILS, true);
 
     private final String enableVariable;
     private final boolean withTestMode;

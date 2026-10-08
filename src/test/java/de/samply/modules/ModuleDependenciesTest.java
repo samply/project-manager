@@ -56,17 +56,23 @@ class ModuleDependenciesTest {
 
         assertThat(violations).isEmpty();
 
-        // The real implementation of an interface with a disabled implementation is @Primary, or IntelliJ reports two candidates
-        List<Class<?>> standIns = components.stream().filter(component -> component.isAnnotationPresent(ConditionalOnModuleDisabled.class)).toList();
-        List<String> notPrimary = components.stream()
-                .filter(component -> component.isAnnotationPresent(ConditionalOnModule.class))
-                .filter(component -> standIns.stream().anyMatch(standIn -> Arrays.stream(standIn.getInterfaces())
-                        .anyMatch(standInInterface -> standInInterface.isAssignableFrom(component))))
-                .filter(component -> !component.isAnnotationPresent(Primary.class))
+        // An interface with several module implementations (real, test, disabled) needs exactly one @Primary, or
+        // IntelliJ reports several candidates - at runtime only one of them exists (module conditions)
+        List<Class<?>> moduleImplementations = components.stream()
+                .filter(component -> !fetchModes(component).isEmpty() || component.isAnnotationPresent(ConditionalOnModuleDisabled.class))
+                .toList();
+        List<String> withoutOnePrimary = moduleImplementations.stream()
+                .flatMap(component -> Arrays.stream(component.getInterfaces()))
+                .distinct()
+                .filter(moduleInterface -> moduleImplementations.stream().filter(moduleInterface::isAssignableFrom).count() > 1)
+                .filter(moduleInterface -> moduleImplementations.stream()
+                        .filter(moduleInterface::isAssignableFrom)
+                        .filter(component -> component.isAnnotationPresent(Primary.class))
+                        .count() != 1)
                 .map(Class::getSimpleName)
                 .toList();
-        assertThat(standIns).isNotEmpty();
-        assertThat(notPrimary).isEmpty();
+        assertThat(moduleImplementations).isNotEmpty();
+        assertThat(withoutOnePrimary).isEmpty();
     }
 
     @Test

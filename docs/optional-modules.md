@@ -17,11 +17,11 @@ module with a test implementation (`ModuleMode`); any other value stops the star
 | Module | Variable | Requires | What it does |
 |---|---|---|---|
 | `BEAM` | - (implicit) | - | Beam (`BeamService`), shared by exporter and feasibility; `BEAM_URL`, `BEAM_API_KEY`, `BEAM_PROJECT_MANAGER_ID` |
-| `EXPORTER` | `ENABLE_EXPORTER` | `BEAM` | Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; without it, queries stay "to be sent". Exporter templates, `EXPORTER_QUERY_LABEL_TEMPLATE` |
+| `EXPORTER` | `ENABLE_EXPORTER` (also `test`) | `BEAM` | Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; without it, queries stay "to be sent". Exporter templates, `EXPORTER_QUERY_LABEL_TEMPLATE`. `test`: the real `ExporterJob` moves the queries through all their states with `TestExporterService`, without Beam; nothing is exported (fixed template "test", fake response and execution ID) |
 | `FEASIBILITY` | `ENABLE_FEASIBILITY` (also `test`) | `BEAM` | Feasibility queries to the bridgeheads through Beam, mapped with `FEASIBILITY_MAPPING`. `test`: random results from the template `TEST_FEASIBILITY_RESULT`, without Beam (development) |
 | `RESEARCH_ENVIRONMENT` | `ENABLE_RESEARCH_ENVIRONMENT` | `EXPORTER` | Research environment workspaces, implemented with Coder; each workspace is registered as a Beam app (app register); the exporter transfers the export files into them |
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
-| `EMAILS` | `ENABLE_EMAILS` | - | Sending emails through SMTP, including the `@EmailSender` emails of the controller; rendering the templates (`EmailService`) is always possible |
+| `EMAILS` | `ENABLE_EMAILS` (also `test`) | - | Sending emails through SMTP, including the `@EmailSender` emails of the controller; rendering the templates (`EmailService`) is always possible. `test`: everything runs as when sending, but the email is written to the log - `EMAILS_TEST_LOG`: `summary` (receiver and kind, default) or `full` (also subject, text, attachments) |
 
 DataSHIELD implies the research environment, and the research environment the exporter - not the other way round. If
 an enabled module requires a disabled one, the backend does not start and says which variable to change.
@@ -147,11 +147,13 @@ The interface of a module holds every operation that belongs to its concept, not
 code may need them later, and the module's own classes depend on the interface too.
 
 `EMAILS`: `EmailService` only renders the templates (always there: the Credentials Sharing Tool shows rendered
-templates without sending them); sending goes through `EmailSendingService` (`SmtpEmailSendingService` or
-`DisabledEmailSendingService`, which logs the email). The SMTP beans (`MailSenderConfiguration`) belong to the module,
-so the SMTP settings are only needed with emails enabled. So do `EmailSenderAspect` (the `@EmailSender` annotations
-do nothing with emails disabled), `AttachmentFileService` and the email executor (`@ConditionalOnModule` on its `@Bean`
-method). (The interface is not called `EmailSender`: that name is
+templates without sending them); sending goes through `EmailSendingService` (`TemplateEmailSendingService` or
+`DisabledEmailSendingService`, which logs the email). `TemplateEmailSendingService` (modes `true` and `test`) checks the
+blacklist, renders, adds the attachments and the notification, and hands the email to an `EmailTransport`:
+`SmtpEmailTransport` (`true`) or `LogEmailTransport` (`test`) - only the delivery differs between the two modes. The
+SMTP beans (`MailSenderConfiguration`) belong to mode `true`, so the SMTP settings are only needed then.
+`EmailSenderAspect` (the `@EmailSender` annotations do nothing with emails disabled), `AttachmentFileService` and the
+email executor (`@ConditionalOnModule` and `@ConditionalOnModuleTest` on its `@Bean` method) belong to both modes. (The interface is not called `EmailSender`: that name is
 taken by the annotation `@EmailSender`.)
 
 Status (2026-10-08): all modules use the mechanism; BEAM is implicit; FEASIBILITY has a test mode.

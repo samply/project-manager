@@ -476,6 +476,7 @@ public class ProjectManagerConst {
     public final static String FOCUS_LENS_PROJECT = "FOCUS_LENS_PROJECT";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
+    public final static String EMAILS_TEST_LOG = "EMAILS_TEST_LOG";
     public final static String MAILING_BLACK_LIST_FILE_PATH = "MAILING_BLACK_LIST_FILE_PATH";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
     public final static String EXPORTER_CRON_EXPRESSION = "EXPORTER_CRON_EXPRESSION";
@@ -670,6 +671,7 @@ public class ProjectManagerConst {
     public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":en" + BOTTOM_SV;
 
     public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS + ":" + BOTTOM_SV;
+    public final static String EMAILS_TEST_LOG_SV = HEAD_SV + EMAILS_TEST_LOG + ":summary" + BOTTOM_SV;
 
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64_SV = HEAD_SV + DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 + BOTTOM_SV;
     public final static String DB_ENCRYPTION_ALGORITHM_SV = HEAD_SV + DB_ENCRYPTION_ALGORITHM + ":AES" + BOTTOM_SV;

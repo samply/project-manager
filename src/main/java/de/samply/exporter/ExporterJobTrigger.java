@@ -1,6 +1,7 @@
 package de.samply.exporter;
 
 import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleTest;
 import de.samply.app.ProjectManagerConst;
 import de.samply.modules.OptionalModule;
 import de.samply.project.SendQueryToBridgeheadEvent;
@@ -19,6 +20,8 @@ import java.time.Instant;
 @Slf4j
 @Component
 @ConditionalOnModule(OptionalModule.EXPORTER)
+// Also in test mode: it moves the queries through their states with TestExporterService
+@ConditionalOnModuleTest(OptionalModule.EXPORTER)
 public class ExporterJobTrigger {
 
     private final ExporterJob exporterJob;
