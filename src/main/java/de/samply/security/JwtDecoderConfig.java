@@ -1,5 +1,6 @@
 package de.samply.security;
 
+import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
@@ -15,10 +16,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.util.retry.Retry;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -27,9 +32,13 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class JwtDecoderConfig {
 
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(5);
+    private static final int MAX_RETRIES = 2;
+    private static final Duration RETRY_BACKOFF = Duration.ofSeconds(1);
+
     private final WebClient webClient;
     private final AtomicReference<JWKSet> jwkSetRef = new AtomicReference<>();
-    private final String jwksUri;
+    private volatile String jwksUri;
 
     public JwtDecoderConfig(
             @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String issuerUri,
@@ -41,15 +50,8 @@ public class JwtDecoderConfig {
 
         this.webClient = webClientFactory.createWebClient(issuerUri);
 
-        JsonNode config = webClient.get()
-                .uri("/.well-known/openid-configuration")
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block(Duration.ofSeconds(5));
-
-        this.jwksUri = Objects.requireNonNull(config).required("jwks_uri").asString();
-        log.info("JWKS URI: {}", jwksUri);
-
+        // Don't fail startup if the SSO is temporarily unavailable: keys are fetched lazily on first use
+        // and by the scheduled refresh.
         refreshJwks();
     }
 
@@ -58,7 +60,17 @@ public class JwtDecoderConfig {
      */
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
-        return (selector, _) -> selector.select(jwkSetRef.get());
+        return (selector, _) -> {
+            JWKSet jwkSet = jwkSetRef.get();
+            if (jwkSet == null) {
+                refreshJwks();
+                jwkSet = jwkSetRef.get();
+            }
+            if (jwkSet == null) {
+                throw new KeySourceException("JWKS not available (SSO unreachable)");
+            }
+            return selector.select(jwkSet);
+        };
     }
 
     /**
@@ -81,24 +93,57 @@ public class JwtDecoderConfig {
     }
 
     /**
-     * Refresh JWKS every X ms (default 5 min)
+     * Refresh JWKS every X ms (default 5 min).
+     * On failure the previously cached JWKS is kept.
      */
     @Scheduled(fixedDelayString = "${security.jwt.jwks-refresh-ms:300000}")
-    public void refreshJwks() {
+    public synchronized void refreshJwks() {
         try {
-            String json = webClient.get()
-                    .uri(jwksUri)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(5));
+            if (jwksUri == null) {
+                JsonNode config = fetch("/.well-known/openid-configuration", JsonNode.class);
+                jwksUri = Objects.requireNonNull(config).required("jwks_uri").asString();
+                log.info("JWKS URI: {}", jwksUri);
+            }
 
+            String json = fetch(jwksUri, String.class);
             if (json != null && !json.isBlank()) {
                 JWKSet jwkSet = JWKSet.parse(json);
                 jwkSetRef.set(jwkSet);
                 log.debug("JWKS refreshed, keys: {}", jwkSet.getKeys().size());
             }
         } catch (Exception e) {
-            log.error("Failed to refresh JWKS", e);
+            String cacheState = jwkSetRef.get() != null ? "keeping cached JWKS" : "no JWKS cached yet";
+            if (isTransient(e)) {
+                log.warn("Failed to refresh JWKS ({}): {}", cacheState, e.getMessage());
+            } else {
+                log.error("Failed to refresh JWKS ({})", cacheState, e);
+            }
         }
+    }
+
+    private <T> T fetch(String uri, Class<T> type) {
+        return webClient.get()
+                .uri(uri)
+                .retrieve()
+                .bodyToMono(type)
+                .timeout(REQUEST_TIMEOUT)
+                .retryWhen(Retry.backoff(MAX_RETRIES, RETRY_BACKOFF)
+                        .filter(JwtDecoderConfig::isTransient)
+                        .onRetryExhaustedThrow((_, signal) -> signal.failure()))
+                .block();
+    }
+
+    private static boolean isTransient(Throwable e) {
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause instanceof WebClientResponseException responseException) {
+                return responseException.getStatusCode().is5xxServerError();
+            }
+            if (cause instanceof WebClientRequestException || cause instanceof TimeoutException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 }

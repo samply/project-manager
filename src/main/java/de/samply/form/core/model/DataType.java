@@ -14,6 +14,8 @@ public enum DataType {
     DOUBLE(Double.class),
     BOOLEAN(Boolean.class),
     STRING(String.class),
+    // A String that must be an e-mail address (see FormFieldValueValidator)
+    EMAIL(String.class),
     LONG_STRING(String.class),
     ENUM(String.class),
     DATE(LocalDate.class),

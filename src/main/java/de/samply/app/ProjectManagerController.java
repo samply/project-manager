@@ -29,6 +29,7 @@ import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
 import de.samply.form.core.DtoFormService;
 import de.samply.form.core.FormService;
+import de.samply.form.core.InvalidFormFieldValueException;
 import de.samply.form.template.FormTemplateService;
 import de.samply.frontend.FrontendConfiguration;
 import de.samply.frontend.FrontendService;
@@ -2438,6 +2439,8 @@ public class ProjectManagerController {
         try {
             runnable.run();
             return ResponseEntity.ok().build();
+        } catch (InvalidFormFieldValueException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return createInternalServerError(e);
         }

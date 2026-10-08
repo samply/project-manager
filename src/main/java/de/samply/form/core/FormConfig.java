@@ -348,11 +348,12 @@ public class FormConfig {
             }
             if (field.getPlaceholder() != null && !field.getPlaceholder().isBlank()
                     && field.getDataType() != DataType.STRING
+                    && field.getDataType() != DataType.EMAIL
                     && field.getDataType() != DataType.LONG_STRING) {
                 throw new IllegalArgumentException(
                         "Invalid form configuration in " + configFile + " at form '"
                                 + form.getTitle() + "', field '" + field.getLabel()
-                                + "': placeholder is only supported for STRING and LONG_STRING fields");
+                                + "': placeholder is only supported for STRING, EMAIL and LONG_STRING fields");
             }
         });
     }

@@ -5,6 +5,7 @@ import de.samply.db.model.ProjectForm;
 import de.samply.db.model.ProjectFormField;
 import de.samply.db.repository.ProjectFormFieldRepository;
 import de.samply.db.repository.ProjectFormRepository;
+import de.samply.form.core.model.FormFieldConfig;
 import de.samply.frontend.dto.FormField;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
@@ -66,9 +67,13 @@ public class FormService {
         if (formFields.isEmpty() || formFields.get().length == 0) {
             return;
         }
+        FormField[] normalizedFormFields = Arrays.stream(formFields.get())
+                .map(this::normalizeFormFieldValue)
+                .toArray(FormField[]::new);
+        validateFormFieldValues(normalizedFormFields);
         Map<String, ProjectFormField> labelFormMap = projectFormFieldRepository.findByProject(project).stream()
                 .collect(Collectors.toMap(this::fetchFieldKey, Function.identity()));
-        Arrays.stream(formFields.get()).forEach(formField -> {
+        Arrays.stream(normalizedFormFields).forEach(formField -> {
             ProjectFormField projectFormField = labelFormMap.get(fetchFieldKey(formField));
             boolean isModified = false;
             String details =
@@ -111,6 +116,33 @@ public class FormService {
                 projectFormField.setModifiedAt(Instant.now());
                 projectFormFieldRepository.save(projectFormField);
             }
+        });
+    }
+
+    // The value as it is saved, e.g. " 5" as "5" (see FormFieldValueValidator.normalize),
+    // according to the data type of its field as configured.
+    private FormField normalizeFormFieldValue(FormField formField) {
+        FormFieldConfig config = formConfig.fetchFormFieldConfig(formField.title(), formField.label());
+        if (config == null) {
+            return formField;
+        }
+        String value = FormFieldValueValidator.normalize(config.getDataType(), formField.value());
+        return Objects.equals(value, formField.value()) ? formField : formField.toBuilder().value(value).build();
+    }
+
+    // Rejects the whole edit when a value does not match the data type of its
+    // field, as configured (not as sent by the client). Before anything is saved.
+    private void validateFormFieldValues(FormField[] formFields) {
+        Arrays.stream(formFields).forEach(formField -> {
+            FormFieldConfig config = formConfig.fetchFormFieldConfig(formField.title(), formField.label());
+            if (config == null) {
+                return;
+            }
+            FormFieldValueValidator.fetchInvalidValueMessage(config.getDataType(), formField.value())
+                    .ifPresent(message -> {
+                        throw new InvalidFormFieldValueException(
+                                "Field '" + formField.label() + "' of form '" + formField.title() + "': " + message);
+                    });
         });
     }
 

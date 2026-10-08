@@ -61,6 +61,16 @@ class FormDefinitionComparatorTest {
     }
 
     @Test
+    void aStringFieldMayBecomeAnEmailFieldButNotBack() {
+        String email = RECORDED.replace("{\"label\": \"lead_name\", \"data_type\": \"STRING\"",
+                "{\"label\": \"lead_name\", \"data_type\": \"EMAIL\"");
+
+        assertThat(compare(RECORDED, email)).isEmpty();
+        assertThat(compare(email, RECORDED)).extracting(FormDefinitionConflict::describe).containsExactly(
+                "Form \"project\", field \"lead_name\": data_type changed: EMAIL -> STRING");
+    }
+
+    @Test
     void reportsEveryIncompatibleChange() {
         String current = RECORDED
                 .replace("{\"label\": \"title\", \"data_type\": \"STRING\"", "{\"label\": \"title\", \"data_type\": \"INTEGER\"")

@@ -63,6 +63,7 @@ class TestFeasibilityResultResolver {
             case DOUBLE -> String.valueOf(Math.round(random.nextDouble() * 100_000d) / 100d);
             case BOOLEAN -> String.valueOf(random.nextBoolean());
             case STRING, LONG_STRING, ENUM -> quoted("test-" + UUID.randomUUID());
+            case EMAIL -> quoted("test-" + UUID.randomUUID() + "@example.org");
             case DATE -> quoted(LocalDate.now().minusDays(random.nextInt(RANDOM_DAYS_RANGE)).toString());
             case TIMESTAMP -> quoted(Instant.now()
                     .minus(random.nextInt(RANDOM_DAYS_RANGE), ChronoUnit.DAYS).toString());

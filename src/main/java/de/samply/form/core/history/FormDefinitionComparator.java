@@ -29,7 +29,8 @@ import java.util.stream.Stream;
  * mandatory, condition, placeholder, display format, layouts, active - may
  * change freely. Compatible changes: a new field, a new allowed value,
  * {@code multiple} (of a field or a block) from false to true, and data_type
- * STRING to LONG_STRING. For FIXED fields (no stored values) only a switch to
+ * STRING to LONG_STRING or EMAIL (stored values stay; an EMAIL value that is
+ * not an e-mail address is shown as not valid and must be corrected). For FIXED fields (no stored values) only a switch to
  * or from DYNAMIC counts.
  */
 public final class FormDefinitionComparator {
@@ -82,7 +83,8 @@ public final class FormDefinitionComparator {
         String dataTypeBefore = text(before, ProjectManagerConst.FORM_CONFIG_DATA_TYPE, null);
         String dataTypeAfter = text(after, ProjectManagerConst.FORM_CONFIG_DATA_TYPE, null);
         if (!Objects.equals(dataTypeBefore, dataTypeAfter)
-                && !("STRING".equals(dataTypeBefore) && "LONG_STRING".equals(dataTypeAfter))) {
+                && !("STRING".equals(dataTypeBefore)
+                && ("LONG_STRING".equals(dataTypeAfter) || "EMAIL".equals(dataTypeAfter)))) {
             conflicts.add(new FormDefinitionConflict(formTitle, label, Kind.DATA_TYPE_CHANGED, dataTypeBefore, dataTypeAfter));
         }
 
