@@ -2,8 +2,10 @@ package de.samply.beam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
+import de.samply.modules.OptionalModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -12,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@ModuleComponent(OptionalModule.BEAM)
 public class BeamService {
 
     private final String projectManagerId;

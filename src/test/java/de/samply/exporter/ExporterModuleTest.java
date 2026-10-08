@@ -1,6 +1,7 @@
 package de.samply.exporter;
 
 import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ModuleStandIn;
 import de.samply.modules.OptionalModule;
 import de.samply.project.SendQueryToBridgeheadEvent;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.scheduling.TaskScheduler;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -20,6 +22,30 @@ class ExporterModuleTest {
     void jobAndTriggerBelongToTheExporterModule() {
         assertThat(ExporterJob.class.getAnnotation(ModuleComponent.class).value()).isEqualTo(OptionalModule.EXPORTER);
         assertThat(ExporterJobTrigger.class.getAnnotation(ModuleComponent.class).value()).isEqualTo(OptionalModule.EXPORTER);
+    }
+
+    @Test
+    void beamImplementationBelongsToTheExporterModule() {
+        assertThat(BeamExporterService.class.getAnnotation(ModuleComponent.class).value())
+                .isEqualTo(OptionalModule.EXPORTER);
+        assertThat(ExporterQueryLabelTemplate.class.getAnnotation(ModuleComponent.class).value())
+                .isEqualTo(OptionalModule.EXPORTER);
+    }
+
+    @Test
+    void standInReplacesItWhenTheModuleIsDisabled() {
+        assertThat(DisabledExporterService.class.getAnnotation(ModuleStandIn.class).value())
+                .isEqualTo(OptionalModule.EXPORTER);
+    }
+
+    @Test
+    void standInHasNoTemplatesAndNoTransfer() {
+        DisabledExporterService standIn = new DisabledExporterService();
+
+        assertThat(standIn.getExporterTemplates()).isEmpty();
+        assertThat(standIn.isExportFileTransferredToResearchEnvironment("REQ-2026-0001", "site-a")).isFalse();
+        assertThatThrownBy(() -> standIn.transferFileToResearchEnvironment("REQ-2026-0001", "site-a"))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test

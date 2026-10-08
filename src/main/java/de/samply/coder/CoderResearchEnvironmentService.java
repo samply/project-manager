@@ -209,6 +209,7 @@ public class CoderResearchEnvironmentService implements ResearchEnvironmentServi
         Arrays.stream(createRequestBody.getRichParameterValues()).forEach(parameter -> CoderParam.replaceParameters(parameter, projectCoder));
     }
 
+    @Override
     public String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
         String email = projectBridgeheadUser.getEmail().substring(0, projectBridgeheadUser.getEmail().indexOf("@")).replaceAll("[^a-zA-Z0-9]", "");
         // Coder workspace names and Beam app IDs only accept alphanumeric characters here

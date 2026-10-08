@@ -2,8 +2,10 @@ package de.samply.feasibility;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.frontend.dto.FeasibilityItem;
+import de.samply.modules.OptionalModule;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.thisptr.jackson.jq.BuiltinFunctionLoader;
@@ -17,8 +19,12 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Maps the bridgehead's feasibility answer to the items the frontend shows (FEASIBILITY_MAPPING, a jq expression).
+ */
 @Slf4j
 @Component
+@ModuleComponent(OptionalModule.FEASIBILITY)
 public class FeasibilityMapper {
 
     private final String mapping;

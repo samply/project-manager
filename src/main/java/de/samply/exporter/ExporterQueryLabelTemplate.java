@@ -1,6 +1,8 @@
 package de.samply.exporter;
 
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
+import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@ModuleComponent(OptionalModule.EXPORTER)
 public class ExporterQueryLabelTemplate {
 
     // Not "#{...}": Spring would evaluate that itself while injecting the environment variable

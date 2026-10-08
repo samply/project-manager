@@ -24,7 +24,6 @@ import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailService;
 import de.samply.email.EmailTemplateType;
 import de.samply.exporter.ExporterService;
-import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
 import de.samply.modules.OptionalModule;
 import de.samply.modules.OptionalModules;
@@ -120,7 +119,6 @@ public class ProjectManagerController {
     private final FrontendConfiguration frontendConfiguration;
     private final CacheConfiguration cacheConfiguration;
     private final FeasibilityService feasibilityService;
-    private final FeasibilityMapper feasibilityMapper;
     private final DisplayFormatService displayFormatService;
     private final ActionsBatchService actionsBatchService;
     private final OptionalModules optionalModules;
@@ -151,7 +149,6 @@ public class ProjectManagerController {
                                     FrontendConfiguration frontendConfiguration,
                                     CacheConfiguration cacheConfiguration,
                                     FeasibilityService feasibilityService,
-                                    FeasibilityMapper feasibilityMapper,
                                     DisplayFormatService displayFormatService,
                                     ActionsBatchService actionsBatchService,
                                     OptionalModules optionalModules) {
@@ -181,7 +178,6 @@ public class ProjectManagerController {
         this.frontendConfiguration = frontendConfiguration;
         this.cacheConfiguration = cacheConfiguration;
         this.feasibilityService = feasibilityService;
-        this.feasibilityMapper = feasibilityMapper;
         this.displayFormatService = displayFormatService;
         this.actionsBatchService = actionsBatchService;
         this.optionalModules = optionalModules;
@@ -229,7 +225,7 @@ public class ProjectManagerController {
     }
 
     // Several read actions (GET endpoints) in one request: {"requests": {id: {"action": ..., "params": {...}}}}.
-    // POST only because browsers send no body with GET; it changes nothing. Every entry is answered on its own,
+    // POST only because browsers send nobody with GET; it changes nothing. Every entry is answered on its own,
     // with the response or the error of its endpoint, so the batch itself is answered with 200 - unless it has more
     // entries than allowed: then it is refused as a whole (docs/actions-batch-security.md).
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.ACTIONS_MODULE)
@@ -372,9 +368,7 @@ public class ProjectManagerController {
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return convertToResponseEntity(() ->
-                feasibilityService.fetchFeasibility(project, bridgehead)
-                        .map(feasibilityMapper::map)
-                        .block());
+                feasibilityService.fetchFeasibility(project, bridgehead).block());
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,

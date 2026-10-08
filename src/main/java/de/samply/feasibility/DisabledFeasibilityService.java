@@ -1,14 +1,16 @@
 package de.samply.feasibility;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import de.samply.annotations.ModuleStandIn;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
+import de.samply.frontend.dto.FeasibilityItem;
 import de.samply.modules.OptionalModule;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 /**
  * Stand-in while the module FEASIBILITY is disabled: no result. The frontend asks first whether feasibility is enabled
@@ -20,7 +22,7 @@ import reactor.core.publisher.Mono;
 public class DisabledFeasibilityService implements FeasibilityService {
 
     @Override
-    public Mono<JsonNode> fetchFeasibility(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) {
+    public Mono<List<FeasibilityItem>> fetchFeasibility(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) {
         log.debug("Feasibility is disabled: no result for project {} and bridgehead {}", project.getCode(),
                 bridgehead.getBridgehead());
         return Mono.empty();

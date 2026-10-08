@@ -21,7 +21,7 @@ public class OptionalModuleCondition extends SpringBootCondition {
         OptionalModule module = (standIn ? annotations.get(ModuleStandIn.class) : annotations.get(ModuleComponent.class))
                 .getEnum("value", OptionalModule.class);
         boolean enabled = module.isEnabled(context.getEnvironment());
-        String message = "Optional module " + module + " (" + module.getEnableVariable() + ") "
+        String message = "Optional module " + module + " (" + module.describeSwitch() + ") "
                 + (enabled ? "enabled" : "disabled") + (standIn ? ": stand-in" : "");
         return enabled != standIn ? ConditionOutcome.match(message) : ConditionOutcome.noMatch(message);
     }

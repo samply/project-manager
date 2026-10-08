@@ -20,7 +20,8 @@ class OptionalModulesTest {
     private static final String RESEARCH_ENVIRONMENT_TEST_URL = "RESEARCH_ENVIRONMENT_TEST_URL=http://coder";
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withUserConfiguration(OptionalModules.class, FeasibilityComponents.class, ResearchEnvironmentComponents.class);
+            .withUserConfiguration(OptionalModules.class, FeasibilityComponents.class, ResearchEnvironmentComponents.class,
+                    BeamComponents.class);
 
     @Test
     void createsModuleComponentsWhenTheModuleIsEnabledOrUnset() {
@@ -53,11 +54,34 @@ class OptionalModulesTest {
     }
 
     @Test
+    void stopsTheStartWhenTheResearchEnvironmentIsEnabledWithoutTheExporter() {
+        contextRunner.withPropertyValues("ENABLE_EXPORTER=false", "ENABLE_DATASHIELD=false", RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> assertThat(context).hasFailed().getFailure()
+                        .rootCause()
+                        .hasMessageContaining("RESEARCH_ENVIRONMENT (ENABLE_RESEARCH_ENVIRONMENT) requires EXPORTER (ENABLE_EXPORTER)"));
+    }
+
+    @Test
+    void implicitModuleIsEnabledByAModuleThatRequiresIt() {
+        contextRunner.withPropertyValues("ENABLE_EXPORTER=false", "ENABLE_FEASIBILITY=true",
+                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
+                .run(context -> assertThat(context).hasNotFailed().hasSingleBean(BeamBean.class));
+    }
+
+    @Test
+    void implicitModuleIsDisabledWithoutAModuleThatRequiresIt() {
+        contextRunner.withPropertyValues("ENABLE_EXPORTER=false", "ENABLE_FEASIBILITY=false",
+                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
+                .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(BeamBean.class));
+    }
+
+    @Test
     void logsTheEnabledModulesWithTheirBeans(CapturedOutput output) {
         contextRunner.withPropertyValues("ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false", "ENABLE_EMAILS=false")
                 .run(context -> {
                     context.getBean(OptionalModules.class).logEnabledModules();
-                    assertThat(output).contains("Enabled optional modules: EXPORTER, FEASIBILITY (FeasibilityBean)");
+                    assertThat(output).contains("Enabled optional modules: BEAM (BeamBean) [through EXPORTER, FEASIBILITY], "
+                            + "EXPORTER, FEASIBILITY (FeasibilityBean)");
                 });
     }
 
@@ -68,6 +92,9 @@ class OptionalModulesTest {
     }
 
     record ResearchEnvironmentBean(String url) {
+    }
+
+    static class BeamBean {
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -95,6 +122,17 @@ class OptionalModulesTest {
         ResearchEnvironmentBean researchEnvironmentBean(
                 @Value("${RESEARCH_ENVIRONMENT_TEST_URL}") String url) {
             return new ResearchEnvironmentBean(url);
+        }
+
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class BeamComponents {
+
+        @Bean
+        @ModuleComponent(OptionalModule.BEAM)
+        BeamBean beamBean() {
+            return new BeamBean();
         }
 
     }

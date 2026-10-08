@@ -15,14 +15,19 @@ used in this backend) and not a frontend module (`@FrontendSiteModule`, a part o
 
 | Module | Variable | Requires | What it does |
 |---|---|---|---|
-| `RESEARCH_ENVIRONMENT` | `ENABLE_RESEARCH_ENVIRONMENT` | - | Research environment workspaces, implemented with Coder; each workspace is registered as a Beam app (app register) |
+| `BEAM` | - (implicit) | - | Beam (`BeamService`), shared by exporter and feasibility; `BEAM_URL`, `BEAM_API_KEY`, `BEAM_PROJECT_MANAGER_ID` |
+| `EXPORTER` | `ENABLE_EXPORTER` | `BEAM` | Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; without it, queries stay "to be sent". Exporter templates, `EXPORTER_QUERY_LABEL_TEMPLATE` |
+| `FEASIBILITY` | `ENABLE_FEASIBILITY` | `BEAM` | Feasibility queries to the bridgeheads through Beam, mapped with `FEASIBILITY_MAPPING` |
+| `RESEARCH_ENVIRONMENT` | `ENABLE_RESEARCH_ENVIRONMENT` | `EXPORTER` | Research environment workspaces, implemented with Coder; each workspace is registered as a Beam app (app register); the exporter transfers the export files into them |
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
-| `EXPORTER` | `ENABLE_EXPORTER` | - | Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; without it, queries stay "to be sent" |
-| `FEASIBILITY` | `ENABLE_FEASIBILITY` | - | Feasibility queries to the bridgeheads through Beam |
-| `EMAILS` | `ENABLE_EMAILS` | - | Sending emails through SMTP; rendering the templates (`EmailService`) is always possible |
+| `EMAILS` | `ENABLE_EMAILS` | - | Sending emails through SMTP, including the `@EmailSender` emails of the controller; rendering the templates (`EmailService`) is always possible |
 
-DataSHIELD implies the research environment; the research environment works without DataSHIELD. If an enabled module
-requires a disabled one, the backend does not start and says which variable to change.
+DataSHIELD implies the research environment, and the research environment the exporter - not the other way round. If
+an enabled module requires a disabled one, the backend does not start and says which variable to change.
+
+An **implicit** module has no variable: it is enabled exactly when a module that requires it is enabled (`BEAM` with
+`EXPORTER` or `FEASIBILITY`), so it can never be "required but disabled". A module may only require modules declared
+before it in the enum.
 
 Renamed 2026-10-07, without fallback: `ENABLE_CODER` is now `ENABLE_RESEARCH_ENVIRONMENT`, `ENABLE_TOKEN_MANAGER` is now
 `ENABLE_DATASHIELD`, and `ENABLE_APP_REGISTER` is no longer read (app register is part of the research environment).
@@ -31,11 +36,29 @@ An old name left in a deployment is ignored, and the module is then enabled (the
 At start-up the backend logs the enabled modules with their beans:
 
 ```
-Enabled optional modules: EXPORTER (ExporterJob), FEASIBILITY (FeasibilityServiceImpl), EMAILS (...)
+Enabled optional modules: BEAM (BeamService) [through EXPORTER, FEASIBILITY], EXPORTER (BeamExporterService, ...), FEASIBILITY (BeamFeasibilityService, FeasibilityMapper), EMAILS (...)
 ```
 
 The disabled ones are logged at debug level. Spring's condition report (start with `--debug`) shows the decision for
 every bean.
+
+## Why custom annotations and not plain `@ConditionalOnBooleanProperty`
+
+Decided 2026-10-08. `@ModuleComponent` / `@ModuleStandIn` are built on Spring's own mechanism (`@Conditional`): the
+small `OptionalModuleCondition` turns the enum into the real Spring condition, and the result also appears in Spring's
+condition report. Plain Spring (`@ConditionalOnBooleanProperty(name = ENABLE_X, matchIfMissing = true)` on each real
+bean, `havingValue = false` on each stand-in) would do for a single module, but not for what the enum adds:
+
+- the default ("enabled if unset") and the variable are stated once per module, not on every bean;
+- dependencies between modules, checked at start (with stand-ins, a wrong combination would otherwise start silently
+  with the stand-in);
+- implicit modules (BEAM), which plain Spring could only express as a `@ConditionalOnExpression` string repeating the
+  defaults and the dependency;
+- the one-line start-up log and `ModuleDependenciesTest`, which read the module directly from the annotation;
+- the compiler checks the module name (a mistyped property name compiles and makes a bean that is always on).
+
+Annotation values must be compile-time constants, so `"ENABLE_" + OptionalModule.X` cannot be used in an annotation
+anyway; the enum keeps the variable name next to the module.
 
 ## How to make something part of a module
 
@@ -59,22 +82,33 @@ classes. Whether a module is enabled (e.g. for the frontend): `OptionalModules.i
 
 `EXPORTER` shows the event way: `ProjectBridgeheadService` publishes `SendQueryToBridgeheadEvent`, and
 `ExporterJobTrigger` (in the module) listens. When the module is disabled there is no listener - nothing to stand in for.
+The interface `ExporterService` has every export operation (send, execute, follow the export, execution ID, templates,
+transfer of the export file into a workspace), not only what today's callers use: `BeamExporterService` implements it,
+`DisabledExporterService` stands in (no templates; the job's operations and the transfer are programming errors without
+the module). Everyone, the module's own job included, depends on the interface.
 
 `RESEARCH_ENVIRONMENT`: the interface `ResearchEnvironmentService` lives in the neutral package
 `de.samply.researchenvironment` (with its stand-in), the Coder implementation `CoderResearchEnvironmentService` in
 `de.samply.coder` - another implementation can replace Coder without touching the callers.
 
 `ModuleDependenciesTest` checks the whole codebase: a class of module X may only be injected by classes of X or of a
-module that requires X. Everything else must use the module's interface. It finds a forgotten dependency without
-starting the backend.
+module that requires X (directly or through other modules). Everything else must use the module's interface. It finds a
+forgotten dependency without starting the backend. It also reports the opposite: a class outside every module that only
+module classes inject - it probably belongs to one of them.
 
-`DATASHIELD`: the interface `DataShieldService` only has what the controller needs (project status, authentication
-script); the DataSHIELD job belongs to the same module and uses `DataShieldTokenManagerService` directly.
+`DATASHIELD`: the interface `DataShieldService` has every DataSHIELD operation (tokens, their status, the bridgeheads
+they cover, project status, authentication script); the controller and the DataSHIELD job use it. The stand-in answers
+INACTIVE and has no script and no bridgeheads; the job's token operations fail without the module.
+
+The interface of a module holds every operation that belongs to its concept, not only what today's callers use: other
+code may need them later, and the module's own classes depend on the interface too.
 
 `EMAILS`: `EmailService` only renders the templates (always there: the Credentials Sharing Tool shows rendered
 templates without sending them); sending goes through `EmailSendingService` (`SmtpEmailSendingService` or
 `DisabledEmailSendingService`, which logs the email). The SMTP beans (`MailSenderConfiguration`) belong to the module,
-so the SMTP settings are only needed with emails enabled. (The interface is not called `EmailSender`: that name is
+so the SMTP settings are only needed with emails enabled. So do `EmailSenderAspect` (the `@EmailSender` annotations
+do nothing with emails disabled), `AttachmentFileService` and the email executor (`@ModuleComponent` on its `@Bean`
+method). (The interface is not called `EmailSender`: that name is
 taken by the annotation `@EmailSender`.)
 
-Status (2026-10-07): all modules use the mechanism.
+Status (2026-10-08): all modules use the mechanism; BEAM is implicit.

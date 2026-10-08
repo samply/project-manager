@@ -1,7 +1,9 @@
 package de.samply.email.attachment;
 
+import de.samply.annotations.ModuleComponent;
 import de.samply.db.model.Project;
 import de.samply.form.template.FormTemplateService;
+import de.samply.modules.OptionalModule;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@ModuleComponent(OptionalModule.EMAILS)
 public class AttachmentFileService {
 
     private final FormTemplateService formTemplateService;

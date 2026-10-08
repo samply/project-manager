@@ -25,6 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * module that requires it, may inject it; everything else must depend on the module's interface (real implementation or
  * stand-in). Otherwise the backend would not start with the module disabled - this finds it without starting. The real
  * implementation of such an interface must be @Primary, so that the IDE does not report two candidates.
+ * <p>
+ * The other way round: a class outside every module that only classes of modules inject probably belongs to a module -
+ * with the module disabled it would be created for nothing and might still need its configuration.
  */
 class ModuleDependenciesTest {
 
@@ -65,9 +68,44 @@ class ModuleDependenciesTest {
         assertThat(notPrimary).isEmpty();
     }
 
+    @Test
+    void classesOnlyInjectedByModulesBelongToAModule() {
+        List<Class<?>> components = Stream.of(true, false)
+                .flatMap(enabled -> scanComponents(enabled).stream())
+                .distinct()
+                .toList();
+
+        // Spring Data repositories (e.g. ProjectCoderRepository, only used by the research environment) are interfaces
+        // and not scanned here; they need no configuration
+        List<String> moduleOnly = components.stream()
+                .filter(component -> fetchModule(component).isEmpty() && !component.isAnnotationPresent(ModuleStandIn.class))
+                .flatMap(component -> {
+                    List<Class<?>> injectors = fetchInjectors(component, components);
+                    return injectors.isEmpty() || injectors.stream().anyMatch(injector -> fetchModule(injector).isEmpty())
+                            ? Stream.empty()
+                            : Stream.of(component.getSimpleName() + " is only injected by modules "
+                            + injectors.stream().map(injector -> fetchModule(injector).orElseThrow()).distinct().sorted().toList()
+                            + " - does it belong to one of them?");
+                })
+                .toList();
+
+        assertThat(moduleOnly).isEmpty();
+    }
+
+    private List<Class<?>> fetchInjectors(Class<?> component, List<Class<?>> components) {
+        return components.stream()
+                .filter(injector -> injector != component)
+                .filter(injector -> Arrays.stream(injector.getDeclaredConstructors())
+                        .flatMap(constructor -> Arrays.stream(constructor.getParameterTypes()))
+                        .anyMatch(dependency -> dependency != Object.class && dependency.isAssignableFrom(component)))
+                .toList();
+    }
+
     private List<Class<?>> scanComponents(boolean modulesEnabled) {
         MockEnvironment environment = new MockEnvironment();
+        // An implicit module has no variable: it follows the modules that require it
         Arrays.stream(OptionalModule.values())
+                .filter(module -> !module.isImplicit())
                 .forEach(module -> environment.setProperty(module.getEnableVariable(), String.valueOf(modulesEnabled)));
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false, environment);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Component.class));
@@ -79,7 +117,7 @@ class ModuleDependenciesTest {
 
     private boolean mayInject(Optional<OptionalModule> componentModule, OptionalModule dependencyModule) {
         return componentModule
-                .map(module -> module == dependencyModule || module.getRequiredModules().contains(dependencyModule))
+                .map(module -> module == dependencyModule || module.requires(dependencyModule))
                 .orElse(false);
     }
 

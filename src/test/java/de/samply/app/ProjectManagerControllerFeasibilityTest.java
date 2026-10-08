@@ -1,6 +1,5 @@
 package de.samply.app;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.annotations.FrontendAction;
 import de.samply.annotations.ProjectConstraints;
@@ -8,7 +7,6 @@ import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
-import de.samply.feasibility.FeasibilityMapper;
 import de.samply.feasibility.FeasibilityService;
 import de.samply.frontend.dto.FeasibilityItem;
 import de.samply.modules.OptionalModule;
@@ -39,9 +37,6 @@ class ProjectManagerControllerFeasibilityTest {
 
     @Mock
     private FeasibilityService feasibilityService;
-
-    @Mock
-    private FeasibilityMapper feasibilityMapper;
 
     @Mock
     private OptionalModules optionalModules;
@@ -87,13 +82,11 @@ class ProjectManagerControllerFeasibilityTest {
     }
 
     @Test
-    void returnsFocusResultDirectly() throws Exception {
+    void returnsTheMappedFeasibility() throws Exception {
         Project project = new Project();
         ProjectBridgehead bridgehead = new ProjectBridgehead();
-        JsonNode rawResult = objectMapper.readTree("{\"total\":42}");
         List<FeasibilityItem> mappedResult = List.of(new FeasibilityItem("patients", 42L, null));
-        when(feasibilityService.fetchFeasibility(project, bridgehead)).thenReturn(Mono.just(rawResult));
-        when(feasibilityMapper.map(rawResult)).thenReturn(mappedResult);
+        when(feasibilityService.fetchFeasibility(project, bridgehead)).thenReturn(Mono.just(mappedResult));
 
         ResponseEntity response = controller.fetchFeasibility(project, bridgehead);
 
@@ -101,6 +94,5 @@ class ProjectManagerControllerFeasibilityTest {
         assertThat(objectMapper.readTree((String) response.getBody()))
                 .isEqualTo(objectMapper.readTree("[{\"label\":\"patients\",\"value\":42}]"));
         verify(feasibilityService).fetchFeasibility(project, bridgehead);
-        verify(feasibilityMapper).map(rawResult);
     }
 }

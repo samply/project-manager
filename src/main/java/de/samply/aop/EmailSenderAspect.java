@@ -4,11 +4,13 @@ import de.samply.annotations.EmailSender;
 import de.samply.annotations.EmailSenderIfError;
 import de.samply.annotations.EmailSenders;
 import de.samply.annotations.EmailSendersIfError;
+import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.email.*;
+import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.state.ProjectBridgeheadState;
@@ -31,8 +33,10 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.function.Supplier;
 
+// Part of EMAILS: with emails disabled the @EmailSender annotations do nothing, without looking up the recipients
 @Component
 @Aspect
+@ModuleComponent(OptionalModule.EMAILS)
 public class EmailSenderAspect {
 
     // Services

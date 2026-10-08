@@ -3,6 +3,7 @@ package de.samply.datashield;
 import de.samply.annotations.ModuleComponent;
 import de.samply.annotations.ModuleStandIn;
 import de.samply.datashield.dto.DataShieldProjectStatus;
+import de.samply.datashield.dto.DataShieldTokenStatus;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.modules.OptionalModule;
@@ -42,6 +43,20 @@ class DataShieldModuleTest {
                 .assertNext(status -> assertThat(status.projectStatus()).isEqualTo(DataShieldProjectStatus.INACTIVE))
                 .verifyComplete();
         assertThat(standIn.existsAuthenticationScript(project, bridgehead)).isFalse();
+        StepVerifier.create(standIn.fetchTokenStatus(project, bridgehead, "user@example.org"))
+                .assertNext(status -> assertThat(status.tokenStatus()).isEqualTo(DataShieldTokenStatus.INACTIVE))
+                .verifyComplete();
+        assertThat(standIn.fetchProjectBridgeheads(project, bridgehead, "user@example.org")).isEmpty();
+    }
+
+    @Test
+    void standInRejectsTheTokenOperationsOfTheJob() {
+        Project project = new Project();
+        ProjectBridgehead bridgehead = new ProjectBridgehead();
+
+        StepVerifier.create(standIn.removeProjectAndTokens(project, bridgehead))
+                .expectError(IllegalStateException.class)
+                .verify();
     }
 
 }

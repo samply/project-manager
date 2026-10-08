@@ -1,5 +1,7 @@
 package de.samply.app;
 
+import de.samply.annotations.ModuleComponent;
+import de.samply.modules.OptionalModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,6 +56,7 @@ public class ProjectManagerAsyncConfiguration {
     }
 
     @Bean(name = ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
+    @ModuleComponent(OptionalModule.EMAILS)
     public Executor emailSenderExecutor() {
         return createEmailSenderExecutor(emailSenderCorePoolSize, emailSenderMaxPoolSize,
                 emailSenderQueueCapacity, ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR);

@@ -44,7 +44,7 @@ public class DataShieldTokenManagerJob {
     private final ResearchEnvironmentService coderService;
     private final ProjectBridgeheadService projectBridgeheadService;
     private final ProjectBridgeheadUserService projectBridgeheadUserService;
-    private final DataShieldTokenManagerService tokenManagerService;
+    private final DataShieldService tokenManagerService;
     private final EmailSendingService emailSendingService;
     private final AppRegisterService appRegisterService;
 
@@ -53,7 +53,7 @@ public class DataShieldTokenManagerJob {
     public DataShieldTokenManagerJob(ResearchEnvironmentService coderService,
                                      ProjectBridgeheadService projectBridgeheadService,
                                      ProjectBridgeheadUserService projectBridgeheadUserService,
-                                     DataShieldTokenManagerService tokenManagerService,
+                                     DataShieldService tokenManagerService,
                                      EmailSendingService emailSendingService,
                                      BridgeheadsConfiguration bridgeheadsConfiguration,
                                      AppRegisterService appRegisterService

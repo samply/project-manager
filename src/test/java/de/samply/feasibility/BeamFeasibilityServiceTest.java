@@ -8,6 +8,7 @@ import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.Query;
+import de.samply.frontend.dto.FeasibilityItem;
 import de.samply.beam.BeamService;
 import de.samply.utils.Base64Utils;
 import org.junit.jupiter.api.AfterEach;
@@ -76,7 +77,7 @@ class BeamFeasibilityServiceTest {
         FeasibilityService service = createService();
 
         StepVerifier.create(service.fetchFeasibility(project(), projectBridgehead()))
-                .assertNext(result -> assertThat(result.at("/totals/patients").asInt()).isEqualTo(42))
+                .assertNext(result -> assertThat(result).containsExactly(new FeasibilityItem("patients", 42L, null)))
                 .verifyComplete();
 
         JsonNode request = postedTask.get();
@@ -103,7 +104,7 @@ class BeamFeasibilityServiceTest {
         emptyResultResponses = 2;
 
         StepVerifier.create(createService().fetchFeasibility(project(), projectBridgehead()))
-                .assertNext(result -> assertThat(result.at("/totals/patients").asInt()).isEqualTo(42))
+                .assertNext(result -> assertThat(result).containsExactly(new FeasibilityItem("patients", 42L, null)))
                 .verifyComplete();
 
         assertThat(resultRequestCount.get()).isEqualTo(3);
@@ -114,7 +115,7 @@ class BeamFeasibilityServiceTest {
         temporaryFailureResponses = 1;
 
         StepVerifier.create(createService().fetchFeasibility(project(), projectBridgehead()))
-                .assertNext(result -> assertThat(result.at("/totals/patients").asInt()).isEqualTo(42))
+                .assertNext(result -> assertThat(result).containsExactly(new FeasibilityItem("patients", 42L, null)))
                 .verifyComplete();
 
         assertThat(resultRequestCount.get()).isEqualTo(2);
@@ -175,17 +176,17 @@ class BeamFeasibilityServiceTest {
     }
 
     @Test
-    void returnsResolvedTestResultInsteadOfContactingBeamWhenConfigured() {
+    void returnsResolvedTestResultInsteadOfContactingBeamWhenConfigured() throws Exception {
         String template = "[{\"label\": \"Patients\", \"value\": {{INTEGER}}}, "
                 + "{\"label\": \"Samples\", \"value\": {{INTEGER}}}]";
+        // As in development: the test result already has the final form, so the mapping is the identity
+        FeasibilityMapper identityMapper = new FeasibilityMapper(".");
+        identityMapper.init();
 
-        StepVerifier.create(createService(template).fetchFeasibility(project(), projectBridgehead()))
+        StepVerifier.create(createService(template, identityMapper).fetchFeasibility(project(), projectBridgehead()))
                 .assertNext(result -> {
-                    assertThat(result.isArray()).isTrue();
-                    assertThat(result.get(0).get("label").asText()).isEqualTo("Patients");
-                    assertThat(result.get(1).get("label").asText()).isEqualTo("Samples");
-                    assertThat(result.get(0).get("value").asInt())
-                            .isNotEqualTo(result.get(1).get("value").asInt());
+                    assertThat(result).extracting(FeasibilityItem::label).containsExactly("Patients", "Samples");
+                    assertThat(result.get(0).value()).isNotEqualTo(result.get(1).value());
                 })
                 .verifyComplete();
 
@@ -194,10 +195,11 @@ class BeamFeasibilityServiceTest {
     }
 
     private FeasibilityService createService() {
-        return createService("");
+        // No mapping: all totals of the answer
+        return createService("", new FeasibilityMapper(null));
     }
 
-    private FeasibilityService createService(String testFeasibilityResult) {
+    private FeasibilityService createService(String testFeasibilityResult, FeasibilityMapper feasibilityMapper) {
         BridgeheadsConfiguration bridgeheadConfiguration = new BridgeheadsConfiguration();
         BridgeheadsConfiguration.BridgeheadConfig config = new BridgeheadsConfiguration.BridgeheadConfig();
         config.setFocusBeamId(FOCUS_BEAM_ID);
@@ -210,7 +212,7 @@ class BeamFeasibilityServiceTest {
                 .build();
         return new BeamFeasibilityService(webClient, beamService, PROJECT_MANAGER_ID,
                 BEAM_API_KEY, FEASIBILITY_TTL, RESULT_WAIT_TIME, RESULT_MAX_TRIES,
-                FOCUS_PROJECT, testFeasibilityResult);
+                FOCUS_PROJECT, testFeasibilityResult, feasibilityMapper);
     }
 
     private Project project() {

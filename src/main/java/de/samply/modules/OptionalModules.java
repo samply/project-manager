@@ -44,8 +44,9 @@ public class OptionalModules {
         List<String> problems = enabledModules.stream()
                 .flatMap(module -> module.getRequiredModules().stream()
                         .filter(required -> !enabledModules.contains(required))
-                        .map(required -> module + " (" + module.getEnableVariable() + ") requires " + required
-                                + " (" + required.getEnableVariable() + ")"))
+                                // An implicit module is enabled with the modules that require it, so it never appears here
+                        .map(required -> module + " (" + module.describeSwitch() + ") requires " + required
+                                + " (" + required.describeSwitch() + ")"))
                 .toList();
         if (!problems.isEmpty()) {
             throw new IllegalStateException("Optional modules enabled without the modules they require: "
@@ -60,12 +61,20 @@ public class OptionalModules {
                         beanName -> applicationContext.findAnnotationOnBean(beanName, ModuleComponent.class).value(),
                         Collectors.mapping(this::fetchBeanClassName, Collectors.toList())));
         log.info("Enabled optional modules: {}", enabledModules.isEmpty() ? "none" : enabledModules.stream()
-                .map(module -> Optional.ofNullable(beansByModule.get(module))
-                        .map(beans -> module + " (" + String.join(", ", beans.stream().sorted().toList()) + ")")
-                        .orElse(module.toString()))
+                .map(module -> module + Optional.ofNullable(beansByModule.get(module))
+                        .map(beans -> " (" + String.join(", ", beans.stream().sorted().toList()) + ")")
+                        .orElse("") + describeImplicitSwitch(module))
                 .collect(Collectors.joining(", ")));
         log.debug("Disabled optional modules: {}", Arrays.stream(OptionalModule.values())
                 .filter(module -> !enabledModules.contains(module)).toList());
+    }
+
+    // An implicit module (no variable) is enabled through the enabled modules that require it
+    private String describeImplicitSwitch(OptionalModule module) {
+        return module.isImplicit() ? " [through " + enabledModules.stream()
+                .filter(enabledModule -> enabledModule.getRequiredModules().contains(module))
+                .map(OptionalModule::name)
+                .collect(Collectors.joining(", ")) + "]" : "";
     }
 
     // The user class, not the proxy Spring may create around it (e.g. for @Async)

@@ -49,6 +49,11 @@ public class DisabledResearchEnvironmentService implements ResearchEnvironmentSe
     }
 
     @Override
+    public String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser) {
+        throw new IllegalStateException(DISABLED);
+    }
+
+    @Override
     public boolean existsUserResearchEnvironmentWorkspace(@NotNull Project project, @NotNull ProjectBridgehead bridgehead) {
         return false;
     }

@@ -12,9 +12,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Feasibility as optional module: FeasibilityService interface, BeamFeasibilityService, DisabledFeasibilityService (@ModuleStandIn)
 - Exporter as optional module: ExporterJob and ExporterJobTrigger (the listener of SendQueryToBridgeheadEvent, moved out of QueryEventService) only exist when ENABLE_EXPORTER is not false
 - Research environment as optional module: ResearchEnvironmentService interface, CoderResearchEnvironmentService (formerly CoderService), DisabledResearchEnvironmentService; AppRegisterService, CoderJob and CoderConfiguration (coder/*.json) only exist when ENABLE_RESEARCH_ENVIRONMENT is not false; the Beam ID of the workspace for the file transfer comes from the research environment (CODER_BEAM_ID_SUFFIX, CODER_TEST_FILE_BEAM_ID no longer read by ExporterService); the research environment URL in emails only when enabled
-- DataSHIELD as optional module: DataShieldService interface (what the controller needs), DataShieldTokenManagerService, DisabledDataShieldService; DataShieldTokenManagerJob; TOKEN_MANAGER_URL only needed when ENABLE_DATASHIELD is not false
+- DataSHIELD as optional module: DataShieldService interface (all DataSHIELD operations, used by the controller and DataShieldTokenManagerJob), DataShieldTokenManagerService, DisabledDataShieldService; DataShieldTokenManagerJob; TOKEN_MANAGER_URL only needed when ENABLE_DATASHIELD is not false
 - Emails as optional module: EmailService only renders; EmailSendingService (SmtpEmailSendingService, DisabledEmailSendingService) sends; MailSenderConfiguration (SMTP) only exists when ENABLE_EMAILS is not false
 - ModuleDependenciesTest: only classes of the same (or a requiring) module may inject a module class; the real implementation of an interface with a stand-in is @Primary (for IntelliJ, which does not evaluate the module conditions)
+- BEAM as implicit optional module (no variable): BeamService only exists when EXPORTER or FEASIBILITY is enabled, so BEAM_URL, BEAM_API_KEY and BEAM_PROJECT_MANAGER_ID are only needed then
+- Exporter: ExporterService is now the interface with all export operations (send, execute, status, execution ID, templates, file transfer), used by the controller, ExporterJob and CoderJob; BeamExporterService (formerly ExporterService) and ExporterQueryLabelTemplate belong to EXPORTER, DisabledExporterService stands in; the exporter templates and EXPORTER_QUERY_LABEL_TEMPLATE are only needed with ENABLE_EXPORTER not false; RESEARCH_ENVIRONMENT requires EXPORTER (the exporter transfers the export files into the workspaces)
+- Feasibility: the mapping (FeasibilityMapper) belongs to FEASIBILITY; FeasibilityService returns the mapped items
+- Emails: EmailSenderAspect, AttachmentFileService and the email executor belong to EMAILS (with emails disabled, @EmailSender no longer looks up recipients)
+- ModuleDependenciesTest also reports a class outside every module that only module classes inject
 - Spring Application
 - State Machine for a project
 - Project states and event states

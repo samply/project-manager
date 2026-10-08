@@ -28,6 +28,9 @@ public interface ResearchEnvironmentService {
 
     Mono<ProjectCoder> deleteWorkspace(@NotNull ProjectCoder projectCoder);
 
+    /** ID of the user's workspace: its name and its Beam app ID (alphanumeric, limited in length). */
+    String fetchCoderAppId(@NotNull ProjectBridgeheadUser projectBridgeheadUser);
+
     boolean existsUserResearchEnvironmentWorkspace(@NotNull Project project, @NotNull ProjectBridgehead bridgehead);
 
     boolean existsUserResearchEnvironmentWorkspace(@NotNull ProjectBridgeheadUser projectBridgeheadUser);
