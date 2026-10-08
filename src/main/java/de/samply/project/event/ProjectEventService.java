@@ -4,6 +4,7 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.Query;
+import de.samply.modules.OptionalModules;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.project.ProjectBridgeheadService;
@@ -56,6 +57,10 @@ public class ProjectEventService implements ProjectEventActions {
 
     private final int projectExpirationTimeInDays;
     private final ProjectCodeGenerator projectCodeGenerator;
+    private final OptionalModules optionalModules;
+
+    private static final Set<ProjectEvent> ACTIVATING_EVENTS = EnumSet.of(ProjectEvent.CREATE, ProjectEvent.ACCEPT,
+            ProjectEvent.START_DEVELOP, ProjectEvent.START_PILOT, ProjectEvent.START_FINAL);
 
 
     public ProjectEventService(NotificationService notificationService,
@@ -67,8 +72,10 @@ public class ProjectEventService implements ProjectEventActions {
                                ProjectCodeGenerator projectCodeGenerator,
                                UserService userService,
                                QueryService queryService,
-                               ProjectBridgeheadService projectBridgeheadService) {
+                               ProjectBridgeheadService projectBridgeheadService,
+                               OptionalModules optionalModules) {
         this.notificationService = notificationService;
+        this.optionalModules = optionalModules;
         this.projectService = projectService;
         this.queryService = queryService;
         this.projectStateMachineFactory = projectStateMachineFactory;
@@ -108,10 +115,25 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     private void changeEvent(Project project, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) throws ProjectEventActionsException {
+        checkProjectTypesAvailable(project, projectEvent);
         try {
             changeEventWithoutExceptionHandling(project, projectEvent, consumerAfterSuccessfulChangeEvent);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
+        }
+    }
+
+    // A request whose type's modules are disabled may be closed (reject, archive, finish), but not brought into or
+    // further in an active state - e.g. an archived request accepted again
+    private void checkProjectTypesAvailable(Project project, ProjectEvent projectEvent) throws ProjectEventActionsException {
+        if (ACTIVATING_EVENTS.contains(projectEvent) && project.getQuery() != null) {
+            Optional<ProjectType> unavailable = project.fetchProjectTypes().stream()
+                    .filter(projectType -> !optionalModules.isAvailable(projectType))
+                    .findFirst();
+            if (unavailable.isPresent()) {
+                throw new ProjectEventActionsException("Request " + project.getCode() + " cannot be " + projectEvent
+                        + ": " + optionalModules.describeUnavailable(unavailable.get()));
+            }
         }
     }
 

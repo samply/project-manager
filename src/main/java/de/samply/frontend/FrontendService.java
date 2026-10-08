@@ -116,7 +116,8 @@ public class FrontendService {
             }
             if (responseEntity.isEmpty()) {
                 Optional<ProjectConstraints> projectConstraints = Optional.ofNullable(method.getAnnotation(ProjectConstraints.class));
-                responseEntity = this.constraintsService.checkProjectConstraints(projectConstraints, project);
+                responseEntity = this.constraintsService.checkProjectConstraints(projectConstraints, project,
+                        ConstraintsService.isReadOnly(method));
             }
             if (responseEntity.isEmpty() || !withConstraints) { // If there are no restrictions
                 addAction(moduleActionsMap, frontendSiteModule, frontendAction, rootPath, path, method,

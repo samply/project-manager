@@ -19,7 +19,9 @@ import de.samply.user.roles.UserProjectRoles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -171,16 +173,23 @@ public class ConstraintsService {
         return Optional.empty();
     }
 
-    public Optional<ResponseEntity> checkProjectConstraints(Optional<ProjectConstraints> projectConstraints, Optional<Project> project) {
+    /** Whether an endpoint only reads (GET): such endpoints stay available for requests whose type is no longer. */
+    public static boolean isReadOnly(Method method) {
+        return method.isAnnotationPresent(GetMapping.class);
+    }
+
+    public Optional<ResponseEntity> checkProjectConstraints(Optional<ProjectConstraints> projectConstraints, Optional<Project> project,
+                                                            boolean readOnly) {
         //TODO
         if (projectConstraints.isPresent()) {
             if (project.isEmpty()) {
                 return Optional.of(ResponseEntity.notFound().build());
             }
             if (projectConstraints.get().projectTypes().length > 0) {
-                // A type whose modules are disabled is not available, also for requests created before
+                // A request whose type's modules were disabled later can still be read (e.g. a finished request and
+                // its results), but not changed
                 boolean hasAnyProjectTypeConstraint = Arrays.stream(projectConstraints.get().projectTypes())
-                        .anyMatch(pc -> project.get().hasProjectType(pc) && optionalModules.isAvailable(pc));
+                        .anyMatch(pc -> project.get().hasProjectType(pc) && (readOnly || optionalModules.isAvailable(pc)));
 
                 if (!hasAnyProjectTypeConstraint) {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());

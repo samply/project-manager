@@ -92,8 +92,16 @@ Each request type (`ProjectType`) lists the modules it needs: `EXPORT`, `SAMPLES
 - **Offered types**: the endpoint `fetchProjectTypes` returns only the available types.
 - **Endpoints**: a request parameter of an unavailable type (single or in a list, also in an actions batch) is answered
   with 400 and the reason (`RequestVariableAndParameterMethodArgumentResolver`).
-- **Requests created before** a type's module was disabled: `@ProjectConstraints(projectTypes = ...)` only matches
-  available types, so their actions are neither offered nor accepted (`ConstraintsService`).
+- **Requests created before** a type's module was disabled can be **viewed, not changed**: for them,
+  `@ProjectConstraints(projectTypes = ...)` matches only endpoints that read (`@GetMapping`), so a finished request
+  still shows its results, while actions that change something are neither offered nor accepted (`ConstraintsService`).
+  A transition into or within an active state (create, accept, start develop/pilot/final) is refused
+  (`ProjectEventService`): e.g. an archived request cannot be accepted again; rejecting, archiving and finishing stay
+  possible.
+- **Unfinished requests** (DRAFT to FINAL) that need a disabled module stop the start (`UnfinishedRequestsCheck`). The
+  message lists them and gives the solution: enable the modules again and close the requests in the UI, or close them
+  with the SQL in the message - `ARCHIVED` for REVIEW to FINAL, `REJECTED` for drafts (they cannot be archived). The
+  state lives only in `samply.project.state` (the state machine is rebuilt from it), so the SQL is safe.
 
 ## How to make something part of a module
 

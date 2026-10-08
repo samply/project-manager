@@ -10,6 +10,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +45,8 @@ public class ProjectConstraintsAspect {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED).build();
             }
         }
-        @SuppressWarnings("rawtypes") Optional<ResponseEntity> result = this.constraintsService.checkProjectConstraints(projectConstraints, project);
+        @SuppressWarnings("rawtypes") Optional<ResponseEntity> result = this.constraintsService.checkProjectConstraints(projectConstraints, project,
+                ConstraintsService.isReadOnly(((MethodSignature) joinPoint.getSignature()).getMethod()));
         return (result.isEmpty()) ? joinPoint.proceed() : result.get();
     }
 

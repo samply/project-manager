@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -40,7 +41,7 @@ class ConstraintsServiceProjectConstraintsTest {
     void acceptsProjectOfAnAvailableType() throws NoSuchMethodException {
         when(optionalModules.isAvailable(ProjectType.DATASHIELD)).thenReturn(true);
 
-        assertThat(constraintsService.checkProjectConstraints(constraintsFrom("dataShieldOnly"), projectOfType(ProjectType.DATASHIELD)))
+        assertThat(constraintsService.checkProjectConstraints(constraintsFrom("dataShieldOnly"), projectOfType(ProjectType.DATASHIELD), false))
                 .isEmpty();
     }
 
@@ -50,10 +51,25 @@ class ConstraintsServiceProjectConstraintsTest {
         when(optionalModules.isAvailable(ProjectType.DATASHIELD)).thenReturn(false);
 
         Optional<ResponseEntity> response = constraintsService.checkProjectConstraints(
-                constraintsFrom("dataShieldOnly"), projectOfType(ProjectType.DATASHIELD));
+                constraintsFrom("dataShieldOnly"), projectOfType(ProjectType.DATASHIELD), false);
 
         assertThat(response).isPresent();
         assertThat(response.orElseThrow().getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    // Reading stays possible, e.g. the results of a finished request
+    @Test
+    void acceptsReadingAProjectOfATypeWhoseModulesAreDisabled() throws NoSuchMethodException {
+        when(optionalModules.isAvailable(ProjectType.DATASHIELD)).thenReturn(false);
+
+        assertThat(constraintsService.checkProjectConstraints(constraintsFrom("dataShieldOnly"),
+                projectOfType(ProjectType.DATASHIELD), true)).isEmpty();
+    }
+
+    @Test
+    void onlyGetEndpointsAreReadOnly() throws NoSuchMethodException {
+        assertThat(ConstraintsService.isReadOnly(ConstraintFixtures.class.getDeclaredMethod("read"))).isTrue();
+        assertThat(ConstraintsService.isReadOnly(ConstraintFixtures.class.getDeclaredMethod("dataShieldOnly"))).isFalse();
     }
 
     private Optional<Project> projectOfType(ProjectType projectType) {
@@ -65,7 +81,7 @@ class ConstraintsServiceProjectConstraintsTest {
     @Test
     void acceptsProjectWithAllowedQueryFormat() throws NoSuchMethodException {
         Optional<ResponseEntity> response = constraintsService.checkProjectConstraints(
-                constraintsFrom("astDataOnly"), projectWithQueryFormat(QueryFormat.AST_DATA));
+                constraintsFrom("astDataOnly"), projectWithQueryFormat(QueryFormat.AST_DATA), false);
 
         assertThat(response).isEmpty();
     }
@@ -73,7 +89,7 @@ class ConstraintsServiceProjectConstraintsTest {
     @Test
     void rejectsProjectWithDifferentQueryFormat() throws NoSuchMethodException {
         Optional<ResponseEntity> response = constraintsService.checkProjectConstraints(
-                constraintsFrom("astDataOnly"), projectWithQueryFormat(QueryFormat.CQL_DATA));
+                constraintsFrom("astDataOnly"), projectWithQueryFormat(QueryFormat.CQL_DATA), false);
 
         assertThat(response).isPresent();
         assertThat(response.orElseThrow().getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
@@ -82,7 +98,7 @@ class ConstraintsServiceProjectConstraintsTest {
     @Test
     void acceptsProjectWhenAnyConfiguredQueryFormatMatches() throws NoSuchMethodException {
         Optional<ResponseEntity> response = constraintsService.checkProjectConstraints(
-                constraintsFrom("multipleQueryFormats"), projectWithQueryFormat(QueryFormat.AST_DATA));
+                constraintsFrom("multipleQueryFormats"), projectWithQueryFormat(QueryFormat.AST_DATA), false);
 
         assertThat(response).isEmpty();
     }
@@ -90,7 +106,7 @@ class ConstraintsServiceProjectConstraintsTest {
     @Test
     void rejectsMissingProjectWhenQueryFormatConstraintIsPresent() throws NoSuchMethodException {
         Optional<ResponseEntity> response = constraintsService.checkProjectConstraints(
-                constraintsFrom("astDataOnly"), Optional.empty());
+                constraintsFrom("astDataOnly"), Optional.empty(), false);
 
         assertThat(response).isPresent();
         assertThat(response.orElseThrow().getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -99,7 +115,7 @@ class ConstraintsServiceProjectConstraintsTest {
     @Test
     void doesNotRestrictQueryFormatWhenNoFormatsAreConfigured() throws NoSuchMethodException {
         Optional<ResponseEntity> response = constraintsService.checkProjectConstraints(
-                constraintsFrom("withoutQueryFormat"), projectWithQueryFormat(QueryFormat.CQL));
+                constraintsFrom("withoutQueryFormat"), projectWithQueryFormat(QueryFormat.CQL), false);
 
         assertThat(response).isEmpty();
     }
@@ -133,6 +149,10 @@ class ConstraintsServiceProjectConstraintsTest {
 
         @ProjectConstraints(projectTypes = ProjectType.DATASHIELD)
         void dataShieldOnly() {
+        }
+
+        @GetMapping("/read")
+        void read() {
         }
     }
 }
