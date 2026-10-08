@@ -3,7 +3,9 @@ package de.samply.aop;
 import de.samply.annotations.ProjectConstraints;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
+import de.samply.modules.OptionalModules;
 import de.samply.project.ProjectBridgeheadUserService;
+import de.samply.project.ProjectType;
 import de.samply.query.QueryFormat;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
@@ -17,17 +19,47 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ConstraintsServiceProjectConstraintsTest {
 
     private ConstraintsService constraintsService;
+    private OptionalModules optionalModules;
 
     @BeforeEach
     void setUp() {
+        optionalModules = mock(OptionalModules.class);
         constraintsService = new ConstraintsService(
                 mock(ProjectBridgeheadUserService.class),
                 mock(OrganisationRoleToProjectRoleMapper.class),
-                mock(SessionUser.class));
+                mock(SessionUser.class),
+                optionalModules);
+    }
+
+    @Test
+    void acceptsProjectOfAnAvailableType() throws NoSuchMethodException {
+        when(optionalModules.isAvailable(ProjectType.DATASHIELD)).thenReturn(true);
+
+        assertThat(constraintsService.checkProjectConstraints(constraintsFrom("dataShieldOnly"), projectOfType(ProjectType.DATASHIELD)))
+                .isEmpty();
+    }
+
+    // A request created before its type's module was disabled: its actions are neither offered nor accepted
+    @Test
+    void rejectsProjectOfATypeWhoseModulesAreDisabled() throws NoSuchMethodException {
+        when(optionalModules.isAvailable(ProjectType.DATASHIELD)).thenReturn(false);
+
+        Optional<ResponseEntity> response = constraintsService.checkProjectConstraints(
+                constraintsFrom("dataShieldOnly"), projectOfType(ProjectType.DATASHIELD));
+
+        assertThat(response).isPresent();
+        assertThat(response.orElseThrow().getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    private Optional<Project> projectOfType(ProjectType projectType) {
+        Project project = mock(Project.class);
+        when(project.hasProjectType(projectType)).thenReturn(true);
+        return Optional.of(project);
     }
 
     @Test
@@ -97,6 +129,10 @@ class ConstraintsServiceProjectConstraintsTest {
 
         @ProjectConstraints
         void withoutQueryFormat() {
+        }
+
+        @ProjectConstraints(projectTypes = ProjectType.DATASHIELD)
+        void dataShieldOnly() {
         }
     }
 }

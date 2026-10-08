@@ -941,7 +941,8 @@ public class ProjectManagerController {
             // ProjectCode code needed for role constraints
             @SuppressWarnings("unused") @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project
     ) {
-        return convertToResponseEntity(ProjectType::values);
+        // Only the types whose optional modules are enabled
+        return convertToResponseEntity(optionalModules::fetchAvailableProjectTypes);
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER})

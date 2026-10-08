@@ -3,6 +3,7 @@ package de.samply.modules;
 import de.samply.annotations.ConditionalOnModule;
 import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.annotations.ConditionalOnModuleTest;
+import de.samply.project.ProjectType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -82,6 +83,18 @@ class OptionalModulesTest {
                 .run(context -> {
                     context.getBean(OptionalModules.class).logEnabledModules();
                     assertThat(output).contains("Enabled optional modules: FEASIBILITY [test] (FeasibilityMapperBean, TestFeasibilityBean)");
+                });
+    }
+
+    @Test
+    void offersOnlyRequestTypesWhoseModulesAreEnabled() {
+        contextRunner.withPropertyValues("ENABLE_DATASHIELD=false", "ENABLE_RESEARCH_ENVIRONMENT=false")
+                .run(context -> {
+                    OptionalModules optionalModules = context.getBean(OptionalModules.class);
+                    assertThat(optionalModules.fetchAvailableProjectTypes())
+                            .containsExactly(ProjectType.EXPORT, ProjectType.SAMPLES, ProjectType.SEQUENCING);
+                    assertThat(optionalModules.describeUnavailable(ProjectType.DATASHIELD))
+                            .isEqualTo("Request type DATASHIELD requires module DATASHIELD (ENABLE_DATASHIELD=false)");
                 });
     }
 

@@ -6,6 +6,7 @@ import de.samply.annotations.StateConstraints;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.modules.OptionalModules;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
@@ -31,6 +32,7 @@ public class ConstraintsService {
 
     private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
     private final SessionUser sessionUser;
+    private final OptionalModules optionalModules;
 
     private final Map<ProjectRole, ProjectState> temporalProjectRoleProjectStateMap = Map.of(
             ProjectRole.DEVELOPER, ProjectState.DEVELOP,
@@ -39,10 +41,12 @@ public class ConstraintsService {
 
     public ConstraintsService(ProjectBridgeheadUserService projectBridgeheadUserService,
                               OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
-                              SessionUser sessionUser) {
+                              SessionUser sessionUser,
+                              OptionalModules optionalModules) {
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
         this.sessionUser = sessionUser;
+        this.optionalModules = optionalModules;
     }
 
     public Optional<ResponseEntity> checkRoleConstraints(Optional<RoleConstraints> roleConstraints, Optional<StateConstraints> stateConstraints, Optional<Project> project, Optional<ProjectBridgehead> bridgehead) {
@@ -174,8 +178,9 @@ public class ConstraintsService {
                 return Optional.of(ResponseEntity.notFound().build());
             }
             if (projectConstraints.get().projectTypes().length > 0) {
+                // A type whose modules are disabled is not available, also for requests created before
                 boolean hasAnyProjectTypeConstraint = Arrays.stream(projectConstraints.get().projectTypes())
-                        .anyMatch(pc -> project.get().hasProjectType(pc));
+                        .anyMatch(pc -> project.get().hasProjectType(pc) && optionalModules.isAvailable(pc));
 
                 if (!hasAnyProjectTypeConstraint) {
                     return Optional.of(ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());

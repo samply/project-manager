@@ -23,6 +23,7 @@ import de.samply.project.ProjectBridgeheadConverter;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectConverter;
+import de.samply.project.ProjectType;
 import de.samply.project.ProjectService;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.when;
 import de.samply.resolvers.AnnotatedParametersWrapper;
 import de.samply.resolvers.LanguageArgumentResolver;
 import de.samply.resolvers.RequestBodyCache;
+import de.samply.modules.OptionalModules;
 import de.samply.resolvers.RequestVariableAndParameterMethodArgumentResolver;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -72,6 +74,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -103,6 +106,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * real role constraints aspect: what an entry answers must be what its endpoint answers on its own.
  */
 @SpringJUnitWebConfig(ActionsBatchServiceTest.TestConfiguration.class)
+// DATASHIELD disabled: its request type is not available (see refusesARequestTypeWhoseModulesAreDisabled)
+@TestPropertySource(properties = "ENABLE_DATASHIELD=false")
 class ActionsBatchServiceTest {
 
     private static final String READ = "READ";
@@ -114,6 +119,7 @@ class ActionsBatchServiceTest {
     private static final String WRITE = "WRITE";
     private static final String TEXT = "TEXT";
     private static final String MISSING = "MISSING";
+    private static final String TYPES = "TYPES";
     private static final String EMPTY = "EMPTY";
     private static final String ONLY_CREATOR = "ONLY_CREATOR";
     private static final String ONLY_IN_REVIEW = "ONLY_IN_REVIEW";
@@ -294,6 +300,14 @@ class ActionsBatchServiceTest {
 
         // A missing required parameter
         assertSameStatusAsEndpoint(MISSING, "/read", 400);
+    }
+
+    // The resolver refuses a request type whose optional modules are disabled, single or in a list
+    @Test
+    void refusesARequestTypeWhoseModulesAreDisabled() throws Exception {
+        assertSameStatusAsEndpoint(TYPES, "/types", Map.of("type", "EXPORT"), 200);
+        assertSameStatusAsEndpoint(TYPES, "/types", Map.of("type", "DATASHIELD"), 400);
+        assertSameStatusAsEndpoint(TYPES, "/types", Map.of("type", "EXPORT,DATASHIELD"), 400);
     }
 
     // The constraints of an endpoint must hold for its batch entry. Each test refuses the entry for one reason,
@@ -619,6 +633,12 @@ class ActionsBatchServiceTest {
             return ResponseEntity.ok(answer.toString());
         }
 
+        @FrontendAction(action = TYPES)
+        @GetMapping("/types")
+        public ResponseEntity<String> types(@RequestParameter(name = "type") List<ProjectType> types) {
+            return ResponseEntity.ok("{\"types\": \"" + types + "\"}");
+        }
+
         @FrontendAction(action = READ)
         @GetMapping("/read")
         public ResponseEntity<String> read(@RequestParameter(name = "value") String value) {
@@ -779,7 +799,7 @@ class ActionsBatchServiceTest {
     @Import({TestController.class, RequestVariableAndParameterMethodArgumentResolver.class, LanguageArgumentResolver.class,
             RequestBodyCache.class, AnnotatedParametersWrapper.class, ConstraintsService.class,
             RoleConstraintsAspect.class, StateConstraintsAspect.class, ProjectConstraintsAspect.class,
-            ProjectConverter.class, ProjectBridgeheadConverter.class})
+            ProjectConverter.class, ProjectBridgeheadConverter.class, OptionalModules.class})
     static class TestConfiguration implements WebMvcConfigurer {
 
         @Autowired

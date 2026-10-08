@@ -3,12 +3,15 @@ package de.samply.resolvers;
 import de.samply.annotations.RequestParameter;
 import de.samply.annotations.RequestVariable;
 import de.samply.app.ProjectManagerConst;
+import de.samply.modules.OptionalModules;
+import de.samply.project.ProjectType;
 import de.samply.utils.ParamMetaUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.ServletRequestBindingException;
@@ -16,14 +19,17 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * This class resolves method arguments annotated with either {@link RequestVariable} or {@link RequestParameter}.
@@ -91,16 +97,19 @@ public class RequestVariableAndParameterMethodArgumentResolver implements Handle
     private final ConversionService conversionService;
     private final RequestBodyCache requestBodyCache; // Injecting request-scoped bean
     private final AnnotatedParametersWrapper annotatedParametersWrapper;
+    private final OptionalModules optionalModules;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public RequestVariableAndParameterMethodArgumentResolver(
             @Lazy ConversionService conversionService,
             RequestBodyCache requestBodyCache,
-            AnnotatedParametersWrapper annotatedParametersWrapper) {
+            AnnotatedParametersWrapper annotatedParametersWrapper,
+            OptionalModules optionalModules) {
         this.conversionService = conversionService;
         this.requestBodyCache = requestBodyCache;
         this.annotatedParametersWrapper = annotatedParametersWrapper;
+        this.optionalModules = optionalModules;
     }
 
     @Override
@@ -145,6 +154,7 @@ public class RequestVariableAndParameterMethodArgumentResolver implements Handle
 
         // Convert and cache
         Object result = convertValue(value, parameter);
+        checkProjectTypesAvailable(result);
         annotatedParametersWrapper.putResolved(parameter, result);
 
         return result;
@@ -157,6 +167,19 @@ public class RequestVariableAndParameterMethodArgumentResolver implements Handle
         }
         Map<String, Object> jsonBody = requestBodyCache.getJsonBody(request); // Retrieve from the cache
         return (jsonBody != null) ? jsonBody.get(key) : null;
+    }
+
+    // Every request type that reaches an endpoint (single or in a list, however it was converted) must have its optional
+    // modules enabled: a request with an unavailable type could never be delivered
+    private void checkProjectTypesAvailable(Object result) {
+        Stream<?> values = (result instanceof Collection<?> collection) ? collection.stream() : Stream.of(result);
+        values.filter(ProjectType.class::isInstance)
+                .map(ProjectType.class::cast)
+                .filter(projectType -> !optionalModules.isAvailable(projectType))
+                .findFirst()
+                .ifPresent(projectType -> {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, optionalModules.describeUnavailable(projectType));
+                });
     }
 
     private Object convertValue(Object value, MethodParameter parameter) {

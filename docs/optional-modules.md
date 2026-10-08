@@ -79,6 +79,22 @@ Names (decided 2026-10-08): Spring style, like `@ConditionalOnProperty` - `@Cond
 `@ConditionalOnModuleDisabled` (`false`), `@ConditionalOnModuleTest` (`test`). They are conditions, not stereotypes: the
 class still needs `@Service` / `@Component`. Formerly `@ModuleComponent`, `@ModuleStandIn` and `@ModuleTest`.
 
+## Request types need their modules
+
+Each request type (`ProjectType`) lists the modules it needs: `EXPORT`, `SAMPLES` and `SEQUENCING` need `EXPORTER`
+(SEQUENCING until a SequencingService exists), `DATASHIELD` needs `DATASHIELD`, `RESEARCH_ENVIRONMENT` needs
+`RESEARCH_ENVIRONMENT`. A type is available when all its modules are `true` or `test`
+(`OptionalModules.isAvailable`). A deployment offers only what is available:
+
+- **Start**: a type in `frontend-project-configs.json` whose modules are disabled stops the start, e.g. "configuration
+  'DataSHIELD': Request type DATASHIELD requires module DATASHIELD (ENABLE_DATASHIELD=false)"
+  (`ProjectConfigurationsFactory`).
+- **Offered types**: the endpoint `fetchProjectTypes` returns only the available types.
+- **Endpoints**: a request parameter of an unavailable type (single or in a list, also in an actions batch) is answered
+  with 400 and the reason (`RequestVariableAndParameterMethodArgumentResolver`).
+- **Requests created before** a type's module was disabled: `@ProjectConstraints(projectTypes = ...)` only matches
+  available types, so their actions are neither offered nor accepted (`ConstraintsService`).
+
 ## How to make something part of a module
 
 1. Put `@ConditionalOnModule(OptionalModule.X)` on every bean that only exists for module X: its service implementation,

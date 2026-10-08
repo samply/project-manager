@@ -2,6 +2,7 @@ package de.samply.modules;
 
 import de.samply.annotations.ConditionalOnModule;
 import de.samply.annotations.ConditionalOnModuleTest;
+import de.samply.project.ProjectType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -53,6 +54,24 @@ public class OptionalModules {
 
     public ModuleMode fetchMode(OptionalModule module) {
         return modes.get(module);
+    }
+
+    /** A request type may be offered and used when all the modules it needs are enabled ("true" or "test"). */
+    public boolean isAvailable(ProjectType projectType) {
+        return enabledModules.containsAll(projectType.getRequiredModules());
+    }
+
+    public List<ProjectType> fetchAvailableProjectTypes() {
+        return Arrays.stream(ProjectType.values()).filter(this::isAvailable).toList();
+    }
+
+    /** Why a request type is not available, e.g. "Request type DATASHIELD requires module DATASHIELD (ENABLE_DATASHIELD=false)". */
+    public String describeUnavailable(ProjectType projectType) {
+        return "Request type " + projectType + " requires " + projectType.getRequiredModules().stream()
+                .filter(module -> !enabledModules.contains(module))
+                .map(module -> "module " + module + " (" + module.describeSwitch()
+                        + (module.isImplicit() ? "" : "=" + modes.get(module)) + ")")
+                .collect(Collectors.joining(", "));
     }
 
     // Only for modules in mode "true": the test mode replaces the systems the module needs
