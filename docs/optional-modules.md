@@ -11,13 +11,14 @@ used in this backend) and not a frontend module (`@FrontendSiteModule`, a part o
 
 ## The modules
 
-`OptionalModule` (`de.samply.modules`) lists them. All are enabled unless their variable is `false`.
+`OptionalModule` (`de.samply.modules`) lists them. The variable is `true` (the default), `false`, or `test` for a
+module with a test implementation (`ModuleMode`); any other value stops the start.
 
 | Module | Variable | Requires | What it does |
 |---|---|---|---|
 | `BEAM` | - (implicit) | - | Beam (`BeamService`), shared by exporter and feasibility; `BEAM_URL`, `BEAM_API_KEY`, `BEAM_PROJECT_MANAGER_ID` |
 | `EXPORTER` | `ENABLE_EXPORTER` | `BEAM` | Sends the scheduled queries to the bridgeheads through the exporter and follows the exports; without it, queries stay "to be sent". Exporter templates, `EXPORTER_QUERY_LABEL_TEMPLATE` |
-| `FEASIBILITY` | `ENABLE_FEASIBILITY` | `BEAM` | Feasibility queries to the bridgeheads through Beam, mapped with `FEASIBILITY_MAPPING` |
+| `FEASIBILITY` | `ENABLE_FEASIBILITY` (also `test`) | `BEAM` | Feasibility queries to the bridgeheads through Beam, mapped with `FEASIBILITY_MAPPING`. `test`: random results from the template `TEST_FEASIBILITY_RESULT`, without Beam (development) |
 | `RESEARCH_ENVIRONMENT` | `ENABLE_RESEARCH_ENVIRONMENT` | `EXPORTER` | Research environment workspaces, implemented with Coder; each workspace is registered as a Beam app (app register); the exporter transfers the export files into them |
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
 | `EMAILS` | `ENABLE_EMAILS` | - | Sending emails through SMTP, including the `@EmailSender` emails of the controller; rendering the templates (`EmailService`) is always possible |
@@ -25,7 +26,20 @@ used in this backend) and not a frontend module (`@FrontendSiteModule`, a part o
 DataSHIELD implies the research environment, and the research environment the exporter - not the other way round. If
 an enabled module requires a disabled one, the backend does not start and says which variable to change.
 
-An **implicit** module has no variable: it is enabled exactly when a module that requires it is enabled (`BEAM` with
+The **test mode** (`test`) replaces the module's real beans by its test beans (`@ModuleTest`), e.g. feasibility with
+random results instead of Beam. A module in test mode needs none of its required modules: the test replaces the systems
+they connect to. `test` on a module without a test implementation stops the start.
+
+| Value | Created |
+|---|---|
+| `true` (default) | `@ModuleComponent` beans |
+| `test` | `@ModuleTest` beans |
+| `false` | `@ModuleStandIn` beans |
+
+A bean needed in both the real and the test mode carries both annotations (`FeasibilityMapper`: the test results are
+mapped like real ones). Only the real implementation is `@Primary` (for IntelliJ; at runtime only one exists).
+
+An **implicit** module has no variable: it is enabled exactly when a module that requires it is `true` (`BEAM` with
 `EXPORTER` or `FEASIBILITY`), so it can never be "required but disabled". A module may only require modules declared
 before it in the enum.
 
@@ -37,6 +51,7 @@ At start-up the backend logs the enabled modules with their beans:
 
 ```
 Enabled optional modules: BEAM (BeamService) [through EXPORTER, FEASIBILITY], EXPORTER (BeamExporterService, ...), FEASIBILITY (BeamFeasibilityService, FeasibilityMapper), EMAILS (...)
+Enabled optional modules: FEASIBILITY [test] (FeasibilityMapper, TestFeasibilityService)
 ```
 
 The disabled ones are logged at debug level. Spring's condition report (start with `--debug`) shows the decision for
@@ -111,4 +126,4 @@ do nothing with emails disabled), `AttachmentFileService` and the email executor
 method). (The interface is not called `EmailSender`: that name is
 taken by the annotation `@EmailSender`.)
 
-Status (2026-10-08): all modules use the mechanism; BEAM is implicit.
+Status (2026-10-08): all modules use the mechanism; BEAM is implicit; FEASIBILITY has a test mode.

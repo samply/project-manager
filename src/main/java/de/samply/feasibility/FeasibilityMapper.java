@@ -3,6 +3,7 @@ package de.samply.feasibility;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ModuleTest;
 import de.samply.app.ProjectManagerConst;
 import de.samply.frontend.dto.FeasibilityItem;
 import de.samply.modules.OptionalModule;
@@ -25,6 +26,8 @@ import java.util.List;
 @Slf4j
 @Component
 @ModuleComponent(OptionalModule.FEASIBILITY)
+// Also in test mode: the test results are mapped like real ones
+@ModuleTest(OptionalModule.FEASIBILITY)
 public class FeasibilityMapper {
 
     private final String mapping;

@@ -10,7 +10,8 @@ import java.util.List;
 
 /**
  * Feasibility of a request at one bridgehead: how many patients, samples, ... its query finds there. Part of the
- * optional module FEASIBILITY: {@link BeamFeasibilityService} when enabled, {@link DisabledFeasibilityService} when not.
+ * optional module FEASIBILITY: {@link BeamFeasibilityService} when "true", {@link TestFeasibilityService} when "test",
+ * {@link DisabledFeasibilityService} when "false".
  */
 public interface FeasibilityService {
 

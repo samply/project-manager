@@ -175,31 +175,7 @@ class BeamFeasibilityServiceTest {
                 .verify();
     }
 
-    @Test
-    void returnsResolvedTestResultInsteadOfContactingBeamWhenConfigured() throws Exception {
-        String template = "[{\"label\": \"Patients\", \"value\": {{INTEGER}}}, "
-                + "{\"label\": \"Samples\", \"value\": {{INTEGER}}}]";
-        // As in development: the test result already has the final form, so the mapping is the identity
-        FeasibilityMapper identityMapper = new FeasibilityMapper(".");
-        identityMapper.init();
-
-        StepVerifier.create(createService(template, identityMapper).fetchFeasibility(project(), projectBridgehead()))
-                .assertNext(result -> {
-                    assertThat(result).extracting(FeasibilityItem::label).containsExactly("Patients", "Samples");
-                    assertThat(result.get(0).value()).isNotEqualTo(result.get(1).value());
-                })
-                .verifyComplete();
-
-        assertThat(postedTask.get()).isNull();
-        assertThat(resultRequestCount.get()).isZero();
-    }
-
     private FeasibilityService createService() {
-        // No mapping: all totals of the answer
-        return createService("", new FeasibilityMapper(null));
-    }
-
-    private FeasibilityService createService(String testFeasibilityResult, FeasibilityMapper feasibilityMapper) {
         BridgeheadsConfiguration bridgeheadConfiguration = new BridgeheadsConfiguration();
         BridgeheadsConfiguration.BridgeheadConfig config = new BridgeheadsConfiguration.BridgeheadConfig();
         config.setFocusBeamId(FOCUS_BEAM_ID);
@@ -212,7 +188,8 @@ class BeamFeasibilityServiceTest {
                 .build();
         return new BeamFeasibilityService(webClient, beamService, PROJECT_MANAGER_ID,
                 BEAM_API_KEY, FEASIBILITY_TTL, RESULT_WAIT_TIME, RESULT_MAX_TRIES,
-                FOCUS_PROJECT, testFeasibilityResult, feasibilityMapper);
+                // No mapping: all totals of the answer
+                FOCUS_PROJECT, new FeasibilityMapper(null));
     }
 
     private Project project() {

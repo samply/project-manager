@@ -15,8 +15,12 @@ import java.util.stream.Collectors;
  * The beans of a module carry {@link de.samply.annotations.ModuleComponent}: they are only created when the module is
  * enabled, so a disabled module needs none of its configuration. See docs/optional-modules.md.
  * <p>
- * An <i>implicit</i> module has no variable: it is enabled exactly when a module that requires it is enabled. A module
- * may only require modules declared before it (Java does not allow forward references in enum constants).
+ * The variable is "true" (the default), "false", or "test" for a module with a test implementation
+ * ({@link ModuleMode}).
+ * <p>
+ * An <i>implicit</i> module has no variable: it is enabled exactly when a module that requires it is "true" (a module in
+ * test mode needs none of its required modules). A module may only require modules declared before it (Java does not
+ * allow forward references in enum constants).
  */
 public enum OptionalModule {
 
@@ -24,8 +28,8 @@ public enum OptionalModule {
     BEAM(null),
     /** Sends the scheduled queries to the bridgeheads through the exporter and follows the exports. */
     EXPORTER(ProjectManagerConst.ENABLE_EXPORTER, BEAM),
-    /** Feasibility queries to the bridgeheads through Beam. */
-    FEASIBILITY(ProjectManagerConst.ENABLE_FEASIBILITY, BEAM),
+    /** Feasibility queries to the bridgeheads through Beam; test mode: random results from TEST_FEASIBILITY_RESULT. */
+    FEASIBILITY(ProjectManagerConst.ENABLE_FEASIBILITY, true, BEAM),
     /**
      * Research environment workspaces (implemented with Coder), registered as Beam apps (app register). The exporter
      * transfers the export files into the workspaces.
@@ -37,14 +41,20 @@ public enum OptionalModule {
     EMAILS(ProjectManagerConst.ENABLE_EMAILS);
 
     private final String enableVariable;
+    private final boolean withTestMode;
     private final Set<OptionalModule> requiredModules;
 
     OptionalModule(String enableVariable, OptionalModule... requiredModules) {
+        this(enableVariable, false, requiredModules);
+    }
+
+    OptionalModule(String enableVariable, boolean withTestMode, OptionalModule... requiredModules) {
         this.enableVariable = enableVariable;
+        this.withTestMode = withTestMode;
         this.requiredModules = Set.of(requiredModules);
     }
 
-    /** Environment variable that enables the module ("true" or "false"); null for an implicit module. */
+    /** Environment variable that enables the module ("true", "false" or "test"); null for an implicit module. */
     public String getEnableVariable() {
         return enableVariable;
     }
@@ -53,7 +63,12 @@ public enum OptionalModule {
         return enableVariable == null;
     }
 
-    /** Modules that must be enabled too when this one is (directly; see {@link #requires}). */
+    /** Whether the module has a test implementation ({@link de.samply.annotations.ModuleTest}). */
+    public boolean isWithTestMode() {
+        return withTestMode;
+    }
+
+    /** Modules that must be enabled too when this one is "true" (directly; see {@link #requires}). */
     public Set<OptionalModule> getRequiredModules() {
         return requiredModules;
     }
@@ -64,14 +79,27 @@ public enum OptionalModule {
     }
 
     /**
-     * Enabled unless its variable is "false": all modules were enabled by default before they became optional. Same
-     * rule as the ENABLE_*_SV placeholders in ProjectManagerConst. An implicit module is enabled when a module that
-     * requires it is.
+     * "true" unless its variable says otherwise: all modules were enabled by default before they became optional. An
+     * implicit module is "true" when a module that requires it is, "false" otherwise. Stops the start on an invalid
+     * value, and on "test" for a module without a test implementation.
      */
+    public ModuleMode fetchMode(PropertyResolver propertyResolver) {
+        if (isImplicit()) {
+            return Arrays.stream(values()).anyMatch(module -> module.requiredModules.contains(this)
+                    && module.fetchMode(propertyResolver) == ModuleMode.TRUE) ? ModuleMode.TRUE : ModuleMode.FALSE;
+        }
+        ModuleMode mode = ModuleMode.parse(enableVariable,
+                propertyResolver.getProperty(enableVariable, ModuleMode.TRUE.toString()));
+        if (mode == ModuleMode.TEST && !withTestMode) {
+            throw new IllegalStateException(enableVariable + "=" + ModuleMode.TEST + ": module " + this
+                    + " has no test mode");
+        }
+        return mode;
+    }
+
+    /** Enabled: "true" or "test". */
     public boolean isEnabled(PropertyResolver propertyResolver) {
-        return isImplicit()
-                ? Arrays.stream(values()).anyMatch(module -> module.requiredModules.contains(this) && module.isEnabled(propertyResolver))
-                : propertyResolver.getProperty(enableVariable, Boolean.class, true);
+        return fetchMode(propertyResolver) != ModuleMode.FALSE;
     }
 
     /** What switches the module on, for messages: its variable, or the modules that require it. */

@@ -2,6 +2,7 @@ package de.samply.modules;
 
 import de.samply.annotations.ModuleComponent;
 import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ModuleTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,51 @@ class OptionalModulesTest {
                 .run(context -> assertThat(context).doesNotHaveBean(FeasibilityBean.class)
                         .hasSingleBean(DisabledFeasibilityBean.class)
                         .hasSingleBean(ResearchEnvironmentBean.class));
+    }
+
+    @Test
+    void testModeCreatesTheTestBeansInsteadOfTheRealOnesAndNeedsNoBeam() {
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=test", "ENABLE_EXPORTER=false",
+                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
+                .run(context -> assertThat(context).hasNotFailed()
+                        .hasSingleBean(TestFeasibilityBean.class)
+                        .hasSingleBean(FeasibilityMapperBean.class)
+                        .doesNotHaveBean(FeasibilityBean.class)
+                        .doesNotHaveBean(DisabledFeasibilityBean.class)
+                        .doesNotHaveBean(BeamBean.class));
+    }
+
+    @Test
+    void sharedBeanExistsInTheRealModeToo() {
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=true", RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> assertThat(context).hasSingleBean(FeasibilityMapperBean.class)
+                        .doesNotHaveBean(TestFeasibilityBean.class));
+    }
+
+    @Test
+    void stopsTheStartOnAnInvalidValue() {
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=yes", RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> assertThat(context).hasFailed().getFailure()
+                        .rootCause()
+                        .hasMessageContaining("ENABLE_FEASIBILITY=yes is not valid; allowed: true, false, test"));
+    }
+
+    @Test
+    void stopsTheStartOnTestModeOfAModuleWithoutOne() {
+        contextRunner.withPropertyValues("ENABLE_EMAILS=test", RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> assertThat(context).hasFailed().getFailure()
+                        .rootCause()
+                        .hasMessageContaining("ENABLE_EMAILS=test: module EMAILS has no test mode"));
+    }
+
+    @Test
+    void logsTheTestMode(CapturedOutput output) {
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=test", "ENABLE_EXPORTER=false",
+                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false", "ENABLE_EMAILS=false")
+                .run(context -> {
+                    context.getBean(OptionalModules.class).logEnabledModules();
+                    assertThat(output).contains("Enabled optional modules: FEASIBILITY [test] (FeasibilityMapperBean, TestFeasibilityBean)");
+                });
     }
 
     @Test
@@ -81,7 +127,7 @@ class OptionalModulesTest {
                 .run(context -> {
                     context.getBean(OptionalModules.class).logEnabledModules();
                     assertThat(output).contains("Enabled optional modules: BEAM (BeamBean) [through EXPORTER, FEASIBILITY], "
-                            + "EXPORTER, FEASIBILITY (FeasibilityBean)");
+                            + "EXPORTER, FEASIBILITY (FeasibilityBean, FeasibilityMapperBean)");
                 });
     }
 
@@ -89,6 +135,12 @@ class OptionalModulesTest {
     }
 
     static class DisabledFeasibilityBean {
+    }
+
+    static class TestFeasibilityBean {
+    }
+
+    static class FeasibilityMapperBean {
     }
 
     record ResearchEnvironmentBean(String url) {
@@ -110,6 +162,20 @@ class OptionalModulesTest {
         @ModuleStandIn(OptionalModule.FEASIBILITY)
         DisabledFeasibilityBean disabledFeasibilityBean() {
             return new DisabledFeasibilityBean();
+        }
+
+        @Bean
+        @ModuleTest(OptionalModule.FEASIBILITY)
+        TestFeasibilityBean testFeasibilityBean() {
+            return new TestFeasibilityBean();
+        }
+
+        // Needed in both the real and the test mode
+        @Bean
+        @ModuleComponent(OptionalModule.FEASIBILITY)
+        @ModuleTest(OptionalModule.FEASIBILITY)
+        FeasibilityMapperBean feasibilityMapperBean() {
+            return new FeasibilityMapperBean();
         }
 
     }

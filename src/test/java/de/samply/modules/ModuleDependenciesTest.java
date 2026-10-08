@@ -2,6 +2,7 @@ package de.samply.modules;
 
 import de.samply.annotations.ModuleComponent;
 import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ModuleTest;
 import de.samply.coder.CoderJob;
 import de.samply.exporter.ExporterJob;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,10 @@ import org.springframework.util.ClassUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,12 +37,9 @@ class ModuleDependenciesTest {
 
     @Test
     void onlyClassesOfTheSameOrARequiringModuleInjectModuleClasses() {
-        // The scan evaluates the module conditions: with all modules enabled it finds the real implementations, with all
-        // disabled the stand-ins
-        List<Class<?>> components = Stream.of(true, false)
-                .flatMap(enabled -> scanComponents(enabled).stream())
-                .distinct()
-                .toList();
+        // The scan evaluates the module conditions: with all modules "true" it finds the real implementations, with all
+        // "false" the stand-ins, with "test" the test implementations
+        List<Class<?>> components = scanAllComponents();
         // The scan must find the components, module classes included, or the check below proves nothing
         assertThat(components).contains(CoderJob.class, ExporterJob.class);
 
@@ -46,9 +47,9 @@ class ModuleDependenciesTest {
                 .flatMap(component -> Arrays.stream(component.getDeclaredConstructors())
                         .flatMap(constructor -> Arrays.stream(constructor.getParameterTypes()))
                         .flatMap(dependency -> fetchModule(dependency)
-                                .filter(module -> !mayInject(fetchModule(component), module))
-                                .map(module -> component.getSimpleName() + " injects " + dependency.getSimpleName()
-                                        + " of module " + module)
+                                .filter(module -> !mayInject(component, dependency))
+                                .map(module -> component.getSimpleName() + " " + fetchModes(component) + " injects "
+                                        + dependency.getSimpleName() + " " + fetchModes(dependency) + " of module " + module)
                                 .stream()))
                 .distinct()
                 .toList();
@@ -70,10 +71,7 @@ class ModuleDependenciesTest {
 
     @Test
     void classesOnlyInjectedByModulesBelongToAModule() {
-        List<Class<?>> components = Stream.of(true, false)
-                .flatMap(enabled -> scanComponents(enabled).stream())
-                .distinct()
-                .toList();
+        List<Class<?>> components = scanAllComponents();
 
         // Spring Data repositories (e.g. ProjectCoderRepository, only used by the research environment) are interfaces
         // and not scanned here; they need no configuration
@@ -101,12 +99,21 @@ class ModuleDependenciesTest {
                 .toList();
     }
 
-    private List<Class<?>> scanComponents(boolean modulesEnabled) {
+    private List<Class<?>> scanAllComponents() {
+        return Stream.of(ModuleMode.TRUE, ModuleMode.FALSE, ModuleMode.TEST)
+                .flatMap(mode -> scanComponents(mode).stream())
+                .distinct()
+                .toList();
+    }
+
+    // All modules in the given mode; for "test", the modules without a test mode stay "true"
+    private List<Class<?>> scanComponents(ModuleMode mode) {
         MockEnvironment environment = new MockEnvironment();
         // An implicit module has no variable: it follows the modules that require it
         Arrays.stream(OptionalModule.values())
                 .filter(module -> !module.isImplicit())
-                .forEach(module -> environment.setProperty(module.getEnableVariable(), String.valueOf(modulesEnabled)));
+                .forEach(module -> environment.setProperty(module.getEnableVariable(),
+                        (mode == ModuleMode.TEST && !module.isWithTestMode() ? ModuleMode.TRUE : mode).toString()));
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false, environment);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Component.class));
         return scanner.findCandidateComponents("de.samply").stream()
@@ -115,14 +122,32 @@ class ModuleDependenciesTest {
                 .toList();
     }
 
-    private boolean mayInject(Optional<OptionalModule> componentModule, OptionalModule dependencyModule) {
+    // The dependency must exist whenever the component exists: in the same module, in each of the component's modes; in
+    // another module, the component must exist only in mode "true" (requirements only hold then) and require it
+    private boolean mayInject(Class<?> component, Class<?> dependency) {
+        Optional<OptionalModule> componentModule = fetchModule(component);
+        OptionalModule dependencyModule = fetchModule(dependency).orElseThrow();
+        Set<ModuleMode> componentModes = fetchModes(component);
+        Set<ModuleMode> dependencyModes = fetchModes(dependency);
         return componentModule
-                .map(module -> module == dependencyModule || module.requires(dependencyModule))
+                .map(module -> module == dependencyModule
+                        ? dependencyModes.containsAll(componentModes)
+                        : componentModes.equals(Set.of(ModuleMode.TRUE)) && module.requires(dependencyModule)
+                        && dependencyModes.contains(ModuleMode.TRUE))
                 .orElse(false);
     }
 
+    // The module of a class of its real mode (@ModuleComponent) or of its test mode (@ModuleTest)
     private Optional<OptionalModule> fetchModule(Class<?> type) {
-        return Optional.ofNullable(type.getAnnotation(ModuleComponent.class)).map(ModuleComponent::value);
+        return Optional.ofNullable(type.getAnnotation(ModuleComponent.class)).map(ModuleComponent::value)
+                .or(() -> Optional.ofNullable(type.getAnnotation(ModuleTest.class)).map(ModuleTest::value));
+    }
+
+    private Set<ModuleMode> fetchModes(Class<?> type) {
+        return Stream.of(type.isAnnotationPresent(ModuleComponent.class) ? ModuleMode.TRUE : null,
+                        type.isAnnotationPresent(ModuleTest.class) ? ModuleMode.TEST : null)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     private Class<?> loadClass(String className) {

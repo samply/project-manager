@@ -25,11 +25,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
- * Feasibility through Beam and Focus: sends the query of a request to a bridgehead and waits for its counts.
+ * Feasibility through Beam and Focus: sends the query of a request to a bridgehead and waits for its counts. In test
+ * mode {@link TestFeasibilityService} replaces it.
  */
 @Service
 @ModuleComponent(OptionalModule.FEASIBILITY)
@@ -51,8 +51,6 @@ public class BeamFeasibilityService implements FeasibilityService {
     private final String resultWaitTime;
     private final int resultMaxTries;
     private final String focusProject;
-    private final String testFeasibilityResult;
-    private final TestFeasibilityResultResolver testFeasibilityResultResolver;
     private final FeasibilityMapper feasibilityMapper;
 
     @Autowired
@@ -64,18 +62,17 @@ public class BeamFeasibilityService implements FeasibilityService {
             @Value(ProjectManagerConst.FEASIBILITY_BEAM_RESULT_WAIT_TIME_SV) String resultWaitTime,
             @Value(ProjectManagerConst.FEASIBILITY_BEAM_RESULT_MAX_TRIES_SV) int resultMaxTries,
             @Value(ProjectManagerConst.FOCUS_LENS_PROJECT_SV) String focusProject,
-            @Value(ProjectManagerConst.TEST_FEASIBILITY_RESULT_SV) String testFeasibilityResult,
             WebClientFactory webClientFactory,
             BeamService beamService,
             FeasibilityMapper feasibilityMapper) {
         this(webClientFactory.createWebClient(beamUrl), beamService, projectManagerId,
-                beamApiKey, beamTtl, resultWaitTime, resultMaxTries, focusProject, testFeasibilityResult, feasibilityMapper);
+                beamApiKey, beamTtl, resultWaitTime, resultMaxTries, focusProject, feasibilityMapper);
     }
 
     BeamFeasibilityService(WebClient webClient, BeamService beamService,
                            String projectManagerId, String beamApiKey, String beamTtl,
                            String resultWaitTime, int resultMaxTries, String focusProject,
-                           String testFeasibilityResult, FeasibilityMapper feasibilityMapper) {
+                           FeasibilityMapper feasibilityMapper) {
         if (resultMaxTries < 1) {
             throw new IllegalArgumentException("Feasibility Beam result max tries must be at least 1");
         }
@@ -88,8 +85,6 @@ public class BeamFeasibilityService implements FeasibilityService {
         this.resultWaitTime = resultWaitTime;
         this.resultMaxTries = resultMaxTries;
         this.focusProject = focusProject;
-        this.testFeasibilityResult = testFeasibilityResult;
-        this.testFeasibilityResultResolver = new TestFeasibilityResultResolver(objectMapper, new Random());
         this.feasibilityMapper = feasibilityMapper;
     }
 
@@ -100,9 +95,6 @@ public class BeamFeasibilityService implements FeasibilityService {
     }
 
     private Mono<JsonNode> fetchRawFeasibility(Project project, ProjectBridgehead bridgehead) {
-        if (testFeasibilityResult != null && !testFeasibilityResult.isBlank()) {
-            return Mono.fromCallable(() -> testFeasibilityResultResolver.resolve(testFeasibilityResult));
-        }
         BeamRequest request = beamService.generateFeasibilityBeamRequest(
                 project.getQuery().getQuery(), bridgehead.getBridgehead(), focusProject, beamTtl);
 

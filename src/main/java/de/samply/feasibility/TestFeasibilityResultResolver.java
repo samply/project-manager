@@ -2,7 +2,11 @@ package de.samply.feasibility;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.samply.annotations.ModuleTest;
 import de.samply.form.core.model.DataType;
+import de.samply.modules.OptionalModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,13 +31,20 @@ import java.util.regex.Pattern;
  * as a comment marker even mid-line - both would risk swallowing or
  * truncating the placeholder before it ever reaches this resolver.
  */
-class TestFeasibilityResultResolver {
+@Component
+@ModuleTest(OptionalModule.FEASIBILITY)
+public class TestFeasibilityResultResolver {
 
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\{(\\w+)}}");
     private static final int RANDOM_DAYS_RANGE = 365;
 
     private final ObjectMapper objectMapper;
     private final Random random;
+
+    @Autowired
+    public TestFeasibilityResultResolver() {
+        this(new ObjectMapper(), new Random());
+    }
 
     TestFeasibilityResultResolver(ObjectMapper objectMapper, Random random) {
         this.objectMapper = objectMapper;

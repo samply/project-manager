@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - BEAM as implicit optional module (no variable): BeamService only exists when EXPORTER or FEASIBILITY is enabled, so BEAM_URL, BEAM_API_KEY and BEAM_PROJECT_MANAGER_ID are only needed then
 - Exporter: ExporterService is now the interface with all export operations (send, execute, status, execution ID, templates, file transfer), used by the controller, ExporterJob and CoderJob; BeamExporterService (formerly ExporterService) and ExporterQueryLabelTemplate belong to EXPORTER, DisabledExporterService stands in; the exporter templates and EXPORTER_QUERY_LABEL_TEMPLATE are only needed with ENABLE_EXPORTER not false; RESEARCH_ENVIRONMENT requires EXPORTER (the exporter transfers the export files into the workspaces)
 - Feasibility: the mapping (FeasibilityMapper) belongs to FEASIBILITY; FeasibilityService returns the mapped items
+- Test mode of optional modules: ENABLE_* can be "test" (ModuleMode true/false/test, other values stop the start); @ModuleTest beans replace the @ModuleComponent ones; a module in test mode needs none of its required modules
+- ENABLE_FEASIBILITY=test: TestFeasibilityService gives random results from TEST_FEASIBILITY_RESULT without Beam (moved out of BeamFeasibilityService, which no longer reads TEST_FEASIBILITY_RESULT)
 - Emails: EmailSenderAspect, AttachmentFileService and the email executor belong to EMAILS (with emails disabled, @EmailSender no longer looks up recipients)
 - ModuleDependenciesTest also reports a class outside every module that only module classes inject
 - Spring Application

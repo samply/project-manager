@@ -1,6 +1,7 @@
 package de.samply.modules;
 
 import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ModuleTest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -9,13 +10,18 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Which optional modules are enabled in this deployment. Stops the start when an enabled module requires a disabled
@@ -25,26 +31,37 @@ import java.util.stream.Collectors;
 @Component
 public class OptionalModules {
 
+    private final Map<OptionalModule, ModuleMode> modes;
     private final Set<OptionalModule> enabledModules;
     private final ApplicationContext applicationContext;
 
     public OptionalModules(Environment environment, ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        this.enabledModules = Arrays.stream(OptionalModule.values())
-                .filter(module -> module.isEnabled(environment))
+        this.modes = Arrays.stream(OptionalModule.values())
+                .collect(Collectors.toMap(module -> module, module -> module.fetchMode(environment),
+                        (first, _) -> first, () -> new EnumMap<>(OptionalModule.class)));
+        this.enabledModules = modes.keySet().stream()
+                .filter(module -> modes.get(module) != ModuleMode.FALSE)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(OptionalModule.class)));
         checkRequiredModules();
     }
 
+    /** Enabled: "true" or "test". */
     public boolean isEnabled(OptionalModule module) {
         return enabledModules.contains(module);
     }
 
+    public ModuleMode fetchMode(OptionalModule module) {
+        return modes.get(module);
+    }
+
+    // Only for modules in mode "true": the test mode replaces the systems the module needs
     private void checkRequiredModules() {
         List<String> problems = enabledModules.stream()
+                .filter(module -> modes.get(module) == ModuleMode.TRUE)
                 .flatMap(module -> module.getRequiredModules().stream()
-                        .filter(required -> !enabledModules.contains(required))
                                 // An implicit module is enabled with the modules that require it, so it never appears here
+                        .filter(required -> modes.get(required) != ModuleMode.TRUE)
                         .map(required -> module + " (" + module.describeSwitch() + ") requires " + required
                                 + " (" + required.describeSwitch() + ")"))
                 .toList();
@@ -56,25 +73,35 @@ public class OptionalModules {
 
     @EventListener(ApplicationReadyEvent.class)
     public void logEnabledModules() {
-        Map<OptionalModule, List<String>> beansByModule = Arrays.stream(applicationContext.getBeanNamesForAnnotation(ModuleComponent.class))
-                .collect(Collectors.groupingBy(
-                        beanName -> applicationContext.findAnnotationOnBean(beanName, ModuleComponent.class).value(),
-                        Collectors.mapping(this::fetchBeanClassName, Collectors.toList())));
+        Map<OptionalModule, Set<String>> beansByModule = Stream.concat(
+                        fetchBeansByModule(ModuleComponent.class, ModuleComponent::value),
+                        fetchBeansByModule(ModuleTest.class, ModuleTest::value))
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toCollection(TreeSet::new))));
         log.info("Enabled optional modules: {}", enabledModules.isEmpty() ? "none" : enabledModules.stream()
-                .map(module -> module + Optional.ofNullable(beansByModule.get(module))
-                        .map(beans -> " (" + String.join(", ", beans.stream().sorted().toList()) + ")")
+                .map(module -> module + (modes.get(module) == ModuleMode.TEST ? " [test]" : "")
+                        + Optional.ofNullable(beansByModule.get(module))
+                        .map(beans -> " (" + String.join(", ", beans) + ")")
                         .orElse("") + describeImplicitSwitch(module))
                 .collect(Collectors.joining(", ")));
         log.debug("Disabled optional modules: {}", Arrays.stream(OptionalModule.values())
                 .filter(module -> !enabledModules.contains(module)).toList());
     }
 
-    // An implicit module (no variable) is enabled through the enabled modules that require it
+    // An implicit module (no variable) is enabled through the modules in mode "true" that require it
     private String describeImplicitSwitch(OptionalModule module) {
         return module.isImplicit() ? " [through " + enabledModules.stream()
+                .filter(enabledModule -> modes.get(enabledModule) == ModuleMode.TRUE)
                 .filter(enabledModule -> enabledModule.getRequiredModules().contains(module))
                 .map(OptionalModule::name)
                 .collect(Collectors.joining(", ")) + "]" : "";
+    }
+
+    private <A extends Annotation> Stream<Map.Entry<OptionalModule, String>> fetchBeansByModule(
+            Class<A> annotationType, Function<A, OptionalModule> module) {
+        return Arrays.stream(applicationContext.getBeanNamesForAnnotation(annotationType))
+                .map(beanName -> Map.entry(module.apply(applicationContext.findAnnotationOnBean(beanName, annotationType)),
+                        fetchBeanClassName(beanName)));
     }
 
     // The user class, not the proxy Spring may create around it (e.g. for @Async)
