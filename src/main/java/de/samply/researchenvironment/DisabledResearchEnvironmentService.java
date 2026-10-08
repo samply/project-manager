@@ -1,6 +1,6 @@
 package de.samply.researchenvironment;
 
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Stand-in while the module RESEARCH_ENVIRONMENT is disabled: there are no workspaces. Creating and deleting do
+ * Used while the module RESEARCH_ENVIRONMENT is disabled: there are no workspaces. Creating and deleting do
  * nothing, as before with ENABLE_CODER=false; storing a workspace or sending a file to one cannot happen without the
  * module and throws.
  */
 @Slf4j
 @Service
-@ModuleStandIn(OptionalModule.RESEARCH_ENVIRONMENT)
+@ConditionalOnModuleDisabled(OptionalModule.RESEARCH_ENVIRONMENT)
 public class DisabledResearchEnvironmentService implements ResearchEnvironmentService {
 
     private static final String DISABLED = "The research environment is disabled (ENABLE_RESEARCH_ENVIRONMENT=false)";

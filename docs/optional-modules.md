@@ -26,15 +26,15 @@ module with a test implementation (`ModuleMode`); any other value stops the star
 DataSHIELD implies the research environment, and the research environment the exporter - not the other way round. If
 an enabled module requires a disabled one, the backend does not start and says which variable to change.
 
-The **test mode** (`test`) replaces the module's real beans by its test beans (`@ModuleTest`), e.g. feasibility with
+The **test mode** (`test`) replaces the module's real beans by its test beans (`@ConditionalOnModuleTest`), e.g. feasibility with
 random results instead of Beam. A module in test mode needs none of its required modules: the test replaces the systems
 they connect to. `test` on a module without a test implementation stops the start.
 
 | Value | Created |
 |---|---|
-| `true` (default) | `@ModuleComponent` beans |
-| `test` | `@ModuleTest` beans |
-| `false` | `@ModuleStandIn` beans |
+| `true` (default) | `@ConditionalOnModule` beans |
+| `test` | `@ConditionalOnModuleTest` beans |
+| `false` | `@ConditionalOnModuleDisabled` beans |
 
 A bean needed in both the real and the test mode carries both annotations (`FeasibilityMapper`: the test results are
 mapped like real ones). Only the real implementation is `@Primary` (for IntelliJ; at runtime only one exists).
@@ -59,14 +59,14 @@ every bean.
 
 ## Why custom annotations and not plain `@ConditionalOnBooleanProperty`
 
-Decided 2026-10-08. `@ModuleComponent` / `@ModuleStandIn` are built on Spring's own mechanism (`@Conditional`): the
+Decided 2026-10-08. `@ConditionalOnModule` / `@ConditionalOnModuleDisabled` are built on Spring's own mechanism (`@Conditional`): the
 small `OptionalModuleCondition` turns the enum into the real Spring condition, and the result also appears in Spring's
 condition report. Plain Spring (`@ConditionalOnBooleanProperty(name = ENABLE_X, matchIfMissing = true)` on each real
-bean, `havingValue = false` on each stand-in) would do for a single module, but not for what the enum adds:
+bean, `havingValue = false` on each disabled implementation) would do for a single module, but not for what the enum adds:
 
 - the default ("enabled if unset") and the variable are stated once per module, not on every bean;
-- dependencies between modules, checked at start (with stand-ins, a wrong combination would otherwise start silently
-  with the stand-in);
+- dependencies between modules, checked at start (with disabled implementations, a wrong combination would otherwise start silently
+  with the disabled implementation);
 - implicit modules (BEAM), which plain Spring could only express as a `@ConditionalOnExpression` string repeating the
   defaults and the dependency;
 - the one-line start-up log and `ModuleDependenciesTest`, which read the module directly from the annotation;
@@ -75,23 +75,27 @@ bean, `havingValue = false` on each stand-in) would do for a single module, but 
 Annotation values must be compile-time constants, so `"ENABLE_" + OptionalModule.X` cannot be used in an annotation
 anyway; the enum keeps the variable name next to the module.
 
+Names (decided 2026-10-08): Spring style, like `@ConditionalOnProperty` - `@ConditionalOnModule` (mode `true`),
+`@ConditionalOnModuleDisabled` (`false`), `@ConditionalOnModuleTest` (`test`). They are conditions, not stereotypes: the
+class still needs `@Service` / `@Component`. Formerly `@ModuleComponent`, `@ModuleStandIn` and `@ModuleTest`.
+
 ## How to make something part of a module
 
-1. Put `@ModuleComponent(OptionalModule.X)` on every bean that only exists for module X: its service implementation,
+1. Put `@ConditionalOnModule(OptionalModule.X)` on every bean that only exists for module X: its service implementation,
    its jobs, its configuration. Spring creates them only when X is enabled.
 2. Code outside the module depends on an **interface**, never on the implementation. Next to the real implementation
-   (`@ModuleComponent(X)`) there is a **disabled stand-in** (`@ModuleStandIn(X)`) that implements the same interface
+   (`@ConditionalOnModule(X)`) there is a **disabled implementation** (`@ConditionalOnModuleDisabled(X)`) that implements the same interface
    and is created when the module is disabled. The real implementation also carries `@Primary`: at runtime only
    one of the two exists, but IntelliJ does not evaluate the module condition (neither ours nor Spring Boot's
    `@ConditionalOnBooleanProperty`, tried 2026-10-07) and would otherwise report "Could not autowire. There is more
    than one bean". `ModuleDependenciesTest` checks it. Per method it does nothing (side effects, logged at debug), returns a neutral value (answers the
    UI shows), or throws `IllegalStateException` (calls that are a programming error when the module is disabled).
 3. For a new module: side effects are better triggered by events (`@EventListener` in the module) than by calls from
-   outside - a disabled module then has no listener, and needs no stand-in for them.
+   outside - a disabled module then has no listener, and needs no disabled implementation for them.
 4. Add the module to `OptionalModule`, with its variable and the modules it requires, and to the table above.
 
-Example: `FeasibilityService` (interface), `BeamFeasibilityService` (`@ModuleComponent(FEASIBILITY)`) and
-`DisabledFeasibilityService` (`@ModuleStandIn(FEASIBILITY)`). Use `@ModuleStandIn` for the stand-in, not
+Example: `FeasibilityService` (interface), `BeamFeasibilityService` (`@ConditionalOnModule(FEASIBILITY)`) and
+`DisabledFeasibilityService` (`@ConditionalOnModuleDisabled(FEASIBILITY)`). Use `@ConditionalOnModuleDisabled` for the disabled implementation, not
 `@ConditionalOnMissingBean`: Spring only supports the latter reliably in auto-configuration, not on component-scanned
 classes. Whether a module is enabled (e.g. for the frontend): `OptionalModules.isEnabled(module)`.
 
@@ -103,7 +107,7 @@ transfer of the export file into a workspace), not only what today's callers use
 the module). Everyone, the module's own job included, depends on the interface.
 
 `RESEARCH_ENVIRONMENT`: the interface `ResearchEnvironmentService` lives in the neutral package
-`de.samply.researchenvironment` (with its stand-in), the Coder implementation `CoderResearchEnvironmentService` in
+`de.samply.researchenvironment` (with its disabled implementation), the Coder implementation `CoderResearchEnvironmentService` in
 `de.samply.coder` - another implementation can replace Coder without touching the callers.
 
 `ModuleDependenciesTest` checks the whole codebase: a class of module X may only be injected by classes of X or of a
@@ -112,7 +116,7 @@ forgotten dependency without starting the backend. It also reports the opposite:
 module classes inject - it probably belongs to one of them.
 
 `DATASHIELD`: the interface `DataShieldService` has every DataSHIELD operation (tokens, their status, the bridgeheads
-they cover, project status, authentication script); the controller and the DataSHIELD job use it. The stand-in answers
+they cover, project status, authentication script); the controller and the DataSHIELD job use it. The disabled implementation answers
 INACTIVE and has no script and no bridgeheads; the job's token operations fail without the module.
 
 The interface of a module holds every operation that belongs to its concept, not only what today's callers use: other
@@ -122,7 +126,7 @@ code may need them later, and the module's own classes depend on the interface t
 templates without sending them); sending goes through `EmailSendingService` (`SmtpEmailSendingService` or
 `DisabledEmailSendingService`, which logs the email). The SMTP beans (`MailSenderConfiguration`) belong to the module,
 so the SMTP settings are only needed with emails enabled. So do `EmailSenderAspect` (the `@EmailSender` annotations
-do nothing with emails disabled), `AttachmentFileService` and the email executor (`@ModuleComponent` on its `@Bean`
+do nothing with emails disabled), `AttachmentFileService` and the email executor (`@ConditionalOnModule` on its `@Bean`
 method). (The interface is not called `EmailSender`: that name is
 taken by the annotation `@EmailSender`.)
 

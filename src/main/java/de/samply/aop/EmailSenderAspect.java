@@ -1,10 +1,10 @@
 package de.samply.aop;
 
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.annotations.EmailSender;
 import de.samply.annotations.EmailSenderIfError;
 import de.samply.annotations.EmailSenders;
 import de.samply.annotations.EmailSendersIfError;
-import de.samply.annotations.ModuleComponent;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 // Part of EMAILS: with emails disabled the @EmailSender annotations do nothing, without looking up the recipients
 @Component
 @Aspect
-@ModuleComponent(OptionalModule.EMAILS)
+@ConditionalOnModule(OptionalModule.EMAILS)
 public class EmailSenderAspect {
 
     // Services

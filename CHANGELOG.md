@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.0.0 - 2026-09-29]
 ### Added
 - First version of the project
-- Optional modules (`OptionalModule`, `@ModuleComponent`): beans of a disabled module are not created; start stops if an enabled module requires a disabled one; start-up log of the enabled modules (docs/optional-modules.md)
+- Optional modules (`OptionalModule`, `@ConditionalOnModule`): beans of a disabled module are not created; start stops if an enabled module requires a disabled one; start-up log of the enabled modules (docs/optional-modules.md)
 - ENABLE_RESEARCH_ENVIRONMENT (formerly ENABLE_CODER) and ENABLE_DATASHIELD (formerly ENABLE_TOKEN_MANAGER), without fallback to the former names. App register follows ENABLE_RESEARCH_ENVIRONMENT; ENABLE_APP_REGISTER is no longer read
-- Feasibility as optional module: FeasibilityService interface, BeamFeasibilityService, DisabledFeasibilityService (@ModuleStandIn)
+- Feasibility as optional module: FeasibilityService interface, BeamFeasibilityService, DisabledFeasibilityService (@ConditionalOnModuleDisabled)
 - Exporter as optional module: ExporterJob and ExporterJobTrigger (the listener of SendQueryToBridgeheadEvent, moved out of QueryEventService) only exist when ENABLE_EXPORTER is not false
 - Research environment as optional module: ResearchEnvironmentService interface, CoderResearchEnvironmentService (formerly CoderService), DisabledResearchEnvironmentService; AppRegisterService, CoderJob and CoderConfiguration (coder/*.json) only exist when ENABLE_RESEARCH_ENVIRONMENT is not false; the Beam ID of the workspace for the file transfer comes from the research environment (CODER_BEAM_ID_SUFFIX, CODER_TEST_FILE_BEAM_ID no longer read by ExporterService); the research environment URL in emails only when enabled
 - DataSHIELD as optional module: DataShieldService interface (all DataSHIELD operations, used by the controller and DataShieldTokenManagerJob), DataShieldTokenManagerService, DisabledDataShieldService; DataShieldTokenManagerJob; TOKEN_MANAGER_URL only needed when ENABLE_DATASHIELD is not false
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - BEAM as implicit optional module (no variable): BeamService only exists when EXPORTER or FEASIBILITY is enabled, so BEAM_URL, BEAM_API_KEY and BEAM_PROJECT_MANAGER_ID are only needed then
 - Exporter: ExporterService is now the interface with all export operations (send, execute, status, execution ID, templates, file transfer), used by the controller, ExporterJob and CoderJob; BeamExporterService (formerly ExporterService) and ExporterQueryLabelTemplate belong to EXPORTER, DisabledExporterService stands in; the exporter templates and EXPORTER_QUERY_LABEL_TEMPLATE are only needed with ENABLE_EXPORTER not false; RESEARCH_ENVIRONMENT requires EXPORTER (the exporter transfers the export files into the workspaces)
 - Feasibility: the mapping (FeasibilityMapper) belongs to FEASIBILITY; FeasibilityService returns the mapped items
-- Test mode of optional modules: ENABLE_* can be "test" (ModuleMode true/false/test, other values stop the start); @ModuleTest beans replace the @ModuleComponent ones; a module in test mode needs none of its required modules
+- Test mode of optional modules: ENABLE_* can be "test" (ModuleMode true/false/test, other values stop the start); @ConditionalOnModuleTest beans replace the @ConditionalOnModule ones; a module in test mode needs none of its required modules
 - ENABLE_FEASIBILITY=test: TestFeasibilityService gives random results from TEST_FEASIBILITY_RESULT without Beam (moved out of BeamFeasibilityService, which no longer reads TEST_FEASIBILITY_RESULT)
 - Emails: EmailSenderAspect, AttachmentFileService and the email executor belong to EMAILS (with emails disabled, @EmailSender no longer looks up recipients)
 - ModuleDependenciesTest also reports a class outside every module that only module classes inject

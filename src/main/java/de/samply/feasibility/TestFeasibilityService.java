@@ -1,6 +1,6 @@
 package de.samply.feasibility;
 
-import de.samply.annotations.ModuleTest;
+import de.samply.annotations.ConditionalOnModuleTest;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
@@ -20,7 +20,7 @@ import java.util.List;
  * bridgeheads. Mapped like a real answer.
  */
 @Service
-@ModuleTest(OptionalModule.FEASIBILITY)
+@ConditionalOnModuleTest(OptionalModule.FEASIBILITY)
 public class TestFeasibilityService implements FeasibilityService {
 
     private final String testFeasibilityResult;

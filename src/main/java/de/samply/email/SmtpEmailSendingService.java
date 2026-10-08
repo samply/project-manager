@@ -1,6 +1,6 @@
 package de.samply.email;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
@@ -37,7 +37,7 @@ import java.util.Optional;
  */
 @Service
 @Slf4j
-@ModuleComponent(OptionalModule.EMAILS)
+@ConditionalOnModule(OptionalModule.EMAILS)
 // Only for the IDE: at runtime only this or DisabledEmailSendingService exists (module condition). IntelliJ does not
 // evaluate the condition and would report two candidates for EmailSendingService.
 @Primary

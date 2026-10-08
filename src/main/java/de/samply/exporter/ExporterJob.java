@@ -1,6 +1,6 @@
 package de.samply.exporter;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadExecution;
@@ -31,7 +31,7 @@ import java.util.function.Function;
  */
 @Slf4j
 @Component
-@ModuleComponent(OptionalModule.EXPORTER)
+@ConditionalOnModule(OptionalModule.EXPORTER)
 public class ExporterJob {
 
     private final Set<ProjectState> activeStates = Set.of(ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL);

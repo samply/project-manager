@@ -11,14 +11,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a bean (component class or {@code @Bean} method) as part of an optional module: Spring only creates it when
- * the module is enabled, and the start-up log lists it under its module. See docs/optional-modules.md.
+ * Marks a bean of the <b>test</b> mode of an optional module (its variable is "test"): created in place of the real
+ * beans ({@link ConditionalOnModule}), e.g. an implementation with random results that needs no external system. A bean
+ * needed in both modes (e.g. a mapper) carries both annotations. See docs/optional-modules.md.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Conditional(OptionalModuleCondition.class)
-public @interface ModuleComponent {
+public @interface ConditionalOnModuleTest {
 
     OptionalModule value();
 

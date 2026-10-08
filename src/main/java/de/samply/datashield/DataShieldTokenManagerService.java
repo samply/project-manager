@@ -1,6 +1,6 @@
 package de.samply.datashield;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.modules.OptionalModule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +54,7 @@ import java.util.function.Supplier;
  */
 @Service
 @Slf4j
-@ModuleComponent(OptionalModule.DATASHIELD)
+@ConditionalOnModule(OptionalModule.DATASHIELD)
 // Only for the IDE: at runtime only this or DisabledDataShieldService exists (module condition). IntelliJ does not
 // evaluate the condition and would report two candidates for DataShieldService.
 @Primary

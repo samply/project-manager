@@ -3,7 +3,7 @@ package de.samply.feasibility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.beam.BeamRequest;
 import de.samply.beam.BeamService;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * mode {@link TestFeasibilityService} replaces it.
  */
 @Service
-@ModuleComponent(OptionalModule.FEASIBILITY)
+@ConditionalOnModule(OptionalModule.FEASIBILITY)
 // Only for the IDE: at runtime only this or DisabledFeasibilityService exists (module condition). IntelliJ does not
 // evaluate the condition and would report two candidates for FeasibilityService.
 @Primary

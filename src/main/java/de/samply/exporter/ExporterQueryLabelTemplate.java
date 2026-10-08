@@ -1,6 +1,6 @@
 package de.samply.exporter;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectType;
@@ -29,7 +29,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-@ModuleComponent(OptionalModule.EXPORTER)
+@ConditionalOnModule(OptionalModule.EXPORTER)
 public class ExporterQueryLabelTemplate {
 
     // Not "#{...}": Spring would evaluate that itself while injecting the environment variable

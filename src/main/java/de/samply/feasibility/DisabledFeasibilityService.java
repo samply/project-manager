@@ -1,6 +1,6 @@
 package de.samply.feasibility;
 
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.frontend.dto.FeasibilityItem;
@@ -13,12 +13,12 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /**
- * Stand-in while the module FEASIBILITY is disabled: no result. The frontend asks first whether feasibility is enabled
+ * Used while the module FEASIBILITY is disabled: no result. The frontend asks first whether feasibility is enabled
  * and does not show the table otherwise.
  */
 @Slf4j
 @Service
-@ModuleStandIn(OptionalModule.FEASIBILITY)
+@ConditionalOnModuleDisabled(OptionalModule.FEASIBILITY)
 public class DisabledFeasibilityService implements FeasibilityService {
 
     @Override

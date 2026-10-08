@@ -1,6 +1,6 @@
 package de.samply.email.attachment;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.db.model.Project;
 import de.samply.form.template.FormTemplateService;
 import de.samply.modules.OptionalModule;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@ModuleComponent(OptionalModule.EMAILS)
+@ConditionalOnModule(OptionalModule.EMAILS)
 public class AttachmentFileService {
 
     private final FormTemplateService formTemplateService;

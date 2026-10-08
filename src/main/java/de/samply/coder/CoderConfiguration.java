@@ -1,7 +1,7 @@
 package de.samply.coder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.coder.request.CreateRequestBody;
 import de.samply.modules.OptionalModule;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Data
 @Configuration
-@ModuleComponent(OptionalModule.RESEARCH_ENVIRONMENT)
+@ConditionalOnModule(OptionalModule.RESEARCH_ENVIRONMENT)
 @ConfigurationProperties(prefix = ProjectManagerConst.CODER_PREFIX)
 public class CoderConfiguration {
 

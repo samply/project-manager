@@ -1,6 +1,6 @@
 package de.samply.register;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.modules.OptionalModule;
 import de.samply.researchenvironment.ResearchEnvironmentService;
 import de.samply.app.ProjectManagerConst;
@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-@ModuleComponent(OptionalModule.RESEARCH_ENVIRONMENT)
+@ConditionalOnModule(OptionalModule.RESEARCH_ENVIRONMENT)
 public class AppRegisterService {
 
     private final WebClient webClient;

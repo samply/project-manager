@@ -1,6 +1,6 @@
 package de.samply.exporter;
 
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.db.model.ProjectCoder;
 import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectType;
@@ -13,12 +13,12 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Stand-in while the module EXPORTER is disabled: no exporter templates, no export. Sending and following queries is
+ * Used while the module EXPORTER is disabled: no exporter templates, no export. Sending and following queries is
  * done by the exporter job, which belongs to the module, and the research environment requires the module - so those
  * calls are programming errors.
  */
 @Service
-@ModuleStandIn(OptionalModule.EXPORTER)
+@ConditionalOnModuleDisabled(OptionalModule.EXPORTER)
 public class DisabledExporterService implements ExporterService {
 
     @Override

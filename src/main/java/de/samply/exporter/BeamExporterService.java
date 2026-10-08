@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.modules.OptionalModule;
 import de.samply.db.model.*;
@@ -56,7 +56,7 @@ import java.util.stream.Stream;
  */
 @Service
 @Slf4j
-@ModuleComponent(OptionalModule.EXPORTER)
+@ConditionalOnModule(OptionalModule.EXPORTER)
 // Only for the IDE: at runtime only this or DisabledExporterService exists (module condition)
 @Primary
 public class BeamExporterService implements ExporterService {

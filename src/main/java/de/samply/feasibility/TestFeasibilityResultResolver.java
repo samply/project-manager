@@ -2,7 +2,7 @@ package de.samply.feasibility;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.samply.annotations.ModuleTest;
+import de.samply.annotations.ConditionalOnModuleTest;
 import de.samply.form.core.model.DataType;
 import de.samply.modules.OptionalModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * truncating the placeholder before it ever reaches this resolver.
  */
 @Component
-@ModuleTest(OptionalModule.FEASIBILITY)
+@ConditionalOnModuleTest(OptionalModule.FEASIBILITY)
 public class TestFeasibilityResultResolver {
 
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\{(\\w+)}}");

@@ -8,12 +8,12 @@ import java.util.stream.Collectors;
  */
 public enum ModuleMode {
 
-    /** Enabled: the module's real beans ({@link de.samply.annotations.ModuleComponent}). */
+    /** Enabled: the module's real beans ({@link de.samply.annotations.ConditionalOnModule}). */
     TRUE,
-    /** Disabled: the stand-ins ({@link de.samply.annotations.ModuleStandIn}). */
+    /** Disabled: the disabled implementations ({@link de.samply.annotations.ConditionalOnModuleDisabled}). */
     FALSE,
     /**
-     * Test implementation instead of the real one ({@link de.samply.annotations.ModuleTest}), e.g. for development
+     * Test implementation instead of the real one ({@link de.samply.annotations.ConditionalOnModuleTest}), e.g. for development
      * without the external systems; only for modules that have one.
      */
     TEST;

@@ -1,7 +1,7 @@
 package de.samply.researchenvironment;
 
-import de.samply.annotations.ModuleComponent;
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.coder.CoderConfiguration;
 import de.samply.coder.CoderJob;
 import de.samply.coder.CoderResearchEnvironmentService;
@@ -24,9 +24,9 @@ class ResearchEnvironmentModuleTest {
     @Test
     void coderAppRegisterJobAndConfigurationBelongToTheResearchEnvironmentModule() {
         Stream.of(CoderResearchEnvironmentService.class, AppRegisterService.class, CoderJob.class, CoderConfiguration.class)
-                .forEach(type -> assertThat(type.getAnnotation(ModuleComponent.class).value())
+                .forEach(type -> assertThat(type.getAnnotation(ConditionalOnModule.class).value())
                         .as(type.getSimpleName()).isEqualTo(OptionalModule.RESEARCH_ENVIRONMENT));
-        assertThat(DisabledResearchEnvironmentService.class.getAnnotation(ModuleStandIn.class).value())
+        assertThat(DisabledResearchEnvironmentService.class.getAnnotation(ConditionalOnModuleDisabled.class).value())
                 .isEqualTo(OptionalModule.RESEARCH_ENVIRONMENT);
     }
 

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * switches on or off with an environment variable. Not a Java module (JPMS) and not a frontend module
  * ({@link de.samply.annotations.FrontendSiteModule}).
  * <p>
- * The beans of a module carry {@link de.samply.annotations.ModuleComponent}: they are only created when the module is
+ * The beans of a module carry {@link de.samply.annotations.ConditionalOnModule}: they are only created when the module is
  * enabled, so a disabled module needs none of its configuration. See docs/optional-modules.md.
  * <p>
  * The variable is "true" (the default), "false", or "test" for a module with a test implementation
@@ -63,7 +63,7 @@ public enum OptionalModule {
         return enableVariable == null;
     }
 
-    /** Whether the module has a test implementation ({@link de.samply.annotations.ModuleTest}). */
+    /** Whether the module has a test implementation ({@link de.samply.annotations.ConditionalOnModuleTest}). */
     public boolean isWithTestMode() {
         return withTestMode;
     }

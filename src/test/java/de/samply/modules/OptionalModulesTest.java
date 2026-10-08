@@ -1,8 +1,8 @@
 package de.samply.modules;
 
-import de.samply.annotations.ModuleComponent;
-import de.samply.annotations.ModuleStandIn;
-import de.samply.annotations.ModuleTest;
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleDisabled;
+import de.samply.annotations.ConditionalOnModuleTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -153,27 +153,27 @@ class OptionalModulesTest {
     static class FeasibilityComponents {
 
         @Bean
-        @ModuleComponent(OptionalModule.FEASIBILITY)
+        @ConditionalOnModule(OptionalModule.FEASIBILITY)
         FeasibilityBean feasibilityBean() {
             return new FeasibilityBean();
         }
 
         @Bean
-        @ModuleStandIn(OptionalModule.FEASIBILITY)
+        @ConditionalOnModuleDisabled(OptionalModule.FEASIBILITY)
         DisabledFeasibilityBean disabledFeasibilityBean() {
             return new DisabledFeasibilityBean();
         }
 
         @Bean
-        @ModuleTest(OptionalModule.FEASIBILITY)
+        @ConditionalOnModuleTest(OptionalModule.FEASIBILITY)
         TestFeasibilityBean testFeasibilityBean() {
             return new TestFeasibilityBean();
         }
 
         // Needed in both the real and the test mode
         @Bean
-        @ModuleComponent(OptionalModule.FEASIBILITY)
-        @ModuleTest(OptionalModule.FEASIBILITY)
+        @ConditionalOnModule(OptionalModule.FEASIBILITY)
+        @ConditionalOnModuleTest(OptionalModule.FEASIBILITY)
         FeasibilityMapperBean feasibilityMapperBean() {
             return new FeasibilityMapperBean();
         }
@@ -184,7 +184,7 @@ class OptionalModulesTest {
     static class ResearchEnvironmentComponents {
 
         @Bean
-        @ModuleComponent(OptionalModule.RESEARCH_ENVIRONMENT)
+        @ConditionalOnModule(OptionalModule.RESEARCH_ENVIRONMENT)
         ResearchEnvironmentBean researchEnvironmentBean(
                 @Value("${RESEARCH_ENVIRONMENT_TEST_URL}") String url) {
             return new ResearchEnvironmentBean(url);
@@ -196,7 +196,7 @@ class OptionalModulesTest {
     static class BeamComponents {
 
         @Bean
-        @ModuleComponent(OptionalModule.BEAM)
+        @ConditionalOnModule(OptionalModule.BEAM)
         BeamBean beamBean() {
             return new BeamBean();
         }

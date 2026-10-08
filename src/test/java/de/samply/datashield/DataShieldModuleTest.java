@@ -1,7 +1,7 @@
 package de.samply.datashield;
 
-import de.samply.annotations.ModuleComponent;
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.datashield.dto.DataShieldProjectStatus;
 import de.samply.datashield.dto.DataShieldTokenStatus;
 import de.samply.db.model.Project;
@@ -21,9 +21,9 @@ class DataShieldModuleTest {
     @Test
     void tokenManagerServiceAndJobBelongToTheDataShieldModule() {
         Stream.of(DataShieldTokenManagerService.class, DataShieldTokenManagerJob.class)
-                .forEach(type -> assertThat(type.getAnnotation(ModuleComponent.class).value())
+                .forEach(type -> assertThat(type.getAnnotation(ConditionalOnModule.class).value())
                         .as(type.getSimpleName()).isEqualTo(OptionalModule.DATASHIELD));
-        assertThat(DisabledDataShieldService.class.getAnnotation(ModuleStandIn.class).value())
+        assertThat(DisabledDataShieldService.class.getAnnotation(ConditionalOnModuleDisabled.class).value())
                 .isEqualTo(OptionalModule.DATASHIELD);
     }
 

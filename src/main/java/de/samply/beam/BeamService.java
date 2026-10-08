@@ -2,7 +2,7 @@ package de.samply.beam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.modules.OptionalModule;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@ModuleComponent(OptionalModule.BEAM)
+@ConditionalOnModule(OptionalModule.BEAM)
 public class BeamService {
 
     private final String projectManagerId;

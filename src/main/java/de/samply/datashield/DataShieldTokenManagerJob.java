@@ -1,6 +1,6 @@
 package de.samply.datashield;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.datashield.dto.DataShieldProjectStatus;
@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Component
-@ModuleComponent(OptionalModule.DATASHIELD)
+@ConditionalOnModule(OptionalModule.DATASHIELD)
 public class DataShieldTokenManagerJob {
 
     // Services

@@ -1,6 +1,6 @@
 package de.samply.email;
 
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.modules.OptionalModule;
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
- * Stand-in while the module EMAILS is disabled: logs the email that would have been sent, as before with
+ * Used while the module EMAILS is disabled: logs the email that would have been sent, as before with
  * ENABLE_EMAILS=false.
  */
 @Slf4j
 @Service
-@ModuleStandIn(OptionalModule.EMAILS)
+@ConditionalOnModuleDisabled(OptionalModule.EMAILS)
 public class DisabledEmailSendingService implements EmailSendingService {
 
     @Override

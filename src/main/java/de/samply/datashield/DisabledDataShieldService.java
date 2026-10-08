@@ -1,6 +1,6 @@
 package de.samply.datashield;
 
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.datashield.dto.DataShieldProjectStatus;
 import de.samply.datashield.dto.DataShieldTokenManagerProjectStatus;
 import de.samply.datashield.dto.DataShieldTokenManagerTokenStatus;
@@ -19,13 +19,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Stand-in while the module DATASHIELD is disabled: the same answers as before with ENABLE_TOKEN_MANAGER=false - the
+ * Used while the module DATASHIELD is disabled: the same answers as before with ENABLE_TOKEN_MANAGER=false - the
  * project and token status INACTIVE (shown in the frontend), no authentication script, no bridgeheads with tokens.
  * Creating, refreshing and removing tokens is done by the DataSHIELD job, which belongs to the module - so those calls
  * are programming errors.
  */
 @Service
-@ModuleStandIn(OptionalModule.DATASHIELD)
+@ConditionalOnModuleDisabled(OptionalModule.DATASHIELD)
 public class DisabledDataShieldService implements DataShieldService {
 
     @Override

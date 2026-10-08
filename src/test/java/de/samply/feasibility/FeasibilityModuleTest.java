@@ -1,8 +1,8 @@
 package de.samply.feasibility;
 
-import de.samply.annotations.ModuleComponent;
-import de.samply.annotations.ModuleStandIn;
-import de.samply.annotations.ModuleTest;
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleDisabled;
+import de.samply.annotations.ConditionalOnModuleTest;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.modules.OptionalModule;
@@ -24,25 +24,25 @@ class FeasibilityModuleTest {
 
     @Test
     void beamImplementationBelongsToTheFeasibilityModule() {
-        assertThat(BeamFeasibilityService.class.getAnnotation(ModuleComponent.class).value())
+        assertThat(BeamFeasibilityService.class.getAnnotation(ConditionalOnModule.class).value())
                 .isEqualTo(OptionalModule.FEASIBILITY);
     }
 
     @Test
     void standInReplacesItWhenTheModuleIsDisabled() {
-        assertThat(DisabledFeasibilityService.class.getAnnotation(ModuleStandIn.class).value())
+        assertThat(DisabledFeasibilityService.class.getAnnotation(ConditionalOnModuleDisabled.class).value())
                 .isEqualTo(OptionalModule.FEASIBILITY);
     }
 
     @Test
     void testImplementationAndMapperBelongToTheTestMode() {
         assertThat(OptionalModule.FEASIBILITY.isWithTestMode()).isTrue();
-        assertThat(TestFeasibilityService.class.getAnnotation(ModuleTest.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
-        assertThat(TestFeasibilityService.class.getAnnotation(ModuleComponent.class)).isNull();
-        assertThat(TestFeasibilityResultResolver.class.getAnnotation(ModuleTest.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
-        assertThat(TestFeasibilityResultResolver.class.getAnnotation(ModuleComponent.class)).isNull();
-        assertThat(FeasibilityMapper.class.getAnnotation(ModuleComponent.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
-        assertThat(FeasibilityMapper.class.getAnnotation(ModuleTest.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
+        assertThat(TestFeasibilityService.class.getAnnotation(ConditionalOnModuleTest.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
+        assertThat(TestFeasibilityService.class.getAnnotation(ConditionalOnModule.class)).isNull();
+        assertThat(TestFeasibilityResultResolver.class.getAnnotation(ConditionalOnModuleTest.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
+        assertThat(TestFeasibilityResultResolver.class.getAnnotation(ConditionalOnModule.class)).isNull();
+        assertThat(FeasibilityMapper.class.getAnnotation(ConditionalOnModule.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
+        assertThat(FeasibilityMapper.class.getAnnotation(ConditionalOnModuleTest.class).value()).isEqualTo(OptionalModule.FEASIBILITY);
     }
 
     // The real classes under Spring's own condition evaluation, for each value of ENABLE_FEASIBILITY

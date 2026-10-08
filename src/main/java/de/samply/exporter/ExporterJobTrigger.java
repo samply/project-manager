@@ -1,6 +1,6 @@
 package de.samply.exporter;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.modules.OptionalModule;
 import de.samply.project.SendQueryToBridgeheadEvent;
@@ -18,7 +18,7 @@ import java.time.Instant;
  */
 @Slf4j
 @Component
-@ModuleComponent(OptionalModule.EXPORTER)
+@ConditionalOnModule(OptionalModule.EXPORTER)
 public class ExporterJobTrigger {
 
     private final ExporterJob exporterJob;

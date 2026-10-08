@@ -1,8 +1,8 @@
 package de.samply.modules;
 
-import de.samply.annotations.ModuleComponent;
-import de.samply.annotations.ModuleStandIn;
-import de.samply.annotations.ModuleTest;
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleDisabled;
+import de.samply.annotations.ConditionalOnModuleTest;
 import de.samply.coder.CoderJob;
 import de.samply.exporter.ExporterJob;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * A class of an optional module is only created when its module is enabled. So only classes of the same module, or of a
  * module that requires it, may inject it; everything else must depend on the module's interface (real implementation or
- * stand-in). Otherwise the backend would not start with the module disabled - this finds it without starting. The real
+ * disabled implementation). Otherwise the backend would not start with the module disabled - this finds it without starting. The real
  * implementation of such an interface must be @Primary, so that the IDE does not report two candidates.
  * <p>
  * The other way round: a class outside every module that only classes of modules inject probably belongs to a module -
@@ -38,7 +38,7 @@ class ModuleDependenciesTest {
     @Test
     void onlyClassesOfTheSameOrARequiringModuleInjectModuleClasses() {
         // The scan evaluates the module conditions: with all modules "true" it finds the real implementations, with all
-        // "false" the stand-ins, with "test" the test implementations
+        // "false" the disabled implementations, with "test" the test implementations
         List<Class<?>> components = scanAllComponents();
         // The scan must find the components, module classes included, or the check below proves nothing
         assertThat(components).contains(CoderJob.class, ExporterJob.class);
@@ -56,10 +56,10 @@ class ModuleDependenciesTest {
 
         assertThat(violations).isEmpty();
 
-        // The real implementation of an interface with a stand-in is @Primary, or IntelliJ reports two candidates
-        List<Class<?>> standIns = components.stream().filter(component -> component.isAnnotationPresent(ModuleStandIn.class)).toList();
+        // The real implementation of an interface with a disabled implementation is @Primary, or IntelliJ reports two candidates
+        List<Class<?>> standIns = components.stream().filter(component -> component.isAnnotationPresent(ConditionalOnModuleDisabled.class)).toList();
         List<String> notPrimary = components.stream()
-                .filter(component -> component.isAnnotationPresent(ModuleComponent.class))
+                .filter(component -> component.isAnnotationPresent(ConditionalOnModule.class))
                 .filter(component -> standIns.stream().anyMatch(standIn -> Arrays.stream(standIn.getInterfaces())
                         .anyMatch(standInInterface -> standInInterface.isAssignableFrom(component))))
                 .filter(component -> !component.isAnnotationPresent(Primary.class))
@@ -76,7 +76,7 @@ class ModuleDependenciesTest {
         // Spring Data repositories (e.g. ProjectCoderRepository, only used by the research environment) are interfaces
         // and not scanned here; they need no configuration
         List<String> moduleOnly = components.stream()
-                .filter(component -> fetchModule(component).isEmpty() && !component.isAnnotationPresent(ModuleStandIn.class))
+                .filter(component -> fetchModule(component).isEmpty() && !component.isAnnotationPresent(ConditionalOnModuleDisabled.class))
                 .flatMap(component -> {
                     List<Class<?>> injectors = fetchInjectors(component, components);
                     return injectors.isEmpty() || injectors.stream().anyMatch(injector -> fetchModule(injector).isEmpty())
@@ -137,15 +137,15 @@ class ModuleDependenciesTest {
                 .orElse(false);
     }
 
-    // The module of a class of its real mode (@ModuleComponent) or of its test mode (@ModuleTest)
+    // The module of a class of its real mode (@ConditionalOnModule) or of its test mode (@ConditionalOnModuleTest)
     private Optional<OptionalModule> fetchModule(Class<?> type) {
-        return Optional.ofNullable(type.getAnnotation(ModuleComponent.class)).map(ModuleComponent::value)
-                .or(() -> Optional.ofNullable(type.getAnnotation(ModuleTest.class)).map(ModuleTest::value));
+        return Optional.ofNullable(type.getAnnotation(ConditionalOnModule.class)).map(ConditionalOnModule::value)
+                .or(() -> Optional.ofNullable(type.getAnnotation(ConditionalOnModuleTest.class)).map(ConditionalOnModuleTest::value));
     }
 
     private Set<ModuleMode> fetchModes(Class<?> type) {
-        return Stream.of(type.isAnnotationPresent(ModuleComponent.class) ? ModuleMode.TRUE : null,
-                        type.isAnnotationPresent(ModuleTest.class) ? ModuleMode.TEST : null)
+        return Stream.of(type.isAnnotationPresent(ConditionalOnModule.class) ? ModuleMode.TRUE : null,
+                        type.isAnnotationPresent(ConditionalOnModuleTest.class) ? ModuleMode.TEST : null)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }

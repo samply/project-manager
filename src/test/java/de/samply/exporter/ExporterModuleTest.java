@@ -1,7 +1,7 @@
 package de.samply.exporter;
 
-import de.samply.annotations.ModuleComponent;
-import de.samply.annotations.ModuleStandIn;
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleDisabled;
 import de.samply.modules.OptionalModule;
 import de.samply.project.SendQueryToBridgeheadEvent;
 import org.junit.jupiter.api.Test;
@@ -20,21 +20,21 @@ class ExporterModuleTest {
 
     @Test
     void jobAndTriggerBelongToTheExporterModule() {
-        assertThat(ExporterJob.class.getAnnotation(ModuleComponent.class).value()).isEqualTo(OptionalModule.EXPORTER);
-        assertThat(ExporterJobTrigger.class.getAnnotation(ModuleComponent.class).value()).isEqualTo(OptionalModule.EXPORTER);
+        assertThat(ExporterJob.class.getAnnotation(ConditionalOnModule.class).value()).isEqualTo(OptionalModule.EXPORTER);
+        assertThat(ExporterJobTrigger.class.getAnnotation(ConditionalOnModule.class).value()).isEqualTo(OptionalModule.EXPORTER);
     }
 
     @Test
     void beamImplementationBelongsToTheExporterModule() {
-        assertThat(BeamExporterService.class.getAnnotation(ModuleComponent.class).value())
+        assertThat(BeamExporterService.class.getAnnotation(ConditionalOnModule.class).value())
                 .isEqualTo(OptionalModule.EXPORTER);
-        assertThat(ExporterQueryLabelTemplate.class.getAnnotation(ModuleComponent.class).value())
+        assertThat(ExporterQueryLabelTemplate.class.getAnnotation(ConditionalOnModule.class).value())
                 .isEqualTo(OptionalModule.EXPORTER);
     }
 
     @Test
     void standInReplacesItWhenTheModuleIsDisabled() {
-        assertThat(DisabledExporterService.class.getAnnotation(ModuleStandIn.class).value())
+        assertThat(DisabledExporterService.class.getAnnotation(ConditionalOnModuleDisabled.class).value())
                 .isEqualTo(OptionalModule.EXPORTER);
     }
 

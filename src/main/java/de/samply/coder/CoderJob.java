@@ -1,6 +1,6 @@
 package de.samply.coder;
 
-import de.samply.annotations.ModuleComponent;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.exporter.ExporterService;
@@ -21,7 +21,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-@ModuleComponent(OptionalModule.RESEARCH_ENVIRONMENT)
+@ConditionalOnModule(OptionalModule.RESEARCH_ENVIRONMENT)
 public class CoderJob {
 
     // Services

@@ -1,7 +1,7 @@
 package de.samply.modules;
 
-import de.samply.annotations.ModuleComponent;
-import de.samply.annotations.ModuleTest;
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.annotations.ConditionalOnModuleTest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -74,8 +74,8 @@ public class OptionalModules {
     @EventListener(ApplicationReadyEvent.class)
     public void logEnabledModules() {
         Map<OptionalModule, Set<String>> beansByModule = Stream.concat(
-                        fetchBeansByModule(ModuleComponent.class, ModuleComponent::value),
-                        fetchBeansByModule(ModuleTest.class, ModuleTest::value))
+                        fetchBeansByModule(ConditionalOnModule.class, ConditionalOnModule::value),
+                        fetchBeansByModule(ConditionalOnModuleTest.class, ConditionalOnModuleTest::value))
                 .collect(Collectors.groupingBy(Map.Entry::getKey,
                         Collectors.mapping(Map.Entry::getValue, Collectors.toCollection(TreeSet::new))));
         log.info("Enabled optional modules: {}", enabledModules.isEmpty() ? "none" : enabledModules.stream()
