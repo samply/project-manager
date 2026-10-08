@@ -107,8 +107,10 @@ public enum OptionalModule {
             return Arrays.stream(values()).anyMatch(module -> module.requiredModules.contains(this)
                     && module.fetchMode(propertyResolver) == ModuleMode.TRUE) ? ModuleMode.TRUE : ModuleMode.FALSE;
         }
-        ModuleMode mode = ModuleMode.parse(enableVariable,
-                propertyResolver.getProperty(enableVariable, defaultMode.toString()));
+        // Empty means not set, as with Spring's boolean values before: e.g. a compose file passing "${ENABLE_X}" while
+        // the .env does not define ENABLE_X
+        String value = propertyResolver.getProperty(enableVariable);
+        ModuleMode mode = (value == null || value.isBlank()) ? defaultMode : ModuleMode.parse(enableVariable, value);
         if (mode == ModuleMode.TEST && !withTestMode) {
             throw new IllegalStateException(enableVariable + "=" + ModuleMode.TEST + ": module " + this
                     + " has no test mode");

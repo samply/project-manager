@@ -18,9 +18,10 @@ public enum ModuleMode {
      */
     TEST;
 
+    /** Case does not matter ("TRUE" is "true"), as with Spring's boolean values before. */
     public static ModuleMode parse(String variable, String value) {
         return Arrays.stream(values())
-                .filter(mode -> mode.toString().equals(value.trim()))
+                .filter(mode -> mode.toString().equalsIgnoreCase(value.trim()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(variable + "=" + value + " is not valid; allowed: "
                         + Arrays.stream(values()).map(ModuleMode::toString).collect(Collectors.joining(", "))));

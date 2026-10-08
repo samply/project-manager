@@ -60,6 +60,19 @@ class OptionalModulesTest {
                         .doesNotHaveBean(TestFeasibilityBean.class));
     }
 
+    // A compose file passing "${ENABLE_X}" sets an empty value when the .env does not define it
+    @Test
+    void emptyValueMeansTheDefaultAndCaseDoesNotMatter() {
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=", "ENABLE_EXTERNAL_EXECUTION=", "ENABLE_EMAILS=FALSE",
+                        RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> {
+                    OptionalModules optionalModules = context.getBean(OptionalModules.class);
+                    assertThat(optionalModules.fetchMode(OptionalModule.FEASIBILITY)).isEqualTo(ModuleMode.TRUE);
+                    assertThat(optionalModules.fetchMode(OptionalModule.EXTERNAL_EXECUTION)).isEqualTo(ModuleMode.FALSE);
+                    assertThat(optionalModules.fetchMode(OptionalModule.EMAILS)).isEqualTo(ModuleMode.FALSE);
+                });
+    }
+
     @Test
     void stopsTheStartOnAnInvalidValue() {
         contextRunner.withPropertyValues("ENABLE_FEASIBILITY=yes", RESEARCH_ENVIRONMENT_TEST_URL)
