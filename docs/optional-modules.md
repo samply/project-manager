@@ -22,6 +22,7 @@ module with a test implementation (`ModuleMode`); any other value stops the star
 | `RESEARCH_ENVIRONMENT` | `ENABLE_RESEARCH_ENVIRONMENT` | `EXPORTER` | Research environment workspaces, implemented with Coder; each workspace is registered as a Beam app (app register); the exporter transfers the export files into them |
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
 | `EMAILS` | `ENABLE_EMAILS` (also `test`) | - | Sending emails through SMTP, including the `@EmailSender` emails of the controller; rendering the templates (`EmailService`) is always possible. `test`: everything runs as when sending, but the email is written to the log - `EMAILS_TEST_LOG`: `summary` (receiver and kind, default) or `full` (also subject, text, attachments) |
+| `EXTERNAL_EXECUTION` | `ENABLE_EXTERNAL_EXECUTION` (default **`false`**) | - | Site admins execute a request's query at their site directly (`saveAndExecuteQueryInBridgehead`). Was meant to be off through the profile `external-execution-not-allowed`, which had no effect on a controller method; the backend uses no profiles any more |
 
 DataSHIELD implies the research environment, and the research environment the exporter - not the other way round. If
 an enabled module requires a disabled one, the backend does not start and says which variable to change.
@@ -102,6 +103,15 @@ Each request type (`ProjectType`) lists the modules it needs: `EXPORT`, `SAMPLES
   message lists them and gives the solution: enable the modules again and close the requests in the UI, or close them
   with the SQL in the message - `ARCHIVED` for REVIEW to FINAL, `REJECTED` for drafts (they cannot be archived). The
   state lives only in `samply.project.state` (the state machine is rebuilt from it), so the SQL is safe.
+
+## Endpoints of a module: `@RequiresModule`
+
+An endpoint without a bean of its module behind it (a disabled module would otherwise answer through its disabled
+implementation) carries `@RequiresModule(X)`: while X is disabled its action is not offered (`FrontendService`, also
+not in the list without constraints) and a call is refused with 405, also as an actions-batch entry
+(`RequiresModuleAspect`, `ConstraintsService.checkModuleConstraints`). Today: `saveAndExecuteQueryInBridgehead`
+(`EXTERNAL_EXECUTION`). Endpoints bound to a request type need nothing: the type constraint already follows the
+modules (see above).
 
 ## How to make something part of a module
 

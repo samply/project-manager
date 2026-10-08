@@ -5,7 +5,6 @@ public class ProjectManagerConst {
     public final static String APP_NAME = "ProjectCode Manager";
 
     // Profiles
-    public final static String EXTERNAL_EXECUTION_NOT_ALLOWED = "external-execution-not-allowed";
 
     // Sites
     public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
@@ -476,6 +475,7 @@ public class ProjectManagerConst {
     public final static String FOCUS_LENS_PROJECT = "FOCUS_LENS_PROJECT";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
+    public final static String ENABLE_EXTERNAL_EXECUTION = "ENABLE_EXTERNAL_EXECUTION";
     public final static String EMAILS_TEST_LOG = "EMAILS_TEST_LOG";
     public final static String MAILING_BLACK_LIST_FILE_PATH = "MAILING_BLACK_LIST_FILE_PATH";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";

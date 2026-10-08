@@ -5,11 +5,13 @@ import de.samply.annotations.FrontendAction;
 import de.samply.annotations.ProjectCode;
 import de.samply.annotations.RequestParameter;
 import de.samply.annotations.RequestVariable;
+import de.samply.annotations.RequiresModule;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.ProjectConstraints;
 import de.samply.annotations.StateConstraints;
 import de.samply.aop.ConstraintsService;
 import de.samply.aop.ProjectConstraintsAspect;
+import de.samply.aop.RequiresModuleAspect;
 import de.samply.aop.RoleConstraintsAspect;
 import de.samply.aop.StateConstraintsAspect;
 import de.samply.app.ProjectManagerConst;
@@ -19,6 +21,7 @@ import de.samply.db.model.ProjectBridgeheadExecution;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.db.model.Query;
 import de.samply.document.DocumentService;
+import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectBridgeheadConverter;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectBridgeheadUserService;
@@ -120,6 +123,7 @@ class ActionsBatchServiceTest {
     private static final String TEXT = "TEXT";
     private static final String MISSING = "MISSING";
     private static final String TYPES = "TYPES";
+    private static final String EXTERNAL = "EXTERNAL";
     private static final String EMPTY = "EMPTY";
     private static final String ONLY_CREATOR = "ONLY_CREATOR";
     private static final String ONLY_IN_REVIEW = "ONLY_IN_REVIEW";
@@ -300,6 +304,12 @@ class ActionsBatchServiceTest {
 
         // A missing required parameter
         assertSameStatusAsEndpoint(MISSING, "/read", 400);
+    }
+
+    // An endpoint of a disabled module (EXTERNAL_EXECUTION is disabled by default) is refused, also as a batch entry
+    @Test
+    void refusesAnEndpointOfADisabledModule() throws Exception {
+        assertSameStatusAsEndpoint(EXTERNAL, "/external", 405);
     }
 
     // The resolver refuses a request type whose optional modules are disabled, single or in a list
@@ -633,6 +643,13 @@ class ActionsBatchServiceTest {
             return ResponseEntity.ok(answer.toString());
         }
 
+        @RequiresModule(OptionalModule.EXTERNAL_EXECUTION)
+        @FrontendAction(action = EXTERNAL)
+        @GetMapping("/external")
+        public ResponseEntity<String> external() {
+            return ResponseEntity.ok("{\"value\": \"executed\"}");
+        }
+
         @FrontendAction(action = TYPES)
         @GetMapping("/types")
         public ResponseEntity<String> types(@RequestParameter(name = "type") List<ProjectType> types) {
@@ -799,7 +816,7 @@ class ActionsBatchServiceTest {
     @Import({TestController.class, RequestVariableAndParameterMethodArgumentResolver.class, LanguageArgumentResolver.class,
             RequestBodyCache.class, AnnotatedParametersWrapper.class, ConstraintsService.class,
             RoleConstraintsAspect.class, StateConstraintsAspect.class, ProjectConstraintsAspect.class,
-            ProjectConverter.class, ProjectBridgeheadConverter.class, OptionalModules.class})
+            ProjectConverter.class, ProjectBridgeheadConverter.class, OptionalModules.class, RequiresModuleAspect.class})
     static class TestConfiguration implements WebMvcConfigurer {
 
         @Autowired

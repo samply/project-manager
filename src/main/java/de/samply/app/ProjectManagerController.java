@@ -55,7 +55,6 @@ import de.samply.user.roles.ProjectRole;
 import de.samply.utils.ProjectVersion;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -2210,12 +2209,8 @@ public class ProjectManagerController {
     }
 
 
-    // This endpoint is active only when external execution is allowed.
-    // By default, it is disabled via spring.profiles.active in application.yaml.
-    // To enable it, override the configuration so that the
-    // 'external-execution-not-allowed' profile is NOT active
-    // (e.g., set SPRING_PROFILES_ACTIVE to an empty value).
-    @Profile("!" + ProjectManagerConst.EXTERNAL_EXECUTION_NOT_ALLOWED)
+    // Only with ENABLE_EXTERNAL_EXECUTION=true (disabled by default): otherwise neither offered nor accepted
+    @RequiresModule(OptionalModule.EXTERNAL_EXECUTION)
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL},
             queryStates = {QueryState.CREATED, QueryState.ERROR, QueryState.FINISHED})

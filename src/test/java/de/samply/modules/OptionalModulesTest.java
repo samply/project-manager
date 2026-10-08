@@ -99,6 +99,14 @@ class OptionalModulesTest {
     }
 
     @Test
+    void externalExecutionIsDisabledUnlessItsVariableIsTrue() {
+        contextRunner.withPropertyValues(RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> assertThat(context.getBean(OptionalModules.class).isEnabled(OptionalModule.EXTERNAL_EXECUTION)).isFalse());
+        contextRunner.withPropertyValues("ENABLE_EXTERNAL_EXECUTION=true", RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> assertThat(context.getBean(OptionalModules.class).isEnabled(OptionalModule.EXTERNAL_EXECUTION)).isTrue());
+    }
+
+    @Test
     void disabledModuleNeedsNoConfiguration() {
         contextRunner.withPropertyValues("ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
                 .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(ResearchEnvironmentBean.class));

@@ -107,7 +107,10 @@ public class FrontendService {
                                             String language,
                                             Method method,
                                             boolean withConstraints) {
-        if (frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
+        // The action of a disabled module is never offered, not even without the other constraints
+        boolean moduleEnabled = this.constraintsService.checkModuleConstraints(
+                Optional.ofNullable(method.getAnnotation(RequiresModule.class))).isEmpty();
+        if (moduleEnabled && frontendSiteModule != null && site.equals(frontendSiteModule.site()) && frontendAction != null && path.isPresent()) {
             Optional<RoleConstraints> roleConstraints = Optional.ofNullable(method.getAnnotation(RoleConstraints.class));
             Optional<StateConstraints> stateConstraints = Optional.ofNullable(method.getAnnotation(StateConstraints.class));
             Optional<ResponseEntity> responseEntity = this.constraintsService.checkRoleConstraints(roleConstraints, stateConstraints, project, bridgehead);

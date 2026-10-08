@@ -1,6 +1,7 @@
 package de.samply.aop;
 
 import de.samply.annotations.ProjectConstraints;
+import de.samply.annotations.RequiresModule;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
 import de.samply.db.model.Project;
@@ -171,6 +172,13 @@ public class ConstraintsService {
             }
         }
         return Optional.empty();
+    }
+
+    /** An endpoint of an optional module ({@link RequiresModule}) is refused while the module is disabled. */
+    public Optional<ResponseEntity> checkModuleConstraints(Optional<RequiresModule> requiresModule) {
+        return requiresModule
+                .filter(annotation -> !optionalModules.isEnabled(annotation.value()))
+                .map(_ -> ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build());
     }
 
     /** Whether an endpoint only reads (GET): such endpoints stay available for requests whose type is no longer. */

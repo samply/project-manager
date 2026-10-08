@@ -44,18 +44,31 @@ public enum OptionalModule {
      * Sending emails (rendering the templates is always possible); test mode: everything runs as when sending, but the
      * emails are written to the log (EMAILS_TEST_LOG: summary or full).
      */
-    EMAILS(ProjectManagerConst.ENABLE_EMAILS, true);
+    EMAILS(ProjectManagerConst.ENABLE_EMAILS, true),
+    /**
+     * Site admins execute a request's query at their site directly (endpoint saveAndExecuteQueryInBridgehead), outside
+     * the usual flow. Disabled unless its variable is "true". The request types it executes need their own modules
+     * (e.g. EXPORTER), checked where they are received.
+     */
+    EXTERNAL_EXECUTION(ProjectManagerConst.ENABLE_EXTERNAL_EXECUTION, ModuleMode.FALSE, false);
 
     private final String enableVariable;
+    private final ModuleMode defaultMode;
     private final boolean withTestMode;
     private final Set<OptionalModule> requiredModules;
 
+    /** Enabled by default ("true"): all modules were, before they became optional. */
     OptionalModule(String enableVariable, OptionalModule... requiredModules) {
         this(enableVariable, false, requiredModules);
     }
 
     OptionalModule(String enableVariable, boolean withTestMode, OptionalModule... requiredModules) {
+        this(enableVariable, ModuleMode.TRUE, withTestMode, requiredModules);
+    }
+
+    OptionalModule(String enableVariable, ModuleMode defaultMode, boolean withTestMode, OptionalModule... requiredModules) {
         this.enableVariable = enableVariable;
+        this.defaultMode = defaultMode;
         this.withTestMode = withTestMode;
         this.requiredModules = Set.of(requiredModules);
     }
@@ -95,7 +108,7 @@ public enum OptionalModule {
                     && module.fetchMode(propertyResolver) == ModuleMode.TRUE) ? ModuleMode.TRUE : ModuleMode.FALSE;
         }
         ModuleMode mode = ModuleMode.parse(enableVariable,
-                propertyResolver.getProperty(enableVariable, ModuleMode.TRUE.toString()));
+                propertyResolver.getProperty(enableVariable, defaultMode.toString()));
         if (mode == ModuleMode.TEST && !withTestMode) {
             throw new IllegalStateException(enableVariable + "=" + ModuleMode.TEST + ": module " + this
                     + " has no test mode");
