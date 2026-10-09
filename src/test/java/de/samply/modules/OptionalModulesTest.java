@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(OutputCaptureExtension.class)
 class OptionalModulesTest {
 
-    // Configuration of the test research environment bean: required (no default) when the module is enabled
+    // Configuration of the test research environment bean
     private static final String RESEARCH_ENVIRONMENT_TEST_URL = "RESEARCH_ENVIRONMENT_TEST_URL=http://coder";
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -26,25 +26,35 @@ class OptionalModulesTest {
                     BeamComponents.class);
 
     @Test
-    void createsModuleComponentsWhenTheModuleIsEnabledOrUnset() {
-        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=true", RESEARCH_ENVIRONMENT_TEST_URL)
+    void createsModuleComponentsWhenTheModuleIsEnabled() {
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=true")
                 .run(context -> assertThat(context).hasSingleBean(FeasibilityBean.class)
-                        .doesNotHaveBean(DisabledFeasibilityBean.class)
-                        .hasSingleBean(ResearchEnvironmentBean.class));
+                        .doesNotHaveBean(DisabledFeasibilityBean.class));
     }
 
     @Test
     void doesNotCreateModuleComponentsWhenTheModuleIsDisabled() {
-        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=false", RESEARCH_ENVIRONMENT_TEST_URL)
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=false")
                 .run(context -> assertThat(context).doesNotHaveBean(FeasibilityBean.class)
-                        .hasSingleBean(DisabledFeasibilityBean.class)
-                        .hasSingleBean(ResearchEnvironmentBean.class));
+                        .hasSingleBean(DisabledFeasibilityBean.class));
+    }
+
+    @Test
+    void moduleIsDisabledUnlessItsVariableEnablesIt() {
+        contextRunner.run(context -> {
+            assertThat(context).hasNotFailed()
+                    .hasSingleBean(DisabledFeasibilityBean.class)
+                    .doesNotHaveBean(FeasibilityBean.class)
+                    .doesNotHaveBean(ResearchEnvironmentBean.class)
+                    .doesNotHaveBean(BeamBean.class);
+            OptionalModules optionalModules = context.getBean(OptionalModules.class);
+            assertThat(OptionalModule.values()).noneMatch(optionalModules::isEnabled);
+        });
     }
 
     @Test
     void testModeCreatesTheTestBeansInsteadOfTheRealOnesAndNeedsNoBeam() {
-        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=test", "ENABLE_EXPORTER=false",
-                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=test")
                 .run(context -> assertThat(context).hasNotFailed()
                         .hasSingleBean(TestFeasibilityBean.class)
                         .hasSingleBean(FeasibilityMapperBean.class)
@@ -55,27 +65,25 @@ class OptionalModulesTest {
 
     @Test
     void sharedBeanExistsInTheRealModeToo() {
-        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=true", RESEARCH_ENVIRONMENT_TEST_URL)
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=true")
                 .run(context -> assertThat(context).hasSingleBean(FeasibilityMapperBean.class)
                         .doesNotHaveBean(TestFeasibilityBean.class));
     }
 
     // A compose file passing "${ENABLE_X}" sets an empty value when the .env does not define it
     @Test
-    void emptyValueMeansTheDefaultAndCaseDoesNotMatter() {
-        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=", "ENABLE_EXTERNAL_EXECUTION=", "ENABLE_EMAILS=FALSE",
-                        RESEARCH_ENVIRONMENT_TEST_URL)
+    void emptyValueMeansDisabledAndCaseDoesNotMatter() {
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=", "ENABLE_EMAILS=TRUE")
                 .run(context -> {
                     OptionalModules optionalModules = context.getBean(OptionalModules.class);
-                    assertThat(optionalModules.fetchMode(OptionalModule.FEASIBILITY)).isEqualTo(ModuleMode.TRUE);
-                    assertThat(optionalModules.fetchMode(OptionalModule.EXTERNAL_EXECUTION)).isEqualTo(ModuleMode.FALSE);
-                    assertThat(optionalModules.fetchMode(OptionalModule.EMAILS)).isEqualTo(ModuleMode.FALSE);
+                    assertThat(optionalModules.fetchMode(OptionalModule.FEASIBILITY)).isEqualTo(ModuleMode.FALSE);
+                    assertThat(optionalModules.fetchMode(OptionalModule.EMAILS)).isEqualTo(ModuleMode.TRUE);
                 });
     }
 
     @Test
     void stopsTheStartOnAnInvalidValue() {
-        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=yes", RESEARCH_ENVIRONMENT_TEST_URL)
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=yes")
                 .run(context -> assertThat(context).hasFailed().getFailure()
                         .rootCause()
                         .hasMessageContaining("ENABLE_FEASIBILITY=yes is not valid; allowed: true, false, test"));
@@ -83,7 +91,7 @@ class OptionalModulesTest {
 
     @Test
     void stopsTheStartOnTestModeOfAModuleWithoutOne() {
-        contextRunner.withPropertyValues("ENABLE_DATASHIELD=test", RESEARCH_ENVIRONMENT_TEST_URL)
+        contextRunner.withPropertyValues("ENABLE_DATASHIELD=test")
                 .run(context -> assertThat(context).hasFailed().getFailure()
                         .rootCause()
                         .hasMessageContaining("ENABLE_DATASHIELD=test: module DATASHIELD has no test mode"));
@@ -91,8 +99,7 @@ class OptionalModulesTest {
 
     @Test
     void logsTheTestMode(CapturedOutput output) {
-        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=test", "ENABLE_EXPORTER=false",
-                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false", "ENABLE_EMAILS=false")
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=test")
                 .run(context -> {
                     context.getBean(OptionalModules.class).logEnabledModules();
                     assertThat(output).contains("Enabled optional modules: FEASIBILITY [test] (FeasibilityMapperBean, TestFeasibilityBean)");
@@ -101,7 +108,7 @@ class OptionalModulesTest {
 
     @Test
     void offersOnlyRequestTypesWhoseModulesAreEnabled() {
-        contextRunner.withPropertyValues("ENABLE_DATASHIELD=false", "ENABLE_RESEARCH_ENVIRONMENT=false")
+        contextRunner.withPropertyValues("ENABLE_EXPORTER=true")
                 .run(context -> {
                     OptionalModules optionalModules = context.getBean(OptionalModules.class);
                     assertThat(optionalModules.fetchAvailableProjectTypes())
@@ -113,21 +120,21 @@ class OptionalModulesTest {
 
     @Test
     void externalExecutionIsDisabledUnlessItsVariableIsTrue() {
-        contextRunner.withPropertyValues(RESEARCH_ENVIRONMENT_TEST_URL)
-                .run(context -> assertThat(context.getBean(OptionalModules.class).isEnabled(OptionalModule.EXTERNAL_EXECUTION)).isFalse());
-        contextRunner.withPropertyValues("ENABLE_EXTERNAL_EXECUTION=true", RESEARCH_ENVIRONMENT_TEST_URL)
+        contextRunner.run(context -> assertThat(context.getBean(OptionalModules.class).isEnabled(OptionalModule.EXTERNAL_EXECUTION)).isFalse());
+        contextRunner.withPropertyValues("ENABLE_EXTERNAL_EXECUTION=true")
                 .run(context -> assertThat(context.getBean(OptionalModules.class).isEnabled(OptionalModule.EXTERNAL_EXECUTION)).isTrue());
     }
 
     @Test
-    void disabledModuleNeedsNoConfiguration() {
-        contextRunner.withPropertyValues("ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
-                .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(ResearchEnvironmentBean.class));
+    void createsTheComponentsOfAModuleEnabledWithItsRequiredModules() {
+        contextRunner.withPropertyValues("ENABLE_EXPORTER=true", "ENABLE_RESEARCH_ENVIRONMENT=true",
+                        RESEARCH_ENVIRONMENT_TEST_URL)
+                .run(context -> assertThat(context).hasNotFailed().hasSingleBean(ResearchEnvironmentBean.class));
     }
 
     @Test
     void stopsTheStartWhenARequiredModuleIsDisabled() {
-        contextRunner.withPropertyValues("ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=true")
+        contextRunner.withPropertyValues("ENABLE_DATASHIELD=true")
                 .run(context -> assertThat(context).hasFailed().getFailure()
                         .rootCause()
                         .hasMessageContaining("DATASHIELD (ENABLE_DATASHIELD) requires RESEARCH_ENVIRONMENT (ENABLE_RESEARCH_ENVIRONMENT)"));
@@ -135,7 +142,7 @@ class OptionalModulesTest {
 
     @Test
     void stopsTheStartWhenTheResearchEnvironmentIsEnabledWithoutTheExporter() {
-        contextRunner.withPropertyValues("ENABLE_EXPORTER=false", "ENABLE_DATASHIELD=false", RESEARCH_ENVIRONMENT_TEST_URL)
+        contextRunner.withPropertyValues("ENABLE_RESEARCH_ENVIRONMENT=true", RESEARCH_ENVIRONMENT_TEST_URL)
                 .run(context -> assertThat(context).hasFailed().getFailure()
                         .rootCause()
                         .hasMessageContaining("RESEARCH_ENVIRONMENT (ENABLE_RESEARCH_ENVIRONMENT) requires EXPORTER (ENABLE_EXPORTER)"));
@@ -143,21 +150,19 @@ class OptionalModulesTest {
 
     @Test
     void implicitModuleIsEnabledByAModuleThatRequiresIt() {
-        contextRunner.withPropertyValues("ENABLE_EXPORTER=false", "ENABLE_FEASIBILITY=true",
-                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
+        contextRunner.withPropertyValues("ENABLE_FEASIBILITY=true")
                 .run(context -> assertThat(context).hasNotFailed().hasSingleBean(BeamBean.class));
     }
 
     @Test
     void implicitModuleIsDisabledWithoutAModuleThatRequiresIt() {
-        contextRunner.withPropertyValues("ENABLE_EXPORTER=false", "ENABLE_FEASIBILITY=false",
-                        "ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false")
+        contextRunner.withPropertyValues("ENABLE_EMAILS=true")
                 .run(context -> assertThat(context).hasNotFailed().doesNotHaveBean(BeamBean.class));
     }
 
     @Test
     void logsTheEnabledModulesWithTheirBeans(CapturedOutput output) {
-        contextRunner.withPropertyValues("ENABLE_RESEARCH_ENVIRONMENT=false", "ENABLE_DATASHIELD=false", "ENABLE_EMAILS=false")
+        contextRunner.withPropertyValues("ENABLE_EXPORTER=true", "ENABLE_FEASIBILITY=true")
                 .run(context -> {
                     context.getBean(OptionalModules.class).logEnabledModules();
                     assertThat(output).contains("Enabled optional modules: BEAM (BeamBean) [through EXPORTER, FEASIBILITY], "

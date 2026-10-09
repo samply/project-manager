@@ -109,8 +109,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * real role constraints aspect: what an entry answers must be what its endpoint answers on its own.
  */
 @SpringJUnitWebConfig(ActionsBatchServiceTest.TestConfiguration.class)
-// DATASHIELD disabled: its request type is not available (see refusesARequestTypeWhoseModulesAreDisabled)
-@TestPropertySource(properties = "ENABLE_DATASHIELD=false")
+// Only EXPORTER enabled: request type EXPORT is available, DATASHIELD is not (see refusesARequestTypeWhoseModulesAreDisabled)
+@TestPropertySource(properties = "ENABLE_EXPORTER=true")
 class ActionsBatchServiceTest {
 
     private static final String READ = "READ";
@@ -306,7 +306,7 @@ class ActionsBatchServiceTest {
         assertSameStatusAsEndpoint(MISSING, "/read", 400);
     }
 
-    // An endpoint of a disabled module (EXTERNAL_EXECUTION is disabled by default) is refused, also as a batch entry
+    // An endpoint of a disabled module (EXTERNAL_EXECUTION is not enabled) is refused, also as a batch entry
     @Test
     void refusesAnEndpointOfADisabledModule() throws Exception {
         assertSameStatusAsEndpoint(EXTERNAL, "/external", 405);

@@ -11,8 +11,10 @@ used in this backend) and not a frontend module (`@FrontendSiteModule`, a part o
 
 ## The modules
 
-`OptionalModule` (`de.samply.modules`) lists them. The variable is `true` (the default), `false`, or `test` for a
-module with a test implementation (`ModuleMode`); any other value stops the start.
+`OptionalModule` (`de.samply.modules`) lists them. The variable is `true`, `false`, or `test` for a module with a test
+implementation (`ModuleMode`); any other value stops the start. **A module is disabled unless its variable enables it**
+(unset or empty = `false`, decided 2026-10-09): a deployment only names the modules it uses, and a new module never
+needs a `false` in the existing deployments.
 
 | Module | Variable | Requires | What it does |
 |---|---|---|---|
@@ -22,7 +24,7 @@ module with a test implementation (`ModuleMode`); any other value stops the star
 | `RESEARCH_ENVIRONMENT` | `ENABLE_RESEARCH_ENVIRONMENT` | `EXPORTER` | Research environment workspaces, implemented with Coder; each workspace is registered as a Beam app (app register); the exporter transfers the export files into them |
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
 | `EMAILS` | `ENABLE_EMAILS` (also `test`) | - | Sending emails through SMTP, including the `@EmailSender` emails of the controller; rendering the templates (`EmailService`) is always possible. `test`: everything runs as when sending, but the email is written to the log - `EMAILS_TEST_LOG`: `summary` (receiver and kind, default) or `full` (also subject, text, attachments) |
-| `EXTERNAL_EXECUTION` | `ENABLE_EXTERNAL_EXECUTION` (default **`false`**) | - | Site admins execute a request's query at their site directly (`saveAndExecuteQueryInBridgehead`). Was meant to be off through the profile `external-execution-not-allowed`, which had no effect on a controller method; the backend uses no profiles any more |
+| `EXTERNAL_EXECUTION` | `ENABLE_EXTERNAL_EXECUTION` | - | Site admins execute a request's query at their site directly (`saveAndExecuteQueryInBridgehead`). Was meant to be off through the profile `external-execution-not-allowed`, which had no effect on a controller method; the backend uses no profiles any more |
 
 DataSHIELD implies the research environment, and the research environment the exporter - not the other way round. If
 an enabled module requires a disabled one, the backend does not start and says which variable to change.
@@ -33,9 +35,9 @@ they connect to. `test` on a module without a test implementation stops the star
 
 | Value | Created |
 |---|---|
-| `true` (default) | `@ConditionalOnModule` beans |
+| `true` | `@ConditionalOnModule` beans |
 | `test` | `@ConditionalOnModuleTest` beans |
-| `false` | `@ConditionalOnModuleDisabled` beans |
+| `false` (also unset or empty) | `@ConditionalOnModuleDisabled` beans |
 
 A bean needed in both the real and the test mode carries both annotations (`FeasibilityMapper`: the test results are
 mapped like real ones). Only the real implementation is `@Primary` (for IntelliJ; at runtime only one exists).
@@ -46,7 +48,7 @@ before it in the enum.
 
 Renamed 2026-10-07, without fallback: `ENABLE_CODER` is now `ENABLE_RESEARCH_ENVIRONMENT`, `ENABLE_TOKEN_MANAGER` is now
 `ENABLE_DATASHIELD`, and `ENABLE_APP_REGISTER` is no longer read (app register is part of the research environment).
-An old name left in a deployment is ignored, and the module is then enabled (the default).
+An old name left in a deployment is ignored, and the module is then disabled.
 
 At start-up the backend logs the enabled modules with their beans:
 
@@ -62,10 +64,10 @@ every bean.
 
 Decided 2026-10-08. `@ConditionalOnModule` / `@ConditionalOnModuleDisabled` are built on Spring's own mechanism (`@Conditional`): the
 small `OptionalModuleCondition` turns the enum into the real Spring condition, and the result also appears in Spring's
-condition report. Plain Spring (`@ConditionalOnBooleanProperty(name = ENABLE_X, matchIfMissing = true)` on each real
+condition report. Plain Spring (`@ConditionalOnBooleanProperty(name = ENABLE_X)` on each real
 bean, `havingValue = false` on each disabled implementation) would do for a single module, but not for what the enum adds:
 
-- the default ("enabled if unset") and the variable are stated once per module, not on every bean;
+- the variable is stated once per module, not on every bean;
 - dependencies between modules, checked at start (with disabled implementations, a wrong combination would otherwise start silently
   with the disabled implementation);
 - implicit modules (BEAM), which plain Spring could only express as a `@ConditionalOnExpression` string repeating the

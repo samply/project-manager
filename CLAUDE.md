@@ -4,8 +4,8 @@
 
 Functionality that a deployment can switch off (exporter, feasibility, research environment, DataSHIELD, emails,
 external execution) is an optional module: `OptionalModule` in `de.samply.modules`, one `ENABLE_*` variable each
-(`true`, `false`, or `test` where a test implementation exists). Read `docs/optional-modules.md` before changing or
-adding one. In short:
+(`true`, `false`, or `test` where a test implementation exists; unset = `false`, modules are opt-in). Read
+`docs/optional-modules.md` before changing or adding one. In short:
 
 - A bean that only exists for module X carries `@ConditionalOnModule(X)`; its test implementation
   `@ConditionalOnModuleTest(X)`; the implementation used while X is disabled `@ConditionalOnModuleDisabled(X)`.

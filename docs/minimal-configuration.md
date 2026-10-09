@@ -1,7 +1,7 @@
 # Minimal configuration
 
-What a new deployment must set for the backend to start with all optional modules disabled, and what each module
-adds. Derived from the code (2026-10-08): every setting without a default that a bean outside the modules reads, plus
+What a new deployment must set for the backend to start with all optional modules disabled (no `ENABLE_*` set:
+modules are opt-in), and what each module adds. Derived from the code (2026-10-08): every setting without a default that a bean outside the modules reads, plus
 `application.yaml`. Not yet proven by a start-up test - that test is planned (`plans/2026-09-30-plan-unit-and-integration-tests.md`,
 phase 2, with exactly this set as its configuration).
 
@@ -55,7 +55,7 @@ Roles, security, explorer:
 
 ## 4. Optional modules
 
-All `false`: nothing more is needed. Each enabled module adds its settings; in `test` mode (where it exists) they
+Not set (= `false`): nothing more is needed. Each module enabled with `ENABLE_X=true` adds its settings; in `test` mode (where it exists) they
 are not needed. Variables and values: `docs/optional-modules.md`.
 
 | Module (`true`) | Adds |
@@ -65,7 +65,7 @@ are not needed. Variables and values: `docs/optional-modules.md`.
 | `EMAILS` | SMTP (`SPRING_MAIL_PRIMARY_*`), `PROJECT_MANAGER_EMAIL_FROM` |
 | `RESEARCH_ENVIRONMENT` | Coder (`CODER_*`, `coder/*.json`), app register (`APP_REGISTER_*`); needs `EXPORTER`. A working configuration: master-project-manager, commit 17579fd (branch feat/optional-modules, 2026-10-08, new variable names; with the old names ENABLE_CODER/ENABLE_TOKEN_MANAGER also on main, d738236) |
 | `DATASHIELD` | `TOKEN_MANAGER_URL`, `MANAGE_TOKENS_CRON_EXPRESSION`; needs `RESEARCH_ENVIRONMENT`. Configuration: as above |
-| `EXTERNAL_EXECUTION` | nothing; off by default |
+| `EXTERNAL_EXECUTION` | nothing |
 
 Request types follow their modules: with `EXPORTER` disabled, no request type of the current deployments can be
 offered (EXPORT, SAMPLES and SEQUENCING need it), so a deployment without the exporter needs a configuration in

@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
  * The beans of a module carry {@link de.samply.annotations.ConditionalOnModule}: they are only created when the module is
  * enabled, so a disabled module needs none of its configuration. See docs/optional-modules.md.
  * <p>
- * The variable is "true" (the default), "false", or "test" for a module with a test implementation
- * ({@link ModuleMode}).
+ * The variable is "true", "false", or "test" for a module with a test implementation ({@link ModuleMode}). A module is
+ * disabled unless its variable enables it: a deployment only names the modules it uses.
  * <p>
  * An <i>implicit</i> module has no variable: it is enabled exactly when a module that requires it is "true" (a module in
  * test mode needs none of its required modules). A module may only require modules declared before it (Java does not
@@ -47,28 +47,21 @@ public enum OptionalModule {
     EMAILS(ProjectManagerConst.ENABLE_EMAILS, true),
     /**
      * Site admins execute a request's query at their site directly (endpoint saveAndExecuteQueryInBridgehead), outside
-     * the usual flow. Disabled unless its variable is "true". The request types it executes need their own modules
-     * (e.g. EXPORTER), checked where they are received.
+     * the usual flow. The request types it executes need their own modules (e.g. EXPORTER), checked where they are
+     * received.
      */
-    EXTERNAL_EXECUTION(ProjectManagerConst.ENABLE_EXTERNAL_EXECUTION, ModuleMode.FALSE, false);
+    EXTERNAL_EXECUTION(ProjectManagerConst.ENABLE_EXTERNAL_EXECUTION);
 
     private final String enableVariable;
-    private final ModuleMode defaultMode;
     private final boolean withTestMode;
     private final Set<OptionalModule> requiredModules;
 
-    /** Enabled by default ("true"): all modules were, before they became optional. */
     OptionalModule(String enableVariable, OptionalModule... requiredModules) {
         this(enableVariable, false, requiredModules);
     }
 
     OptionalModule(String enableVariable, boolean withTestMode, OptionalModule... requiredModules) {
-        this(enableVariable, ModuleMode.TRUE, withTestMode, requiredModules);
-    }
-
-    OptionalModule(String enableVariable, ModuleMode defaultMode, boolean withTestMode, OptionalModule... requiredModules) {
         this.enableVariable = enableVariable;
-        this.defaultMode = defaultMode;
         this.withTestMode = withTestMode;
         this.requiredModules = Set.of(requiredModules);
     }
@@ -98,8 +91,7 @@ public enum OptionalModule {
     }
 
     /**
-     * "true" unless its variable says otherwise: all modules were enabled by default before they became optional. An
-     * implicit module is "true" when a module that requires it is, "false" otherwise. Stops the start on an invalid
+     * "false" unless its variable says otherwise. An implicit module is "true" when a module that requires it is, "false" otherwise. Stops the start on an invalid
      * value, and on "test" for a module without a test implementation.
      */
     public ModuleMode fetchMode(PropertyResolver propertyResolver) {
@@ -107,10 +99,9 @@ public enum OptionalModule {
             return Arrays.stream(values()).anyMatch(module -> module.requiredModules.contains(this)
                     && module.fetchMode(propertyResolver) == ModuleMode.TRUE) ? ModuleMode.TRUE : ModuleMode.FALSE;
         }
-        // Empty means not set, as with Spring's boolean values before: e.g. a compose file passing "${ENABLE_X}" while
-        // the .env does not define ENABLE_X
+        // Empty means not set: e.g. a compose file passing "${ENABLE_X}" while the .env does not define ENABLE_X
         String value = propertyResolver.getProperty(enableVariable);
-        ModuleMode mode = (value == null || value.isBlank()) ? defaultMode : ModuleMode.parse(enableVariable, value);
+        ModuleMode mode = (value == null || value.isBlank()) ? ModuleMode.FALSE : ModuleMode.parse(enableVariable, value);
         if (mode == ModuleMode.TEST && !withTestMode) {
             throw new IllegalStateException(enableVariable + "=" + ModuleMode.TEST + ": module " + this
                     + " has no test mode");

@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - ENABLE_FEASIBILITY=test: TestFeasibilityService gives random results from TEST_FEASIBILITY_RESULT without Beam (moved out of BeamFeasibilityService, which no longer reads TEST_FEASIBILITY_RESULT)
 - Emails: EmailSenderAspect, AttachmentFileService and the email executor belong to EMAILS (with emails disabled, @EmailSender no longer looks up recipients)
 - ModuleDependenciesTest also reports a class outside every module that only module classes inject
+- Optional modules are opt-in: an unset or empty ENABLE_* means false for every module (before: true, except EXTERNAL_EXECUTION). Deployments set ENABLE_EXPORTER, ENABLE_FEASIBILITY and ENABLE_EMAILS explicitly
 - Spring Application
 - State Machine for a project
 - Project states and event states
