@@ -111,7 +111,7 @@ class InactiveFormTest {
     @Test
     void selectedFormsAndOfferedTitlesLeaveOutAnInactiveFormTheProjectDoesNotUse() throws Exception {
         DtoFactory dtoFactory = mock(DtoFactory.class);
-        when(dtoFactory.convertForm(anyString(), any(), any())).thenAnswer(invocation ->
+        when(dtoFactory.convertForm(anyString(), any(), any(), any())).thenAnswer(invocation ->
                 new Form(invocation.getArgument(0), null, null, null));
         when(dtoFactory.convert(anyString(), any(Optional.class), any(), any(), any(), any(), any())).thenAnswer(invocation ->
                 FormField.builder().title(invocation.getArgument(0)).build());

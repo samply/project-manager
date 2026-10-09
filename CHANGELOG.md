@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Emails: EmailSenderAspect, AttachmentFileService and the email executor belong to EMAILS (with emails disabled, @EmailSender no longer looks up recipients)
 - ModuleDependenciesTest also reports a class outside every module that only module classes inject
 - Optional modules are opt-in: an unset or empty ENABLE_* means false for every module (before: true, except EXTERNAL_EXECUTION). Deployments set ENABLE_EXPORTER, ENABLE_FEASIBILITY and ENABLE_EMAILS explicitly
+- Conditional pre_info/post_info: a `condition` (SpEL on the form values, as for fields) next to `project_states`, on forms, blocks and fields; evaluated with the saved values (block info per block instance, form info in any block instance), not shown without values; checked at start (blank, syntax, references to missing fields). The condition may refer to the field the information belongs to
 - Spring Application
 - State Machine for a project
 - Project states and event states

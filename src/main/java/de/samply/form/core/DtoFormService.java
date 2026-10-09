@@ -2,6 +2,8 @@ package de.samply.form.core;
 
 import de.samply.db.model.Project;
 import de.samply.form.core.condition.FormFieldConditionEvaluator;
+import de.samply.form.core.model.ContextualDisplayMetadata;
+import de.samply.form.core.model.FormFieldBlock;
 import de.samply.form.core.model.FormFieldConfig;
 import de.samply.form.core.model.FormFieldLayout;
 import de.samply.form.core.model.FormFieldType;
@@ -14,7 +16,9 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -45,6 +49,7 @@ public class DtoFormService {
     }
 
     public List<FormField> fetchProjectFormTitles(@NotNull Project project, Optional<String> language) {
+        Predicate<String> isConditionMet = fetchProjectConditions(project);
         return formConfig
                 .getFormTitleLabelFieldMap()
                 .keySet()
@@ -60,6 +65,7 @@ public class DtoFormService {
                         language,
                         project.getState()
                 ))
+                .map(field -> applyFormInfoConditions(field, project, language, isConditionMet))
                 .collect(Collectors.toList());
     }
 
@@ -69,8 +75,9 @@ public class DtoFormService {
      */
     public List<Form> fetchProjectFormTitleCanonicalOrder(
             Collection<String> formTitleOrder, @NotNull Project project, Optional<String> language) {
+        Predicate<String> isConditionMet = fetchProjectConditions(project);
         return formTitleOrder.stream()
-                .map(title -> dtoFactory.convertForm(title, language, project.getState()))
+                .map(title -> dtoFactory.convertForm(title, language, project.getState(), isConditionMet))
                 .toList();
     }
 
@@ -121,7 +128,9 @@ public class DtoFormService {
                         formTitle, field, Optional.empty(), Optional.empty(), Optional.empty(),
                         language, project.getState()))
                 .map(field -> instanceResolver.resolve(field)
-                        .map(instance -> applyInstance(field, instance, project, language))
+                        .map(instance -> applyInfoConditions(
+                                applyInstance(field, instance, project, language), instance, instanceResolver,
+                                project, language))
                         .orElseGet(() -> field.toBuilder().active(Boolean.FALSE).build()));
     }
 
@@ -148,12 +157,13 @@ public class DtoFormService {
     }
 
     public List<Form> fetchSelectedForms(@NotNull Project project, Optional<String> language) {
+        Predicate<String> isConditionMet = fetchProjectConditions(project);
         return Stream.concat(
                         // Fetch forms selected explicitly
                         formService.fetchSelectedForms(project)
                                 .stream()
                                 .map(projectForm -> dtoFactory.convertForm(
-                                        projectForm.getFormTitle(), language, project.getState())),
+                                        projectForm.getFormTitle(), language, project.getState(), isConditionMet)),
                         // Fetch forms that should be selected according to the current configuration.
                         // This is particularly important if the current configuration is CUSTOM
                         dtoProjectService.fetchCurrentProjectConfigurations(project)
@@ -163,7 +173,8 @@ public class DtoFormService {
                                 // An inactive form only for a project that uses it.
                                 .filter(form -> !formConfig.isFormInactive(form.title())
                                         || formService.isFormInUse(project, form.title()))
-                                .map(form -> dtoFactory.convertForm(form.title(), language, project.getState()))
+                                .map(form -> dtoFactory.convertForm(
+                                        form.title(), language, project.getState(), isConditionMet))
                 )
                 // Remove duplicates
                 .collect(Collectors.toMap(
@@ -404,9 +415,72 @@ public class DtoFormService {
         return candidateFields.stream()
                 .flatMap(field -> instanceResolver.resolve(field)
                         .filter(instance -> instance.isActive() || hasStoredData(field, valuedFieldsByTitle))
-                        .map(instance -> applyInstance(field, instance, project, language))
+                        .map(instance -> applyInfoConditions(
+                                applyInstance(field, instance, project, language), instance, instanceResolver,
+                                project, language))
                         .stream())
                 .toList();
+    }
+
+    /**
+     * The pre_info/post_info with a condition, shown only where it holds: those of the field's instance and of its
+     * block in the field's contexts (its block instance), those of its form in any context. The fields are built
+     * without them (no values at hand there).
+     */
+    private FormField applyInfoConditions(
+            FormField field, FormFieldConfig instance, FormFieldConditionEvaluator.InstanceResolver instanceResolver,
+            Project project, Optional<String> language) {
+        FormFieldBlock block = Optional.ofNullable(instance.getBlock())
+                .map(label -> formConfig.fetchBlock(field.title(), label))
+                .orElse(null);
+        FormField withFieldInfo = field;
+        if (hasConditionalInfo(instance) || hasConditionalInfo(block)) {
+            Predicate<String> isConditionMetInField = condition -> instanceResolver.isConditionMet(condition, field);
+            withFieldInfo = field.toBuilder()
+                    .labelPreInfo(dtoFactory.fetchDisplayInfo(
+                            instance, true, language, project.getState(), isConditionMetInField))
+                    .labelPostInfo(dtoFactory.fetchDisplayInfo(
+                            instance, false, language, project.getState(), isConditionMetInField))
+                    .blockPreInfo(dtoFactory.fetchDisplayInfo(
+                            block, true, language, project.getState(), isConditionMetInField))
+                    .blockPostInfo(dtoFactory.fetchDisplayInfo(
+                            block, false, language, project.getState(), isConditionMetInField))
+                    .build();
+        }
+        return applyFormInfoConditions(withFieldInfo, project, language, instanceResolver::isConditionMet);
+    }
+
+    /** The form's pre_info/post_info on a field, with their conditions decided by {@code isConditionMet}. */
+    private FormField applyFormInfoConditions(
+            FormField field, Project project, Optional<String> language, Predicate<String> isConditionMet) {
+        ContextualDisplayMetadata form = formConfig.getFormTitleDisplaMetadataMap().get(field.title());
+        if (!hasConditionalInfo(form)) {
+            return field;
+        }
+        return field.toBuilder()
+                .titlePreInfo(dtoFactory.fetchDisplayInfo(form, true, language, project.getState(), isConditionMet))
+                .titlePostInfo(dtoFactory.fetchDisplayInfo(form, false, language, project.getState(), isConditionMet))
+                .build();
+    }
+
+    private static boolean hasConditionalInfo(ContextualDisplayMetadata metadata) {
+        return metadata != null && Stream.of(metadata.getPreInfo(), metadata.getPostInfo())
+                .anyMatch(info -> info != null && info.isConditional());
+    }
+
+    /**
+     * Decides conditions against the project's saved values, which are only loaded when a condition is asked for
+     * (most forms have none).
+     */
+    private Predicate<String> fetchProjectConditions(Project project) {
+        AtomicReference<FormFieldConditionEvaluator.InstanceResolver> instanceResolver = new AtomicReference<>();
+        return condition -> instanceResolver.updateAndGet(resolver -> resolver != null ? resolver
+                        : formFieldConditionEvaluator.instanceResolver(formConfig.getFormTitleLabelFieldMap().keySet()
+                                .stream()
+                                .flatMap(title -> fetchProjectFormFieldsWithValues(title, project, Optional.empty())
+                                        .stream())
+                                .toList()))
+                .isConditionMet(condition);
     }
 
     private boolean hasStoredData(FormField field, Map<String, List<FormField>> valuedFieldsByTitle) {

@@ -33,6 +33,17 @@ import java.util.stream.Collectors;
  * }
  * }</pre>
  *
+ * <p>To display information only for certain values of the form, add a {@code condition}: a SpEL
+ * expression on the project's form values, with the same syntax as a field's condition. It may
+ * refer to the field the information belongs to. The backend evaluates it with the saved values;
+ * without project values (e.g. a form not yet filled in) a conditional information is not shown.</p>
+ * <pre>{@code
+ * "post_info": {
+ *   "content": {"en": "No data or material can be shared before the ethics approval."},
+ *   "condition": "['ethics']['ethics_approval_status']['value'] == 'pending'"
+ * }
+ * }</pre>
+ *
  * <p>An explicitly empty restriction is invalid and fails application startup:</p>
  * <pre>{@code
  * "pre_info": {
@@ -41,7 +52,7 @@ import java.util.stream.Collectors;
  * }
  * }</pre>
  *
- * <p>Restrictions control only this message. They never hide the associated form, block, or
+ * <p>Restrictions and conditions control only this message. They never hide the associated form, block, or
  * field. Valid values in {@code project_states} are names from {@link ProjectState}.</p>
  */
 @Data
@@ -53,6 +64,9 @@ public class DisplayInfo {
 
     @JsonProperty("project_states")
     private Set<ProjectState> projectStates;
+
+    /** SpEL condition on the project's form values, as in a field's condition; null = always shown. */
+    private String condition;
 
     public void setContent(Map<String, String> content) {
         this.content = content == null
@@ -66,6 +80,10 @@ public class DisplayInfo {
 
     public boolean appliesTo(ProjectState projectState) {
         return projectStates == null || projectStates.contains(projectState);
+    }
+
+    public boolean isConditional() {
+        return condition != null;
     }
 
 }

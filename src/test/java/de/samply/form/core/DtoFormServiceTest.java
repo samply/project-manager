@@ -43,9 +43,9 @@ class DtoFormServiceTest {
         Form project = new Form("project", "Project", "Project description", null);
         Form query = new Form("query", "Query", "Query description", "Query short description");
         Form summary = new Form("summary", null, null, null);
-        when(dtoFactory.convertForm("project", language, ProjectState.REVIEW)).thenReturn(project);
-        when(dtoFactory.convertForm("query", language, ProjectState.REVIEW)).thenReturn(query);
-        when(dtoFactory.convertForm("summary", language, ProjectState.REVIEW)).thenReturn(summary);
+        when(dtoFactory.convertForm(eq("project"), eq(language), eq(ProjectState.REVIEW), any())).thenReturn(project);
+        when(dtoFactory.convertForm(eq("query"), eq(language), eq(ProjectState.REVIEW), any())).thenReturn(query);
+        when(dtoFactory.convertForm(eq("summary"), eq(language), eq(ProjectState.REVIEW), any())).thenReturn(summary);
 
         List<Form> result = service.fetchProjectFormTitleCanonicalOrder(
                 List.of("project", "query", "summary"), dbProject, language);
@@ -71,7 +71,7 @@ class DtoFormServiceTest {
         when(formService.fetchSelectedForms(project)).thenReturn(List.of());
         when(dtoProjectService.fetchCurrentProjectConfigurations(project)).thenReturn(List.of(
                 new ProjectAndForms(null, new Form[]{configuredForm}, new FormField[0])));
-        when(dtoFactory.convertForm("introduction", language, ProjectState.DRAFT))
+        when(dtoFactory.convertForm(eq("introduction"), eq(language), eq(ProjectState.DRAFT), any()))
                 .thenReturn(enrichedForm);
 
         assertThat(service.fetchSelectedForms(project, language)).containsExactly(enrichedForm);

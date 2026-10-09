@@ -99,11 +99,26 @@ public class FormFieldConditionEvaluator {
 
         private boolean isConditionMet(FormFieldConfig instance, FormField formField) {
             String condition = instance.getCondition();
-            if (condition == null || condition.isBlank()) {
-                return true;
-            }
+            return condition == null || condition.isBlank() || isConditionMet(condition, formField);
+        }
+
+        /**
+         * A condition evaluated in the contexts of the field (its block instance), as the field's own
+         * condition would be - e.g. the condition of the field's or its block's pre_info/post_info.
+         */
+        public boolean isConditionMet(@NotNull String condition, @NotNull FormField formField) {
             Expression expression = EXPRESSION_PARSER.parseExpression(condition);
             return Optional.ofNullable(context().getContext(formField)).orElse(List.of()).stream()
+                    .anyMatch(evaluationContext -> evaluateBooleanExpression(expression, evaluationContext));
+        }
+
+        /**
+         * A condition that belongs to no field (e.g. the condition of a form's pre_info/post_info): met if it
+         * holds for any combination of block instances.
+         */
+        public boolean isConditionMet(@NotNull String condition) {
+            Expression expression = EXPRESSION_PARSER.parseExpression(condition);
+            return context().getAllContexts().stream()
                     .anyMatch(evaluationContext -> evaluateBooleanExpression(expression, evaluationContext));
         }
 

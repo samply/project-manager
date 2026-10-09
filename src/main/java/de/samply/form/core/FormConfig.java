@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.expression.ParseException;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -94,6 +96,10 @@ public class FormConfig {
         }
     }
 
+    // Only to check the syntax of the pre_info/post_info conditions at start; they are evaluated by
+    // FormFieldConditionEvaluator.
+    private static final SpelExpressionParser CONDITION_PARSER = new SpelExpressionParser();
+
     // A form field in a condition: ['<form title>']['<field label>'].
     private static final Pattern CONDITION_REFERENCE = Pattern.compile("\\['([^']+)']\\['([^']+)']");
 
@@ -151,7 +157,11 @@ public class FormConfig {
                                         + " is not defined in the form"));
                         findMissingReferences(field.getCondition()).forEach(reference -> result.add(
                                 "condition in " + fieldWhere + " refers to field " + reference + ", which does not exist"));
+                        result.addAll(findBrokenInfoReferences(field, fieldWhere));
                     });
+            result.addAll(findBrokenInfoReferences(formTitleDisplaMetadataMap.get(formTitle), where));
+            new TreeMap<>(formTitleBlockMap.getOrDefault(formTitle, Map.of())).forEach((label, block) ->
+                    result.addAll(findBrokenInfoReferences(block, where + ", block '" + label + "'")));
             formTitleLayoutsMap.getOrDefault(formTitle, List.of()).stream()
                     .flatMap(layout -> Stream.ofNullable(layout.rows()).flatMap(List::stream))
                     .flatMap(row -> Stream.ofNullable(row.fields()).flatMap(List::stream))
@@ -160,6 +170,18 @@ public class FormConfig {
                             + "', which the form does not have"));
         });
         return result;
+    }
+
+    /** Fields named in the conditions of pre_info/post_info that do not exist. */
+    private List<String> findBrokenInfoReferences(ContextualDisplayMetadata metadata, String where) {
+        return metadata == null ? List.of() : Stream.of(
+                        Map.entry("pre_info", Optional.ofNullable(metadata.getPreInfo())),
+                        Map.entry("post_info", Optional.ofNullable(metadata.getPostInfo())))
+                .flatMap(info -> info.getValue().stream().flatMap(displayInfo ->
+                        findMissingReferences(displayInfo.getCondition()).stream()
+                                .map(reference -> "condition of " + info.getKey() + " in " + where
+                                        + " refers to field " + reference + ", which does not exist")))
+                .toList();
     }
 
     /** A block of a form, or null. */
@@ -386,6 +408,20 @@ public class FormConfig {
             throw new IllegalArgumentException(
                     "Invalid form configuration in " + configFile + " at " + location
                             + ": project_states must not be empty; omit project_states to allow all states");
+        }
+        if (info != null && info.isConditional() && info.getCondition().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Invalid form configuration in " + configFile + " at " + location
+                            + ": condition must not be blank; omit condition to always show the information");
+        }
+        if (info != null && info.isConditional()) {
+            try {
+                CONDITION_PARSER.parseExpression(info.getCondition());
+            } catch (ParseException e) {
+                throw new IllegalArgumentException(
+                        "Invalid form configuration in " + configFile + " at " + location
+                                + ": condition is not a valid expression: " + e.getMessage(), e);
+            }
         }
     }
 

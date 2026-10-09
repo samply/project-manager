@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -460,12 +461,25 @@ public class DtoFactory {
                 .orElse(languageMapper.get(defaultLanguage));
     }
 
+    // Without the project's values a conditional information is not shown; DtoFormService shows it where its
+    // condition holds.
     private String fetchDisplayInfo(ContextualDisplayMetadata metadata, boolean preInfo,
                                     Optional<String> language, ProjectState projectState) {
+        return fetchDisplayInfo(metadata, preInfo, language, projectState, _ -> false);
+    }
+
+    /**
+     * The pre_info (or post_info) text of a form, block or field, or null if there is none, it is restricted to
+     * other project states, or its condition is not met.
+     */
+    public String fetchDisplayInfo(ContextualDisplayMetadata metadata, boolean preInfo,
+                                   Optional<String> language, ProjectState projectState,
+                                   Predicate<String> isConditionMet) {
         DisplayInfo info = metadata == null
                 ? null
                 : (preInfo ? metadata.getPreInfo() : metadata.getPostInfo());
-        if (info == null || !info.appliesTo(projectState) || info.getContent() == null) {
+        if (info == null || !info.appliesTo(projectState) || info.getContent() == null
+                || (info.isConditional() && !isConditionMet.test(info.getCondition()))) {
             return null;
         }
         return fetchValue(info.getContent(), language);
@@ -602,6 +616,12 @@ public class DtoFactory {
     }
 
     public Form convertForm(@NotNull String formTitle, Optional<String> language, ProjectState projectState) {
+        return convertForm(formTitle, language, projectState, _ -> false);
+    }
+
+    /** A form with the conditions of its pre_info/post_info decided by {@code isConditionMet}. */
+    public Form convertForm(@NotNull String formTitle, Optional<String> language, ProjectState projectState,
+                            Predicate<String> isConditionMet) {
         ContextualDisplayMetadata metadata = formConfig.getFormTitleDisplaMetadataMap().get(formTitle);
         return new Form(
                 formTitle,
@@ -617,8 +637,8 @@ public class DtoFactory {
                         .map(DisplayMetadata::getShortDescription)
                         .map(m -> fetchValue(m, language))
                         .orElse(null),
-                fetchDisplayInfo(metadata, true, language, projectState),
-                fetchDisplayInfo(metadata, false, language, projectState)
+                fetchDisplayInfo(metadata, true, language, projectState, isConditionMet),
+                fetchDisplayInfo(metadata, false, language, projectState, isConditionMet)
         );
     }
 

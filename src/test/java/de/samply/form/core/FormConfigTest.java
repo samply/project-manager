@@ -115,6 +115,60 @@ class FormConfigTest {
     }
 
     @Test
+    void rejectsABlankOrInvalidInformationConditionDuringStartup(@TempDir Path configDirectory) throws Exception {
+        Path configFile = configDirectory.resolve("patient.json");
+        Files.writeString(configFile, informationWithCondition("  "));
+        assertThatThrownBy(() -> new FormConfig(new ExistingDirectory(configDirectory)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("form 'patient', field 'status'.post_info")
+                .hasMessageContaining("condition must not be blank");
+
+        Files.writeString(configFile, informationWithCondition("['patient']['status']['value'] =="));
+        assertThatThrownBy(() -> new FormConfig(new ExistingDirectory(configDirectory)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("form 'patient', field 'status'.post_info")
+                .hasMessageContaining("condition is not a valid expression");
+    }
+
+    @Test
+    void rejectsAnInformationConditionOnAMissingFieldDuringStartup(@TempDir Path configDirectory) throws Exception {
+        Files.writeString(configDirectory.resolve("patient.json"),
+                informationWithCondition("['patient']['missing']['value'] == 'x'"));
+
+        assertThatThrownBy(() -> new FormConfig(new ExistingDirectory(configDirectory)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("condition of post_info in patient.json, form 'patient', field 'status' "
+                        + "refers to field patient.missing, which does not exist");
+    }
+
+    @Test
+    void acceptsAnInformationConditionOnItsOwnField(@TempDir Path configDirectory) throws Exception {
+        Files.writeString(configDirectory.resolve("patient.json"),
+                informationWithCondition("['patient']['status']['value'] == 'pending'"));
+
+        FormConfig formConfig = new FormConfig(new ExistingDirectory(configDirectory));
+
+        assertThat(formConfig.fetchFormFieldConfig("patient", "status").getPostInfo().getCondition())
+                .isEqualTo("['patient']['status']['value'] == 'pending'");
+    }
+
+    private static String informationWithCondition(String condition) {
+        return """
+                {
+                  "title": "patient",
+                  "fields": [{
+                    "label": "status",
+                    "data_type": "STRING",
+                    "post_info": {
+                      "content": {"en": "Information"},
+                      "condition": "%s"
+                    }
+                  }]
+                }
+                """.formatted(condition);
+    }
+
+    @Test
     void defaultsOmittedFieldTypeToDynamicAndLoadsInactiveFixedMetadata(@TempDir Path configDirectory)
             throws Exception {
         Files.writeString(configDirectory.resolve("project.json"), """
