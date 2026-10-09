@@ -4,7 +4,10 @@ import de.samply.form.core.model.DataType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +40,25 @@ public final class FormFieldValueValidator {
     // digits after it: "1,500" could also mean 1500 (thousands separator).
     private static final Pattern DECIMAL_COMMA = Pattern.compile("^-?\\d+,(?:\\d{1,2}|\\d{4,})$");
 
+    private record Rule(Predicate<String> isValid, String message) {
+    }
+
+    // The checked data types; the others accept any value.
+    private static final Map<DataType, Rule> RULES = new EnumMap<>(Map.of(
+            DataType.EMAIL, new Rule(value -> EMAIL_PATTERN.matcher(value).matches(),
+                    "is not a valid e-mail address"),
+            DataType.INTEGER, new Rule(FormFieldValueValidator::isValidInteger,
+                    "is not a valid whole number"),
+            DataType.DOUBLE, new Rule(FormFieldValueValidator::isValidDouble,
+                    "is not a valid number (use a dot as decimal separator, e.g. 1.5)"),
+            DataType.DATE, new Rule(FormFieldValueValidator::isValidDate,
+                    "is not a valid date (YYYY-MM-DD)"),
+            DataType.TIMESTAMP, new Rule(value -> isValidDateTime(TIMESTAMP_PATTERN, value),
+                    "is not a valid date and time (YYYY-MM-DDTHH:MM:SSZ)"),
+            DataType.LOCAL_DATE_TIME, new Rule(value -> isValidDateTime(LOCAL_DATE_TIME_PATTERN, value),
+                    "is not a valid date and time (YYYY-MM-DDTHH:MM)")
+    ));
+
     private FormFieldValueValidator() {
     }
 
@@ -45,30 +67,14 @@ public final class FormFieldValueValidator {
      * Checked as it is saved (see normalize): e.g. " 1,5" as "1.5".
      */
     public static Optional<String> fetchInvalidValueMessage(DataType dataType, String rawValue) {
-        if (dataType == null || rawValue == null) {
+        Rule rule = dataType == null ? null : RULES.get(dataType);
+        if (rule == null || rawValue == null) {
             return Optional.empty();
         }
         String value = canonicalText(dataType, rawValue);
-        if (value.isEmpty()) {
-            return Optional.empty();
-        }
-        return switch (dataType) {
-            case EMAIL -> EMAIL_PATTERN.matcher(value).matches()
-                    ? Optional.empty() : Optional.of(quoted(value) + " is not a valid e-mail address");
-            case INTEGER -> isValidInteger(value)
-                    ? Optional.empty() : Optional.of(quoted(value) + " is not a valid whole number");
-            case DOUBLE -> isValidDouble(value)
-                    ? Optional.empty() : Optional.of(quoted(value) + " is not a valid number");
-            case DATE -> isValidDate(value)
-                    ? Optional.empty() : Optional.of(quoted(value) + " is not a valid date (YYYY-MM-DD)");
-            case TIMESTAMP -> isValidDateTime(TIMESTAMP_PATTERN, value)
-                    ? Optional.empty()
-                    : Optional.of(quoted(value) + " is not a valid date and time (YYYY-MM-DDTHH:MM:SSZ)");
-            case LOCAL_DATE_TIME -> isValidDateTime(LOCAL_DATE_TIME_PATTERN, value)
-                    ? Optional.empty()
-                    : Optional.of(quoted(value) + " is not a valid date and time (YYYY-MM-DDTHH:MM)");
-            default -> Optional.empty();
-        };
+        return value.isEmpty() || rule.isValid().test(value)
+                ? Optional.empty()
+                : Optional.of("\"" + value + "\" " + rule.message());
     }
 
     public static boolean isValid(DataType dataType, String value) {
@@ -81,23 +87,14 @@ public final class FormFieldValueValidator {
      * ("1,5" as "1.5").
      */
     public static String normalize(DataType dataType, String value) {
-        return value != null && isChecked(dataType) ? canonicalText(dataType, value) : value;
+        return value != null && dataType != null && RULES.containsKey(dataType)
+                ? canonicalText(dataType, value) : value;
     }
 
     private static String canonicalText(DataType dataType, String value) {
-        String trimmed = trim(value);
+        String trimmed = SURROUNDING_WHITESPACE.matcher(value).replaceAll("");
         return dataType == DataType.DOUBLE && DECIMAL_COMMA.matcher(trimmed).matches()
                 ? trimmed.replace(',', '.') : trimmed;
-    }
-
-    private static boolean isChecked(DataType dataType) {
-        return dataType == DataType.EMAIL || dataType == DataType.INTEGER
-                || dataType == DataType.DOUBLE || dataType == DataType.DATE
-                || dataType == DataType.TIMESTAMP || dataType == DataType.LOCAL_DATE_TIME;
-    }
-
-    private static String trim(String value) {
-        return SURROUNDING_WHITESPACE.matcher(value).replaceAll("");
     }
 
     private static boolean isValidInteger(String value) {
@@ -132,10 +129,6 @@ public final class FormFieldValueValidator {
         } catch (DateTimeParseException e) {
             return false;
         }
-    }
-
-    private static String quoted(String value) {
-        return "\"" + value + "\"";
     }
 
 }

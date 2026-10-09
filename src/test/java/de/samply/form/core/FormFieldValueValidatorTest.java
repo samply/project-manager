@@ -73,13 +73,6 @@ class FormFieldValueValidatorTest {
         assertThat(FormFieldValueValidator.isValid(DataType.EMAIL, value)).isTrue();
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"abc", "a b@c.de"})
-    void rejectsInvalidEmailWithMessage(String value) {
-        assertThat(FormFieldValueValidator.fetchInvalidValueMessage(DataType.EMAIL, value))
-                .contains("\"" + value + "\" is not a valid e-mail address");
-    }
-
     // Edge cases
 
     @ParameterizedTest
@@ -295,14 +288,6 @@ class FormFieldValueValidatorTest {
         assertThat(FormFieldValueValidator.isValid(DataType.LOCAL_DATE_TIME, value)).isEqualTo(valid);
     }
 
-    @Test
-    void dateTimeMessagesNameTheExpectedForm() {
-        assertThat(FormFieldValueValidator.fetchInvalidValueMessage(DataType.TIMESTAMP, "2026-10-07T08:30"))
-                .contains("\"2026-10-07T08:30\" is not a valid date and time (YYYY-MM-DDTHH:MM:SSZ)");
-        assertThat(FormFieldValueValidator.fetchInvalidValueMessage(DataType.LOCAL_DATE_TIME, "2026-10-07"))
-                .contains("\"2026-10-07\" is not a valid date and time (YYYY-MM-DDTHH:MM)");
-    }
-
     @ParameterizedTest
     @EnumSource(value = DataType.class, names = {"STRING", "LONG_STRING", "ENUM", "BOOLEAN"})
     void typesWithoutRulesAcceptAnything(DataType dataType) {
@@ -317,8 +302,11 @@ class FormFieldValueValidatorTest {
     @ParameterizedTest
     @CsvSource(delimiter = '|', value = {
             "INTEGER | 1.5     | \"1.5\" is not a valid whole number",
-            "DOUBLE  | 1,500   | \"1,500\" is not a valid number",
-            "DATE    | 1.1.26  | \"1.1.26\" is not a valid date (YYYY-MM-DD)"
+            "EMAIL   | a b@c.de | \"a b@c.de\" is not a valid e-mail address",
+            "DOUBLE  | 1,500   | \"1,500\" is not a valid number (use a dot as decimal separator, e.g. 1.5)",
+            "DATE    | 1.1.26  | \"1.1.26\" is not a valid date (YYYY-MM-DD)",
+            "TIMESTAMP       | 2026-10-07T08:30 | \"2026-10-07T08:30\" is not a valid date and time (YYYY-MM-DDTHH:MM:SSZ)",
+            "LOCAL_DATE_TIME | 2026-10-07       | \"2026-10-07\" is not a valid date and time (YYYY-MM-DDTHH:MM)"
     })
     void messagesNameTheValueAndTheExpectedFormat(DataType dataType, String value, String message) {
         assertThat(FormFieldValueValidator.fetchInvalidValueMessage(dataType, value)).contains(message);
@@ -327,7 +315,7 @@ class FormFieldValueValidatorTest {
     @ParameterizedTest
     @EnumSource(DataType.class)
     void everyDataTypeIsHandled(DataType dataType) {
-        // A new DataType must not break the switch: blank stays valid, no exception for any value
+        // A new DataType must not break the rules: blank stays valid, no exception for any value
         assertThat(FormFieldValueValidator.isValid(dataType, "")).isTrue();
         assertThat(FormFieldValueValidator.fetchInvalidValueMessage(dataType, "x")).isNotNull();
     }

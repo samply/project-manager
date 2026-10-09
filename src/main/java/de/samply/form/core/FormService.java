@@ -67,10 +67,10 @@ public class FormService {
         if (formFields.isEmpty() || formFields.get().length == 0) {
             return;
         }
+        // All of them before anything is saved: an invalid value rejects the whole edit
         FormField[] normalizedFormFields = Arrays.stream(formFields.get())
-                .map(this::normalizeFormFieldValue)
+                .map(this::normalizeAndValidateFormFieldValue)
                 .toArray(FormField[]::new);
-        validateFormFieldValues(normalizedFormFields);
         Map<String, ProjectFormField> labelFormMap = projectFormFieldRepository.findByProject(project).stream()
                 .collect(Collectors.toMap(this::fetchFieldKey, Function.identity()));
         Arrays.stream(normalizedFormFields).forEach(formField -> {
@@ -120,30 +120,19 @@ public class FormService {
     }
 
     // The value as it is saved, e.g. " 5" as "5" (see FormFieldValueValidator.normalize),
-    // according to the data type of its field as configured.
-    private FormField normalizeFormFieldValue(FormField formField) {
+    // according to the data type of its field as configured (not as sent by the
+    // client). Throws InvalidFormFieldValueException when it does not match it.
+    private FormField normalizeAndValidateFormFieldValue(FormField formField) {
         FormFieldConfig config = formConfig.fetchFormFieldConfig(formField.title(), formField.label());
         if (config == null) {
             return formField;
         }
         String value = FormFieldValueValidator.normalize(config.getDataType(), formField.value());
-        return Objects.equals(value, formField.value()) ? formField : formField.toBuilder().value(value).build();
-    }
-
-    // Rejects the whole edit when a value does not match the data type of its
-    // field, as configured (not as sent by the client). Before anything is saved.
-    private void validateFormFieldValues(FormField[] formFields) {
-        Arrays.stream(formFields).forEach(formField -> {
-            FormFieldConfig config = formConfig.fetchFormFieldConfig(formField.title(), formField.label());
-            if (config == null) {
-                return;
-            }
-            FormFieldValueValidator.fetchInvalidValueMessage(config.getDataType(), formField.value())
-                    .ifPresent(message -> {
-                        throw new InvalidFormFieldValueException(
-                                "Field '" + formField.label() + "' of form '" + formField.title() + "': " + message);
-                    });
+        FormFieldValueValidator.fetchInvalidValueMessage(config.getDataType(), value).ifPresent(message -> {
+            throw new InvalidFormFieldValueException(
+                    "Field '" + formField.label() + "' of form '" + formField.title() + "': " + message);
         });
+        return Objects.equals(value, formField.value()) ? formField : formField.toBuilder().value(value).build();
     }
 
     @Transactional

@@ -2439,10 +2439,8 @@ public class ProjectManagerController {
         try {
             runnable.run();
             return ResponseEntity.ok().build();
-        } catch (InvalidFormFieldValueException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return createInternalServerError(e);
+            return createErrorResponse(e);
         }
     }
 
@@ -2456,7 +2454,7 @@ public class ProjectManagerController {
                 return ResponseEntity.ok(objectMapper.writeValueAsString(result.get()));
             }
         } catch (Exception e) {
-            return createInternalServerError(e);
+            return createErrorResponse(e);
         }
     }
 
@@ -2471,11 +2469,16 @@ public class ProjectManagerController {
                 return ResponseEntity.ok(objectMapper.writeValueAsString(result));
             }
         } catch (Exception e) {
-            return createInternalServerError(e);
+            return createErrorResponse(e);
         }
     }
 
-    private ResponseEntity createInternalServerError(Exception e) {
+    // A form field value that does not match its data type is the client's
+    // mistake (400, with the reason); anything else an internal server error.
+    private ResponseEntity createErrorResponse(Exception e) {
+        if (e instanceof InvalidFormFieldValueException) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
         return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(e));
     }
 
