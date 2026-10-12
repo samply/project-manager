@@ -3,6 +3,8 @@ package de.samply.app;
 import de.samply.annotations.RequiresModule;
 import de.samply.modules.OptionalModule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.annotation.Profile;
 
 import java.lang.reflect.Method;
@@ -30,6 +32,13 @@ class ProjectManagerControllerModulesTest {
                 .isEqualTo(OptionalModule.LOCAL_APPROVAL);
         assertThat(endpoint("startFinalStage").getAnnotation(RequiresModule.class)).isNull();
         assertThat(endpoint("backToReview").getAnnotation(RequiresModule.class)).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"uploadLocalApproval", "downloadLocalApproval", "fetchLocalApprovalDescription",
+            "existsLocalApproval"})
+    void theLocalApprovalDocumentNeedsTheLocalApprovalModule(String name) {
+        assertThat(endpoint(name).getAnnotation(RequiresModule.class).value()).isEqualTo(OptionalModule.LOCAL_APPROVAL);
     }
 
     private Method endpoint(String name) {

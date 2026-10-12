@@ -331,6 +331,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Actions batch: at most ACTIONS_BATCH_MAX_ENTRIES entries per batch (default 100, else 413); docs/actions-batch-security.md explains why the batch is safe
 - Actions batch: the projects and bridgeheads of the entries (project-code, bridgehead) are loaded once per batch instead of once per entry
 - Project state LOCAL_APPROVAL after CENTRAL_APPROVAL (optional module LOCAL_APPROVAL, ENABLE_LOCAL_APPROVAL): CENTRAL_APPROVAL -> LOCAL_APPROVAL (START_LOCAL_APPROVAL, email LOCAL_APPROVAL_STARTED) -> DEVELOP or FINAL; without the module the state is not offered (fetch project states) nor accepted
+- Reject a request in CENTRAL_APPROVAL (with REVIEW the main state for rejecting; the state machine already allowed it)
+- Approval contacts per bridgehead (BRIDGEHEADS_CONFIG_<BH>_APPROVALCONTACTS_<n>_NAME_<LANG>, _DESCRIPTION_<LANG>, _EMAILADDRESS): the people of the site's local approval, without access to the project manager; separate from the site contacts, no fallback; in the project bridgeheads (approvalContacts)
+- Document type LOCAL_APPROVAL, one per bridgehead (module LOCAL_APPROVAL): upload (creator, bridgehead admin, project manager admin; in LOCAL_APPROVAL and FINAL), download, description, exists (/local-approval/...; from LOCAL_APPROVAL on, also finished, archived, rejected)
 - BACK_TO_REVIEW: the project manager admin sends a request in CENTRAL_APPROVAL back to REVIEW (email PROJECT_BACK_TO_REVIEW)
 
 

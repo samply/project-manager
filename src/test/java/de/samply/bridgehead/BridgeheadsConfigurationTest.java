@@ -42,4 +42,31 @@ class BridgeheadsConfigurationTest {
                 .containsExactlyInAnyOrderEntriesOf(Map.of("en", "English description", "de", "Deutsche Beschreibung"));
         assertThat(contact.getEmailAddress()).isEqualTo("master@example.org");
     }
+
+    // Separate list from the site contacts, same shape; numbered in case a site has several
+    @Test
+    void bindsApprovalContactsSeparatelyFromTheSiteContacts() {
+        StandardEnvironment environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new SystemEnvironmentPropertySource(
+                "test-systemEnvironment",
+                Map.of(
+                        "BRIDGEHEADS_CONFIG_MASTER_CONTACTS_0_EMAILADDRESS", "master@example.org",
+                        "BRIDGEHEADS_CONFIG_MASTER_APPROVALCONTACTS_0_NAME_EN", "Data use committee",
+                        "BRIDGEHEADS_CONFIG_MASTER_APPROVALCONTACTS_0_EMAILADDRESS", "committee@example.org",
+                        "BRIDGEHEADS_CONFIG_MASTER_APPROVALCONTACTS_1_EMAILADDRESS", "office@example.org"
+                )));
+        ConfigurationPropertySources.attach(environment);
+
+        BridgeheadsConfiguration configuration = Binder.get(environment)
+                .bind("bridgeheads", Bindable.of(BridgeheadsConfiguration.class))
+                .orElseThrow(IllegalStateException::new);
+
+        assertThat(configuration.getContacts("master")).extracting(BridgeheadsConfiguration.Contact::getEmailAddress)
+                .containsExactly("master@example.org");
+        assertThat(configuration.getApprovalContacts("master")).extracting(BridgeheadsConfiguration.Contact::getEmailAddress)
+                .containsExactly("committee@example.org", "office@example.org");
+        assertThat(configuration.getApprovalContacts("master").getFirst().getName())
+                .containsExactlyEntriesOf(Map.of("en", "Data use committee"));
+        assertThat(configuration.getApprovalContacts("unknown")).isEmpty();
+    }
 }

@@ -20,11 +20,16 @@ class BridgeheadDtoTest {
                 "Master team",
                 "English description",
                 "master@example.org");
+        BridgeheadContact approvalContact = new BridgeheadContact(
+                "Local approval office",
+                "Data use committee",
+                "approval@example.org");
         ProjectBridgehead projectBridgehead = new ProjectBridgehead(
                 "project-1",
                 "master",
                 "MASTER",
                 new BridgeheadContact[]{contact},
+                new BridgeheadContact[]{approvalContact},
                 ProjectBridgeheadState.ACCEPTED,
                 Instant.parse("2026-01-01T00:00:00Z"),
                 new ProjectBridgeheadExecution[0],
@@ -38,5 +43,6 @@ class BridgeheadDtoTest {
         assertThat(json).contains("\"name\":\"Master team\"");
         assertThat(json).contains("\"description\":\"English description\"");
         assertThat(json).contains("\"emailAddress\":\"master@example.org\"");
+        assertThat(json).contains("\"approvalContacts\":[{\"name\":\"Local approval office\",\"description\":\"Data use committee\",\"emailAddress\":\"approval@example.org\"}]");
     }
 }

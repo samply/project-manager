@@ -2,6 +2,7 @@ package de.samply.document;
 
 public enum DocumentType {
     VOTUM,
+    LOCAL_APPROVAL,
     SCRIPT,
     PUBLICATION,
     DESCRIPTION,

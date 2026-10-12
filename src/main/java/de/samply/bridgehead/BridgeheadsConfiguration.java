@@ -38,6 +38,8 @@ public class BridgeheadsConfiguration {
         private String humanReadable;
         private String affiliation;
         private List<Contact> contacts = new ArrayList<>();
+        // People who run the site's local approval; they have no access to the project manager, they get emails
+        private List<Contact> approvalContacts = new ArrayList<>();
     }
 
     @Data
@@ -108,6 +110,13 @@ public class BridgeheadsConfiguration {
         return bridgeheadConfig == null || bridgeheadConfig.getContacts() == null
                 ? List.of()
                 : bridgeheadConfig.getContacts();
+    }
+
+    public List<Contact> getApprovalContacts(String bridgehead) {
+        BridgeheadConfig bridgeheadConfig = config.get(bridgehead);
+        return bridgeheadConfig == null || bridgeheadConfig.getApprovalContacts() == null
+                ? List.of()
+                : bridgeheadConfig.getApprovalContacts();
     }
 
     public Optional<String> getTokenManagerId(String bridgehead) {

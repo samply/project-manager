@@ -54,6 +54,10 @@ public class ProjectManagerConst {
     public final static String FETCH_QUERY_FORMATS_ACTION = "FETCH_QUERY_FORMATS";
     public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
     public final static String UPLOAD_VOTUM_ACTION = "UPLOAD_VOTUM";
+    public final static String UPLOAD_LOCAL_APPROVAL_ACTION = "UPLOAD_LOCAL_APPROVAL";
+    public final static String DOWNLOAD_LOCAL_APPROVAL_ACTION = "DOWNLOAD_LOCAL_APPROVAL";
+    public final static String FETCH_LOCAL_APPROVAL_DESCRIPTION_ACTION = "FETCH_LOCAL_APPROVAL_DESCRIPTION";
+    public final static String EXISTS_LOCAL_APPROVAL_ACTION = "EXISTS_LOCAL_APPROVAL";
     public final static String UPLOAD_DESCRIPTION_ACTION = "UPLOAD_DESCRIPTION";
     public final static String UPLOAD_FORM_FIELD_ACTION = "UPLOAD_FORM_FIELD";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
@@ -223,6 +227,10 @@ public class ProjectManagerConst {
     public final static String CREATE_QUERY = "/query";
     public final static String FETCH_PROJECT_TYPES = "/project/types";
     public final static String UPLOAD_VOTUM = "/votum/upload";
+    public final static String UPLOAD_LOCAL_APPROVAL = "/local-approval/upload";
+    public final static String DOWNLOAD_LOCAL_APPROVAL = "/local-approval/download";
+    public final static String FETCH_LOCAL_APPROVAL_DESCRIPTION = "/local-approval/description";
+    public final static String EXISTS_LOCAL_APPROVAL = "/local-approval/exists";
     public final static String UPLOAD_DESCRIPTION = "/project/description/upload";
     public final static String UPLOAD_FORM_FIELD = "/project/form/field/upload";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/upload";

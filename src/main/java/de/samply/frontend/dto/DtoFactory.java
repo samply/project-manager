@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -191,6 +192,7 @@ public class DtoFactory {
                 projectBridgehead.getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgehead),
                 fetchBridgeheadContacts(projectBridgehead.getBridgehead(), Optional.empty()),
+                convert(bridgeheadsConfiguration.getApprovalContacts(projectBridgehead.getBridgehead()), Optional.empty()),
                 projectBridgehead.getState(),
                 projectBridgehead.getModifiedAt(),
                 projectBridgehead.getExecutions().stream()
@@ -245,18 +247,22 @@ public class DtoFactory {
     private BridgeheadContact[] fetchBridgeheadContacts(@NotNull String bridgehead, Optional<String> language) {
         var configuredContacts = bridgeheadsConfiguration.getContacts(bridgehead);
         if (!configuredContacts.isEmpty()) {
-            return configuredContacts.stream()
-                    .map(contact -> new BridgeheadContact(
-                            fetchValue(contact.getName(), language),
-                            fetchValue(contact.getDescription(), language),
-                            contact.getEmailAddress()))
-                    .toArray(BridgeheadContact[]::new);
+            return convert(configuredContacts, language);
         }
 
         return userService.fetchFirstBridgeheadAdmin(bridgehead)
                 .map(admin -> fetchFallbackBridgeheadContact(admin.getEmail()))
                 .map(contact -> new BridgeheadContact[]{contact})
                 .orElseGet(() -> new BridgeheadContact[0]);
+    }
+
+    private BridgeheadContact[] convert(List<BridgeheadsConfiguration.Contact> contacts, Optional<String> language) {
+        return contacts.stream()
+                .map(contact -> new BridgeheadContact(
+                        fetchValue(contact.getName(), language),
+                        fetchValue(contact.getDescription(), language),
+                        contact.getEmailAddress()))
+                .toArray(BridgeheadContact[]::new);
     }
 
     private BridgeheadContact fetchFallbackBridgeheadContact(String email) {

@@ -1068,8 +1068,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.LOCAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @EmailSender(templateType = EmailTemplateType.PROJECT_REJECTED, recipients = {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
@@ -2005,6 +2005,76 @@ public class ProjectManagerController {
             @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
     ) {
         return existsProjectDocument(project, Optional.of(bridgehead), DocumentType.VOTUM);
+    }
+
+    // Local approval: one document per bridgehead (no "all bridgeheads"), uploaded in LOCAL_APPROVAL or FINAL
+    @RequiresModule(OptionalModule.LOCAL_APPROVAL)
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+            ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.FINAL})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.UPLOAD_LOCAL_APPROVAL_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.UPLOAD_LOCAL_APPROVAL)
+    public ResponseEntity uploadLocalApproval(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead,
+            @RequestParameter(name = ProjectManagerConst.LABEL, required = false) String label,
+            @RequestParameter(name = ProjectManagerConst.DOCUMENT) MultipartFile document
+    ) {
+        return convertToResponseEntity(() -> this.documentService.uploadDocument(
+                project, Optional.ofNullable(bridgehead), document, DocumentType.LOCAL_APPROVAL,
+                Optional.ofNullable(label)));
+    }
+
+    @RequiresModule(OptionalModule.LOCAL_APPROVAL)
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+            ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP,
+            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.DOWNLOAD_LOCAL_APPROVAL_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
+    @GetMapping(value = ProjectManagerConst.DOWNLOAD_LOCAL_APPROVAL)
+    public ResponseEntity downloadLocalApproval(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) throws DocumentServiceException {
+        return downloadProjectDocument(project, Optional.of(bridgehead), Optional.empty(), DocumentType.LOCAL_APPROVAL);
+    }
+
+    @RequiresModule(OptionalModule.LOCAL_APPROVAL)
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+            ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP,
+            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_LOCAL_APPROVAL_DESCRIPTION_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
+    @GetMapping(value = ProjectManagerConst.FETCH_LOCAL_APPROVAL_DESCRIPTION)
+    public ResponseEntity fetchLocalApprovalDescription(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return convertOptionalToResponseEntity(
+                () -> this.dtoDocumentService.fetchLastDocumentOfThisTypeForFrontend(project,
+                        Optional.ofNullable(bridgehead), DocumentType.LOCAL_APPROVAL));
+    }
+
+    @RequiresModule(OptionalModule.LOCAL_APPROVAL)
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+            ProjectRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP,
+            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
+    @FrontendAction(action = ProjectManagerConst.EXISTS_LOCAL_APPROVAL_ACTION)
+    @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
+    @GetMapping(value = ProjectManagerConst.EXISTS_LOCAL_APPROVAL)
+    public ResponseEntity existsLocalApproval(
+            @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead
+    ) {
+        return existsProjectDocument(project, Optional.of(bridgehead), DocumentType.LOCAL_APPROVAL);
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
