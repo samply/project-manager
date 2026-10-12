@@ -4,6 +4,7 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.Query;
+import de.samply.modules.OptionalModule;
 import de.samply.modules.OptionalModules;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
@@ -60,7 +61,7 @@ public class ProjectEventService implements ProjectEventActions {
     private final OptionalModules optionalModules;
 
     private static final Set<ProjectEvent> ACTIVATING_EVENTS = EnumSet.of(ProjectEvent.CREATE, ProjectEvent.ACCEPT,
-            ProjectEvent.START_DEVELOP, ProjectEvent.START_PILOT, ProjectEvent.START_FINAL);
+            ProjectEvent.START_LOCAL_APPROVAL, ProjectEvent.START_DEVELOP, ProjectEvent.START_PILOT, ProjectEvent.START_FINAL);
 
 
     public ProjectEventService(NotificationService notificationService,
@@ -272,6 +273,16 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
+    public void startLocalApprovalStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_LOCAL_APPROVAL);
+    }
+
+    @Override
+    public void backToReview(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.BACK_TO_REVIEW);
+    }
+
+    @Override
     public void startDevelopStage(Project project) throws ProjectEventActionsException {
         changeEvent(project, ProjectEvent.START_DEVELOP);
     }
@@ -292,10 +303,14 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     public ProjectState[] fetchAllProjectEvents(Optional<Project> project) {
-        return project
-                .map(Project::fetchProjectTypes)
-                .map(this::statesFor)
-                .orElseGet(ProjectState::values);
+        // Without the module LOCAL_APPROVAL, the step is not shown
+        return Arrays.stream(project
+                        .map(Project::fetchProjectTypes)
+                        .map(this::statesFor)
+                        .orElseGet(ProjectState::values))
+                .filter(state -> state != ProjectState.LOCAL_APPROVAL
+                        || optionalModules.isEnabled(OptionalModule.LOCAL_APPROVAL))
+                .toArray(ProjectState[]::new);
     }
 
     private ProjectState[] statesFor(Set<ProjectType> types) {
@@ -333,6 +348,7 @@ public class ProjectEventService implements ProjectEventActions {
             ProjectState.DRAFT,
             ProjectState.REVIEW,
             ProjectState.CENTRAL_APPROVAL,
+            ProjectState.LOCAL_APPROVAL,
             ProjectState.FINAL,
             ProjectState.FINISHED
     };
@@ -341,6 +357,7 @@ public class ProjectEventService implements ProjectEventActions {
             ProjectState.DRAFT,
             ProjectState.REVIEW,
             ProjectState.CENTRAL_APPROVAL,
+            ProjectState.LOCAL_APPROVAL,
             ProjectState.FINAL,
             ProjectState.FINISHED
     };

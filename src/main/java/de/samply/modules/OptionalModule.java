@@ -50,7 +50,13 @@ public enum OptionalModule {
      * the usual flow. The request types it executes need their own modules (e.g. EXPORTER), checked where they are
      * received.
      */
-    EXTERNAL_EXECUTION(ProjectManagerConst.ENABLE_EXTERNAL_EXECUTION);
+    EXTERNAL_EXECUTION(ProjectManagerConst.ENABLE_EXTERNAL_EXECUTION),
+    /**
+     * Local approval: after the central approval, each site approves the export through its bridgehead with its own
+     * process, outside the project manager; its result (a document per bridgehead) is uploaded here. Disabled: the
+     * request goes from the central approval directly to the next phase.
+     */
+    LOCAL_APPROVAL(ProjectManagerConst.ENABLE_LOCAL_APPROVAL);
 
     private final String enableVariable;
     private final boolean withTestMode;

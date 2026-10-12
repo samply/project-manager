@@ -15,6 +15,10 @@ public interface ProjectEventActions {
 
     void archive(Project project) throws ProjectEventActionsException;
 
+    void startLocalApprovalStage(Project project) throws ProjectEventActionsException;
+
+    void backToReview(Project project) throws ProjectEventActionsException;
+
     void startDevelopStage(Project project) throws ProjectEventActionsException;
 
     void startPilotStage(Project project) throws ProjectEventActionsException;

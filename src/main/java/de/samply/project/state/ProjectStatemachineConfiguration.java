@@ -37,6 +37,7 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
                 .initial(ProjectState.DRAFT)
                 .state(ProjectState.REVIEW)
                 .state(ProjectState.CENTRAL_APPROVAL)
+                .state(ProjectState.LOCAL_APPROVAL)
                 .state(ProjectState.DEVELOP)
                 .state(ProjectState.PILOT)
                 .state(ProjectState.FINAL)
@@ -57,18 +58,22 @@ public class ProjectStatemachineConfiguration extends StateMachineConfigurerAdap
                 .withExternal().source(ProjectState.PILOT).target(ProjectState.FINAL).event(ProjectEvent.START_FINAL).and()
                 .withExternal().source(ProjectState.FINAL).target(ProjectState.FINISHED).event(ProjectEvent.FINISH).and()
                 .withExternal().source(ProjectState.CENTRAL_APPROVAL).target(ProjectState.FINAL).event(ProjectEvent.START_FINAL).and()
+                .withExternal().source(ProjectState.CENTRAL_APPROVAL).target(ProjectState.LOCAL_APPROVAL).event(ProjectEvent.START_LOCAL_APPROVAL).and()
+                .withExternal().source(ProjectState.LOCAL_APPROVAL).target(ProjectState.DEVELOP).event(ProjectEvent.START_DEVELOP).and()
+                .withExternal().source(ProjectState.LOCAL_APPROVAL).target(ProjectState.FINAL).event(ProjectEvent.START_FINAL).and()
+                .withExternal().source(ProjectState.CENTRAL_APPROVAL).target(ProjectState.REVIEW).event(ProjectEvent.BACK_TO_REVIEW).and()
                 .withExternal().source(ProjectState.ARCHIVED).target(ProjectState.CENTRAL_APPROVAL).event(ProjectEvent.ACCEPT);
     }
 
     private void addRejectTransitions(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions) throws Exception {
         ProjectState[] statesToBeRejected = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-                ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.ARCHIVED};
+                ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.ARCHIVED};
         createTransitions(statesToBeRejected, state -> rejectState(transitions, state));
     }
 
     private void addArchiveTransitions(StateMachineTransitionConfigurer<ProjectState, ProjectEvent> transitions) throws Exception {
-        ProjectState[] statesToBeRejected = {ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL, ProjectState.DEVELOP,
-                ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED};
+        ProjectState[] statesToBeRejected = {ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
+                ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED};
         createTransitions(statesToBeRejected, state -> archiveState(transitions, state));
     }
 

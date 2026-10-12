@@ -25,6 +25,7 @@ needs a `false` in the existing deployments.
 | `DATASHIELD` | `ENABLE_DATASHIELD` | `RESEARCH_ENVIRONMENT` | DataSHIELD: Opal tokens through the token manager; every user gets a workspace |
 | `EMAILS` | `ENABLE_EMAILS` (also `test`) | - | Sending emails through SMTP, including the `@EmailSender` emails of the controller; rendering the templates (`EmailService`) is always possible. `test`: everything runs as when sending, but the email is written to the log - `EMAILS_TEST_LOG`: `summary` (receiver and kind, default) or `full` (also subject, text, attachments) |
 | `EXTERNAL_EXECUTION` | `ENABLE_EXTERNAL_EXECUTION` | - | Site admins execute a request's query at their site directly (`saveAndExecuteQueryInBridgehead`). Was meant to be off through the profile `external-execution-not-allowed`, which had no effect on a controller method; the backend uses no profiles any more |
+| `LOCAL_APPROVAL` | `ENABLE_LOCAL_APPROVAL` | - | Local approval: after the central approval (`CENTRAL_APPROVAL`) each site approves the export through its bridgehead with its own process, outside the project manager; the state `LOCAL_APPROVAL` (`startLocalApprovalStage`) and the local approval document per bridgehead. Disabled: the state is not offered, the request goes from the central approval to the next phase |
 
 DataSHIELD implies the research environment, and the research environment the exporter - not the other way round. If
 an enabled module requires a disabled one, the backend does not start and says which variable to change.

@@ -980,8 +980,38 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectService.deleteProject(project));
     }
 
+    // Only with ENABLE_LOCAL_APPROVAL=true (disabled by default): otherwise neither offered nor accepted
+    @RequiresModule(OptionalModule.LOCAL_APPROVAL)
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.CENTRAL_APPROVAL})
+    @EmailSender(templateType = EmailTemplateType.LOCAL_APPROVAL_STARTED, recipients = {
+            EmailRecipientType.CREATOR, EmailRecipientType.ALL_BRIDGEHEAD_ADMINS})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.START_LOCAL_APPROVAL_STAGE_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PutMapping(value = ProjectManagerConst.START_LOCAL_APPROVAL_STAGE)
+    public ResponseEntity startLocalApprovalStage(
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
+    ) {
+        return convertToResponseEntity(() -> projectEventService.startLocalApprovalStage(project));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CENTRAL_APPROVAL})
+    @EmailSender(templateType = EmailTemplateType.PROJECT_BACK_TO_REVIEW, recipients = {
+            EmailRecipientType.CREATOR})
+    @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
+    @FrontendAction(action = ProjectManagerConst.BACK_TO_REVIEW_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PutMapping(value = ProjectManagerConst.BACK_TO_REVIEW)
+    public ResponseEntity backToReview(
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
+    ) {
+        return convertToResponseEntity(() -> projectEventService.backToReview(project));
+    }
+
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @StateConstraints(projectStates = {ProjectState.CENTRAL_APPROVAL, ProjectState.LOCAL_APPROVAL})
     @ProjectConstraints(projectTypes = {ProjectType.DATASHIELD, ProjectType.RESEARCH_ENVIRONMENT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_DEVELOP_STAGE_ACTION)
@@ -1007,7 +1037,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.PILOT, ProjectState.CENTRAL_APPROVAL})
+    @StateConstraints(projectStates = {ProjectState.PILOT, ProjectState.CENTRAL_APPROVAL,
+            ProjectState.LOCAL_APPROVAL})
     @EmailSender(templateType = EmailTemplateType.REQUEST_TECHNICAL_APPROVAL, recipients = {
             EmailRecipientType.BRIDGEHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
@@ -1037,8 +1068,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,
-            ProjectState.PILOT, ProjectState.FINAL})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.LOCAL_APPROVAL,
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @EmailSender(templateType = EmailTemplateType.PROJECT_REJECTED, recipients = {
             EmailRecipientType.PROJECT_ALL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
@@ -1506,7 +1537,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ARCHIVE_PROJECT_ACTION)
     @CacheCategory(CacheResource.MUTATION_RESPONSES)
@@ -1552,7 +1583,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
             ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @ProjectConstraints(documentCreatorOrProjectManagerAdmin = true)
     @FrontendAction(action = ProjectManagerConst.REMOVE_DOCUMENT_ACTION)
@@ -1623,7 +1654,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @EmailSender(templateType = EmailTemplateType.NEW_VOTUM, recipients = {
             EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -1698,7 +1729,7 @@ public class ProjectManagerController {
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.DRAFT})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.DRAFT})
     @EmailSender(templateType = EmailTemplateType.NEW_VOTUM_FOR_ALL_BRIDGEHEADS, recipients = {
             EmailRecipientType.ALL_BRIDGEHEAD_ADMINS, EmailRecipientType.CREATOR,
             EmailRecipientType.PROJECT_MANAGER_ADMIN})
@@ -1832,7 +1863,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_ACTION)
@@ -1876,7 +1907,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION)
@@ -1892,7 +1923,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_DESCRIPTION_ACTION)
@@ -1910,7 +1941,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_DESCRIPTION_ACTION)
@@ -1944,7 +1975,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION)
@@ -1962,7 +1993,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED,
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED,
             ProjectState.ARCHIVED, ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)
@@ -2037,7 +2068,7 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
-            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED,
+            ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED,
             ProjectState.ARCHIVED, ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.VOTUM_VIEW_SITE, module = ProjectManagerConst.VOTUM_ACTIONS_MODULE)

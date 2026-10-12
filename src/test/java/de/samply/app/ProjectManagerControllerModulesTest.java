@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProjectManagerControllerExternalExecutionTest {
+class ProjectManagerControllerModulesTest {
 
     // The profile that was meant to disable it had no effect on a controller method; the module does
     @Test
@@ -21,6 +21,21 @@ class ProjectManagerControllerExternalExecutionTest {
 
         assertThat(endpoint.getAnnotation(RequiresModule.class).value()).isEqualTo(OptionalModule.EXTERNAL_EXECUTION);
         assertThat(endpoint.getAnnotation(Profile.class)).isNull();
+    }
+
+    // The step is only offered with ENABLE_LOCAL_APPROVAL; skipping it (start final) and going back to review are not
+    @Test
+    void startingTheLocalApprovalNeedsTheLocalApprovalModule() {
+        assertThat(endpoint("startLocalApprovalStage").getAnnotation(RequiresModule.class).value())
+                .isEqualTo(OptionalModule.LOCAL_APPROVAL);
+        assertThat(endpoint("startFinalStage").getAnnotation(RequiresModule.class)).isNull();
+        assertThat(endpoint("backToReview").getAnnotation(RequiresModule.class)).isNull();
+    }
+
+    private Method endpoint(String name) {
+        return Arrays.stream(ProjectManagerController.class.getDeclaredMethods())
+                .filter(method -> method.getName().equals(name))
+                .findFirst().orElseThrow();
     }
 
 }

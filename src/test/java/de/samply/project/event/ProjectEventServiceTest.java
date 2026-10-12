@@ -3,6 +3,7 @@ package de.samply.project.event;
 import de.samply.db.model.Project;
 import de.samply.db.model.Query;
 import de.samply.db.model.QueryOutput;
+import de.samply.modules.OptionalModule;
 import de.samply.modules.OptionalModules;
 import de.samply.notification.NotificationService;
 import de.samply.project.ProjectBridgeheadService;
@@ -121,6 +122,21 @@ class ProjectEventServiceTest {
         when(optionalModules.isAvailable(ProjectType.DATASHIELD)).thenReturn(false);
 
         assertThatCode(() -> projectEventService.archive(projectOfType(ProjectType.DATASHIELD))).doesNotThrowAnyException();
+    }
+
+    // The step LOCAL_APPROVAL is only shown with its module
+    @Test
+    void offersTheLocalApprovalStateOnlyWithItsModule() {
+        Project project = projectOfType(ProjectType.EXPORT);
+
+        when(optionalModules.isEnabled(OptionalModule.LOCAL_APPROVAL)).thenReturn(false);
+        assertThat(projectEventService.fetchAllProjectEvents(Optional.of(project))).doesNotContain(ProjectState.LOCAL_APPROVAL);
+        assertThat(projectEventService.fetchAllProjectEvents(Optional.empty())).doesNotContain(ProjectState.LOCAL_APPROVAL);
+
+        when(optionalModules.isEnabled(OptionalModule.LOCAL_APPROVAL)).thenReturn(true);
+        assertThat(projectEventService.fetchAllProjectEvents(Optional.of(project))).containsExactly(ProjectState.DRAFT,
+                ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL, ProjectState.LOCAL_APPROVAL, ProjectState.FINAL,
+                ProjectState.FINISHED);
     }
 
     private Project projectOfType(ProjectType projectType) {

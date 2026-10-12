@@ -330,6 +330,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Form field instances: a field label configured several times in a form; the first instance whose condition holds is shown
 - Actions batch: at most ACTIONS_BATCH_MAX_ENTRIES entries per batch (default 100, else 413); docs/actions-batch-security.md explains why the batch is safe
 - Actions batch: the projects and bridgeheads of the entries (project-code, bridgehead) are loaded once per batch instead of once per entry
+- Project state LOCAL_APPROVAL after CENTRAL_APPROVAL (optional module LOCAL_APPROVAL, ENABLE_LOCAL_APPROVAL): CENTRAL_APPROVAL -> LOCAL_APPROVAL (START_LOCAL_APPROVAL, email LOCAL_APPROVAL_STARTED) -> DEVELOP or FINAL; without the module the state is not offered (fetch project states) nor accepted
+- BACK_TO_REVIEW: the project manager admin sends a request in CENTRAL_APPROVAL back to REVIEW (email PROJECT_BACK_TO_REVIEW)
 
 
 ### Changed
