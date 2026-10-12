@@ -31,8 +31,11 @@ public class EmailService {
         this.emailKeyValuesFactory = emailKeyValuesFactory;
     }
 
-    public Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type, EmailKeyValues keyValues) {
-        Optional<TemplateSubject> template = emailTemplates.getTemplateAndSubject(type, role);
+    public Optional<MessageSubject> createEmailMessageAndSubject(ProjectRole role, EmailTemplateType type,
+                                                                 Optional<ProjectBridgehead> bridgehead,
+                                                                 EmailKeyValues keyValues) {
+        Optional<TemplateSubject> template = emailTemplates.getTemplateAndSubject(type, role,
+                bridgehead.map(ProjectBridgehead::getBridgehead));
         if (template.isPresent()) {
             String message = templateEngine.process(template.get().template(), createContext(keyValues));
             return Optional.of(new MessageSubject(message, keyValues.replaceHtmlVariables(template.get().subject())));
@@ -44,6 +47,7 @@ public class EmailService {
         return createEmailMessageAndSubject(
                 projectRole,
                 emailTemplateType,
+                bridgehead,
                 emailKeyValuesFactory
                         .newInstance()
                         .add(new EmailRecipient(emailTo, project, bridgehead, projectRole)));

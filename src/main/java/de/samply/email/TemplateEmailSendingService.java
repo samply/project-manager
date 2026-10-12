@@ -79,7 +79,7 @@ public class TemplateEmailSendingService implements EmailSendingService {
         if (!userService.isUserInMailingBlackList(emailTo)) {
             project.ifPresent(keyValues::addProject);
             bridgehead.ifPresent(keyValues::addBridgehead);
-            Optional<MessageSubject> messageSubject = emailService.createEmailMessageAndSubject(role, type, keyValues);
+            Optional<MessageSubject> messageSubject = emailService.createEmailMessageAndSubject(role, type, bridgehead, keyValues);
             if (messageSubject.isPresent()) {
                 List<FilenameAndFileContent> attachments = fetchAttachments(project, type);
                 emailTransport.send(emailTo, role, type, messageSubject.get(), attachments);

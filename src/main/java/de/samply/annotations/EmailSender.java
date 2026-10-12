@@ -2,6 +2,7 @@ package de.samply.annotations;
 
 import de.samply.email.EmailRecipientType;
 import de.samply.email.EmailTemplateType;
+import de.samply.project.state.ProjectState;
 
 import java.lang.annotation.*;
 
@@ -14,4 +15,7 @@ public @interface EmailSender {
     EmailRecipientType[] recipients() default {};
 
     EmailTemplateType templateType();
+
+    // Only sent when the project is in one of these states (after the call); empty: in any state
+    ProjectState[] projectStates() default {};
 }

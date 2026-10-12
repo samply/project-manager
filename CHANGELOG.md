@@ -334,6 +334,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Reject a request in CENTRAL_APPROVAL (with REVIEW the main state for rejecting; the state machine already allowed it)
 - Approval contacts per bridgehead (BRIDGEHEADS_CONFIG_<BH>_APPROVALCONTACTS_<n>_NAME_<LANG>, _DESCRIPTION_<LANG>, _EMAILADDRESS): the people of the site's local approval, without access to the project manager; separate from the site contacts, no fallback; in the project bridgeheads (approvalContacts)
 - Document type LOCAL_APPROVAL, one per bridgehead (module LOCAL_APPROVAL): upload (creator, bridgehead admin, project manager admin; in LOCAL_APPROVAL and FINAL), download, description, exists (/local-approval/...; from LOCAL_APPROVAL on, also finished, archived, rejected)
+- Emails to the approval contacts (EmailRecipientType.BRIDGEHEAD_APPROVAL_CONTACTS, template role BRIDGEHEAD_APPROVAL_CONTACT, email-to-name from the configuration); LOCAL_APPROVAL_STARTED also goes to them
+- Email templates per bridgehead (email-templates.json: "bridgeheads": {"<bridgehead>": {"subject", "files"}}), falling back to the general templates (docs/emails.md)
+- @EmailSender(projectStates): an email only in some project states; upload of a local approval: NEW_LOCAL_APPROVAL (LOCAL_APPROVAL) or NEW_LOCAL_APPROVAL_FINAL (FINAL) to creator, bridgehead admin and project manager admins
 - BACK_TO_REVIEW: the project manager admin sends a request in CENTRAL_APPROVAL back to REVIEW (email PROJECT_BACK_TO_REVIEW)
 
 

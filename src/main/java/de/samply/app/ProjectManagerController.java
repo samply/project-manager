@@ -985,7 +985,8 @@ public class ProjectManagerController {
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.CENTRAL_APPROVAL})
     @EmailSender(templateType = EmailTemplateType.LOCAL_APPROVAL_STARTED, recipients = {
-            EmailRecipientType.CREATOR, EmailRecipientType.ALL_BRIDGEHEAD_ADMINS})
+            EmailRecipientType.BRIDGEHEAD_APPROVAL_CONTACTS, EmailRecipientType.CREATOR,
+            EmailRecipientType.ALL_BRIDGEHEAD_ADMINS})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.START_LOCAL_APPROVAL_STAGE_ACTION)
     @CacheCategory(CacheResource.MUTATION_RESPONSES)
@@ -2012,6 +2013,13 @@ public class ProjectManagerController {
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
             ProjectRole.PROJECT_MANAGER_ADMIN})
     @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.FINAL})
+    // Two texts: in LOCAL_APPROVAL the site's approval is there; in FINAL the site can export now
+    @EmailSender(templateType = EmailTemplateType.NEW_LOCAL_APPROVAL, projectStates = {ProjectState.LOCAL_APPROVAL},
+            recipients = {EmailRecipientType.CREATOR, EmailRecipientType.BRIDGEHEAD_ADMIN,
+                    EmailRecipientType.PROJECT_MANAGER_ADMIN})
+    @EmailSender(templateType = EmailTemplateType.NEW_LOCAL_APPROVAL_FINAL, projectStates = {ProjectState.FINAL},
+            recipients = {EmailRecipientType.CREATOR, EmailRecipientType.BRIDGEHEAD_ADMIN,
+                    EmailRecipientType.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.UPLOAD_LOCAL_APPROVAL_ACTION)
     @CacheCategory(CacheResource.MUTATION_RESPONSES)

@@ -60,6 +60,7 @@ public class EmailKeyValues {
                     EmailContextKey.EMAIL_TO_FIRST_NAME,
                     EmailContextKey.EMAIL_TO_LAST_NAME,
                     EmailContextKey.EMAIL_TO_NAME);
+            emailRecipient.getName().ifPresent(name -> addKeyValue(EmailContextKey.EMAIL_TO_NAME, name));
             emailRecipient.getMessage().ifPresent(this::addMessage);
             add(emailRecipient.getRole());
             addProjectBridgeheadOrProject(emailRecipient);

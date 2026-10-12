@@ -17,6 +17,9 @@ public class EmailRecipient {
     private final ProjectRole role;
     @Setter
     private Optional<String> message = Optional.empty();
+    // For recipients who are not users of the project manager (e.g. approval contacts): the name from the configuration
+    @Setter
+    private Optional<String> name = Optional.empty();
 
     public EmailRecipient(String email, Optional<Project> project, Optional<ProjectBridgehead> bridgehead, ProjectRole role) {
         this.email = email;

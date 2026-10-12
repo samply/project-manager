@@ -7,6 +7,7 @@ import de.samply.annotations.EmailSenderIfError;
 import de.samply.annotations.EmailSenders;
 import de.samply.annotations.EmailSendersIfError;
 import de.samply.app.ProjectManagerConst;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -15,18 +16,21 @@ import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.project.state.ProjectState;
 import de.samply.security.SessionUser;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
 import de.samply.utils.AspectUtils;
+import de.samply.utils.LanguageUtils;
 import de.samply.utils.ProjectRolesUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -51,6 +55,8 @@ public class EmailSenderAspect {
 
     private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
     private final EmailKeyValuesFactory emailKeyValuesFactory;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
+    private final String defaultLanguage;
 
     public EmailSenderAspect(EmailSendingService emailSendingService,
                              SessionUser sessionUser,
@@ -58,7 +64,9 @@ public class EmailSenderAspect {
                              ProjectBridgeheadService projectBridgeheadService,
                              ProjectBridgeheadUserService projectBridgeheadUserService,
                              OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
-                             EmailKeyValuesFactory emailKeyValuesFactory) {
+                             EmailKeyValuesFactory emailKeyValuesFactory,
+                             BridgeheadsConfiguration bridgeheadsConfiguration,
+                             @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
         this.emailSendingService = emailSendingService;
         this.sessionUser = sessionUser;
         this.userService = userService;
@@ -66,6 +74,8 @@ public class EmailSenderAspect {
         this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
+        this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
     }
 
     @SuppressWarnings("EmptyMethod")
@@ -146,8 +156,16 @@ public class EmailSenderAspect {
     }
 
     private void sendEmailFromEmailSender(ProceedingJoinPoint joinPoint, Optional<EmailSender> emailSenderOptional) {
-        emailSenderOptional.ifPresent(emailSender -> fetchEmailRecipients(emailSender::recipients, joinPoint)
-                .forEach(emailRecipient -> sendEmail(emailRecipient, emailSender::templateType)));
+        emailSenderOptional
+                .filter(emailSender -> isInProjectStates(joinPoint, emailSender.projectStates()))
+                .ifPresent(emailSender -> fetchEmailRecipients(emailSender::recipients, joinPoint)
+                        .forEach(emailRecipient -> sendEmail(emailRecipient, emailSender::templateType)));
+    }
+
+    private boolean isInProjectStates(ProceedingJoinPoint joinPoint, ProjectState[] projectStates) {
+        return projectStates.length == 0 || AspectUtils.fetchProject(joinPoint)
+                .map(project -> Arrays.asList(projectStates).contains(project.getState()))
+                .orElse(false);
     }
 
     private void sendEmailFromEmailSendersIfError(ProceedingJoinPoint joinPoint, Optional<EmailSendersIfError> emailSendersIfErrorOptional) {
@@ -202,6 +220,8 @@ public class EmailSenderAspect {
                     case ALL_PILOTS -> fetchEmailRecipientsForAllPilotUsersOfTheProject(project);
                     case ALL_FINALS -> fetchEmailRecipientsForAllFinalUsersOfTheProject(project);
                     case BRIDGEHEAD_ADMIN -> fetchEmailRecipientsForBridgeheadAdmin(project, projectBridgehead);
+                    case BRIDGEHEAD_APPROVAL_CONTACTS ->
+                            fetchEmailRecipientsForBridgeheadApprovalContacts(project, projectBridgehead);
                     case BRIDGEHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT ->
                             fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(project);
                     case PROJECT_MANAGER_ADMIN ->
@@ -338,6 +358,26 @@ public class EmailSenderAspect {
                                         Optional.of(projectBridgehead),
                                         ProjectRole.BRIDGEHEAD_ADMIN))));
         return result;
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForBridgeheadApprovalContacts(Optional<Project> project, Optional<ProjectBridgehead> bridgehead) {
+        Set<EmailRecipient> result = new HashSet<>();
+        fetchProjectBridgeheads(project, bridgehead).forEach(projectBridgehead -> bridgeheadsConfiguration
+                .getApprovalContacts(projectBridgehead.getBridgehead()).stream()
+                .filter(contact -> contact.getEmailAddress() != null && !contact.getEmailAddress().isBlank())
+                .forEach(contact -> {
+                    EmailRecipient emailRecipient = new EmailRecipient(contact.getEmailAddress(), project,
+                            Optional.of(projectBridgehead), ProjectRole.BRIDGEHEAD_APPROVAL_CONTACT);
+                    emailRecipient.setName(fetchName(contact));
+                    result.add(emailRecipient);
+                }));
+        return result;
+    }
+
+    // In the default language, else in any configured language
+    private Optional<String> fetchName(BridgeheadsConfiguration.Contact contact) {
+        return Optional.ofNullable(contact.getName().get(defaultLanguage))
+                .or(() -> contact.getName().values().stream().findFirst());
     }
 
     private Set<EmailRecipient> fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(Optional<Project> project) {

@@ -18,11 +18,12 @@ public class EmailTemplates {
     @JsonIgnore
     public Optional<TemplateSubject> getTemplateAndSubject(
             @NotNull EmailTemplateType type,
-            @NotNull ProjectRole role) {
+            @NotNull ProjectRole role,
+            Optional<String> bridgehead) {
 
         return Optional
                 .ofNullable(templates.get(type))
-                .map(meta -> meta.getTemplateAndSubject(role));
+                .map(meta -> meta.getTemplateAndSubject(role, bridgehead));
     }
 
     public List<String> getAttachmentFiles(
