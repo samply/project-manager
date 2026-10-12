@@ -358,6 +358,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Generalize Action Explanations as Action Messages while accepting the legacy configuration names
 - PDF design
 - Configurable localized date and time display formats for frontend views and PDFs
+- Project state APPROVAL renamed CENTRAL_APPROVAL (Flyway V003 renames the stored states); the configuration (action messages) must use the new name
+- Emails: an email whose template is not configured (type and role) is not sent, silently, instead of failing with "Template not found"; an email needs both its definition in the code and its template
 
 
 ### Removed

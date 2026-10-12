@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class UnfinishedRequestsCheck {
 
     static final Set<ProjectState> NOT_FINISHED = EnumSet.of(ProjectState.DRAFT, ProjectState.REVIEW,
-            ProjectState.APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL);
+            ProjectState.CENTRAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL);
 
     private final ProjectRepository projectRepository;
     private final OptionalModules optionalModules;

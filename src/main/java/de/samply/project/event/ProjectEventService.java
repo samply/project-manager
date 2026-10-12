@@ -332,7 +332,7 @@ public class ProjectEventService implements ProjectEventActions {
     private static final ProjectState[] EXPORT_PROJECT_STATES = {
             ProjectState.DRAFT,
             ProjectState.REVIEW,
-            ProjectState.APPROVAL,
+            ProjectState.CENTRAL_APPROVAL,
             ProjectState.FINAL,
             ProjectState.FINISHED
     };
@@ -340,7 +340,7 @@ public class ProjectEventService implements ProjectEventActions {
     private static final ProjectState[] SAMPLES_PROJECT_STATES = {
             ProjectState.DRAFT,
             ProjectState.REVIEW,
-            ProjectState.APPROVAL,
+            ProjectState.CENTRAL_APPROVAL,
             ProjectState.FINAL,
             ProjectState.FINISHED
     };

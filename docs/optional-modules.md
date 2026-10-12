@@ -161,7 +161,8 @@ code may need them later, and the module's own classes depend on the interface t
 `EMAILS`: `EmailService` only renders the templates (always there: the Credentials Sharing Tool shows rendered
 templates without sending them); sending goes through `EmailSendingService` (`TemplateEmailSendingService` or
 `DisabledEmailSendingService`, which logs the email). `TemplateEmailSendingService` (modes `true` and `test`) checks the
-blacklist, renders, adds the attachments and the notification, and hands the email to an `EmailTransport`:
+blacklist, renders (no template configured for the type and role: no email, silently - an email needs both its
+definition in the code and its template), adds the attachments and the notification, and hands the email to an `EmailTransport`:
 `SmtpEmailTransport` (`true`) or `LogEmailTransport` (`test`) - only the delivery differs between the two modes. The
 SMTP beans (`MailSenderConfiguration`) belong to mode `true`, so the SMTP settings are only needed then.
 `EmailSenderAspect` (the `@EmailSender` annotations do nothing with emails disabled), `AttachmentFileService` and the

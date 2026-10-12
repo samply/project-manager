@@ -93,7 +93,8 @@ public class TemplateEmailSendingService implements EmailSendingService {
                             ProjectManagerConst.EMAIL_SERVICE, OperationType.SEND_EMAIL, details, null, null);
                 }
             } else {
-                throw new EmailServiceException("Template not found for " + type.name() + " of role " + role.name());
+                // An email is sent only when its template is configured: no template, no email (not an error)
+                log.debug("No template for {} of role {}: email to {} not sent", type, role, emailTo);
             }
         } else {
             log.info("User email in mailing blacklist");
