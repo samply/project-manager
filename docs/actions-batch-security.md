@@ -52,7 +52,7 @@ A first hardening (branch `feat/actions-batch-security`) added more. It was redu
 ## The question
 
 `POST /actions/batch/results` lets a user call many read actions in one request (`ActionsBatchService`, see
-`plans/2026-09-30-plan-batch-getter-endpoint.md`). A user who may not call an endpoint must get the same refusal when
+`project-manager-ops/plans/2026-09-30-plan-batch-getter-endpoint.md`). A user who may not call an endpoint must get the same refusal when
 they ask for it through the batch. Otherwise the batch would be a way around the security architecture.
 
 ## How an endpoint is protected
@@ -226,8 +226,8 @@ What the batch does not protect against, what was decided to leave, and what has
 - **The real controller in an automated test.** The automated test uses a test controller with one endpoint per kind
   of constraint; the 69 real read actions are covered by the manual comparisons only. An automated version needs a test
   that starts the whole application with a database (an integration test). The project has one such test,
-  `ProjectCodeManagerApplicationTests`, and it is disabled. See `plans/2026-09-30-plan-spring-and-library-update.md`,
-  §5 and §8, and `plans/2026-09-30-plan-unit-and-integration-tests.md`.
+  `ProjectCodeManagerApplicationTests`, and it is disabled. See `project-manager-ops/plans/2026-09-30-plan-spring-and-library-update.md`,
+  §5 and §8, and `project-manager-ops/plans/2026-09-30-plan-unit-and-integration-tests.md`.
 - **DataSHIELD requests:** the local test data has only export requests (no project type constraint for DataSHIELD
   was compared on the running application).
 - **Load:** no load or stress test. The limits (entries per batch, thread pool, queue, waiting on the caller's thread)

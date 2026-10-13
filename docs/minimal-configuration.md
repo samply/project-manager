@@ -2,7 +2,7 @@
 
 What a new deployment must set for the backend to start with all optional modules disabled (no `ENABLE_*` set:
 modules are opt-in), and what each module adds. Derived from the code (2026-10-08): every setting without a default that a bean outside the modules reads, plus
-`application.yaml`. Not yet proven by a start-up test - that test is planned (`plans/2026-09-30-plan-unit-and-integration-tests.md`,
+`application.yaml`. Not yet proven by a start-up test - that test is planned (`project-manager-ops/plans/2026-09-30-plan-unit-and-integration-tests.md`,
 phase 2, with exactly this set as its configuration).
 
 Examples: `master-project-manager/production/entrypoint.sh` and `production/frontend/frontend-environment.sh`

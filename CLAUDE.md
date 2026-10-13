@@ -19,3 +19,8 @@ external execution) is an optional module: `OptionalModule` in `de.samply.module
 - New request states must be added to `UnfinishedRequestsCheck.NOT_FINISHED` and, if they activate a request, to
   `ProjectEventService.ACTIVATING_EVENTS`.
 - `ModuleDependenciesTest` checks the wiring for every mode; keep it green.
+
+## Operations
+
+What spans repositories (inventory of servers and images, runbooks, shared plans, decisions, backlog) lives in the
+private GitLab repository `project-manager-ops` (locally `../project-manager-ops`). New plans go to its `plans/`.

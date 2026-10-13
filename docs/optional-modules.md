@@ -7,7 +7,7 @@ the deployment needs none of its configuration (variables, files).
 "Module" here means an application module in the sense of Spring Modulith: not a Java module (`module-info.java`, not
 used in this backend) and not a frontend module (`@FrontendSiteModule`, a part of a page).
 
-- Plan and decisions: `plans/2026-10-07-plan-optional-modules.md` (local, `plans/` is not in git).
+- Plan and decisions: `project-manager-ops/plans/2026-10-07-plan-optional-modules.md` (in the private repository project-manager-ops).
 
 ## The modules
 

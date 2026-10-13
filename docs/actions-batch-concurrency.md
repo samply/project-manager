@@ -7,7 +7,7 @@
 ## Context
 
 `POST /actions/batch/results` runs several read actions in one request (`ActionsBatchService`, see
-`plans/2026-09-30-plan-batch-getter-endpoint.md`). A page sends 30 to 40 entries at once. Two things must hold:
+`project-manager-ops/plans/2026-09-30-plan-batch-getter-endpoint.md`). A page sends 30 to 40 entries at once. Two things must hold:
 
 1. **A limit on how many entries run at once.** Every entry reads from the database, and the pool has 20 connections
    (`hikari.maximum-pool-size`). Without a limit, one page load could take all of them and block every other user.
@@ -84,7 +84,7 @@ for one batch:
   that is not found) is not kept, so each entry tries again and answers as before.
 - The lookups end with the batch. Nothing is kept across requests, not even in the same session; requests outside a
   batch and background jobs never use them. No Hibernate cache is involved (a general look at the database access is
-  `plans/2026-10-06-plan-database-access-optimization.md`).
+  `project-manager-ops/plans/2026-10-06-plan-database-access-optimization.md`).
 
 **Assumption:** the entries share the same entity objects (detached, as the converters always returned them, since
 `open-in-view` is false). That is safe because a batch only runs read actions (GET) that do not change them. If an
