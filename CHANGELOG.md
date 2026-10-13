@@ -4,7 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0 - 2026-09-29]
+## [Unreleased]
+First release. Until now the deployments ran `develop`; this version is what they run today.
+
+### Summary
+- Request workflow for data requests across sites: DRAFT → REVIEW → CENTRAL_APPROVAL → LOCAL_APPROVAL → DEVELOP →
+  PILOT → FINAL → FINISHED (and REJECTED, ARCHIVED), with per-site states and actions
+- Roles: applicant (creator), project manager admin, bridgehead admin, developer, pilot and final user; constraints by
+  organisation role, project role and state on every endpoint
+- Configurable forms per request type: fields, blocks, groups, conditions (SpEL), conditional pre/post info, form
+  history; request summary as PDF
+- Documents: application form, ethics vote and local approval per site, scripts, publications, final report
+- Emails from templates (per site, with fallback), notifications, mailing blacklist
+- Optional modules (opt-in `ENABLE_*`, also `test` mode): exporter, feasibility, research environment, DataSHIELD,
+  emails, external execution, local approval
+- Batch endpoint for the read actions of a page
+
+### Configuration
+- Nothing to change for deployments that already run `develop`. Reference: `docs/minimal-configuration.md` and
+  `docs/optional-modules.md`.
+
+## [Before 1.0.0]
+Development history before the first release (never released as a version).
 ### Added
 - First version of the project
 - Optional modules (`OptionalModule`, `@ConditionalOnModule`): beans of a disabled module are not created; start stops if an enabled module requires a disabled one; start-up log of the enabled modules (docs/optional-modules.md)
