@@ -1,6 +1,7 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.user.roles.UserOrganisationRoles;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -43,21 +44,33 @@ public class OidcProjectUserService extends OidcUserService {
         OidcIdToken idToken = oidcUser.getIdToken();
         OidcUserInfo userInfo = oidcUser.getUserInfo();
         sessionUser.setEmail(userInfo.getEmail());
-
-        Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo);
+        sessionUser.setFirstName(userInfo.getGivenName());
+        sessionUser.setLastName(userInfo.getFamilyName());
+        if (sessionUser.getFirstName() == null && sessionUser.getLastName() == null) {
+            sessionUser.setLastName(userInfo.getFullName());
+        }
+        UserOrganisationRoles userOrganisationRoles = new UserOrganisationRoles();
+        Collection<? extends GrantedAuthority> mappedAuthorities = extractAuthoritiesFromGroups(userInfo, userOrganisationRoles);
+        sessionUser.setUserOrganisationRoles(userOrganisationRoles);
         newUsersImporter.importNewUsers();
 
         return new DefaultOidcUser(mappedAuthorities, idToken, userInfo);
     }
 
-    public Collection<? extends GrantedAuthority> extractAuthoritiesFromGroups(OidcUserInfo userInfo) throws OAuth2AuthenticationException {
+    public Collection<? extends GrantedAuthority> extractAuthoritiesFromGroups(OidcUserInfo userInfo, UserOrganisationRoles userOrganisationRoles)
+            throws OAuth2AuthenticationException {
+
         Map<String, Object> claims = userInfo.getClaims();
-        if (claims.containsKey(groupClaim)) {
-            return grantedAuthoritiesExtractor.extractAuthoritiesFromGroups((Collection<String>) claims.get(groupClaim));
+        Object groupsObj = claims.get(groupClaim);
+
+        if (groupsObj instanceof Collection<?> collection) {
+            return grantedAuthoritiesExtractor.extractAuthoritiesFromGroups(collection.stream()
+                    .map(Object::toString)
+                    .toList(), userOrganisationRoles);
         }
+
         throw new OAuth2AuthenticationException("No groups found");
     }
-
 
 
 }

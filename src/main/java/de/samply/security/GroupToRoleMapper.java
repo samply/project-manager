@@ -1,17 +1,27 @@
 package de.samply.security;
 
 import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.user.roles.OrganisationRole;
-import org.springframework.beans.factory.annotation.Autowired;
+import de.samply.user.roles.UserOrganisationRoles;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class GroupToRoleMapper {
+
+    /**
+     * Optional comma-separated identity-provider groups granting RESEARCHER access
+     * independently of any registered bridgehead. Empty by default; matching is
+     * exact and case-sensitive, ignoring whitespace and a leading Keycloak slash.
+     * This does not grant bridgehead membership or administrative privileges.
+     */
+    @Value(ProjectManagerConst.RESEARCHER_GROUPS_SV)
+    private List<String> researcherGroups = List.of();
 
     @Value(ProjectManagerConst.BK_USER_GROUP_PREFIX_SV)
     private String bridgeheadUserGroupPrefix;
@@ -25,21 +35,23 @@ public class GroupToRoleMapper {
     @Value(ProjectManagerConst.BK_ADMIN_GROUP_SUFFIX_SV)
     private String bridgeheadAdminGroupSuffix;
 
-    @Autowired
-    private ProjectManagerAdminGroups projectManagerAdminGroups;
+    private final ProjectManagerAdminGroups projectManagerAdminGroups;
 
-    @Autowired
-    private SessionUser sessionUser;
-
-    @Autowired
-    private BridgeheadConfiguration bridgeheadConfiguration;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
     private Boolean adminOverUser;
 
 
-    private final Map<String, OrganisationRole> groupToRoleMapCache = new HashMap<>();
+    private final Map<String, OrganisationRole> groupToRoleMapCache = new ConcurrentHashMap<>();
 
-    public OrganisationRole getRoleFromGroup(String group) {
+    public GroupToRoleMapper(
+            ProjectManagerAdminGroups projectManagerAdminGroups,
+            BridgeheadsConfiguration bridgeheadsConfiguration) {
+        this.projectManagerAdminGroups = projectManagerAdminGroups;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
+    }
+
+    public OrganisationRole getRoleFromGroup(String group, UserOrganisationRoles userOrganisationRoles) {
         group = removeSlashFromStart(group);
         OrganisationRole organisationRole = groupToRoleMapCache.get(group);
         if (organisationRole == null) {
@@ -56,10 +68,22 @@ public class GroupToRoleMapper {
                 groupToRoleMapCache.put(group, organisationRole);
             }
         }
-        return addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole);
+        organisationRole = addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole, userOrganisationRoles);
+        final String normalizedGroup = group;
+        boolean globalResearcher = researcherGroups.stream()
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(this::removeSlashFromStart)
+                .anyMatch(normalizedGroup::equals);
+        if (globalResearcher) {
+            userOrganisationRoles.addRoleNotDependentOnBridgehead(OrganisationRole.RESEARCHER);
+            // Preserve existing administrative or bridgehead roles if a group overlaps.
+            if (organisationRole == null) organisationRole = OrganisationRole.RESEARCHER;
+        }
+        return organisationRole;
     }
 
-    private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole) {
+    private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole, UserOrganisationRoles userOrganisationRoles) {
         if (organisationRole != null) {
             String bridgehead = switch (organisationRole) {
                 case RESEARCHER -> extractBridgehead(bridgeheadUserGroupPrefix, bridgeheadUserGroupSuffix, group);
@@ -68,9 +92,9 @@ public class GroupToRoleMapper {
                 default -> null;
             };
             if (bridgehead == null) {
-                sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(organisationRole);
-            } else if (bridgeheadConfiguration.isRegisteredBridgehead(bridgehead)) {
-                sessionUser.getUserOrganisationRoles().addBridgeheadRole(bridgehead, organisationRole);
+                userOrganisationRoles.addRoleNotDependentOnBridgehead(organisationRole);
+            } else if (bridgeheadsConfiguration.isRegisteredBridgehead(bridgehead)) {
+                userOrganisationRoles.addBridgeheadRole(bridgehead, organisationRole);
             } else {
                 organisationRole = null;
             }
@@ -79,7 +103,7 @@ public class GroupToRoleMapper {
     }
 
     private String extractBridgehead(String prefix, String suffix, String group) {
-        return ((suffix.length() > 0) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
+        return ((!suffix.isEmpty()) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
     }
 
     // Important for Keycloak configuration of the groups

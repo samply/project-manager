@@ -20,7 +20,7 @@ public class KeyTransformer {
 
         for (char c : key.toCharArray()) {
             if (c == '-') {
-                toUpperCase = true;  // next character should be uppercase
+                toUpperCase = true;  // the next character should be uppercase
             } else {
                 if (toUpperCase) {
                     transformedKey.append(Character.toUpperCase(c));

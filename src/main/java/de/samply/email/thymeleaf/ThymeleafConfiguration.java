@@ -1,16 +1,17 @@
 package de.samply.email.thymeleaf;
 
 import de.samply.app.ProjectManagerConst;
+import de.samply.utils.FileExtension;
+import de.samply.utils.directory.ExistingDirectory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
-import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class ThymeleafConfiguration {
@@ -18,26 +19,17 @@ public class ThymeleafConfiguration {
     private final String externalTemplateDirectory;
 
     public ThymeleafConfiguration(
-            @Value(ProjectManagerConst.EMAIL_TEMPLATES_DIRECTORY_SV) String externalTemplateDirectory) throws FileNotFoundException {
-        this.externalTemplateDirectory = fetchExternalTemplateDirectory(externalTemplateDirectory);
-    }
-
-    private String fetchExternalTemplateDirectory(String environmentVariable) throws FileNotFoundException {
-        if (StringUtils.hasText(environmentVariable) && Files.isDirectory(Path.of(environmentVariable))) {
-            return (environmentVariable.endsWith("/") || environmentVariable.endsWith("\\")) ?
-                    environmentVariable : environmentVariable + "/";
-        } else {
-            throw new FileNotFoundException("Email Templates Directory not set or set to incorrect directory: " + environmentVariable);
-        }
+            @Value(ProjectManagerConst.EMAIL_TEMPLATES_DIRECTORY_SV) ExistingDirectory externalTemplateDirectory) {
+        this.externalTemplateDirectory = externalTemplateDirectory.path().toAbsolutePath().toString();
     }
 
     @Bean
     public FileTemplateResolver externalTemplateResolver() {
         FileTemplateResolver resolver = new FileTemplateResolver();
-        resolver.setPrefix(externalTemplateDirectory);
-        resolver.setSuffix(".html");
-        resolver.setTemplateMode("HTML");
-        resolver.setCharacterEncoding("UTF-8");
+        resolver.setPrefix(externalTemplateDirectory + File.separator);
+        resolver.setSuffix("." + FileExtension.HTML.value());
+        resolver.setTemplateMode(TemplateMode.HTML);
+        resolver.setCharacterEncoding(StandardCharsets.UTF_8.name());
         resolver.setCacheable(true);
         return resolver;
     }

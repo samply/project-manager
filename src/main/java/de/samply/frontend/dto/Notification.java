@@ -2,6 +2,7 @@ package de.samply.frontend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.samply.notification.OperationType;
+import de.samply.project.state.ProjectState;
 import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
@@ -10,8 +11,14 @@ import java.time.Instant;
 public record Notification(
         Long id,
         String email,
+        // Full name of the user behind the email, if known
+        String userName,
         Instant timestamp,
         String projectCode,
+        // Title of the request
+        String projectLabel,
+        // Current phase of the request, not the phase at the time of the notification
+        ProjectState projectState,
         String bridgehead,
         String humanReadableBridgehead,
         OperationType operationType,

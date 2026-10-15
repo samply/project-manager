@@ -1,14 +1,16 @@
 package de.samply.coder;
 
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectBridgeheadUser;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
-import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.exporter.ExporterService;
+import de.samply.modules.OptionalModule;
+import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectType;
 import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.query.QueryState;
 import de.samply.register.AppRegisterService;
+import de.samply.researchenvironment.ResearchEnvironmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,22 +21,21 @@ import java.util.List;
 
 @Slf4j
 @Component
+@ConditionalOnModule(OptionalModule.RESEARCH_ENVIRONMENT)
 public class CoderJob {
 
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
-    private final ProjectCoderRepository projectCoderRepository;
-    private final CoderService coderService;
+    // Services
+    private final ResearchEnvironmentService coderService;
     private final ExporterService exporterService;
     private final AppRegisterService appRegisterService;
+    private final ProjectBridgeheadUserService projectBridgeheadUserService;
 
-    public CoderJob(ProjectBridgeheadUserRepository projectBridgeheadUserRepository,
-                    ProjectCoderRepository projectCoderRepository,
-                    CoderService coderService,
+    public CoderJob(ResearchEnvironmentService coderService,
                     ExporterService exporterService,
-                    AppRegisterService appRegisterService
+                    AppRegisterService appRegisterService,
+                    ProjectBridgeheadUserService projectBridgeheadUserService
     ) {
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
-        this.projectCoderRepository = projectCoderRepository;
+        this.projectBridgeheadUserService = projectBridgeheadUserService;
         this.coderService = coderService;
         this.exporterService = exporterService;
         this.appRegisterService = appRegisterService;
@@ -60,7 +61,7 @@ public class CoderJob {
     }
 
     private List<ProjectBridgeheadUser> fetchActiveUsers() {
-        return projectBridgeheadUserRepository.getDistinctInValidaProjectStateByProjectTypeAndQueryStateAndProjectBridgeheadState(ProjectType.RESEARCH_ENVIRONMENT, QueryState.FINISHED, ProjectBridgeheadState.ACCEPTED);
+        return projectBridgeheadUserService.fetchUsersInValidProjectState(ProjectType.RESEARCH_ENVIRONMENT, QueryState.FINISHED, ProjectBridgeheadState.ACCEPTED);
     }
 
     public Mono<Void> manageCoderInactiveUsers() {
@@ -72,7 +73,7 @@ public class CoderJob {
     }
 
     private List<ProjectBridgeheadUser> fetchInactiveUsers() {
-        return projectBridgeheadUserRepository.getDistinctInInvalidProjectStateByProjectType(ProjectType.RESEARCH_ENVIRONMENT);
+        return projectBridgeheadUserService.fetchUsersInInvalidProjectState(ProjectType.RESEARCH_ENVIRONMENT);
     }
 
 }

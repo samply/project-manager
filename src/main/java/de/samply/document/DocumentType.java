@@ -1,9 +1,12 @@
 package de.samply.document;
 
 public enum DocumentType {
-    APPLICATION_FORM,
     VOTUM,
+    LOCAL_APPROVAL,
     SCRIPT,
     PUBLICATION,
+    DESCRIPTION,
+    FINAL_REPORT,
+    FORM_FIELD,
     OTHERS
 }

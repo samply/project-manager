@@ -31,7 +31,7 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
             // Retrieve the desired variable from the context
             Object variableValue = context.getVariable(variableName);
 
-            // Retrieve the "default" and "defaultVar" attributes, if they exist
+            // Retrieve the "default" and "defaultVar" attributes if they exist
             String defaultValue = tag.getAttributeValue(ProjectManagerConst.EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VALUE);
             String defaultVarName = tag.getAttributeValue(ProjectManagerConst.EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VARIABLE);
 
@@ -60,7 +60,7 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
         }
     }
 
-    private boolean isEmailContextVariable(ITemplateContext context, String variable){
+    private boolean isEmailContextVariable(ITemplateContext context, String variable) {
         return variable != null && (EmailContextKey.getAllValues().contains(variable) || context.getVariable(variable) != null);
     }
 
@@ -77,14 +77,14 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
         );
         Matcher combinedMatcher = combinedPattern.matcher(content);
 
-        StringBuffer resolvedContent = new StringBuffer();
+        StringBuilder resolvedContent = new StringBuilder();
 
         // Process the combined matches
         while (combinedMatcher.find()) {
             if (combinedMatcher.group(1) != null) {
                 // Match found for ${variable}
-                String variableName = combinedMatcher.group(2); // Extract variable name inside ${}
-                if (isEmailContextVariable(context, variableName)){
+                String variableName = combinedMatcher.group(2); // Extract the variable name inside ${}
+                if (isEmailContextVariable(context, variableName)) {
                     Object variableValue = context.getVariable(variableName); // Resolve variable
                     String replacement = (variableValue != null) ? variableValue.toString() : ""; // Use empty string if not found
                     combinedMatcher.appendReplacement(resolvedContent, Matcher.quoteReplacement(replacement));
@@ -92,7 +92,7 @@ public class EmailContextProcessor extends AbstractElementTagProcessor {
             } else if (combinedMatcher.group(3) != null) {
                 // Match found for <key />
                 String tagName = combinedMatcher.group(4); // Extract the tag name
-                if (isEmailContextVariable(context, tagName)){
+                if (isEmailContextVariable(context, tagName)) {
                     Object tagValue = context.getVariable(tagName); // Resolve the value from context
                     String replacement = (tagValue != null) ? tagValue.toString() : ""; // Use empty string if not found
                     combinedMatcher.appendReplacement(resolvedContent, Matcher.quoteReplacement(replacement));

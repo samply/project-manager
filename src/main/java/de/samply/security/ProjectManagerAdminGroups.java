@@ -9,7 +9,7 @@ import java.util.List;
 @Configuration
 public class ProjectManagerAdminGroups {
 
-    private List<String> groups;
+    private final List<String> groups;
 
     public ProjectManagerAdminGroups(@Value(ProjectManagerConst.PM_ADMIN_GROUPS_SV) List<String> groups) {
         this.groups = groups;

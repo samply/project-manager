@@ -7,6 +7,7 @@ import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ProjectDocument(
+        Long id,
         String projectCode,
         String originalFilename,
         String url,

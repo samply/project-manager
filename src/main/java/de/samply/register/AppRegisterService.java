@@ -1,8 +1,10 @@
 package de.samply.register;
 
+import de.samply.annotations.ConditionalOnModule;
+import de.samply.modules.OptionalModule;
+import de.samply.researchenvironment.ResearchEnvironmentService;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.ProjectCoder;
-import de.samply.db.repository.ProjectCoderRepository;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
 import de.samply.utils.MessageStatus;
@@ -18,47 +20,42 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
+/**
+ * Registers each research environment workspace as a Beam app (beam-register), so that files can be sent to it. Part
+ * of the optional module RESEARCH_ENVIRONMENT.
+ */
 @Slf4j
 @Service
+@ConditionalOnModule(OptionalModule.RESEARCH_ENVIRONMENT)
 public class AppRegisterService {
 
-    private WebClient webClient = null;
+    private final WebClient webClient;
     private final NotificationService notificationService;
-    private final ProjectCoderRepository projectCoderRepository;
-    private String authorizationHeader = null;
-    private final boolean appRegisterEnabled;
+    private final ResearchEnvironmentService researchEnvironmentService;
+    private final String authorizationHeader;
 
     public AppRegisterService(
             @Value(ProjectManagerConst.APP_REGISTER_BASE_URL_SV) String appRegisterBaseUrl,
             @Value(ProjectManagerConst.APP_REGISTER_API_KEY_SV) String appRegisterApiKey,
             @Value(ProjectManagerConst.APP_REGISTER_AUTHORIZATION_FORMAT_SV) String authorizationFormat,
-            @Value(ProjectManagerConst.ENABLE_APP_REGISTER_SV) boolean appRegisterEnabled,
             WebClientFactory webClientFactory,
-            NotificationService notificationService,
-            ProjectCoderRepository projectCoderRepository) {
-        this.appRegisterEnabled = appRegisterEnabled;
+            ResearchEnvironmentService researchEnvironmentService,
+            NotificationService notificationService) {
+        this.researchEnvironmentService = researchEnvironmentService;
         this.notificationService = notificationService;
-        this.projectCoderRepository = projectCoderRepository;
-        if (appRegisterEnabled) {
-            this.webClient = webClientFactory.createWebClient(appRegisterBaseUrl);
-            this.authorizationHeader = fetchAuthorizationHeader(authorizationFormat, appRegisterApiKey);
-        }
+        this.webClient = webClientFactory.createWebClient(appRegisterBaseUrl);
+        this.authorizationHeader = fetchAuthorizationHeader(authorizationFormat, appRegisterApiKey);
     }
 
 
     public Mono<Void> register(ProjectCoder projectCoder) {
-        if (!appRegisterEnabled) {
-            log.error("App register is not enabled. App could not be registered for project {} for bridgehead {} for user {}",
-                    projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
-                    projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
-                    projectCoder.getProjectBridgeheadUser().getEmail());
-            return Mono.empty();
-        }
         log.info("Registering app for user {}, project {} and bridgehead {}",
                 projectCoder.getProjectBridgeheadUser().getEmail(),
                 projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
                 projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead()
-                );
+        );
         return webClient.post()
                 .uri(ProjectManagerConst.REGISTER_PATH)
                 .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
@@ -69,7 +66,7 @@ public class AppRegisterService {
                 .doOnError(throwable -> {
                     MessageStatus messageStatus = MessageStatus.newInstance(throwable, "User app could not be registered in Beam");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.REGISTER_IN_APP_REGISTER,
@@ -81,27 +78,25 @@ public class AppRegisterService {
                 .doOnSuccess(response -> {
                     log.info("App registered");
                     projectCoder.setInAppRegister(true);
-                    projectCoderRepository.save(projectCoder);
+                    researchEnvironmentService.saveCoder(projectCoder);
+                    String message = Optional.ofNullable(response)
+                            .filter(r -> !r.isEmpty())
+                            .map(r -> " (" + r + ")")
+                            .orElse("");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.REGISTER_IN_APP_REGISTER,
-                            "User app registered in Beam " + (response != null && response.length() > 0 ? " (" + response + ")" : ""),
+                            "User app registered in Beam" + message,
                             null,
                             HttpStatus.OK
                     );
+
                 }).then();
     }
 
     public Mono<Void> unregister(ProjectCoder projectCoder) {
-        if (!appRegisterEnabled) {
-            log.error("App register is not enabled. App could not be unregistered for project {} for bridgehead {} for user {}",
-                    projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
-                    projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
-                    projectCoder.getProjectBridgeheadUser().getEmail());
-            return Mono.empty();
-        }
         log.info("Unregistering app for user {}, project {} and bridgehead {}",
                 projectCoder.getProjectBridgeheadUser().getEmail(),
                 projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
@@ -117,7 +112,7 @@ public class AppRegisterService {
                 .doOnError(throwable -> {
                     MessageStatus messageStatus = MessageStatus.newInstance(throwable, "User app could not be unregistered in Beam");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.UNREGISTER_IN_APP_REGISTER,
@@ -129,13 +124,17 @@ public class AppRegisterService {
                 .doOnSuccess(response -> {
                     log.info("App unregistered");
                     projectCoder.setInAppRegister(false);
-                    projectCoderRepository.save(projectCoder);
+                    researchEnvironmentService.saveCoder(projectCoder);
+                    String message = Optional.ofNullable(response)
+                            .filter(r -> !r.isEmpty())
+                            .map(r -> " (" + r + ")")
+                            .orElse("");
                     notificationService.createNotification(
-                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject().getCode(),
+                            projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getProject(),
                             projectCoder.getProjectBridgeheadUser().getProjectBridgehead().getBridgehead(),
                             projectCoder.getProjectBridgeheadUser().getEmail(),
                             OperationType.UNREGISTER_IN_APP_REGISTER,
-                            "User app unregistered in Beam" + (response != null && response.length() > 0 ? response : ""),
+                            "User app unregistered in Beam" + message,
                             null,
                             HttpStatus.OK
                     );

@@ -1,9 +1,8 @@
 package de.samply.user.roles;
 
 import de.samply.db.model.Project;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectBridgeheadUserRepository;
-import de.samply.db.repository.ProjectRepository;
+import de.samply.project.ProjectBridgeheadService;
+import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.security.SessionUser;
 import org.springframework.stereotype.Component;
 
@@ -14,30 +13,22 @@ import java.util.Optional;
 public class OrganisationRoleToProjectRoleMapper {
 
     private final SessionUser sessionUser;
-    private final ProjectRepository projectRepository;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final ProjectBridgeheadUserRepository projectBridgeheadUserRepository;
-    private Map<OrganisationRole, ProjectRole> organisationToProjectRoleMap = Map.of(
+
+    // Services
+    private final ProjectBridgeheadService projectBridgeheadService;
+    private final ProjectBridgeheadUserService projectBridgeheadUserService;
+
+    private final Map<OrganisationRole, ProjectRole> organisationToProjectRoleMap = Map.of(
             OrganisationRole.PROJECT_MANAGER_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN,
             OrganisationRole.BRIDGEHEAD_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN
     );
 
     public OrganisationRoleToProjectRoleMapper(SessionUser sessionUser,
-                                               ProjectRepository projectRepository,
-                                               ProjectBridgeheadRepository projectBridgeheadRepository,
-                                               ProjectBridgeheadUserRepository projectBridgeheadUserRepository) {
+                                               ProjectBridgeheadService projectBridgeheadService,
+                                               ProjectBridgeheadUserService projectBridgeheadUserService) {
         this.sessionUser = sessionUser;
-        this.projectRepository = projectRepository;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
-        this.projectBridgeheadUserRepository = projectBridgeheadUserRepository;
-    }
-
-    public Optional<UserProjectRoles> map(String projectCode) {
-        if (projectCode == null) {
-            return Optional.empty();
-        }
-        Optional<Project> project = projectRepository.findByCode(projectCode);
-        return (project.isPresent()) ? map(project.get()) : Optional.empty();
+        this.projectBridgeheadService = projectBridgeheadService;
+        this.projectBridgeheadUserService = projectBridgeheadUserService;
     }
 
     public Optional<UserProjectRoles> map(Project project) {
@@ -60,9 +51,16 @@ public class OrganisationRoleToProjectRoleMapper {
                     if (projectRole != null) {
                         result.addBridgeheadRole(bridgehead, projectRole);
                     } else {
-                        projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project).ifPresent(projectBridgehead ->
-                                projectBridgeheadUserRepository.getByEmailAndProjectBridgehead(sessionUser.getEmail(), projectBridgehead).forEach(projectBridgeheadUser ->
-                                        result.addBridgeheadRole(bridgehead, projectBridgeheadUser.getProjectRole())));
+                        projectBridgeheadService
+                                .fetchBridgehead(project, bridgehead)
+                                .ifPresent(projectBridgehead ->
+                                        projectBridgeheadUserService.fetchUsers(
+                                                        sessionUser.getEmail(),
+                                                        projectBridgehead)
+                                                .forEach(projectBridgeheadUser ->
+                                                        result.addBridgeheadRole(
+                                                                bridgehead,
+                                                                projectBridgeheadUser.getProjectRole())));
                     }
                 }));
         return Optional.of(result);

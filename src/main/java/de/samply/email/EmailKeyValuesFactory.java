@@ -1,51 +1,47 @@
 package de.samply.email;
 
-import de.samply.app.ProjectManagerConst;
-import de.samply.bridgehead.BridgeheadConfiguration;
-import de.samply.db.repository.*;
+import de.samply.bridgehead.BridgeheadsConfiguration;
+import de.samply.document.DocumentService;
 import de.samply.frontend.FrontendService;
-import org.springframework.beans.factory.annotation.Value;
+import de.samply.project.ProjectBridgeheadService;
+import de.samply.researchenvironment.ResearchEnvironmentService;
+import de.samply.user.UserService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EmailKeyValuesFactory {
 
+    // Services
     private final FrontendService frontendService;
+    private final DocumentService documentService;
+    private final UserService userService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+
     private final EmailContext emailContext;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
-    private final BridgeheadConfiguration bridgeheadConfiguration;
-    private final ProjectDocumentRepository projectDocumentRepository;
-    private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
-    private final String researchEnvironmentUrl;
+    private final ResearchEnvironmentService researchEnvironmentService;
 
-    public EmailKeyValuesFactory(FrontendService frontendService,
+    public EmailKeyValuesFactory(FrontendService frontendService, DocumentService documentService,
                                  EmailContext emailContext,
-                                 ProjectBridgeheadRepository projectBridgeheadRepository,
-                                 ProjectRepository projectRepository,
-                                 UserRepository userRepository,
-                                 BridgeheadConfiguration bridgeheadConfiguration,
-                                 ProjectDocumentRepository projectDocumentRepository,
-                                 BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
-                                 @Value(ProjectManagerConst.CODER_BASE_URL_SV) String researchEnvironmentUrl) {
+                                 UserService userService, ProjectBridgeheadService projectBridgeheadService,
+                                 BridgeheadsConfiguration bridgeheadsConfiguration,
+                                 ResearchEnvironmentService researchEnvironmentService) {
         this.frontendService = frontendService;
+        this.documentService = documentService;
         this.emailContext = emailContext;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
-        this.bridgeheadConfiguration = bridgeheadConfiguration;
-        this.projectDocumentRepository = projectDocumentRepository;
-        this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
-        this.researchEnvironmentUrl = researchEnvironmentUrl;
+        this.userService = userService;
+        this.projectBridgeheadService = projectBridgeheadService;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
+        this.researchEnvironmentService = researchEnvironmentService;
     }
 
     public EmailKeyValues newInstance() {
         return new EmailKeyValues(
-                frontendService, emailContext, projectBridgeheadRepository, projectRepository,
-                userRepository, bridgeheadConfiguration, projectDocumentRepository,
-                bridgeheadAdminUserRepository, researchEnvironmentUrl);
+                frontendService, emailContext, documentService,
+                userService, bridgeheadsConfiguration,
+                researchEnvironmentService.fetchResearchEnvironmentUrl().orElse(null),
+                projectBridgeheadService);
     }
 
 }

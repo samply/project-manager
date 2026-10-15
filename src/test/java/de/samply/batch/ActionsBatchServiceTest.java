@@ -1,0 +1,897 @@
+package de.samply.batch;
+
+import de.samply.annotations.Bridgehead;
+import de.samply.annotations.FrontendAction;
+import de.samply.annotations.ProjectCode;
+import de.samply.annotations.RequestParameter;
+import de.samply.annotations.RequestVariable;
+import de.samply.annotations.RequiresModule;
+import de.samply.annotations.RoleConstraints;
+import de.samply.annotations.ProjectConstraints;
+import de.samply.annotations.StateConstraints;
+import de.samply.aop.ConstraintsService;
+import de.samply.aop.ProjectConstraintsAspect;
+import de.samply.aop.RequiresModuleAspect;
+import de.samply.aop.RoleConstraintsAspect;
+import de.samply.aop.StateConstraintsAspect;
+import de.samply.app.ProjectManagerConst;
+import de.samply.db.model.Project;
+import de.samply.db.model.ProjectBridgehead;
+import de.samply.db.model.ProjectBridgeheadExecution;
+import de.samply.db.model.ProjectBridgeheadUser;
+import de.samply.db.model.Query;
+import de.samply.document.DocumentService;
+import de.samply.modules.OptionalModule;
+import de.samply.project.ProjectBridgeheadConverter;
+import de.samply.project.ProjectBridgeheadService;
+import de.samply.project.ProjectBridgeheadUserService;
+import de.samply.project.ProjectConverter;
+import de.samply.project.ProjectType;
+import de.samply.project.ProjectService;
+import de.samply.project.state.ProjectBridgeheadState;
+import de.samply.project.state.ProjectState;
+import de.samply.project.state.UserProjectState;
+import de.samply.query.QueryFormat;
+import de.samply.query.QueryState;
+import de.samply.user.roles.ProjectRole;
+import de.samply.user.roles.UserProjectRoles;
+import org.springframework.format.FormatterRegistry;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import de.samply.resolvers.AnnotatedParametersWrapper;
+import de.samply.resolvers.LanguageArgumentResolver;
+import de.samply.resolvers.RequestBodyCache;
+import de.samply.modules.OptionalModules;
+import de.samply.resolvers.RequestVariableAndParameterMethodArgumentResolver;
+import de.samply.security.SessionUser;
+import de.samply.user.roles.OrganisationRole;
+import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
+import de.samply.user.roles.UserOrganisationRoles;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+/**
+ * Runs batches against a small controller, with the real argument resolver, request- and session-scoped beans and the
+ * real role constraints aspect: what an entry answers must be what its endpoint answers on its own.
+ */
+@SpringJUnitWebConfig(ActionsBatchServiceTest.TestConfiguration.class)
+// Only EXPORTER enabled: request type EXPORT is available, DATASHIELD is not (see refusesARequestTypeWhoseModulesAreDisabled)
+@TestPropertySource(properties = "ENABLE_EXPORTER=true")
+class ActionsBatchServiceTest {
+
+    private static final String READ = "READ";
+    private static final String SLOW_PROJECT_CODE = "SLOW_PROJECT_CODE";
+    private static final String ADMIN = "ADMIN";
+    private static final String FAIL = "FAIL";
+    private static final String THROW = "THROW";
+    private static final String DOWNLOAD = "DOWNLOAD";
+    private static final String WRITE = "WRITE";
+    private static final String TEXT = "TEXT";
+    private static final String MISSING = "MISSING";
+    private static final String TYPES = "TYPES";
+    private static final String EXTERNAL = "EXTERNAL";
+    private static final String EMPTY = "EMPTY";
+    private static final String ONLY_CREATOR = "ONLY_CREATOR";
+    private static final String ONLY_IN_REVIEW = "ONLY_IN_REVIEW";
+    private static final String ONLY_AST_DATA = "ONLY_AST_DATA";
+    private static final String ALL_CONSTRAINTS = "ALL_CONSTRAINTS";
+    private static final String PROJECT = "TEST-0001";
+    private static final String BROKEN_SCOPE = "BROKEN_SCOPE";
+    private static final String ONLY_ACCEPTED_BRIDGEHEAD = "ONLY_ACCEPTED_BRIDGEHEAD";
+    private static final String ONLY_FINISHED_QUERY = "ONLY_FINISHED_QUERY";
+    private static final String ONLY_ACCEPTED_USER = "ONLY_ACCEPTED_USER";
+    private static final String ONLY_BRIDGEHEAD_ADMIN = "ONLY_BRIDGEHEAD_ADMIN";
+    private static final String ONLY_DOCUMENT_CREATOR = "ONLY_DOCUMENT_CREATOR";
+    private static final String BRIDGEHEAD = "tum";
+    private static final String OTHER_BRIDGEHEAD = "lmu";
+    private static final long DOCUMENT_ID = 7L;
+    private static final Map<String, Object> PROJECT_PARAMS = Map.of(ProjectManagerConst.PROJECT_CODE, PROJECT);
+    private static final Map<String, Object> BRIDGEHEAD_PARAMS =
+            Map.of(ProjectManagerConst.PROJECT_CODE, PROJECT, ProjectManagerConst.BRIDGEHEAD, BRIDGEHEAD);
+    private static final Map<String, Object> DOCUMENT_PARAMS =
+            Map.of(ProjectManagerConst.PROJECT_CODE, PROJECT, ProjectManagerConst.DOCUMENT_ID, DOCUMENT_ID);
+
+    @Autowired
+    private ActionsBatchService actionsBatchService;
+    @Autowired
+    private SessionUser sessionUser;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+    @Autowired
+    private ProjectService projectService;
+    @Autowired
+    private OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
+    @Autowired
+    private ProjectBridgeheadService projectBridgeheadService;
+    @Autowired
+    private ProjectBridgeheadUserService projectBridgeheadUserService;
+    @Autowired
+    private DocumentService documentService;
+
+    private MockMvc mockMvc;
+    private MockHttpSession session;
+
+    @BeforeEach
+    void bindBatchRequest() {
+        Mockito.reset(projectService, organisationRoleToProjectRoleMapper, projectBridgeheadService,
+                projectBridgeheadUserService, documentService);
+        session = new MockHttpSession();
+        MockHttpServletRequest batchRequest = new MockHttpServletRequest("POST", ProjectManagerConst.FETCH_ACTIONS_BATCH);
+        batchRequest.setSession(session);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(batchRequest));
+        authenticateWith(OrganisationRole.RESEARCHER);
+        sessionUser.setUserOrganisationRoles(new UserOrganisationRoles());
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
+
+    @AfterEach
+    void unbindBatchRequest() {
+        RequestContextHolder.resetRequestAttributes();
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void answersEveryEntryWithTheResponseOfItsEndpoint() {
+        Map<String, ActionsBatchResult> results = fetch(Map.of(
+                "first", entry(READ, Map.of("value", "a")),
+                "second", entry(READ, Map.of("value", 2))));
+
+        assertThat(results.get("first").response().get("value").asText()).isEqualTo("a");
+        assertThat(results.get("second").response().get("value").asText()).isEqualTo("2");
+        assertThat(results.get("first").errorCode()).isNull();
+    }
+
+    @Test
+    void keepsTheOrderOfTheRequests() {
+        Map<String, ActionsBatchRequest> requests = new LinkedHashMap<>();
+        for (int i = 0; i < 30; i++) {
+            requests.put("entry" + i, entry(READ, Map.of("value", i)));
+        }
+
+        assertThat(fetch(requests).keySet()).containsExactlyElementsOf(requests.keySet());
+    }
+
+    @Test
+    void entriesRunInParallelWithTheirOwnRequestScope() {
+        Map<String, ActionsBatchRequest> requests = new LinkedHashMap<>();
+        for (int i = 0; i < 8; i++) {
+            requests.put("entry" + i, entry(SLOW_PROJECT_CODE, Map.of(ProjectManagerConst.PROJECT_CODE, "P" + i)));
+        }
+
+        long start = System.nanoTime();
+        Map<String, ActionsBatchResult> results = fetch(requests);
+        long durationMs = (System.nanoTime() - start) / 1_000_000;
+
+        for (int i = 0; i < 8; i++) {
+            assertThat(results.get("entry" + i).response().asText()).isEqualTo("P" + i);
+        }
+        // 8 entries of 200 ms on 4 threads: about 400 ms, and 1600 ms one after the other
+        assertThat(durationMs).isLessThan(1200);
+    }
+
+    @Test
+    void oneFailingEntryDoesNotAffectTheOthers() {
+        Map<String, ActionsBatchResult> results = fetch(Map.of(
+                "ok", entry(READ, Map.of("value", "a")),
+                "failed", entry(FAIL, Map.of()),
+                "thrown", entry(THROW, Map.of())));
+
+        assertThat(results.get("ok").response().get("value").asText()).isEqualTo("a");
+        for (String id : List.of("failed", "thrown")) {
+            assertThat(results.get(id).response()).isNull();
+            assertThat(results.get(id).errorCode()).isEqualTo(500);
+            assertThat(results.get(id).errorMessage()).contains("IllegalStateException: boom");
+            assertThat(results.get(id).errorStacktrace()).contains("\tat ");
+        }
+    }
+
+    @Test
+    void refusesWhatIsNotAJsonReadAction() {
+        ActionsBatchRequest noAction = new ActionsBatchRequest(null, Map.of());
+        Map<String, ActionsBatchResult> results = fetch(Map.of(
+                "write", entry(WRITE, Map.of()),
+                "unknown", entry("NO_SUCH_ACTION", Map.of()),
+                "download", entry(DOWNLOAD, Map.of()),
+                "noAction", noAction));
+
+        assertThat(results.get("write").errorCode()).isEqualTo(405);
+        assertThat(results.get("unknown").errorCode()).isEqualTo(404);
+        assertThat(results.get("download").errorCode()).isEqualTo(406);
+        assertThat(results.get("noAction").errorCode()).isEqualTo(400);
+    }
+
+    @Test
+    void refusesANestedBatch() {
+        // The batch endpoint is a POST and a batch only calls GET endpoints
+        ActionsBatchResult result = fetch(Map.of("nested",
+                entry(ProjectManagerConst.FETCH_ACTIONS_BATCH_ACTION, Map.of()))).get("nested");
+        assertThat(result.errorCode()).isEqualTo(405);
+    }
+
+    @Test
+    void cleansTheWorkerThreadEvenWhenARequestScopeCallbackFails() throws Exception {
+        ThreadPoolTaskExecutor oneThread = new ThreadPoolTaskExecutor();
+        oneThread.setCorePoolSize(1);
+        oneThread.setMaxPoolSize(1);
+        oneThread.initialize();
+        try {
+            ActionsBatchService service = new ActionsBatchService(
+                    webApplicationContext.getBeanProvider(RequestMappingHandlerMapping.class),
+                    webApplicationContext.getBeanProvider(RequestMappingHandlerAdapter.class), oneThread, 100);
+            assertThat(service.fetchActionsBatch(Map.of("id", entry(BROKEN_SCOPE, Map.of()))).get("id").errorCode())
+                    .isEqualTo(500);
+            boolean clean = oneThread.submit(() -> RequestContextHolder.getRequestAttributes() == null
+                    && SecurityContextHolder.getContext().getAuthentication() == null).get(2, TimeUnit.SECONDS);
+            assertThat(clean).isTrue();
+        } finally {
+            oneThread.shutdown();
+        }
+    }
+
+    @Test
+    void passesOnTextAndEmptyAnswers() {
+        Map<String, ActionsBatchResult> results = fetch(Map.of(
+                "text", entry(TEXT, Map.of()),
+                "empty", entry(EMPTY, Map.of())));
+
+        assertThat(results.get("text").response().asText()).isEqualTo("plain text");
+        assertThat(results.get("empty").response()).isNull();
+        assertThat(results.get("empty").errorCode()).isEqualTo(404);
+    }
+
+    @Test
+    void refusesAnEntryLikeItsEndpoint() throws Exception {
+        // The role constraints aspect of the endpoint refuses the entry: the batch checks nothing itself
+        assertSameStatusAsEndpoint(ADMIN, "/admin", 405);
+
+        sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(OrganisationRole.PROJECT_MANAGER_ADMIN);
+        assertThat(fetch(Map.of("admin", entry(ADMIN, Map.of()))).get("admin").response().asBoolean()).isTrue();
+        assertThat(mockMvc.perform(withSession("/admin")).andReturn().getResponse().getStatus()).isEqualTo(200);
+
+        // A missing required parameter
+        assertSameStatusAsEndpoint(MISSING, "/read", 400);
+    }
+
+    // An endpoint of a disabled module (EXTERNAL_EXECUTION is not enabled) is refused, also as a batch entry
+    @Test
+    void refusesAnEndpointOfADisabledModule() throws Exception {
+        assertSameStatusAsEndpoint(EXTERNAL, "/external", 405);
+    }
+
+    // The resolver refuses a request type whose optional modules are disabled, single or in a list
+    @Test
+    void refusesARequestTypeWhoseModulesAreDisabled() throws Exception {
+        assertSameStatusAsEndpoint(TYPES, "/types", Map.of("type", "EXPORT"), 200);
+        assertSameStatusAsEndpoint(TYPES, "/types", Map.of("type", "DATASHIELD"), 400);
+        assertSameStatusAsEndpoint(TYPES, "/types", Map.of("type", "EXPORT,DATASHIELD"), 400);
+    }
+
+    // The constraints of an endpoint must hold for its batch entry. Each test refuses the entry for one reason,
+    // compares it with the endpoint called on its own, and then shows that the entry is allowed without that reason.
+
+    @Test
+    void refusesAnEntryOfAProjectTheUserHasNoRoleIn() throws Exception {
+        givenProject(ProjectState.REVIEW, QueryFormat.AST_DATA);
+        when(organisationRoleToProjectRoleMapper.map(any())).thenReturn(Optional.empty());
+        assertSameStatusAsEndpoint(ONLY_CREATOR, "/only-creator", PROJECT_PARAMS, 405);
+
+        givenProjectRole(ProjectRole.DEVELOPER);
+        assertSameStatusAsEndpoint(ONLY_CREATOR, "/only-creator", PROJECT_PARAMS, 405);
+
+        givenProjectRole(ProjectRole.CREATOR);
+        assertSameStatusAsEndpoint(ONLY_CREATOR, "/only-creator", PROJECT_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfAProjectInAnotherState() throws Exception {
+        givenProject(ProjectState.DRAFT, QueryFormat.AST_DATA);
+        assertSameStatusAsEndpoint(ONLY_IN_REVIEW, "/only-in-review", PROJECT_PARAMS, 405);
+
+        givenProject(ProjectState.REVIEW, QueryFormat.AST_DATA);
+        assertSameStatusAsEndpoint(ONLY_IN_REVIEW, "/only-in-review", PROJECT_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfAProjectOfAnotherKind() throws Exception {
+        givenProject(ProjectState.REVIEW, QueryFormat.CQL);
+        assertSameStatusAsEndpoint(ONLY_AST_DATA, "/only-ast-data", PROJECT_PARAMS, 405);
+
+        givenProject(ProjectState.REVIEW, QueryFormat.AST_DATA);
+        assertSameStatusAsEndpoint(ONLY_AST_DATA, "/only-ast-data", PROJECT_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfAProjectThatDoesNotExist() throws Exception {
+        when(projectService.fetchProject(PROJECT)).thenReturn(null);
+
+        assertSameStatusAsEndpoint(ONLY_IN_REVIEW, "/only-in-review", PROJECT_PARAMS, 404);
+        assertSameStatusAsEndpoint(ONLY_CREATOR, "/only-creator", PROJECT_PARAMS, 404);
+    }
+
+    @Test
+    void anEntryNeedsEveryConstraintOfItsEndpoint() throws Exception {
+        // Everything fulfilled
+        sessionUser.getUserOrganisationRoles().addRoleNotDependentOnBridgehead(OrganisationRole.RESEARCHER);
+        givenProject(ProjectState.REVIEW, QueryFormat.AST_DATA);
+        givenProjectRole(ProjectRole.CREATOR);
+        assertSameStatusAsEndpoint(ALL_CONSTRAINTS, "/all-constraints", PROJECT_PARAMS, 200);
+
+        // Each constraint alone is enough to refuse
+        givenProject(ProjectState.DRAFT, QueryFormat.AST_DATA);
+        assertSameStatusAsEndpoint(ALL_CONSTRAINTS, "/all-constraints", PROJECT_PARAMS, 405);
+
+        givenProject(ProjectState.REVIEW, QueryFormat.CQL);
+        assertSameStatusAsEndpoint(ALL_CONSTRAINTS, "/all-constraints", PROJECT_PARAMS, 405);
+
+        givenProject(ProjectState.REVIEW, QueryFormat.AST_DATA);
+        givenProjectRole(ProjectRole.DEVELOPER);
+        assertSameStatusAsEndpoint(ALL_CONSTRAINTS, "/all-constraints", PROJECT_PARAMS, 405);
+
+        givenProjectRole(ProjectRole.CREATOR);
+        sessionUser.setUserOrganisationRoles(new UserOrganisationRoles());
+        assertSameStatusAsEndpoint(ALL_CONSTRAINTS, "/all-constraints", PROJECT_PARAMS, 405);
+    }
+
+    @Test
+    void aRefusedEntryDoesNotRunItsEndpoint() throws Exception {
+        // The answer of a refused entry carries nothing of the endpoint's response
+        givenProject(ProjectState.DRAFT, QueryFormat.AST_DATA);
+
+        ActionsBatchResult result = fetch(Map.of("entry", entry(ONLY_IN_REVIEW, PROJECT_PARAMS))).get("entry");
+
+        assertThat(result.errorCode()).isEqualTo(405);
+        assertThat(result.response()).isNull();
+    }
+
+    // The constraints on a bridgehead of the project: the bridgehead is resolved from its id like in the application
+
+    @Test
+    void refusesAnEntryOfABridgeheadInAnotherState() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.CREATED, QueryState.CREATED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_BRIDGEHEAD, "/only-accepted-bridgehead", BRIDGEHEAD_PARAMS, 405);
+        // Without a bridgehead the bridgehead constraint cannot hold
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_BRIDGEHEAD, "/only-accepted-bridgehead", PROJECT_PARAMS, 405);
+
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.CREATED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_BRIDGEHEAD, "/only-accepted-bridgehead", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfAQueryInAnotherState() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.SENDING);
+        assertSameStatusAsEndpoint(ONLY_FINISHED_QUERY, "/only-finished-query", BRIDGEHEAD_PARAMS, 405);
+
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        assertSameStatusAsEndpoint(ONLY_FINISHED_QUERY, "/only-finished-query", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfAUserInAnotherStateInTheProject() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        ProjectBridgehead bridgehead = givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        when(organisationRoleToProjectRoleMapper.map(any())).thenReturn(Optional.empty());
+        // Not invited at the bridgehead
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 405);
+
+        givenUserState(bridgehead, UserProjectState.REQUEST_CHANGES);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 405);
+
+        givenUserState(bridgehead, UserProjectState.ACCEPTED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void theCreatorPassesTheUserStateWithTheResultsStateOfTheProject() throws Exception {
+        Project project = givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        givenProjectRole(ProjectRole.CREATOR);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 405);
+
+        project.setCreatorResultsState(UserProjectState.ACCEPTED);
+        assertSameStatusAsEndpoint(ONLY_ACCEPTED_USER, "/only-accepted-user", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void aRoleAtOneBridgeheadDoesNotCountAtAnother() throws Exception {
+        // The bridgehead roles count only for the bridgehead sent with the call (docs/bridgehead-context.md in the UI)
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        givenBridgeheadRole(OTHER_BRIDGEHEAD, ProjectRole.BRIDGEHEAD_ADMIN);
+        assertSameStatusAsEndpoint(ONLY_BRIDGEHEAD_ADMIN, "/only-bridgehead-admin", BRIDGEHEAD_PARAMS, 405);
+        // Without a bridgehead a bridgehead admin is not a bridgehead admin
+        givenBridgeheadRole(BRIDGEHEAD, ProjectRole.BRIDGEHEAD_ADMIN);
+        assertSameStatusAsEndpoint(ONLY_BRIDGEHEAD_ADMIN, "/only-bridgehead-admin", PROJECT_PARAMS, 405);
+
+        assertSameStatusAsEndpoint(ONLY_BRIDGEHEAD_ADMIN, "/only-bridgehead-admin", BRIDGEHEAD_PARAMS, 200);
+    }
+
+    @Test
+    void refusesAnEntryOfADocumentOfSomeoneElse() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        when(documentService.isDocumentCreatorOrProjectManagerAdmin(any(), eq(DOCUMENT_ID))).thenReturn(false);
+        assertSameStatusAsEndpoint(ONLY_DOCUMENT_CREATOR, "/only-document-creator", DOCUMENT_PARAMS, 405);
+
+        when(documentService.isDocumentCreatorOrProjectManagerAdmin(any(), eq(DOCUMENT_ID))).thenReturn(true);
+        assertSameStatusAsEndpoint(ONLY_DOCUMENT_CREATOR, "/only-document-creator", DOCUMENT_PARAMS, 200);
+    }
+
+    // The projects and bridgeheads of the entries are loaded once per batch (ActionsBatchLookups)
+
+    @Test
+    void aBatchLoadsEachProjectAndBridgeheadOnce() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+        Map<String, ActionsBatchRequest> requests = new LinkedHashMap<>();
+        for (int i = 0; i < 8; i++) {
+            requests.put("entry" + i, entry(ONLY_ACCEPTED_BRIDGEHEAD, BRIDGEHEAD_PARAMS));
+        }
+
+        Map<String, ActionsBatchResult> results = fetch(requests);
+
+        results.values().forEach(result -> assertThat(result.errorCode()).isNull());
+        verify(projectService, times(1)).fetchProject(PROJECT);
+        verify(projectBridgeheadService, times(1)).fetchProjectBridgehead(PROJECT, BRIDGEHEAD);
+    }
+
+    @Test
+    void nothingIsKeptAcrossBatchesOrOutsideABatch() throws Exception {
+        givenProject(ProjectState.FINAL, QueryFormat.AST_DATA);
+        givenBridgehead(ProjectBridgeheadState.ACCEPTED, QueryState.FINISHED);
+
+        fetch(Map.of("entry", entry(ONLY_ACCEPTED_BRIDGEHEAD, BRIDGEHEAD_PARAMS)));
+        fetch(Map.of("entry", entry(ONLY_ACCEPTED_BRIDGEHEAD, BRIDGEHEAD_PARAMS)));
+        verify(projectService, times(2)).fetchProject(PROJECT);
+
+        // The endpoint called on its own loads every time
+        MockHttpServletRequestBuilder request = withSession("/only-accepted-bridgehead");
+        BRIDGEHEAD_PARAMS.forEach((name, value) -> request.param(name, String.valueOf(value)));
+        mockMvc.perform(request);
+        mockMvc.perform(request);
+        verify(projectService, times(4)).fetchProject(PROJECT);
+    }
+
+    @Test
+    void aFailedLoadIsNotKept() throws Exception {
+        when(projectService.fetchProject(PROJECT)).thenReturn(null);
+
+        Map<String, ActionsBatchResult> results = fetch(Map.of(
+                "first", entry(ONLY_IN_REVIEW, PROJECT_PARAMS),
+                "second", entry(ONLY_IN_REVIEW, PROJECT_PARAMS)));
+
+        results.values().forEach(result -> assertThat(result.errorCode()).isEqualTo(404));
+        // Every entry looks again (the argument resolution even asks twice for a missing project), unlike a found one
+        verify(projectService, atLeast(2)).fetchProject(PROJECT);
+    }
+
+    private ProjectBridgehead givenBridgehead(ProjectBridgeheadState state, QueryState queryState) throws Exception {
+        ProjectBridgeheadExecution execution = new ProjectBridgeheadExecution();
+        execution.setQueryState(queryState);
+        ProjectBridgehead bridgehead = new ProjectBridgehead();
+        bridgehead.setBridgehead(BRIDGEHEAD);
+        bridgehead.setState(state);
+        bridgehead.setExecutions(new HashSet<>(Set.of(execution)));
+        when(projectBridgeheadService.fetchProjectBridgehead(PROJECT, BRIDGEHEAD)).thenReturn(Optional.of(bridgehead));
+        return bridgehead;
+    }
+
+    private void givenUserState(ProjectBridgehead bridgehead, UserProjectState state) {
+        ProjectBridgeheadUser user = new ProjectBridgeheadUser();
+        user.setProjectState(state);
+        when(projectBridgeheadUserService.fetchFirstUsersOrderByModifiedAtDesc(any(), eq(bridgehead)))
+                .thenReturn(Optional.of(user));
+    }
+
+    private void givenBridgeheadRole(String bridgehead, ProjectRole role) {
+        UserProjectRoles roles = new UserProjectRoles();
+        roles.addBridgeheadRole(bridgehead, role);
+        when(organisationRoleToProjectRoleMapper.map(any())).thenReturn(Optional.of(roles));
+    }
+
+    private Project givenProject(ProjectState state, QueryFormat queryFormat) throws Exception {
+        Query query = new Query();
+        query.setQueryFormat(queryFormat);
+        Project project = new Project();
+        project.setCode(PROJECT);
+        project.setState(state);
+        project.setQuery(query);
+        when(projectService.fetchProject(PROJECT)).thenReturn(project);
+        return project;
+    }
+
+    private void givenProjectRole(ProjectRole role) {
+        UserProjectRoles roles = new UserProjectRoles();
+        roles.addRoleNotDependentOnBridgehead(role);
+        when(organisationRoleToProjectRoleMapper.map(any())).thenReturn(Optional.of(roles));
+    }
+
+    @Test
+    void readsTheEntriesFromTheRequestBody() throws Exception {
+        String body = """
+                {"requests": {
+                  "first": {"action": "READ", "params": {"value": "a"}},
+                  "second": {"action": "EMPTY"},
+                  "third": {"params": {"value": "a"}}
+                }}""";
+
+        var response = mockMvc.perform(post(ProjectManagerConst.FETCH_ACTIONS_BATCH).session(session)
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getContentAsString()).isEqualTo("first={\"value\":\"a\"};second=404;third=400;");
+    }
+
+    @Test
+    void refusesABatchWithoutRequests() throws Exception {
+        var response = mockMvc.perform(post(ProjectManagerConst.FETCH_ACTIONS_BATCH).session(session)
+                .contentType(MediaType.APPLICATION_JSON).content("{}")).andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(400);
+    }
+
+    private void assertSameStatusAsEndpoint(String action, String path, int expectedStatus) throws Exception {
+        assertSameStatusAsEndpoint(MISSING.equals(action) ? READ : action, path, Map.of(), expectedStatus);
+    }
+
+    // The entry and the endpoint on its own answer with the expected status (an entry without error: 200)
+    private void assertSameStatusAsEndpoint(String action, String path, Map<String, Object> params, int expectedStatus)
+            throws Exception {
+        ActionsBatchResult result = fetch(Map.of("entry", entry(action, params))).get("entry");
+        int entryStatus = result.errorCode() != null ? result.errorCode() : 200;
+        MockHttpServletRequestBuilder request = withSession(path);
+        params.forEach((name, value) -> request.param(name, String.valueOf(value)));
+        int endpointStatus = mockMvc.perform(request).andReturn().getResponse().getStatus();
+
+        assertThat(endpointStatus).isEqualTo(expectedStatus);
+        assertThat(entryStatus).isEqualTo(endpointStatus);
+    }
+
+    private MockHttpServletRequestBuilder withSession(String path) {
+        return get(path).session(session);
+    }
+
+    private Map<String, ActionsBatchResult> fetch(Map<String, ActionsBatchRequest> requests) {
+        return actionsBatchService.fetchActionsBatch(requests);
+    }
+
+    private ActionsBatchRequest entry(String action, Map<String, Object> params) {
+        return new ActionsBatchRequest(action, params);
+    }
+
+    private void authenticateWith(OrganisationRole role) {
+        SecurityContextHolder.getContext().setAuthentication(
+                new TestingAuthenticationToken("user", "password", role.name()));
+    }
+
+    @RestController
+    static class TestController {
+
+        private final AnnotatedParametersWrapper annotatedParametersWrapper;
+        private final ObjectProvider<ActionsBatchService> actionsBatchService;
+
+        TestController(AnnotatedParametersWrapper annotatedParametersWrapper,
+                       ObjectProvider<ActionsBatchService> actionsBatchService) {
+            this.annotatedParametersWrapper = annotatedParametersWrapper;
+            this.actionsBatchService = actionsBatchService;
+        }
+
+        // The batch endpoint with the parameter of the real one; answers "id=response or error code" per entry
+        @FrontendAction(action = ProjectManagerConst.FETCH_ACTIONS_BATCH_ACTION)
+        @PostMapping(ProjectManagerConst.FETCH_ACTIONS_BATCH)
+        public ResponseEntity<String> fetchActionsBatch(
+                @RequestVariable(name = ProjectManagerConst.ACTIONS_BATCH_REQUESTS) Map<String, ActionsBatchRequest> requests
+        ) {
+            StringBuilder answer = new StringBuilder();
+            actionsBatchService.getObject().fetchActionsBatch(requests).forEach((id, result) -> answer
+                    .append(id).append('=')
+                    .append(result.errorCode() != null ? result.errorCode() : result.response()).append(';'));
+            return ResponseEntity.ok(answer.toString());
+        }
+
+        @RequiresModule(OptionalModule.EXTERNAL_EXECUTION)
+        @FrontendAction(action = EXTERNAL)
+        @GetMapping("/external")
+        public ResponseEntity<String> external() {
+            return ResponseEntity.ok("{\"value\": \"executed\"}");
+        }
+
+        @FrontendAction(action = TYPES)
+        @GetMapping("/types")
+        public ResponseEntity<String> types(@RequestParameter(name = "type") List<ProjectType> types) {
+            return ResponseEntity.ok("{\"types\": \"" + types + "\"}");
+        }
+
+        @FrontendAction(action = READ)
+        @GetMapping("/read")
+        public ResponseEntity<String> read(@RequestParameter(name = "value") String value) {
+            return ResponseEntity.ok("{\"value\": \"" + value + "\"}");
+        }
+
+        // Answers with what the request-scoped wrapper holds after a while, when the other entries have run too
+        @FrontendAction(action = SLOW_PROJECT_CODE)
+        @GetMapping("/slow-project-code")
+        public ResponseEntity<String> slowProjectCode(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) String projectCode
+        ) throws InterruptedException {
+            Thread.sleep(200);
+            return ResponseEntity.ok("\"" + annotatedParametersWrapper.getRaw(ProjectCode.class, String.class).orElse(null) + "\"");
+        }
+
+        @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+        @FrontendAction(action = ADMIN)
+        @GetMapping("/admin")
+        public ResponseEntity<String> admin() {
+            return ResponseEntity.ok("true");
+        }
+
+        @FrontendAction(action = FAIL)
+        @GetMapping("/fail")
+        public ResponseEntity<String> fail() {
+            return ResponseEntity.internalServerError().body(ExceptionUtils.getStackTrace(new IllegalStateException("boom")));
+        }
+
+        @FrontendAction(action = THROW)
+        @GetMapping("/throw")
+        public ResponseEntity<String> doThrow() {
+            throw new IllegalStateException("boom");
+        }
+
+        @FrontendAction(action = DOWNLOAD)
+        @GetMapping("/download")
+        public ResponseEntity<ByteArrayResource> download() {
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new ByteArrayResource(new byte[]{1, 2, 3}));
+        }
+
+        @FrontendAction(action = WRITE)
+        @PostMapping("/write")
+        public ResponseEntity<String> write() {
+            return ResponseEntity.ok("true");
+        }
+
+        @FrontendAction(action = BROKEN_SCOPE)
+        @GetMapping("/broken-scope")
+        public ResponseEntity<String> brokenScope() {
+            RequestContextHolder.currentRequestAttributes().registerDestructionCallback("broken", () -> {
+                throw new IllegalStateException("scope cleanup failed");
+            }, RequestAttributes.SCOPE_REQUEST);
+            return ResponseEntity.ok("true");
+        }
+
+        @FrontendAction(action = TEXT)
+        @GetMapping("/text")
+        public ResponseEntity<String> text() {
+            return ResponseEntity.ok("plain text");
+        }
+
+        @FrontendAction(action = EMPTY)
+        @GetMapping("/empty")
+        public ResponseEntity<String> empty() {
+            return ResponseEntity.notFound().build();
+        }
+
+        // One endpoint per kind of constraint, each on a project resolved from its code like in the real controller
+
+        @RoleConstraints(projectRoles = {ProjectRole.CREATOR})
+        @FrontendAction(action = ONLY_CREATOR)
+        @GetMapping("/only-creator")
+        public ResponseEntity<String> onlyCreator(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project) {
+            return ResponseEntity.ok("true");
+        }
+
+        @StateConstraints(projectStates = {ProjectState.REVIEW})
+        @FrontendAction(action = ONLY_IN_REVIEW)
+        @GetMapping("/only-in-review")
+        public ResponseEntity<String> onlyInReview(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project) {
+            return ResponseEntity.ok("true");
+        }
+
+        @ProjectConstraints(queryFormats = {QueryFormat.AST_DATA})
+        @FrontendAction(action = ONLY_AST_DATA)
+        @GetMapping("/only-ast-data")
+        public ResponseEntity<String> onlyAstData(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project) {
+            return ResponseEntity.ok("true");
+        }
+
+        // The constraints on a bridgehead of the project, the bridgehead resolved from its id like in the real controller
+        @StateConstraints(projectBridgeheadStates = {ProjectBridgeheadState.ACCEPTED})
+        @FrontendAction(action = ONLY_ACCEPTED_BRIDGEHEAD)
+        @GetMapping("/only-accepted-bridgehead")
+        public ResponseEntity<String> onlyAcceptedBridgehead(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @StateConstraints(queryStates = {QueryState.FINISHED})
+        @FrontendAction(action = ONLY_FINISHED_QUERY)
+        @GetMapping("/only-finished-query")
+        public ResponseEntity<String> onlyFinishedQuery(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @StateConstraints(userProjectStates = {UserProjectState.ACCEPTED})
+        @FrontendAction(action = ONLY_ACCEPTED_USER)
+        @GetMapping("/only-accepted-user")
+        public ResponseEntity<String> onlyAcceptedUser(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
+        @FrontendAction(action = ONLY_BRIDGEHEAD_ADMIN)
+        @GetMapping("/only-bridgehead-admin")
+        public ResponseEntity<String> onlyBridgeheadAdmin(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @Bridgehead @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD, required = false) ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok("true");
+        }
+
+        @ProjectConstraints(documentCreatorOrProjectManagerAdmin = true)
+        @FrontendAction(action = ONLY_DOCUMENT_CREATOR)
+        @GetMapping("/only-document-creator")
+        public ResponseEntity<String> onlyDocumentCreator(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project,
+                @RequestParameter(name = ProjectManagerConst.DOCUMENT_ID) Long documentId) {
+            return ResponseEntity.ok("true");
+        }
+
+        // All three kinds at once, as on many real endpoints
+        @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER}, projectRoles = {ProjectRole.CREATOR})
+        @StateConstraints(projectStates = {ProjectState.REVIEW})
+        @ProjectConstraints(queryFormats = {QueryFormat.AST_DATA})
+        @FrontendAction(action = ALL_CONSTRAINTS)
+        @GetMapping("/all-constraints")
+        public ResponseEntity<String> allConstraints(
+                @ProjectCode @RequestParameter(name = ProjectManagerConst.PROJECT_CODE) Project project) {
+            return ResponseEntity.ok("true");
+        }
+
+    }
+
+    @Configuration
+    @EnableWebMvc
+    @EnableAspectJAutoProxy
+    @Import({TestController.class, RequestVariableAndParameterMethodArgumentResolver.class, LanguageArgumentResolver.class,
+            RequestBodyCache.class, AnnotatedParametersWrapper.class, ConstraintsService.class,
+            RoleConstraintsAspect.class, StateConstraintsAspect.class, ProjectConstraintsAspect.class,
+            ProjectConverter.class, ProjectBridgeheadConverter.class, OptionalModules.class, RequiresModuleAspect.class})
+    static class TestConfiguration implements WebMvcConfigurer {
+
+        @Autowired
+        private RequestVariableAndParameterMethodArgumentResolver requestVariableResolver;
+        @Autowired
+        private LanguageArgumentResolver languageArgumentResolver;
+        @Autowired
+        private ProjectConverter projectConverter;
+        @Autowired
+        private ProjectBridgeheadConverter projectBridgeheadConverter;
+
+        // The application registers its converters automatically; here the one that loads a project by its code
+        @Override
+        public void addFormatters(FormatterRegistry registry) {
+            registry.addConverter(projectConverter);
+            registry.addConverter(projectBridgeheadConverter);
+        }
+
+        @Bean
+        ProjectService projectService() {
+            return Mockito.mock(ProjectService.class);
+        }
+
+        @Bean
+        ProjectBridgeheadService projectBridgeheadService() {
+            return Mockito.mock(ProjectBridgeheadService.class);
+        }
+
+        @Bean
+        DocumentService documentService() {
+            return Mockito.mock(DocumentService.class);
+        }
+
+        @Override
+        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+            resolvers.add(requestVariableResolver);
+            resolvers.add(languageArgumentResolver);
+        }
+
+        // Session-scoped as in the application, with the user of a secured application (no roles to start with)
+        @Bean
+        @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+        SessionUser sessionUser() {
+            return new SessionUser(true);
+        }
+
+        @Bean
+        ProjectBridgeheadUserService projectBridgeheadUserService() {
+            return Mockito.mock(ProjectBridgeheadUserService.class);
+        }
+
+        @Bean
+        OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper() {
+            return Mockito.mock(OrganisationRoleToProjectRoleMapper.class);
+        }
+
+        @Bean(name = ProjectManagerConst.ASYNC_ACTIONS_BATCH_EXECUTOR)
+        ThreadPoolTaskExecutor actionsBatchExecutor() {
+            ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+            executor.setCorePoolSize(4);
+            executor.setMaxPoolSize(4);
+            // Small on purpose: the 30 entries of keepsTheOrderOfTheRequests also run on the thread of the batch request
+            executor.setQueueCapacity(10);
+            executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+            return executor;
+        }
+
+        @Bean
+        ActionsBatchService actionsBatchService(
+                @Qualifier("requestMappingHandlerMapping") ObjectProvider<RequestMappingHandlerMapping> handlerMapping,
+                @Qualifier("requestMappingHandlerAdapter") ObjectProvider<RequestMappingHandlerAdapter> handlerAdapter,
+                @Qualifier(ProjectManagerConst.ASYNC_ACTIONS_BATCH_EXECUTOR) ThreadPoolTaskExecutor executor) {
+            return new ActionsBatchService(handlerMapping, handlerAdapter, executor, 100);
+        }
+
+    }
+
+}

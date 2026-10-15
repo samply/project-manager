@@ -25,14 +25,14 @@ public class EmailContext {
     // If a key is Base64-encoded, it should start with the prefix "B64" to indicate its encoding.
     @PostConstruct
     public void init() {
-        log.debug("Email Context initialized: ({})", context.entrySet().size());
+        log.debug("Email Context initialized: ({})", context.size());
         Map<String, String> tempContext = new HashMap<>();
-        context.entrySet().stream().forEach(keyValue -> {
-            String key = replaceHyphen(keyValue.getKey());
-            AtomicReference<String> value = new AtomicReference<>(keyValue.getValue());
+        context.forEach((key1, value1) -> {
+            String key = replaceHyphen(key1);
+            AtomicReference<String> value = new AtomicReference<>(value1);
             if (key.startsWith(ProjectManagerConst.BASE_64)) {
                 key = key.replaceFirst(ProjectManagerConst.BASE_64, "");
-                Base64Utils.decodeIfNecessary(keyValue.getValue()).ifPresent(value::set);
+                Base64Utils.decodeIfNecessary(value1).ifPresent(value::set);
             }
             log.debug("\t-\t{}: {}", key, value.get());
             tempContext.put(key, value.get());

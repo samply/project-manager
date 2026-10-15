@@ -2,25 +2,9 @@ package de.samply.app;
 
 public class ProjectManagerConst {
 
-    public final static String APP_NAME = "Project Manager";
+    public final static String APP_NAME = "ProjectCode Manager";
 
-    // R-Studio Group Implementations
-    public final static String RSTUDIO_GROUP_KEYCLOAK_IMPLEMENTATION = "KEYCLOAK";
-
-    // Keycloak paths
-    public final static String FETCH_USER_ID_KEYCLOAK_PATH = "/admin/realms/{realm}/users?email={email}";
-    public final static String FETCH_GROUP_ID_KEYCLOAK_PATH = "/admin/realms/{realm}/groups?search={group}";
-    public final static String CHANGE_USER_GROUP_KEYCLOAK_PATH = "/admin/realms/{realm}/users/{user-id}/groups/{group-id}";
-    public final static String FETCH_TOKEN_KEYCLOAK_PATH = "/realms/{realm}/protocol/openid-connect/token";
-
-    // Keycloak parameters
-    public final static String CLIENT_ID_KEYCLOAK_PARAM = "client_id";
-    public final static String CLIENT_SECRET_KEYCLOAK_PARAM = "client_secret";
-    public final static String GRANT_TYPE_KEYCLOAK_PARAM = "grant_type";
-    public final static String CLIENT_CREDENTIALS_KEYCLOAK_CONST = "client_credentials";
-    public final static String ACCES_TOKEN_KEYCLOAK_CONST = "access_token";
-    public final static String ID_KEYCLOAK_CONST = "id";
-
+    // Profiles
 
     // Sites
     public final static String PROJECT_DASHBOARD_SITE = "project-dashboard";
@@ -41,46 +25,68 @@ public class ProjectManagerConst {
     public final static String VOTUM_ACTIONS_MODULE = "VOTUM_ACTIONS";
     public final static String EXPORT_MODULE = "EXPORT";
     public final static String TOKEN_MANAGER_MODULE = "TOKEN_MANAGER";
+    // Actions about the frontend actions themselves, e.g. calling several of them in one request
+    public final static String ACTIONS_MODULE = "ACTIONS";
 
     // Actions
     public final static String SET_DEVELOPER_USER_ACTION = "SET_DEVELOPER_USER";
     public final static String SET_PILOT_USER_ACTION = "SET_PILOT_USER";
     public final static String SET_FINAL_USER_ACTION = "SET_FINAL_USER";
     public final static String CREATE_PROJECT_ACTION = "CREATE_PROJECT";
+    public final static String DELETE_PROJECT_ACTION = "DELETE_PROJECT";
+    public final static String DELETE_FORM_FIELD_BLOCK_ACTION = "DELETE_FORM_FIELD_BLOCK";
+    public final static String DELETE_FORM_FIELD_VALUE_ACTION = "DELETE_FORM_FIELD_VALUE";
     public final static String ACCEPT_PROJECT_ACTION = "ACCEPT_PROJECT";
     public final static String REJECT_PROJECT_ACTION = "REJECT_PROJECT";
     public final static String ARCHIVE_PROJECT_ACTION = "ARCHIVE_PROJECT";
+    public final static String START_LOCAL_APPROVAL_STAGE_ACTION = "START_LOCAL_APPROVAL_STAGE";
+    public final static String BACK_TO_REVIEW_ACTION = "BACK_TO_REVIEW";
     public final static String START_DEVELOP_STAGE_ACTION = "START_DEVELOP_STAGE";
     public final static String START_PILOT_STAGE_ACTION = "START_PILOT_STAGE";
     public final static String START_FINAL_STAGE_ACTION = "START_FINAL_STAGE";
     public final static String FINISH_PROJECT_ACTION = "FINISH_PROJECT";
-    public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE_ACTION = "DOWNLOAD_APPLICATION_FORM_TEMPLATE";
     public final static String SAVE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_QUERY_IN_BRIDGEHEAD";
     public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD_ACTION = "SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD";
     public final static String DOWNLOAD_AUTHENTICATION_SCRIPT_ACTION = "DOWNLOAD_AUTHENTICATION_SCRIPT";
     public final static String EDIT_PROJECT_ACTION = "EDIT_PROJECT";
+    public final static String REMOVE_PROJECT_OUTPUT_ACTION = "REMOVE_PROJECT_OUTPUT";
     public final static String FETCH_EXPORTER_TEMPLATES_ACTION = "EXPORTER_TEMPLATES";
     public final static String FETCH_QUERY_FORMATS_ACTION = "FETCH_QUERY_FORMATS";
     public final static String FETCH_OUTPUT_FORMATS_ACTION = "FETCH_OUTPUT_FORMATS";
     public final static String UPLOAD_VOTUM_ACTION = "UPLOAD_VOTUM";
+    public final static String UPLOAD_LOCAL_APPROVAL_ACTION = "UPLOAD_LOCAL_APPROVAL";
+    public final static String DOWNLOAD_LOCAL_APPROVAL_ACTION = "DOWNLOAD_LOCAL_APPROVAL";
+    public final static String FETCH_LOCAL_APPROVAL_DESCRIPTION_ACTION = "FETCH_LOCAL_APPROVAL_DESCRIPTION";
+    public final static String EXISTS_LOCAL_APPROVAL_ACTION = "EXISTS_LOCAL_APPROVAL";
+    public final static String UPLOAD_DESCRIPTION_ACTION = "UPLOAD_DESCRIPTION";
+    public final static String UPLOAD_FORM_FIELD_ACTION = "UPLOAD_FORM_FIELD";
     public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
-    public final static String UPLOAD_APPLICATION_FORM_ACTION = "UPLOAD_APPLICATION_FORM";
     public final static String UPLOAD_PUBLICATION_ACTION = "UPLOAD_PUBLICATION";
+    public final static String UPLOAD_FINAL_REPORT_ACTION = "UPLOAD_FINAL_REPORT";
     public final static String UPLOAD_SCRIPT_ACTION = "UPLOAD_SCRIPT";
     public final static String UPLOAD_OTHER_DOCUMENT_ACTION = "UPLOAD_OTHER_DOCUMENT";
+    public final static String REMOVE_DOCUMENT_ACTION = "REMOVE_DOCUMENT";
     public final static String ADD_PUBLICATION_URL_ACTION = "ADD_PUBLICATION_URL";
+    public final static String ADD_FINAL_REPORT_URL_ACTION = "ADD_FINAL_REPORT_URL";
     public final static String ADD_OTHER_DOCUMENT_URL_ACTION = "ADD_OTHER_DOCUMENT_URL";
+    public final static String ADD_FORM_FIELD_URL_ACTION = "ADD_FORM_FIELD_URL";
+    public final static String DOWNLOAD_DESCRIPTION_ACTION = "DOWNLOAD_DESCRIPTION";
+    public final static String DOWNLOAD_FORM_FIELD_ACTION = "DOWNLOAD_FORM_FIELD";
     public final static String DOWNLOAD_VOTUM_ACTION = "DOWNLOAD_VOTUM";
     public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS";
     public final static String FETCH_VOTUM_DESCRIPTION_ACTION = "FETCH_VOTUM_DESCRIPTION";
+    public final static String FETCH_DESCRIPTION_ACTION = "FETCH_DESCRIPTION";
+    public final static String FETCH_FORM_FIELD_FILE_ACTION = "FETCH_FORM_FIELD_FILE";
     public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION_ACTION = "FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION";
     public final static String EXISTS_VOTUM_ACTION = "EXISTS_VOTUM";
+    public final static String EXISTS_PUBLICATION_ACTION = "EXISTS_PUBLICATION";
+    public final static String EXISTS_FINAL_REPORT_ACTION = "EXISTS_FINAL_REPORT";
+    public final static String EXISTS_DESCRIPTION_ACTION = "EXISTS_DESCRIPTION";
+    public final static String EXISTS_FORM_FIELD_ACTION = "EXISTS_FORM_FIELD";
     public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS_ACTION = "EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS";
-    public final static String DOWNLOAD_APPLICATION_FORM_ACTION = "DOWNLOAD_APPLICATION_FORM";
-    public final static String FETCH_APPLICATION_FORM_DESCRIPTION_ACTION = "FETCH_APPLICATION_FORM_DESCRIPTION";
-    public final static String EXISTS_APPLICATION_FORM_ACTION = "EXISTS_APPLICATION_FORM";
     public final static String EXISTS_SCRIPT_ACTION = "EXISTS_SCRIPT";
     public final static String DOWNLOAD_PUBLICATION_ACTION = "DOWNLOAD_PUBLICATION";
+    public final static String DOWNLOAD_FINAL_REPORT_ACTION = "DOWNLOAD_FINAL_REPORT";
     public final static String DOWNLOAD_SCRIPT_ACTION = "DOWNLOAD_SCRIPT";
     public final static String FETCH_SCRIPT_DESCRIPTION_ACTION = "FETCH_SCRIPT_DESCRIPTION";
     public final static String DOWNLOAD_OTHER_DOCUMENT_ACTION = "DOWNLOAD_OTHER_DOCUMENT";
@@ -92,7 +98,9 @@ public class ProjectManagerConst {
     public final static String FETCH_PROJECT_BRIDGEHEADS_ACTION = "FETCH_PROJECT_BRIDGEHEADS";
     public final static String FETCH_PROJECT_TYPES_ACTION = "FETCH_PROJECT_TYPES";
     public final static String FETCH_PROJECTS_ACTION = "FETCH_PROJECTS";
+    public final static String CREATE_QUERY_AND_DESIGN_PROJECT_ACTION = "CREATE_QUERY_AND_DESIGN_PROJECT";
     public final static String FETCH_PUBLICATIONS_ACTION = "FETCH_PUBLICATIONS";
+    public final static String FETCH_FINAL_REPORTS_ACTION = "FETCH_FINAL_REPORTS";
     public final static String FETCH_OTHER_DOCUMENTS_ACTION = "FETCH_OTHER_DOCUMENTS";
     public final static String ACCEPT_PROJECT_RESULTS_ACTION = "ACCEPT_PROJECT_RESULTS";
     public final static String REJECT_PROJECT_RESULTS_ACTION = "REJECT_PROJECT_RESULTS";
@@ -101,9 +109,13 @@ public class ProjectManagerConst {
     public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS_ACTION = "REQUEST_CHANGES_IN_PROJECT_ANALYSIS";
     public final static String REQUEST_CHANGES_IN_PROJECT_ACTION = "REQUEST_CHANGES_IN_PROJECT";
     public final static String FETCH_NOTIFICATIONS_ACTION = "FETCH_NOTIFICATIONS";
+    public final static String FETCH_ACTIONS_BATCH_ACTION = "FETCH_ACTIONS_BATCH";
     public final static String SET_NOTIFICATION_AS_READ_ACTION = "SET_NOTIFICATION_AS_READ";
     public final static String FETCH_PROJECT_ACTION = "FETCH_PROJECT";
     public final static String FETCH_PROJECT_STATES_ACTION = "FETCH_PROJECT_STATES";
+    public final static String FETCH_VISIBLE_PROJECT_STATES_ACTION = "FETCH_VISIBLE_PROJECT_STATES";
+    public final static String FETCH_FRONTEND_VARIABLES_ACTION = "FETCH_FRONTEND_VARIABLES";
+    public final static String FETCH_DISPLAY_FORMATS_ACTION = "FETCH_DISPLAY_FORMATS";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION = "FETCH_ALL_REGISTERED_BRIDGEHEADS";
     public final static String FETCH_DATASHIELD_STATUS_ACTION = "FETCH_DATASHIELD_STATUS";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE";
@@ -111,18 +123,22 @@ public class ProjectManagerConst {
     public final static String FETCH_CURRENT_USER_ACTION = "FETCH_CURRENT_USER";
     public final static String EXIST_INVITED_USERS_ACTION = "EXIST_INVITED_USERS";
     public final static String FETCH_PROJECT_CONFIGURATIONS_ACTION = "FETCH_PROJECT_CONFIGURATIONS";
+    public final static String FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE_ACTION = "FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE";
     public final static String EXISTS_AUTHENTICATION_SCRIPT_ACTION = "EXISTS_AUTHENTICATION_SCRIPT";
     public final static String FETCH_CURRENT_PROJECT_CONFIGURATION_ACTION = "FETCH_CURRENT_PROJECT_CONFIGURATION";
     public final static String SET_PROJECT_CONFIGURATION_ACTION = "SET_PROJECT_CONFIGURATION";
-    public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_PROJECT_BRIDGEHEADS";
+    public final static String FETCH_VISIBLE_BRIDGEHEADS_ACTION = "FETCH_VISIBLE_BRIDGEHEADS";
+    public final static String IS_FEASIBILITY_ENABLED_ACTION = "IS_FEASIBILITY_ENABLED";
+    public final static String FETCH_FEASIBILITY_ACTION = "FETCH_FEASIBILITY";
     public final static String FETCH_PROJECT_ROLES_ACTION = "FETCH_PROJECT_ROLES";
+    public final static String FETCH_ORGANISATION_ROLES_ACTION = "FETCH_ORGANISATION_ROLES";
     public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT_ACTION = "SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT";
     public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT_ACTION = "ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT";
     public final static String ADD_USER_TO_MAILING_BLACK_LIST_ACTION = "ADD_USER_TO_MAILING_BLACK_LIST";
     public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION = "REMOVE_USER_FROM_MAILING_BLACK_LIST";
     public final static String FETCH_MAILING_BLACK_LIST_ACTION = "FETCH_MAILING_BLACK_LIST";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST";
-    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGHEAD_RESULTS_URL";
+    public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGEHEAD_RESULTS_URL";
     public final static String ADD_PROJECT_RESULTS_URL_ACTION = "ADD_PROJECT_RESULTS_URL";
     public final static String ACCEPT_PROJECT_RESULTS_URL_ACTION = "ACCEPT_PROJECT_RESULTS_URL";
     public final static String REJECT_PROJECT_RESULTS_URL_ACTION = "REJECT_PROJECT_RESULTS_URL";
@@ -137,6 +153,18 @@ public class ProjectManagerConst {
     public final static String IS_PROJECT_MANAGER_ADMIN_ACTION = "IS_PROJECT_MANAGER_ADMIN";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL_ACTION = "FETCH_RESEARCH_ENVIRONMENT_URL";
     public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE_ACTION = "EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE";
+    public final static String FETCH_PROJECT_FORM_TITLES_ACTION = "FETCH_PROJECT_FORM_TITLES";
+    public final static String FETCH_PROJECT_FORM_TITLE_ORDER_ACTION = "FETCH_PROJECT_FORM_TITLE_ORDER";
+    public final static String FETCH_PROJECT_FORM_FIELDS_ACTION = "FETCH_PROJECT_FORM_FIELDS";
+    public final static String FETCH_PROJECT_FORM_LAYOUTS_ACTION = "FETCH_PROJECT_FORM_LAYOUTS";
+    public final static String FETCH_PROJECT_FORM_TEMPLATES_ACTION = "FETCH_FORM_TEMPLATES";
+    public final static String EDIT_PROJECT_FORM_FIELDS_ACTION = "EDIT_PROJECT_FORM_FIELDS";
+    public final static String DOWNLOAD_FORM_AS_PDF_ACTION = "DOWNLOAD_FORM_AS_PDF";
+    public final static String FETCH_SELECTED_PROJECT_FORMS_ACTION = "FETCH_SELECTED_PROJECT_FORMS";
+    public final static String ADD_SELECTED_PROJECT_FORM_ACTION = "ADD_SELECTED_PROJECT_FORM";
+    public final static String REMOVE_SELECTED_PROJECT_FORM_ACTION = "REMOVE_SELECTED_PROJECT_FORM";
+    public final static String FETCH_PROJECT_CREATORS_ACTION = "FETCH_PROJECT_CREATORS";
+
 
 
     // REST Services
@@ -144,108 +172,155 @@ public class ProjectManagerConst {
     public final static String TEST = "/test";
     public final static String ACTIONS = "/actions";
     public final static String ALL_ACTIONS = "/all-actions";
+    public final static String FETCH_ACTIONS_BATCH = "/actions/batch/results";
     public final static String FETCH_PROJECTS = "/projects";
-    public final static String SET_DEVELOPER_USER = "/set-developer-user";
-    public final static String SET_PILOT_USER = "/set-pilot-user";
-    public final static String SET_FINAL_USER = "/set-final-user";
+    public final static String SET_DEVELOPER_USER = "/developer";
+    public final static String SET_PILOT_USER = "/pilot-user";
+    public final static String SET_FINAL_USER = "/final-user";
     public final static String CREATE_QUERY_AND_DESIGN_PROJECT = "/create-query-and-design-project";
-    public final static String EDIT_PROJECT = "/edit-project";
-    public final static String FETCH_EXPORTER_TEMPLATES = "/exporter-templates";
-    public final static String FETCH_QUERY_FORMATS = "/query-formats";
-    public final static String FETCH_PROJECT_ROLES = "/project-roles";
-    public final static String FETCH_OUTPUT_FORMATS = "/output-formats";
-    public final static String FETCH_PROJECT_CONFIGURATIONS = "/project-configurations";
-    public final static String FETCH_CURRENT_PROJECT_CONFIGURATION = "/project-configuration";
-    public final static String SET_PROJECT_CONFIGURATION = "/project-configuration";
-    public final static String DESIGN_PROJECT = "/design-project";
-    public final static String CREATE_PROJECT = "/create-project";
-    public final static String ACCEPT_PROJECT = "/accept-project";
-    public final static String REJECT_PROJECT = "/reject-project";
-    public final static String ADD_USER_TO_MAILING_BLACK_LIST = "/add-mailing-black-list";
-    public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST = "/remove-mailing-black-list";
+    public final static String EDIT_PROJECT = "/project/edit";
+    public final static String REMOVE_PROJECT_OUTPUT = "/project/output";
+    public final static String FETCH_EXPORTER_TEMPLATES = "/exporter/templates";
+    public final static String FETCH_QUERY_FORMATS = "/query/formats";
+    public final static String FETCH_PROJECT_ROLES = "/project/roles";
+    public final static String FETCH_OUTPUT_FORMATS = "/output/formats";
+    public final static String FETCH_PROJECT_CONFIGURATIONS = "/project/configurations";
+    public final static String FETCH_PROJECT_CONFIGURATION_SELECTION_TYPE = "/project/configurations/selection-type";
+    public final static String FETCH_CURRENT_PROJECT_CONFIGURATION = "/project/configuration";
+    public final static String SET_PROJECT_CONFIGURATION = "/project/configuration";
+    public final static String DESIGN_PROJECT = "/project/design";
+    public final static String CREATE_PROJECT = "/project";
+    public final static String DELETE_PROJECT = "/project";
+    public final static String ACCEPT_PROJECT = "/project/accept";
+    public final static String REJECT_PROJECT = "/project/reject";
+    public final static String ADD_USER_TO_MAILING_BLACK_LIST = "/mailing-black-list";
+    public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST = "/mailing-black-list";
     public final static String FETCH_MAILING_BLACK_LIST = "/mailing-black-list";
-    public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST = "/mailing-black-list-autocomplete";
-    public final static String ACCEPT_BRIDGEHEAD_PROJECT = "/accept-bridgehead-project";
-    public final static String REJECT_BRIDGEHEAD_PROJECT = "/reject-bridgehead-project";
-    public final static String ACCEPT_SCRIPT = "/accept-script";
-    public final static String REJECT_SCRIPT = "/reject-script";
-    public final static String REQUEST_SCRIPT_CHANGES = "/request-script-changes";
-    public final static String ACCEPT_PROJECT_RESULTS = "/accept-project-results";
-    public final static String REJECT_PROJECT_RESULTS = "/reject-project-results";
-    public final static String REQUEST_CHANGES_IN_PROJECT = "/request-changes-in-project";
-    public final static String ACCEPT_PROJECT_ANALYSIS = "/accept-project-analysis";
-    public final static String REJECT_PROJECT_ANALYSIS = "/reject-project-analysis";
-    public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS = "/request-changes-in-project-analysis";
-    public final static String FETCH_PROJECT_BRIDGEHEADS = "/project-bridgeheads";
-    public final static String FETCH_VISIBLE_PROJECT_BRIDGEHEADS = "/visible-project-bridgeheads";
+    public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST = "/mailing-black-list/autocomplete";
+    public final static String ACCEPT_BRIDGEHEAD_PROJECT = "/project/bridgehead/accept";
+    public final static String REJECT_BRIDGEHEAD_PROJECT = "/project/bridgehead/reject";
+    public final static String ACCEPT_SCRIPT = "/script/accept";
+    public final static String REJECT_SCRIPT = "/script/reject";
+    public final static String REQUEST_SCRIPT_CHANGES = "/script/request-changes";
+    public final static String ACCEPT_PROJECT_RESULTS = "/project/results/accept";
+    public final static String REJECT_PROJECT_RESULTS = "/project/results/reject";
+    public final static String REQUEST_CHANGES_IN_PROJECT = "/project/request-changes";
+    public final static String ACCEPT_PROJECT_ANALYSIS = "/project/analysis/accept";
+    public final static String REJECT_PROJECT_ANALYSIS = "/project/analysis/reject";
+    public final static String REQUEST_CHANGES_IN_PROJECT_ANALYSIS = "/project/analysis/request-changes";
+    public final static String FETCH_PROJECT_BRIDGEHEADS = "/project/bridgeheads";
+    public final static String FETCH_VISIBLE_BRIDGEHEADS = "/bridgeheads/visible";
+    public final static String IS_FEASIBILITY_ENABLED = "/feasibility/enabled";
+    public final static String FETCH_FEASIBILITY = "/project/bridgehead/feasibility";
     public final static String FETCH_PROJECT = "/project";
-    public final static String FETCH_PROJECT_STATES = "/project-states";
-    public final static String ARCHIVE_PROJECT = "/archive-project";
-    public final static String START_DEVELOP_STAGE = "/start-develop-project";
-    public final static String START_PILOT_STAGE = "/start-pilot-project";
-    public final static String START_FINAL_STAGE = "/start-final-project";
-    public final static String FINISH_PROJECT = "/finish-project";
-    public final static String CREATE_QUERY = "/create-query";
-    public final static String FETCH_PROJECT_TYPES = "/project-types";
-    public final static String UPLOAD_VOTUM = "/upload-votum";
-    public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/upload-votum-for-all-bridgeheads";
-    public final static String UPLOAD_APPLICATION_FORM = "/upload-application-form";
-    public final static String UPLOAD_PUBLICATION = "/upload-publication";
-    public final static String UPLOAD_SCRIPT = "/upload-script";
-    public final static String UPLOAD_OTHER_DOCUMENT = "/upload-other-document";
-    public final static String ADD_PUBLICATION_URL = "/add-publication-url";
-    public final static String ADD_OTHER_DOCUMENT_URL = "/add-other-document-url";
-    public final static String DOWNLOAD_VOTUM = "/download-votum";
-    public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/download-votum-for-all-bridgeheads";
-    public final static String FETCH_VOTUM_DESCRIPTION = "/votum-description";
-    public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION = "/votum-description-for-all-bridgeheads";
-    public final static String EXISTS_VOTUM = "/exists-votum";
-    public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS = "/exists-votum-for-all-bridgeheads";
-    public final static String DOWNLOAD_APPLICATION_FORM = "/download-application-form";
-    public final static String FETCH_APPLICATION_FORM_DESCRIPTION = "/application-form-description";
-    public final static String EXISTS_APPLICATION_FORM = "/exists-application-form";
-    public final static String DOWNLOAD_PUBLICATION = "/download-publication";
-    public final static String DOWNLOAD_SCRIPT = "/download-script";
-    public final static String FETCH_SCRIPT_DESCRIPTION = "/script-description";
-    public final static String EXISTS_SCRIPT = "/exists-script";
-    public final static String DOWNLOAD_OTHER_DOCUMENT = "/download-other-document";
-    public final static String DOWNLOAD_APPLICATION_FORM_TEMPLATE = "/download-application-form-template";
-    public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/save-query-in-bridgehead";
-    public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/save-and-execute-query-in-bridgehead";
-    public final static String DOWNLOAD_AUTHENTICATION_SCRIPT = "/download-authentication-script";
-    public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT = "/send-export-files-to-research-environment";
-    public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT = "/export-files-transferred-to-research-environment";
-    public final static String EXISTS_AUTHENTICATION_SCRIPT = "/exists-authentication-script";
+    public final static String FETCH_PROJECT_STATES = "/project/states";
+    public final static String FETCH_VISIBLE_PROJECT_STATES = "/project/states/visible";
+    public final static String FETCH_FRONTEND_VARIABLES = "/frontend/variables";
+    public final static String FETCH_DISPLAY_FORMATS = "/frontend/display-formats";
+    public final static String ARCHIVE_PROJECT = "/project/archive";
+    public final static String START_LOCAL_APPROVAL_STAGE = "/project/start-local-approval";
+    public final static String BACK_TO_REVIEW = "/project/back-to-review";
+    public final static String START_DEVELOP_STAGE = "/project/start-develop";
+    public final static String START_PILOT_STAGE = "/project/start-pilot";
+    public final static String START_FINAL_STAGE = "/project/start-final";
+    public final static String FINISH_PROJECT = "/project/finish";
+    public final static String CREATE_QUERY = "/query";
+    public final static String FETCH_PROJECT_TYPES = "/project/types";
+    public final static String UPLOAD_VOTUM = "/votum/upload";
+    public final static String UPLOAD_LOCAL_APPROVAL = "/local-approval/upload";
+    public final static String DOWNLOAD_LOCAL_APPROVAL = "/local-approval/download";
+    public final static String FETCH_LOCAL_APPROVAL_DESCRIPTION = "/local-approval/description";
+    public final static String EXISTS_LOCAL_APPROVAL = "/local-approval/exists";
+    public final static String UPLOAD_DESCRIPTION = "/project/description/upload";
+    public final static String UPLOAD_FORM_FIELD = "/project/form/field/upload";
+    public final static String UPLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/upload";
+    public final static String UPLOAD_PUBLICATION = "/publication/upload";
+    public final static String UPLOAD_FINAL_REPORT = "/report/upload";
+    public final static String UPLOAD_SCRIPT = "/script/upload";
+    public final static String UPLOAD_OTHER_DOCUMENT = "/other-document/upload";
+    public final static String REMOVE_DOCUMENT = "/document/remove";
+    public final static String ADD_PUBLICATION_URL = "/publication/url";
+    public final static String ADD_FINAL_REPORT_URL = "/report/url";
+    public final static String ADD_OTHER_DOCUMENT_URL = "/document/url";
+    public final static String ADD_FORM_FIELD_URL = "/project/form/field/url";
+    public final static String DOWNLOAD_VOTUM = "/votum/download";
+    public final static String DOWNLOAD_DESCRIPTION = "/project/description/download";
+    public final static String DOWNLOAD_FORM_FIELD = "/project/form/field/download";
+    public final static String DOWNLOAD_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/download";
+    public final static String FETCH_VOTUM_DESCRIPTION = "/votum/description";
+    public final static String FETCH_DESCRIPTION = "/project/description";
+    public final static String FETCH_FORM_FIELD_FILE = "/project/form/field/file";
+    public final static String FETCH_VOTUM_FOR_ALL_BRIDGEHEADS_DESCRIPTION = "/all-bridgeheads/votum/description";
+    public final static String EXISTS_VOTUM = "/votum/exists";
+    public final static String EXISTS_PUBLICATION = "/publication/exists";
+    public final static String EXISTS_FINAL_REPORT = "/report/exists";
+    public final static String EXISTS_DESCRIPTION = "/project/description/exists";
+    public final static String EXISTS_FORM_FIELD = "/project/form/field/exists";
+    public final static String EXISTS_VOTUM_FOR_ALL_BRIDGEHEADS = "/all-bridgeheads/votum/exists";
+    public final static String DOWNLOAD_PUBLICATION = "/publication/download";
+    public final static String DOWNLOAD_FINAL_REPORT = "/report/download";
+    public final static String DOWNLOAD_SCRIPT = "/script/download";
+    public final static String FETCH_SCRIPT_DESCRIPTION = "/script/description";
+    public final static String EXISTS_SCRIPT = "/script/exists";
+    public final static String DOWNLOAD_OTHER_DOCUMENT = "/other-document/download";
+    public final static String SAVE_QUERY_IN_BRIDGEHEAD = "/project/bridgehead/query/save";
+    public final static String SAVE_AND_EXECUTE_QUERY_IN_BRIDGEHEAD = "/project/bridgehead/query/save-execute";
+    public final static String DOWNLOAD_AUTHENTICATION_SCRIPT = "/authentication-script/download";
+    public final static String ASSETS = "/assets/**";
+    public final static String SEND_EXPORT_FILES_TO_RESEARCH_ENVIRONMENT = "/project/export-files/send";
+    public final static String ARE_EXPORT_FILES_TRANSFERRED_TO_RESEARCH_ENVIRONMENT = "/project/export-files/status";
+    public final static String EXISTS_AUTHENTICATION_SCRIPT = "/authentication-script/exists";
     public final static String FETCH_DATASHIELD_STATUS = "/datashield-status";
     public final static String FETCH_PUBLICATIONS = "/publications";
+    public final static String FETCH_FINAL_REPORTS = "/reports";
     public final static String FETCH_OTHER_DOCUMENTS = "/other-documents";
     public final static String FETCH_NOTIFICATIONS = "/notifications";
-    public final static String SET_NOTIFICATION_AS_READ = "/read-notification";
+    public final static String SET_NOTIFICATION_AS_READ = "/notification/read";
     public final static String FETCH_ALL_REGISTERED_BRIDGEHEADS = "/bridgeheads";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE = "/autocomplete-users";
-    public final static String FETCH_PROJECT_USERS = "/project-users";
+    public final static String FETCH_PROJECT_USERS = "/project/users";
     public final static String FETCH_CURRENT_USER = "/current-user";
-    public final static String EXIST_INVITED_USERS = "/exist-invited-users";
-    public final static String ADD_PROJECT_BRIDGHEAD_RESULTS_URL = "/project-bridgehead-results-url";
-    public final static String ADD_PROJECT_RESULTS_URL = "/project-results-url";
-    public final static String ACCEPT_PROJECT_RESULTS_URL = "/accept-project-results-url";
-    public final static String REJECT_PROJECT_RESULTS_URL = "/reject-project-results-url";
-    public final static String FETCH_PROJECT_RESULTS = "/project-results";
-    public final static String REQUEST_CHANGES_IN_PROJECT_RESULTS_URL = "/request-changes-project-results-url";
-    public final static String ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL = "/accept-project-bridgehead-results-url";
-    public final static String REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL = "/reject-project-bridgehead-results-url";
-    public final static String REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL = "/request-changes-project-bridgehead-results-url";
-    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS = "/project-bridgehead-results";
-    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD = "/own-project-bridgehead-results";
+    public final static String FETCH_ORGANISATION_ROLES = "/organisation-roles";
+    public final static String EXIST_INVITED_USERS = "/invited-users/exists";
+    public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL = "/project/bridgehead/results/url";
+    public final static String ADD_PROJECT_RESULTS_URL = "/project/results/url";
+    public final static String ACCEPT_PROJECT_RESULTS_URL = "/project/results/accept-url";
+    public final static String REJECT_PROJECT_RESULTS_URL = "/project/results/reject-url";
+    public final static String FETCH_PROJECT_RESULTS = "/project/results";
+    public final static String REQUEST_CHANGES_IN_PROJECT_RESULTS_URL = "/project/results/url/request-changes";
+    public final static String ACCEPT_PROJECT_BRIDGEHEAD_RESULTS_URL = "/project/bridgehead/results/url/accept";
+    public final static String REJECT_PROJECT_BRIDGEHEAD_RESULTS_URL = "/project/bridgehead/results/url/reject";
+    public final static String REQUEST_CHANGES_IN_PROJECT_BRIDGEHEAD_RESULTS_URL = "/project/bridgehead/results/url/request-changes";
+    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS = "/project/bridgehead/results";
+    public final static String FETCH_PROJECT_BRIDGEHEAD_RESULTS_FOR_OWN_BRIDGEHEAD = "/project/bridgeheads/own/results";
     public final static String FETCH_EMAIL_MESSAGE_AND_SUBJECT = "/email-message-and-subject";
     public final static String IS_PROJECT_MANAGER_ADMIN = "/is-project-manager-admin";
     public final static String FETCH_RESEARCH_ENVIRONMENT_URL = "/research-environment-url";
-    public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/exists-research-environment-workspace";
+    public final static String EXISTS_RESEARCH_ENVIRONMENT_WORKSPACE = "/research-environment-workspace/exists";
+    public final static String PROJECT_FORMS = "/project/forms";
+    public final static String FETCH_PROJECT_FORM_TITLES = PROJECT_FORMS + "/titles";
+    public final static String FETCH_PROJECT_FORM_TITLE_ORDER = PROJECT_FORMS + "/title/order";
+    public final static String FETCH_PROJECT_FORM_FIELDS = PROJECT_FORMS + "/fields";
+    public final static String FETCH_PROJECT_FORM_LAYOUTS = PROJECT_FORMS + "/layouts";
+    public final static String FETCH_PROJECT_FORM_TEMPLATES = PROJECT_FORMS + "/templates";
+    public final static String EDIT_PROJECT_FORM_FIELDS = PROJECT_FORMS + "/fields";
+    public final static String DELETE_FORM_FIELD_BLOCK = "/project/form/field/block";
+    public final static String DELETE_FORM_FIELD_VALUE = "/project/form/field/value";
+    public final static String DOWNLOAD_FORM_AS_PDF = "/download-form-as-pdf";
+    public final static String FETCH_SELECTED_PROJECT_FORMS = PROJECT_FORMS + "/selected";
+    public final static String ADD_SELECTED_PROJECT_FORM = PROJECT_FORMS + "/selected";
+    public final static String REMOVE_SELECTED_PROJECT_FORM = PROJECT_FORMS + "/selected";
+    public final static String FETCH_PROJECT_CREATORS = "/project/creators";
+
 
 
     // REST Parameters
     public final static String PROJECT_CODE = "project-code";
+    // Marker in a redirect URL: the frontend shows the success message of this action once and removes the marker
+    public final static String ACTION_FEEDBACK = "action-feedback";
+    public final static String PROJECT_CREATOR_EMAIL = "project-creator-email";
     public final static String PROJECT_CONFIGURATION = "project-configuration";
+    public final static String PROJECT_CONFIGURATION_SEPARATOR = ",";
     public final static String NOTIFICATION_ID = "notification-id";
     public final static String BRIDGEHEAD = "bridgehead";
     public final static String LANGUAGE = "language";
@@ -254,7 +329,10 @@ public class ProjectManagerConst {
     public final static String EXPLORER_IDS = "explorer-ids";
     public final static String PARTIAL_EMAIL = "partial-email";
     public final static String SITE = "site";
+    public final static String ACTIONS_BATCH_REQUESTS = "requests";
+    public final static String ACTIONS_BATCH_RESULTS = "results";
     public final static String EMAIL = "email";
+    public final static String QUERY = "query";
     public final static String QUERY_FORMAT = "query-format";
     public final static String PROJECT_TYPE = "project-type";
     public final static String PROJECT_STATE = "project-state";
@@ -262,16 +340,25 @@ public class ProjectManagerConst {
     public final static String PAGE = "page";
     public final static String PAGE_SIZE = "page-size";
     public final static String LAST_MODIFIED_DESC = "modified-desc";
+    public final static String SORT_BY = "sort-by";
+    public final static String SORT_DESC = "sort-desc";
     public final static String DOCUMENT = "document";
     public final static String DOCUMENT_URL = "document-url";
+    public final static String DOCUMENT_ID = "document-id";
     public final static String FILENAME = "filename";
     public final static String QUERY_CODE = "query-code";
     public final static String LABEL = "label";
+    public final static String FORM_TITLE = "form-title";
+    public final static String FORM_FIELDS = "form-fields";
+    public final static String FORM_FIELD = "form-field";
+    public final static String FORM_TEMPLATE = "form-template";
     public final static String DESCRIPTION = "description";
+    public final static String COHORT_DEFINITION = "cohort-definition";
     public final static String OUTPUT_FORMAT = "output-format";
     public final static String TEMPLATE_ID = "template-id";
     public final static String HUMAN_READABLE = "human-readable";
     public final static String REDIRECT_EXPLORER_URL = "explorer-url";
+    public final static String QUERY_DETAILS = "query-details";
     public final static String QUERY_CONTEXT = "query-context";
     public final static String RESULTS_URL = "results-url";
     public final static String PROJECT_ROLE = "project-role";
@@ -280,8 +367,20 @@ public class ProjectManagerConst {
     public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VALUE = "default";
     public final static String EMAIL_CONTEXT_VARIABLE_TAG_ATTRIBUTE_DEFAULT_VARIABLE = "default-var";
 
+    // Form configuration files: JSON properties
+    public final static String FORM_CONFIG_FIELDS = "fields";
+    public final static String FORM_CONFIG_BLOCKS = "blocks";
+    public final static String FORM_CONFIG_LABEL = "label";
+    public final static String FORM_CONFIG_ACTIVE = "active";
+    public final static String FORM_CONFIG_MULTIPLE = "multiple";
+    public final static String FORM_CONFIG_BLOCK = "block";
+    public final static String FORM_CONFIG_FIELD_TYPE = "field_type";
+    public final static String FORM_CONFIG_DATA_TYPE = "data_type";
+    public final static String FORM_CONFIG_DISPLAY_FORMAT = "display_format";
+    public final static String FORM_CONFIG_ALLOWED_VALUES = "allowed_values";
+    public final static String FORM_CONFIG_AS_FILE = "as_file";
+
     // Application Properties
-    public final static String JWKS_URI_PROPERTY = "spring.security.oauth2.client.provider.oidc.jwk-set-uri";
     public final static String REGISTERED_BRIDGEHEADS = "bridgeheads";
     public final static String FRONTEND_CONFIG = "frontend";
     public final static String HTTP_PROXY_PREFIX = "http.proxy";
@@ -314,6 +413,7 @@ public class ProjectManagerConst {
 
     // Beam
     public final static String BEAM_FOCUS_METADATA_PROJECT = "exporter";
+    public final static String BEAM_FOCUS_METADATA_TRANSFORM_LENS = "LENS";
     public final static String BEAM_TASK_PATH = "/v1/tasks";
     public final static String BEAM_TASK_RESULTS_PATH = "/results";
     public final static String BEAM_TASK_WAIT_TIME_PARAM = "wait_time";
@@ -345,13 +445,12 @@ public class ProjectManagerConst {
 
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
+    public final static String RESEARCHER_GROUPS = "RESEARCHER_GROUPS";
     public final static String BK_USER_GROUP_PREFIX = "BK_USER_GROUP_PREFIX";
     public final static String BK_USER_GROUP_SUFFIX = "BK_USER_GROUP_SUFFIX";
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
     public final static String BK_ADMIN_GROUP_SUFFIX = "BK_ADMIN_GROUP_SUFFIX";
     public final static String PROJECT_DOCUMENTS_DIRECTORY = "PROJECT_DOCUMENTS_DIRECTORY";
-    public final static String PUBLIC_DOCUMENTS_DIRECTORY = "PUBLIC_DOCUMENTS_DIRECTORY";
-    public final static String APPLICATION_FORM_FILENAME = "APPLICATION_FORM_FILENAME";
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT = "PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP";
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES = "WEBCLIENT_BUFFER_SIZE_IN_BYTES";
     public final static String WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS = "WEBCLIENT_REQUEST_TIMEOUT_IN_SECONDS";
@@ -362,44 +461,59 @@ public class ProjectManagerConst {
     public final static String WEBCLIENT_MAX_NUMBER_OF_RETRIES = "WEBCLIENT_MAX_NUMBER_OF_RETRIES";
     public final static String WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE = "WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE";
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS = "PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS";
+    public final static String PROJECT_ID_TEMPLATE = "PROJECT_ID_TEMPLATE";
+    public final static String EXPORTER_QUERY_LABEL_TEMPLATE = "EXPORTER_QUERY_LABEL_TEMPLATE";
     public final static String PROJECT_MANAGER_EMAIL_FROM = "PROJECT_MANAGER_EMAIL_FROM";
     public final static String EMAIL_TEMPLATES_CONFIG_PATH = "EMAIL_TEMPLATES_CONFIG_PATH";
-    public final static String ACTION_EXPLANATION_CONFIG_PATH = "ACTION_EXPLANATION_CONFIG_PATH";
+    public final static String ACTION_MESSAGES_CONFIG_PATH = "ACTION_MESSAGES_CONFIG_PATH";
+    public final static String DISPLAY_FORMATS_CONFIG_PATH = "DISPLAY_FORMATS_CONFIG_PATH";
+    public final static String DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT = "DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT";
+    public final static String DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT = "DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT";
     public final static String EMAIL_TEMPLATES_DIRECTORY = "EMAIL_TEMPLATES_DIRECTORY";
     public final static String EXPORT_TEMPLATES = "EXPORT_TEMPLATES";
+    public final static String SAMPLES_TEMPLATES = "SAMPLES_TEMPLATES";
     public final static String DATASHIELD_TEMPLATES = "DATASHIELD_TEMPLATES";
     public final static String RESEARCH_ENVIRONMENT_TEMPLATES = "RESEARCH_ENVIRONMENT_TEMPLATES";
     public final static String BEAM_PROJECT_MANAGER_ID = "BEAM_PROJECT_MANAGER_ID";
     public final static String BEAM_TTL = "BEAM_TTL";
     public final static String BEAM_WAIT_COUNT = "BEAM_WAIT_COUNT";
+    public final static String FEASIBILITY_BEAM_TTL = "FEASIBILITY_BEAM_TTL";
+    public final static String FEASIBILITY_BEAM_RESULT_WAIT_TIME = "FEASIBILITY_BEAM_RESULT_WAIT_TIME";
+    public final static String FEASIBILITY_BEAM_RESULT_MAX_TRIES = "FEASIBILITY_BEAM_RESULT_MAX_TRIES";
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS = "BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS";
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES = "BEAM_FAILURE_STRATEGY_MAX_TRIES";
     public final static String BEAM_URL = "BEAM_URL";
     public final static String BEAM_API_KEY = "BEAM_API_KEY";
+    public final static String FOCUS_LENS_PROJECT = "FOCUS_LENS_PROJECT";
     public final static String TOKEN_MANAGER_URL = "TOKEN_MANAGER_URL";
     public final static String ENABLE_EMAILS = "ENABLE_EMAILS";
+    public final static String ENABLE_EXTERNAL_EXECUTION = "ENABLE_EXTERNAL_EXECUTION";
+    public final static String ENABLE_LOCAL_APPROVAL = "ENABLE_LOCAL_APPROVAL";
+    public final static String EMAILS_TEST_LOG = "EMAILS_TEST_LOG";
+    public final static String MAILING_BLACK_LIST_FILE_PATH = "MAILING_BLACK_LIST_FILE_PATH";
     public final static String MANAGE_TOKENS_CRON_EXPRESSION = "MANAGE_TOKENS_CRON_EXPRESSION";
     public final static String EXPORTER_CRON_EXPRESSION = "EXPORTER_CRON_EXPRESSION";
     public final static String CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION = "CHECK_EXPIRED_ACTIVE_PROJECTS_CRON_EXPRESSION";
     public final static String EXPLORER_URL = "EXPLORER_URL";
-    public final static String ENABLE_TOKEN_MANAGER = "ENABLE_TOKEN_MANAGER";
+    public final static String ENABLE_DATASHIELD = "ENABLE_DATASHIELD";
     public final static String EXPLORER_REDIRECT_URI_PARAMETER = "EXPLORER_REDIRECT_URI_PARAMETER";
     public final static String FRONTEND_PROJECT_CONFIG_PATH = "FRONTEND_PROJECT_CONFIG_PATH";
-    public final static String RSTUDIO_GROUP_IMPLEMENTATION = "RSTUDIO_GROUP_IMPLEMENTATION";
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID = "KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID";
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET = "KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET";
-    public final static String KEYCLOAK_RSTUDIO_GROUP = "KEYCLOAK_RSTUDIO_GROUP";
-    public final static String ENABLE_RSTUDIO_GROUP_MANAGER = "ENABLE_RSTUDIO_GROUP_MANAGER";
-    public final static String OIDC_URL = "OIDC_URL";
-    public final static String OIDC_REALM = "OIDC_REALM";
     public final static String ENABLE_EXPORTER = "ENABLE_EXPORTER";
+    public final static String ENABLE_FEASIBILITY = "ENABLE_FEASIBILITY";
+    public final static String TEST_FEASIBILITY_RESULT = "TEST_FEASIBILITY_RESULT";
     public final static String MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES = "MAX_TIME_TO_WAIT_FOCUS_TASK_IN_MINUTES";
     public final static String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
+    public final static String REQUEST_CACHE_LIMIT = "REQUEST_CACHE_LIMIT";
+    public final static String ASSETS_DIRECTORY = "ASSETS_DIRECTORY";
+    public final static String CACHE_POLICY_PREFIX = "cache.policy";
+    public final static String CACHE_POLICY_SHORT_MAX_AGE_SECONDS = "CACHE_POLICY_SHORT_MAX_AGE_SECONDS";
+    public final static String CACHE_POLICY_LONG_MAX_AGE_SECONDS = "CACHE_POLICY_LONG_MAX_AGE_SECONDS";
 
     public final static String JWT_GROUPS_CLAIM = "JWT_GROUPS_CLAIM";
     public final static String JWT_EMAIL_CLAIM = "JWT_EMAIL_CLAIM";
     public final static String JWT_FIRST_NAME_CLAIM = "JWT_FIRST_NAME_CLAIM";
     public final static String JWT_LAST_NAME_CLAIM = "JWT_LAST_NAME_CLAIM";
+    public final static String JWT_FULL_NAME_CLAIM = "JWT_FULL_NAME_CLAIM";
 
     public final static String CODER_BASE_URL = "CODER_BASE_URL";
     public final static String CODER_ORGANISATION_ID = "CODER_ORGANISATION_ID";
@@ -413,7 +527,7 @@ public class ProjectManagerConst {
 
     public final static String CODER_BEAM_ID_SUFFIX = "CODER_BEAM_ID_SUFFIX";
     public final static String CODER_TEST_FILE_BEAM_ID = "CODER_TEST_FILE_BEAM_ID";
-    public final static String ENABLE_CODER = "ENABLE_CODER";
+    public final static String ENABLE_RESEARCH_ENVIRONMENT = "ENABLE_RESEARCH_ENVIRONMENT";
 
     public final static String EMAIL_SENDER_CORE_POOL_SIZE = "EMAIL_SENDER_CORE_POOL_SIZE";
     public final static String EMAIL_SENDER_MAX_POOL_SIZE = "EMAIL_SENDER_MAX_POOL_SIZE";
@@ -426,6 +540,11 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE = "EXPORTER_CORE_POOL_SIZE";
     public final static String EXPORTER_MAX_POOL_SIZE = "EXPORTER_MAX_POOL_SIZE";
     public final static String EXPORTER_QUEUE_CAPACITY = "EXPORTER_QUEUE_CAPACITY";
+
+    public final static String ACTIONS_BATCH_CORE_POOL_SIZE = "ACTIONS_BATCH_CORE_POOL_SIZE";
+    public final static String ACTIONS_BATCH_MAX_POOL_SIZE = "ACTIONS_BATCH_MAX_POOL_SIZE";
+    public final static String ACTIONS_BATCH_QUEUE_CAPACITY = "ACTIONS_BATCH_QUEUE_CAPACITY";
+    public final static String ACTIONS_BATCH_MAX_ENTRIES = "ACTIONS_BATCH_MAX_ENTRIES";
     public final static String TEST_EMAIL_DOMAINS = "TEST_EMAIL_DOMAINS";
 
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 = "DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64";
@@ -434,24 +553,33 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_BASE_URL = "APP_REGISTER_BASE_URL";
     public final static String APP_REGISTER_API_KEY = "APP_REGISTER_API_KEY";
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT = "APP_REGISTER_AUTHORIZATION_FORMAT";
-    public final static String ENABLE_APP_REGISTER = "ENABLE_APP_REGISTER";
+
+    public final static String FORM_RESOURCES_DIRECTORY = "FORM_RESOURCES_DIRECTORY";
+    public final static String FORM_TEMPLATE_METADATA_DIRECTORY = "FORM_TEMPLATE_METADATA_DIRECTORY";
+    public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME = "FORM_TEMPLATE_DEFAULT_PDF_FILENAME";
+    public final static String FORM_FIELDS_DIRECTORY = "FORM_FIELDS_DIRECTORY";
+
+    public final static String SHED_LOCK_MAX_TIME = "SHED_LOCK_MAX_TIME";
+    public final static String TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS = "TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS";
+    public final static String MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS = "MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS";
+    public final static String FEASIBILITY_MAPPING = "FEASIBILITY_MAPPING";
+
 
     // Spring Values (SV)
     public final static String HEAD_SV = "${";
     public final static String BOTTOM_SV = "}";
     public final static String PM_ADMIN_GROUPS_SV = HEAD_SV + PM_ADMIN_GROUPS + BOTTOM_SV;
+    public final static String RESEARCHER_GROUPS_SV = HEAD_SV + RESEARCHER_GROUPS + ":" + BOTTOM_SV;
     public final static String JWT_GROUPS_CLAIM_SV = HEAD_SV + JWT_GROUPS_CLAIM + ":groups" + BOTTOM_SV;
     public final static String JWT_EMAIL_CLAIM_SV = HEAD_SV + JWT_EMAIL_CLAIM + ":email" + BOTTOM_SV;
     public final static String JWT_FIRST_NAME_CLAIM_SV = HEAD_SV + JWT_FIRST_NAME_CLAIM + ":given_name" + BOTTOM_SV;
     public final static String JWT_LAST_NAME_CLAIM_SV = HEAD_SV + JWT_LAST_NAME_CLAIM + ":family_name" + BOTTOM_SV;
-    public final static String JWKS_URI_PROPERTY_SV = HEAD_SV + JWKS_URI_PROPERTY + BOTTOM_SV;
+    public final static String JWT_FULL_NAME_CLAIM_SV = HEAD_SV + JWT_FULL_NAME_CLAIM + ":name" + BOTTOM_SV;
     public final static String BK_USER_GROUP_PREFIX_SV = HEAD_SV + BK_USER_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_USER_GROUP_SUFFIX_SV = HEAD_SV + BK_USER_GROUP_SUFFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_PREFIX_SV = HEAD_SV + BK_ADMIN_GROUP_PREFIX + BOTTOM_SV;
     public final static String BK_ADMIN_GROUP_SUFFIX_SV = HEAD_SV + BK_ADMIN_GROUP_SUFFIX + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY + BOTTOM_SV;
-    public final static String PUBLIC_DOCUMENTS_DIRECTORY_SV = HEAD_SV + PUBLIC_DOCUMENTS_DIRECTORY + BOTTOM_SV;
-    public final static String APPLICATION_FORM_FILENAME_SV = HEAD_SV + APPLICATION_FORM_FILENAME + BOTTOM_SV;
     public final static String PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT_SV = HEAD_SV + PROJECT_DOCUMENTS_DIRECTORY_TIMESTAMP_FORMAT + ":yyyyMMdd-HHmmss" + BOTTOM_SV;
     public final static String SECURITY_ENABLED_SV = HEAD_SV + SECURITY_ENABLED + ":true" + BOTTOM_SV;
     public final static String WEBCLIENT_BUFFER_SIZE_IN_BYTES_SV =
@@ -474,26 +602,42 @@ public class ProjectManagerConst {
             HEAD_SV + WEBCLIENT_TIME_IN_SECONDS_AFTER_RETRY_WITH_FAILURE + ":5" + BOTTOM_SV;
     public final static String PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV =
             HEAD_SV + PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS + ":90" + BOTTOM_SV;
+    public final static String PROJECT_ID_TEMPLATE_SV =
+            HEAD_SV + PROJECT_ID_TEMPLATE + ":" + BOTTOM_SV;
+    public final static String EXPORTER_QUERY_LABEL_TEMPLATE_SV =
+            HEAD_SV + EXPORTER_QUERY_LABEL_TEMPLATE + ":" + BOTTOM_SV;
     public final static String PROJECT_MANAGER_EMAIL_FROM_SV =
             HEAD_SV + PROJECT_MANAGER_EMAIL_FROM + ":no-reply@project-manager.com" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_CONFIG_PATH_SV = HEAD_SV + EMAIL_TEMPLATES_CONFIG_PATH + BOTTOM_SV;
-    public final static String ACTION_EXPLANATION_CONFIG_PATH_SV = HEAD_SV + ACTION_EXPLANATION_CONFIG_PATH + BOTTOM_SV;
+    public final static String ACTION_MESSAGES_CONFIG_PATH_SV = HEAD_SV + ACTION_MESSAGES_CONFIG_PATH + BOTTOM_SV;
+    public final static String DISPLAY_FORMATS_CONFIG_PATH_SV =
+            HEAD_SV + DISPLAY_FORMATS_CONFIG_PATH + ":" + BOTTOM_SV;
+    public final static String DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT_SV =
+            HEAD_SV + DEFAULT_DATE_FORM_FIELD_DISPLAY_FORMAT + ":DATE_FORMAT" + BOTTOM_SV;
+    public final static String DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT_SV =
+            HEAD_SV + DEFAULT_TIMESTAMP_FORM_FIELD_DISPLAY_FORMAT + ":DATE_TIME_FORMAT" + BOTTOM_SV;
     public final static String EMAIL_TEMPLATES_DIRECTORY_SV = HEAD_SV + EMAIL_TEMPLATES_DIRECTORY + BOTTOM_SV;
     public final static String EXPORT_TEMPLATES_SV = HEAD_SV + EXPORT_TEMPLATES + BOTTOM_SV;
+    public final static String SAMPLES_TEMPLATES_SV = HEAD_SV + SAMPLES_TEMPLATES + BOTTOM_SV;
     public final static String DATASHIELD_TEMPLATES_SV = HEAD_SV + DATASHIELD_TEMPLATES + BOTTOM_SV;
     public final static String RESEARCH_ENVIRONMENT_TEMPLATES_SV = HEAD_SV + RESEARCH_ENVIRONMENT_TEMPLATES + BOTTOM_SV;
     public final static String TOKEN_MANAGER_URL_SV = HEAD_SV + TOKEN_MANAGER_URL + BOTTOM_SV;
     public final static String BEAM_PROJECT_MANAGER_ID_SV = HEAD_SV + BEAM_PROJECT_MANAGER_ID + BOTTOM_SV;
     public final static String BEAM_TTL_SV = HEAD_SV + BEAM_TTL + ":30s" + BOTTOM_SV;
     public final static String BEAM_WAIT_COUNT_SV = HEAD_SV + BEAM_WAIT_COUNT + ":1" + BOTTOM_SV;
+    public final static String FEASIBILITY_BEAM_TTL_SV = HEAD_SV + FEASIBILITY_BEAM_TTL + ":360s" + BOTTOM_SV;
+    public final static String FEASIBILITY_BEAM_RESULT_WAIT_TIME_SV =
+            HEAD_SV + FEASIBILITY_BEAM_RESULT_WAIT_TIME + ":20s" + BOTTOM_SV;
+    public final static String FEASIBILITY_BEAM_RESULT_MAX_TRIES_SV =
+            HEAD_SV + FEASIBILITY_BEAM_RESULT_MAX_TRIES + ":18" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS_SV =
             HEAD_SV + BEAM_FAILURE_STRATEGY_BACKOFF_IN_MILLISECONDS + ":1000" + BOTTOM_SV;
     public final static String BEAM_FAILURE_STRATEGY_MAX_TRIES_SV = HEAD_SV + BEAM_FAILURE_STRATEGY_MAX_TRIES + ":5" + BOTTOM_SV;
     public final static String BEAM_URL_SV = HEAD_SV + BEAM_URL + BOTTOM_SV;
     public final static String BEAM_API_KEY_SV = HEAD_SV + BEAM_API_KEY + BOTTOM_SV;
-    public final static String ENABLE_EMAILS_SV = HEAD_SV + ENABLE_EMAILS + ":true" + BOTTOM_SV;
-    public final static String ENABLE_TOKEN_MANAGER_SV = HEAD_SV + ENABLE_TOKEN_MANAGER + ":true" + BOTTOM_SV;
-    public final static String ENABLE_EXPORTER_SV = HEAD_SV + ENABLE_EXPORTER + ":true" + BOTTOM_SV;
+    public final static String FOCUS_LENS_PROJECT_SV = HEAD_SV + FOCUS_LENS_PROJECT + ":default_obfuscation" + BOTTOM_SV;
+    public final static String MAILING_BLACK_LIST_FILE_PATH_SV =
+            HEAD_SV + MAILING_BLACK_LIST_FILE_PATH + ":" + BOTTOM_SV;
     public final static String MANAGE_TOKENS_CRON_EXPRESSION_SV =
             HEAD_SV + MANAGE_TOKENS_CRON_EXPRESSION + ":#{'0 * * * * *'}" + BOTTOM_SV;
     public final static String EXPORTER_CRON_EXPRESSION_SV =
@@ -503,16 +647,8 @@ public class ProjectManagerConst {
     public final static String EXPLORER_URL_SV = HEAD_SV + EXPLORER_URL + BOTTOM_SV;
     public final static String EXPLORER_REDIRECT_URI_PARAMETER_SV = HEAD_SV + EXPLORER_REDIRECT_URI_PARAMETER + BOTTOM_SV;
     public final static String FRONTEND_PROJECT_CONFIG_PATH_SV = HEAD_SV + FRONTEND_PROJECT_CONFIG_PATH + BOTTOM_SV;
-    public final static String RSTUDIO_GROUP_IMPLEMENTATION_SV = HEAD_SV + RSTUDIO_GROUP_IMPLEMENTATION + ":" + RSTUDIO_GROUP_KEYCLOAK_IMPLEMENTATION + BOTTOM_SV;
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID_SV = HEAD_SV + KEYCLOAK_RSTUDIO_GROUP_CLIENT_ID + BOTTOM_SV;
-    public final static String KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET_SV = HEAD_SV + KEYCLOAK_RSTUDIO_GROUP_CLIENT_SECRET + BOTTOM_SV;
-    public final static String KEYCLOAK_RSTUDIO_GROUP_SV = HEAD_SV + KEYCLOAK_RSTUDIO_GROUP + BOTTOM_SV;
-    public final static String ENABLE_RSTUDIO_GROUP_MANAGER_SV = HEAD_SV + ENABLE_RSTUDIO_GROUP_MANAGER + ":true" + BOTTOM_SV;
-    public final static String OIDC_URL_SV = HEAD_SV + OIDC_URL + BOTTOM_SV;
-    public final static String OIDC_REALM_SV = HEAD_SV + OIDC_REALM + BOTTOM_SV;
     public final static String CODER_BASE_URL_SV = HEAD_SV + CODER_BASE_URL + BOTTOM_SV;
     public final static String CODER_ORGANISATION_ID_SV = HEAD_SV + CODER_ORGANISATION_ID + BOTTOM_SV;
-    public final static String CODER_MEMBER_ID_SV = HEAD_SV + CODER_MEMBER_ID + BOTTOM_SV;
     public final static String CODER_CREATE_PATH_SV = HEAD_SV + CODER_CREATE_PATH + BOTTOM_SV;
     public final static String CODER_DELETE_PATH_SV = HEAD_SV + CODER_DELETE_PATH + BOTTOM_SV;
     public final static String CODER_SESSION_TOKEN_SV = HEAD_SV + CODER_SESSION_TOKEN + BOTTOM_SV;
@@ -520,9 +656,11 @@ public class ProjectManagerConst {
     public final static String CODER_TEST_FILE_BEAM_ID_SV = HEAD_SV + CODER_TEST_FILE_BEAM_ID + BOTTOM_SV;
     public final static String CODER_CRON_EXPRESSION_SV = HEAD_SV + CODER_CRON_EXPRESSION + BOTTOM_SV;
     public final static String CODER_WORKSPACE_NAME_MAX_LENGTH_SV = HEAD_SV + CODER_WORKSPACE_NAME_MAX_LENGTH + ":32" + BOTTOM_SV;
+    public final static String REQUEST_CACHE_LIMIT_SV = HEAD_SV + REQUEST_CACHE_LIMIT + ":#{2 * 1024 * 1024}" + BOTTOM_SV;
+    public final static String ASSETS_DIRECTORY_SV = HEAD_SV + ASSETS_DIRECTORY + BOTTOM_SV;
+    public final static String CACHE_POLICY_SHORT_MAX_AGE_SECONDS_SV = HEAD_SV + CACHE_POLICY_SHORT_MAX_AGE_SECONDS + ":300" + BOTTOM_SV;
+    public final static String CACHE_POLICY_LONG_MAX_AGE_SECONDS_SV = HEAD_SV + CACHE_POLICY_LONG_MAX_AGE_SECONDS + ":86400" + BOTTOM_SV;
 
-
-    public final static String ENABLE_CODER_SV = HEAD_SV + ENABLE_CODER + ":true" + BOTTOM_SV;
 
     public final static String EMAIL_SENDER_CORE_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
     public final static String EMAIL_SENDER_MAX_POOL_SIZE_SV = HEAD_SV + EMAIL_SENDER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
@@ -535,9 +673,18 @@ public class ProjectManagerConst {
     public final static String EXPORTER_CORE_POOL_SIZE_SV = HEAD_SV + EXPORTER_CORE_POOL_SIZE + ":4" + BOTTOM_SV;
     public final static String EXPORTER_MAX_POOL_SIZE_SV = HEAD_SV + EXPORTER_MAX_POOL_SIZE + ":8" + BOTTOM_SV;
     public final static String EXPORTER_QUEUE_CAPACITY_SV = HEAD_SV + EXPORTER_QUEUE_CAPACITY + ":500" + BOTTOM_SV;
-    public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":EN" + BOTTOM_SV;
+
+    // All batches share these threads: they limit how many entries run at once, and with it how many database
+    // connections batches take (half of the pool by default). Entries beyond the queue run on the request's thread.
+    public final static String ACTIONS_BATCH_CORE_POOL_SIZE_SV = HEAD_SV + ACTIONS_BATCH_CORE_POOL_SIZE + ":10" + BOTTOM_SV;
+    public final static String ACTIONS_BATCH_MAX_POOL_SIZE_SV = HEAD_SV + ACTIONS_BATCH_MAX_POOL_SIZE + ":10" + BOTTOM_SV;
+    public final static String ACTIONS_BATCH_QUEUE_CAPACITY_SV = HEAD_SV + ACTIONS_BATCH_QUEUE_CAPACITY + ":1000" + BOTTOM_SV;
+    // Entries per batch: a batch with more is refused as a whole (the frontend sends a few dozen at most)
+    public final static String ACTIONS_BATCH_MAX_ENTRIES_SV = HEAD_SV + ACTIONS_BATCH_MAX_ENTRIES + ":100" + BOTTOM_SV;
+    public final static String DEFAULT_LANGUAGE_SV = HEAD_SV + DEFAULT_LANGUAGE + ":en" + BOTTOM_SV;
 
     public final static String TEST_EMAIL_DOMAINS_SV = HEAD_SV + TEST_EMAIL_DOMAINS + ":" + BOTTOM_SV;
+    public final static String EMAILS_TEST_LOG_SV = HEAD_SV + EMAILS_TEST_LOG + ":summary" + BOTTOM_SV;
 
     public final static String DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64_SV = HEAD_SV + DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64 + BOTTOM_SV;
     public final static String DB_ENCRYPTION_ALGORITHM_SV = HEAD_SV + DB_ENCRYPTION_ALGORITHM + ":AES" + BOTTOM_SV;
@@ -545,17 +692,28 @@ public class ProjectManagerConst {
     public final static String APP_REGISTER_BASE_URL_SV = HEAD_SV + APP_REGISTER_BASE_URL + BOTTOM_SV;
     public final static String APP_REGISTER_API_KEY_SV = HEAD_SV + APP_REGISTER_API_KEY + BOTTOM_SV;
     public final static String APP_REGISTER_AUTHORIZATION_FORMAT_SV = HEAD_SV + APP_REGISTER_AUTHORIZATION_FORMAT + ":ApiKey {}" + BOTTOM_SV;
-    public final static String ENABLE_APP_REGISTER_SV = HEAD_SV + ENABLE_APP_REGISTER + ":true" + BOTTOM_SV;
+
+    public final static String FORM_RESOURCES_DIRECTORY_SV = HEAD_SV + FORM_RESOURCES_DIRECTORY + BOTTOM_SV;
+    public final static String FORM_TEMPLATE_METADATA_DIRECTORY_SV = HEAD_SV + FORM_TEMPLATE_METADATA_DIRECTORY + BOTTOM_SV;
+    public final static String FORM_TEMPLATE_DEFAULT_PDF_FILENAME_SV = HEAD_SV + FORM_TEMPLATE_DEFAULT_PDF_FILENAME + ":form.pdf" + BOTTOM_SV;
+    public final static String FORM_FIELDS_DIRECTORY_SV = HEAD_SV + FORM_FIELDS_DIRECTORY + BOTTOM_SV;
+    public final static String SHED_LOCK_MAX_TIME_SV = HEAD_SV + SHED_LOCK_MAX_TIME + ":PT5M" + BOTTOM_SV;
+    public final static String TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS_SV = HEAD_SV + TIME_BETWEEN_CHECK_EXPORTS_IN_SECONDS + ":5" + BOTTOM_SV;
+    public final static String MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS_SV = HEAD_SV + MAX_NUMBER_OF_RETRIES_BETWEEN_CHECK_EXPORTS + ":3" + BOTTOM_SV;
+    public final static String FEASIBILITY_MAPPING_SV = HEAD_SV + FEASIBILITY_MAPPING + ":" + BOTTOM_SV;
+    public final static String TEST_FEASIBILITY_RESULT_SV = HEAD_SV + TEST_FEASIBILITY_RESULT + ":" + BOTTOM_SV;
+
 
     // Async Configuration
     public final static String ASYNC_EMAIL_SENDER_EXECUTOR = "email-sender";
     public final static String ASYNC_NOTIFICATION_EXECUTOR = "notification";
     public final static String ASYNC_EXPORTER_EXECUTOR = "exporter";
+    public final static String ASYNC_ACTIONS_BATCH_EXECUTOR = "actions-batch";
 
     // Thymeleaf
     public final static int THYMELEAF_PROCESSOR_PRECEDENCE = 1000;
     public final static int THYMELEAF_DIALECT_PRECEDENCE = 1000;
-    public final static String THYMELEAF_DIALECT_NAME = "Project Manager";
+    public final static String THYMELEAF_DIALECT_NAME = "ProjectCode Manager";
     public final static String THYMELEAF_DIALECT_PREFIX = "pm";
 
     // Variable name placeholders
@@ -564,18 +722,17 @@ public class ProjectManagerConst {
 
     // App Register
     public final static String REGISTER_PATH = "/beam-app";
-    public final static String UNREGISTER_PATH = "/beam-app";
 
 
     // Others
     public final static String TEST_EMAIL = "test@project-manager.com";
     public final static String TEST_BRIDGEHEAD = "bridgehead-test";
     public final static int RANDOM_FILENAME_SIZE = 20;
-    public final static int PROJECT_CODE_SIZE = 20;
     public final static int QUERY_CODE_SIZE = 20;
     public final static String NO_BRIDGEHEAD = "NONE";
     public final static String THIS_IS_A_TEST = "This is a test";
     public final static String CUSTOM_PROJECT_CONFIGURATION = "CUSTOM";
+    public final static String NOT_SELECTED_PROJECT_CONFIGURATION = "NOT_SELECTED";
     public final static String EMAIL_SERVICE = "EMAIL_SERVICE";
     public final static String BASE_64 = "b64";
     public final static String HTTP_PROTOCOL_SCHEMA = "http";
@@ -583,6 +740,13 @@ public class ProjectManagerConst {
     public final static String PRIMARY_MAIL_SENDER = "primaryJavaMailSender";
     public final static String TEST_MAIL_SENDER = "testJavaMailSender";
     public final static String NOT_AUTHORIZED = "Not authorized yet";
+    public final static String FORM_FILENAME_TIMESTAMP_FORMAT = "yyyyMMdd-HHmm";
+    public final static String FORM_FILENAME_TIMESTAMP_ZONE = "UTC";
+    public final static String FORM_PROJECT_FIELDS_TITLE_PREFIX = "_project_fields";
+    public final static String NOT_SET = "__NOT_SET__";
+    public final static String EXPORTER_JOB_NAME = "exporterJob";
+    public final static String SHEDLOCK_TABLE_NAME = "samply.shedlock";
 
+    public final static String BRIDGEHEAD_ADMIN_CONTACT_DESCRIPTION = "Bridgehead admin";
 
 }

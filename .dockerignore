@@ -28,3 +28,7 @@ documents
 templates
 public-documents
 certs
+
+plans/
+tmp/
+errors/

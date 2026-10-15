@@ -1,0 +1,285 @@
+package de.samply.frontend.dto;
+
+import de.samply.bridgehead.BridgeheadsConfiguration;
+import de.samply.display.DisplayFormatKey;
+import de.samply.display.DisplayFormatService;
+import de.samply.form.core.FormConfig;
+import de.samply.form.core.FormService;
+import de.samply.form.core.FormValueDisplayService;
+import de.samply.form.core.model.FormFieldConfig;
+import de.samply.form.core.model.FormFieldType;
+import de.samply.form.template.config.FormTemplateConfig;
+import de.samply.project.ProjectBridgeheadUserService;
+import de.samply.project.state.ProjectState;
+import de.samply.user.UserService;
+import de.samply.utils.directory.ExistingDirectory;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class DtoFactoryDisplayMetadataTest {
+
+    @Test
+    void mapsLocalizedDisplayMetadataAndStateRestrictedInformation(@TempDir Path temporaryDirectory)
+            throws Exception {
+        Path configDirectory = Files.createDirectory(temporaryDirectory.resolve("form-fields"));
+        Path templateMetadataDirectory = Files.createDirectory(temporaryDirectory.resolve("template-metadata"));
+        Files.writeString(configDirectory.resolve("patient.json"), """
+                {
+                  "title": "patient",
+                  "display_name": {"en": "Patient"},
+                  "description": {"en": "Patient description"},
+                  "short_description": {"en": "Patient short"},
+                  "pre_info": {
+                    "content": {"en": "Patient draft introduction"},
+                    "project_states": ["DRAFT", "REVIEW"]
+                  },
+                  "post_info": {
+                    "content": {"EN": "Patient information in every state"}
+                  },
+                  "groups": {
+                    "identity": {
+                      "display_name": {"en": "Identity"},
+                      "description": {"en": "Identity description"},
+                      "short_description": {"en": "Identity short"}
+                    }
+                  },
+                  "blocks": [{
+                    "label": "details",
+                    "display_name": {"en": "Details"},
+                    "description": {"en": "Details description"},
+                    "short_description": {"en": "Details short"},
+                    "pre_info": {
+                      "content": {"en": "Details draft introduction"},
+                      "project_states": ["DRAFT"]
+                    },
+                    "post_info": {
+                      "content": {"en": "Details information in every state"}
+                    }
+                  }],
+                  "fields": [{
+                    "label": "status",
+                    "data_type": "ENUM",
+                    "display_name": {"en": "Status"},
+                    "description": {"en": "Status description"},
+                    "short_description": {"en": "Status short"},
+                    "pre_info": {
+                      "content": {"en": "Status draft introduction"},
+                      "project_states": ["DRAFT"]
+                    },
+                    "post_info": {
+                      "content": {"en": "Status review ending"},
+                      "project_states": ["REVIEW"]
+                    },
+                    "groups": ["identity"],
+                    "block": "details",
+                    "allowed_values": [{
+                      "label": "active",
+                      "display_name": {"en": "Active"},
+                      "description": {"en": "Active description"},
+                      "short_description": {"en": "Active short"}
+                    }]
+                  }]
+                }
+                """);
+
+        FormConfig formConfig = new FormConfig(new ExistingDirectory(configDirectory));
+        DtoFactory factory = new DtoFactory(
+                mock(BridgeheadsConfiguration.class),
+                mock(FormService.class),
+                mock(UserService.class),
+                formConfig,
+                new FormTemplateConfig(new ExistingDirectory(templateMetadataDirectory), "en"),
+                "en",
+                mock(ProjectBridgeheadUserService.class),
+                mock(FormValueDisplayService.class));
+        FormFieldConfig fieldConfig = formConfig.fetchFormFieldConfig("patient", "status");
+
+        Form draftForm = factory.convertForm("patient", Optional.of("en"), ProjectState.DRAFT);
+        Form finalForm = factory.convertForm("patient", Optional.of("en"), ProjectState.FINAL);
+        FormField draftField = factory.convert(
+                "patient", fieldConfig, Optional.empty(), Optional.empty(), Optional.of("active"),
+                Optional.of("en"), ProjectState.DRAFT);
+        FormField reviewField = factory.convert(
+                "patient", fieldConfig, Optional.empty(), Optional.empty(), Optional.of("active"),
+                Optional.of("en"), ProjectState.REVIEW);
+        FormField finalField = factory.convert(
+                "patient", fieldConfig, Optional.empty(), Optional.empty(), Optional.of("active"),
+                Optional.of("en"), ProjectState.FINAL);
+
+        assertThat(draftForm.titleShortDescription()).isEqualTo("Patient short");
+        assertThat(draftForm.titlePreInfo()).isEqualTo("Patient draft introduction");
+        assertThat(draftForm.titlePostInfo()).isEqualTo("Patient information in every state");
+        assertThat(finalForm.titlePreInfo()).isNull();
+        assertThat(finalForm.titlePostInfo()).isEqualTo("Patient information in every state");
+
+        assertThat(draftField.titleShortDescription()).isEqualTo("Patient short");
+        assertThat(draftField.titlePreInfo()).isEqualTo("Patient draft introduction");
+        assertThat(draftField.labelShortDescription()).isEqualTo("Status short");
+        assertThat(draftField.fieldType()).isEqualTo(FormFieldType.DYNAMIC);
+        assertThat(draftField.active()).isNull();
+        assertThat(draftField.labelPreInfo()).isEqualTo("Status draft introduction");
+        assertThat(draftField.labelPostInfo()).isNull();
+        assertThat(reviewField.labelPreInfo()).isNull();
+        assertThat(reviewField.labelPostInfo()).isEqualTo("Status review ending");
+        assertThat(finalField.titlePreInfo()).isNull();
+        assertThat(finalField.labelPreInfo()).isNull();
+        assertThat(finalField.labelPostInfo()).isNull();
+        assertThat(draftField.blockShortDescription()).isEqualTo("Details short");
+        assertThat(draftField.blockPreInfo()).isEqualTo("Details draft introduction");
+        assertThat(finalField.blockPreInfo()).isNull();
+        assertThat(finalField.blockPostInfo()).isEqualTo("Details information in every state");
+        assertThat(draftField.groups()).singleElement()
+                .extracting(FormFieldGroup::shortDescription)
+                .isEqualTo("Identity short");
+        assertThat(draftField.allowedValues()).singleElement()
+                .extracting(FormFieldAllowedValue::shortDescription)
+                .isEqualTo("Active short");
+
+        String json = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(draftField);
+        assertThat(json)
+                .contains("\"titlePreInfo\":\"Patient draft introduction\"")
+                .contains("\"titlePostInfo\":\"Patient information in every state\"")
+                .contains("\"labelPreInfo\":\"Status draft introduction\"")
+                .contains("\"blockPreInfo\":\"Details draft introduction\"")
+                .contains("\"fieldType\":\"DYNAMIC\"")
+                .doesNotContain("\"active\":");
+    }
+
+    @Test
+    void mapsFixedFieldTypeActiveStateAndLocalizedMetadata(@TempDir Path temporaryDirectory)
+            throws Exception {
+        Path configDirectory = Files.createDirectory(temporaryDirectory.resolve("form-fields"));
+        Path templateMetadataDirectory = Files.createDirectory(temporaryDirectory.resolve("template-metadata"));
+        Files.writeString(configDirectory.resolve("project.json"), """
+                {
+                  "title": "project",
+                  "fields": [
+                    {
+                      "label": "PROJECT_TITLE",
+                      "field_type": "FIXED",
+                      "active": false,
+                      "display_name": {"en": "Request title"},
+                      "description": {"en": "Request title description"},
+                      "short_description": {"en": "Short request title"}
+                    },
+                    {
+                      "label": "PROJECT_DESCRIPTION",
+                      "field_type": "FIXED"
+                    }
+                  ]
+                }
+                """);
+
+        FormConfig formConfig = new FormConfig(new ExistingDirectory(configDirectory));
+        DtoFactory factory = new DtoFactory(
+                mock(BridgeheadsConfiguration.class),
+                mock(FormService.class),
+                mock(UserService.class),
+                formConfig,
+                new FormTemplateConfig(new ExistingDirectory(templateMetadataDirectory), "en"),
+                "en",
+                mock(ProjectBridgeheadUserService.class),
+                mock(FormValueDisplayService.class));
+
+        FormField field = factory.convert(
+                "project",
+                formConfig.fetchFormFieldConfig("project", "PROJECT_TITLE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField activeField = factory.convert(
+                "project",
+                formConfig.fetchFormFieldConfig("project", "PROJECT_DESCRIPTION"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+
+        assertThat(field.fieldType()).isEqualTo(FormFieldType.FIXED);
+        assertThat(field.active()).isFalse();
+        assertThat(field.labelDisplayName()).isEqualTo("Request title");
+        assertThat(field.labelDescription()).isEqualTo("Request title description");
+        assertThat(field.labelShortDescription()).isEqualTo("Short request title");
+        assertThat(field.order()).isEqualTo(1);
+        assertThat(activeField.fieldType()).isEqualTo(FormFieldType.FIXED);
+        assertThat(activeField.active()).isNull();
+        assertThat(activeField.order()).isEqualTo(2);
+
+        com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+                new com.fasterxml.jackson.databind.ObjectMapper();
+        assertThat(objectMapper.writeValueAsString(field)).contains("\"active\":false");
+        assertThat(objectMapper.writeValueAsString(activeField)).doesNotContain("\"active\":");
+    }
+
+    @Test
+    void appliesDefaultDisplayFormatToFixedFieldsWithoutAnExplicitOverride(@TempDir Path temporaryDirectory)
+            throws Exception {
+        Path configDirectory = Files.createDirectory(temporaryDirectory.resolve("form-fields"));
+        Path templateMetadataDirectory = Files.createDirectory(temporaryDirectory.resolve("template-metadata"));
+        Files.writeString(configDirectory.resolve("project.json"), """
+                {
+                  "title": "project",
+                  "fields": [
+                    {
+                      "label": "PROJECT_TITLE",
+                      "field_type": "FIXED"
+                    },
+                    {
+                      "label": "ETHICS_VOTE_DATE",
+                      "field_type": "FIXED",
+                      "data_type": "DATE"
+                    },
+                    {
+                      "label": "PROJECT_CREATION_DATE",
+                      "field_type": "FIXED",
+                      "data_type": "TIMESTAMP"
+                    },
+                    {
+                      "label": "PROJECT_APPROVAL_DATE",
+                      "field_type": "FIXED",
+                      "data_type": "DATE",
+                      "display_format": "LONG_DATE_FORMAT"
+                    }
+                  ]
+                }
+                """);
+
+        FormConfig formConfig = new FormConfig(new ExistingDirectory(configDirectory));
+        DisplayFormatService displayFormatService = mock(DisplayFormatService.class);
+        when(displayFormatService.getDefaultDateDisplayFormat()).thenReturn(DisplayFormatKey.DATE_FORMAT);
+        when(displayFormatService.getDefaultTimestampDisplayFormat()).thenReturn(DisplayFormatKey.DATE_TIME_FORMAT);
+        FormValueDisplayService formValueDisplayService = new FormValueDisplayService(displayFormatService);
+        DtoFactory factory = new DtoFactory(
+                mock(BridgeheadsConfiguration.class),
+                mock(FormService.class),
+                mock(UserService.class),
+                formConfig,
+                new FormTemplateConfig(new ExistingDirectory(templateMetadataDirectory), "en"),
+                "en",
+                mock(ProjectBridgeheadUserService.class),
+                formValueDisplayService);
+
+        FormField noDataType = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "PROJECT_TITLE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField dateWithoutOverride = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "ETHICS_VOTE_DATE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField timestampWithoutOverride = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "PROJECT_CREATION_DATE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+        FormField dateWithExplicitOverride = factory.convert(
+                "project", formConfig.fetchFormFieldConfig("project", "PROJECT_APPROVAL_DATE"),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("en"));
+
+        // No data_type means no temporal default applies - stays null rather than guessing.
+        assertThat(noDataType.displayFormat()).isNull();
+        assertThat(dateWithoutOverride.displayFormat()).isEqualTo(DisplayFormatKey.DATE_FORMAT);
+        assertThat(timestampWithoutOverride.displayFormat()).isEqualTo(DisplayFormatKey.DATE_TIME_FORMAT);
+        // An explicitly configured display_format is never overridden by the default.
+        assertThat(dateWithExplicitOverride.displayFormat()).isEqualTo(DisplayFormatKey.LONG_DATE_FORMAT);
+    }
+}

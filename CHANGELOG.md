@@ -4,28 +4,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.0.1 - 2025-02-11]
+## [Unreleased]
+
+## [1.0.0] - 2026-10-13
+First release. Until now the deployments ran `develop`; this version is what they run today.
+
+### Summary
+- Request workflow for data requests across sites: DRAFT → REVIEW → CENTRAL_APPROVAL → LOCAL_APPROVAL → DEVELOP →
+  PILOT → FINAL → FINISHED (and REJECTED, ARCHIVED), with per-site states and actions
+- Roles: applicant (creator), project manager admin, bridgehead admin, developer, pilot and final user; constraints by
+  organisation role, project role and state on every endpoint
+- Configurable forms per request type: fields, blocks, groups, conditions (SpEL), conditional pre/post info, form
+  history; request summary as PDF
+- Documents: application form, ethics vote and local approval per site, scripts, publications, final report
+- Emails from templates (per site, with fallback), notifications, mailing blacklist
+- Optional modules (opt-in `ENABLE_*`, also `test` mode): exporter, feasibility, research environment, DataSHIELD,
+  emails, external execution, local approval
+- Batch endpoint for the read actions of a page
+
+### Configuration
+- Nothing to change for deployments that already run `develop`. Reference: `docs/minimal-configuration.md` and
+  `docs/optional-modules.md`.
+
+## [Before 1.0.0]
+Development history before the first release (never released as a version).
 ### Added
 - First version of the project
+- Optional modules (`OptionalModule`, `@ConditionalOnModule`): beans of a disabled module are not created; start stops if an enabled module requires a disabled one; start-up log of the enabled modules (docs/optional-modules.md)
+- ENABLE_RESEARCH_ENVIRONMENT (formerly ENABLE_CODER) and ENABLE_DATASHIELD (formerly ENABLE_TOKEN_MANAGER), without fallback to the former names. App register follows ENABLE_RESEARCH_ENVIRONMENT; ENABLE_APP_REGISTER is no longer read
+- Feasibility as optional module: FeasibilityService interface, BeamFeasibilityService, DisabledFeasibilityService (@ConditionalOnModuleDisabled)
+- Exporter as optional module: ExporterJob and ExporterJobTrigger (the listener of SendQueryToBridgeheadEvent, moved out of QueryEventService) only exist when ENABLE_EXPORTER is not false
+- Research environment as optional module: ResearchEnvironmentService interface, CoderResearchEnvironmentService (formerly CoderService), DisabledResearchEnvironmentService; AppRegisterService, CoderJob and CoderConfiguration (coder/*.json) only exist when ENABLE_RESEARCH_ENVIRONMENT is not false; the Beam ID of the workspace for the file transfer comes from the research environment (CODER_BEAM_ID_SUFFIX, CODER_TEST_FILE_BEAM_ID no longer read by ExporterService); the research environment URL in emails only when enabled
+- DataSHIELD as optional module: DataShieldService interface (all DataSHIELD operations, used by the controller and DataShieldTokenManagerJob), DataShieldTokenManagerService, DisabledDataShieldService; DataShieldTokenManagerJob; TOKEN_MANAGER_URL only needed when ENABLE_DATASHIELD is not false
+- Emails as optional module: EmailService only renders; EmailSendingService (TemplateEmailSendingService, formerly SmtpEmailSendingService, and DisabledEmailSendingService) sends through an EmailTransport (SmtpEmailTransport); MailSenderConfiguration (SMTP) only exists when ENABLE_EMAILS is not false
+- ModuleDependenciesTest: only classes of the same (or a requiring) module may inject a module class; the real implementation of an interface with a stand-in is @Primary (for IntelliJ, which does not evaluate the module conditions)
+- BEAM as implicit optional module (no variable): BeamService only exists when EXPORTER or FEASIBILITY is enabled, so BEAM_URL, BEAM_API_KEY and BEAM_PROJECT_MANAGER_ID are only needed then
+- Exporter: ExporterService is now the interface with all export operations (send, execute, status, execution ID, templates, file transfer), used by the controller, ExporterJob and CoderJob; BeamExporterService (formerly ExporterService) and ExporterQueryLabelTemplate belong to EXPORTER, DisabledExporterService stands in; the exporter templates and EXPORTER_QUERY_LABEL_TEMPLATE are only needed with ENABLE_EXPORTER not false; RESEARCH_ENVIRONMENT requires EXPORTER (the exporter transfers the export files into the workspaces)
+- Feasibility: the mapping (FeasibilityMapper) belongs to FEASIBILITY; FeasibilityService returns the mapped items
+- Request types need their modules (ProjectType.getRequiredModules): a request type in frontend-project-configs.json whose modules are disabled stops the start; fetchProjectTypes returns only available types; a request parameter of an unavailable type is answered with 400; requests of a type that is no longer available can be viewed (GET endpoints) but not changed, and not brought back into an active state (ProjectEventService); unfinished requests that need a disabled module stop the start with the SQL to archive (or, for drafts, reject) them (UnfinishedRequestsCheck)
+- Test mode of optional modules: ENABLE_* can be "test" (ModuleMode true/false/test, other values stop the start); @ConditionalOnModuleTest beans replace the @ConditionalOnModule ones; a module in test mode needs none of its required modules
+- EXTERNAL_EXECUTION module (ENABLE_EXTERNAL_EXECUTION, default false): saveAndExecuteQueryInBridgehead is only offered and accepted when enabled (@RequiresModule); the profile external-execution-not-allowed had no effect on the controller method and is removed (no Spring profiles any more)
+- ENABLE_EXPORTER=test: TestExporterService answers every step at once, so the real ExporterJob moves the queries through all their states without Beam (with notifications and emails); nothing is exported
+- ENABLE_EMAILS=test: the emails are rendered and processed as when sending (aspect, recipients, attachments, notifications), but LogEmailTransport writes them to the log; EMAILS_TEST_LOG = summary (default) or full
+- ENABLE_FEASIBILITY=test: TestFeasibilityService gives random results from TEST_FEASIBILITY_RESULT without Beam (moved out of BeamFeasibilityService, which no longer reads TEST_FEASIBILITY_RESULT)
+- Emails: EmailSenderAspect, AttachmentFileService and the email executor belong to EMAILS (with emails disabled, @EmailSender no longer looks up recipients)
+- ModuleDependenciesTest also reports a class outside every module that only module classes inject
+- Optional modules are opt-in: an unset or empty ENABLE_* means false for every module (before: true, except EXTERNAL_EXECUTION). Deployments set ENABLE_EXPORTER, ENABLE_FEASIBILITY and ENABLE_EMAILS explicitly
+- Conditional pre_info/post_info: a `condition` (SpEL on the form values, as for fields) next to `project_states`, on forms, blocks and fields; evaluated with the saved values (block info per block instance, form info in any block instance), not shown without values; checked at start (blank, syntax, references to missing fields). The condition may refer to the field the information belongs to
 - Spring Application
-- State Machine for project
+- State Machine for a project
 - Project states and event states
 - Project Service
 - OAuth2 Security
-- OIDC <> Organisation Roles Mapping
+- OIDC <> Organization Roles Mapping
 - Session User Info
 - Session User Info email
 - Multi bridgehead user
-- Test user if security disabled
+- Test user if security is disabled
 - Bridgehead configuration
 - User Service
 - Project Role Constraints Aspect
 - Extract path roles map for Security Configuration
 - Project State Constraints Aspect
 - Frontend service
-- Set user as developer, pilot or final
-- REST Services: Design and Create project
-- REST Service: Accept, reject, archive, start develop, start pilot, start final, finish
+- Set the user as a developer, pilot or final
+- REST Services: Design and Create a project
+- REST Service: Accept, reject, archive, start developer, start pilot, start final, finish
 - Project Query and Query Format
 - REST Services: Create Query and Create CQL DATA Query
 - Document Service
@@ -33,7 +77,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Project Type
 - HTTP Method for every endpoint in Security Configuration
 - IS_TEST_ENVIRONMENT variable disables CSRF
-- Create CREATOR user after creating project
+- Create CREATOR user after creating a project
 - Send and execute query REST Services
 - Label, description, template-id and output-format in Query
 - Token Manager Service
@@ -42,7 +86,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Exporter Service implementation
 - Bridgehead configuration with explorer and exporter mapping
 - Bridgehead Operation
-- Create query and draft project (Lens)
+- Create a query and draft a project (Lens)
 - humanReadable in Bridgehead Config
 - Email Service
 - Email Templates
@@ -55,29 +99,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Module names
 - Http Method and Params for Actions
 - Test endpoint
-- Download application form
+- Download the application form
 - Edit project and query
 - Fetch output format, query format and templates
 - Query Context
-- Download document rights to developer, pilot and final users
+- Download document rights to a developer, pilot and final users
 - Fetch Projects
-- Modified Desc as parameter of fetch projects
+- Modified Desc as a parameter of fetch projects
 - Upload and download documents by document type
 - Fetch publications and other documents
 - Fetch project types
 - Accept and reject project bridgehead
 - Fetch project bridgeheads
-- Accept, reject and request changes in script
+- Accept, reject and request changes in a script
 - Fetch all actions
 - Accept, Reject and request changes in project results
 - Notification Service
 - Token Manager services
 - Integration in Focus and Beam
 - Frontend DTO
-- Email as Mime message
+- Email as a Mime message
 - EmailSenderIfError annotation
 - Frontend DTO converters
-- Fetch all user visible notifications
+- Fetch all user-visible notifications
 - Accepted state requirement for setting user as developer or pilot
 - Notification User Action
 - Replace Bridgehead Operation through Notification
@@ -89,16 +133,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add notifications for services: document, project bridgehead, project event, project, query, user
 - DataSHIELD Token Manager Job
 - Check Expired Active Projects Job
-- Check if session scope is active before creating a notification for changing project state
-- Fetch token status and project status of token manager
-- New email if authentication script for DataSHIELD has changed
+- Check if the session scope is active before creating a notification for changing the project state
+- Fetch token status and project status of a token manager
+- New email if an authentication script for DataSHIELD has changed
 - Explorer URL in CORS
 - Oauth2 Resource Server configuration
 - Allow required headers
 - Project Constraints: Project Type
-- Email template for Accept/Reject/Request changes in project
+- Email template for Accept/Reject/Request changes in a project
 - User Autocomplete
-- Explorer Ids to create and edit query
+- Explorer Ids to create and edit a query
 - Decode redirect explorer URL
 - Fetch project users
 - rejectProject state constraints
@@ -106,14 +150,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Flag ENABLE_TOKEN_MANAGER
 - Content Disposition in exposed headers
 - Exists Votum and Application Form
-- Exists Script
+- Script exists
 - Explorer Redirect URI
 - User State in Frontend DTO
 - Fetch project configurations
-- Exists authentication script
+- There exists an authentication script
 - Remove inactive projects in Opal
 - Project Bridgehead DataSHIELD info
-- Set project bridgehead datashield removed to false while sending query of DATASHIELD project to exporter
+- Set project bridgehead datashield removed to false while sending a query of a DATASHIELD project to exporter
 - Fetch current project configuration
 - Custom project configuration
 - Fetch visible bridgeheads and fetch project bridgeheads
@@ -121,50 +165,50 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch Project Roles
 - Email Types: NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
 - Email config for types NEW_PROJECT_ACCEPTED, NEW_VOTUM, REQUEST_TECHNICAL_APPROVAL, NEW_PUBLICATION
-- Fetch label of application form, label and script
+- Fetch label of an application form, label and script
 - Service exist invited users
 - R-Studio Group Manager
 - Email Sender: ALL_DEVELOP, ALL_PILOT, ALL_FINAL
 - Send email to all involved users after a publication has been uploaded
 - Project and project view url in email context
-- Create notification after sending an email
-- Send message while requesting changes in script or project
-- Send message while rejecting a project
+- Create a notification after sending an email
+- Send a message while requesting changes in a script or project
+- Send a message while rejecting a project
 - Exporter Job
 - Check Queries in Exporter Job
-- Max time to wait focus task in minutes
+- Max time to wait a focus task in minutes
 - Check export execution status
 - Coder Service
 - RStudio in Coder
 - Research environment project type
 - Upload file to Coder
 - Delete Coder workspace job
-- Resend export files to research environment
+- Resend export files to a research environment
 - Query Code in Explorer URL
-- Decode human readable in base 64
-- Log bridgeheads at start
-- Replace hypen in bridgeheads
+- Decode human-readable in base 64
+- Log bridgeheads at the start
+- Replace hype in bridgeheads
 - Log bridgeheads sorted
 - Replace hyphen in frontend sites
 - Human Readable Bridgehead for frontend dto
 - Http proxy configuration
 - Email as HTML
-- Provide also human readable by fetch all registered bridgeheads
+- Provide also human-readable by fetching all registered bridgeheads
 - DataSHIELD Project Status Error
 - Catch token manager exceptions and return ERROR status
-- Send emails in async execution pool
+- Send emails in the async execution pool
 - Notification async execution pool
 - Exporter async execution pool
 - Action explanations
-- Integration of action explanatios in fetch Actions
+- Integration of action examples in fetch Actions
 - Action explanations templates
 - Email Context
 - Extend email context
 - Thymeleaf Dialect for email context variables
-- Combine first and last name in name 
-- Replace email context variables in email subject
-- Default and Default var in html tags
-- Fetch human readable bridgehead for emails
+- Combine first and last name in a name 
+- Replace email context variables in the email subject
+- Default and Default var in HTML tags
+- Fetch human-readable bridgehead for emails
 - Email context project bridgeheads variable
 - Decode Base64 values of email context
 - Enable minus in variables of email context
@@ -173,35 +217,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Process variables recursively in Thymeleaf
 - Creator name in Frontend Project
 - Action explanation priority
-- Configurations as file
+- Configurations as a file
 - File Description for Frontend
-- Fetch Project-States for dashboard site
+- Fetch Project-States for the dashboard site
 - Primary and Test Mail Server
-- Email if project rejected
-- Send email when the query has arrived to the exporter or it has been executed
+- Email if a project is rejected
+- Send email when the query has arrived to the exporter, or it has been executed
 - Export dispatch counter
 - Title and description in project configuration
 - Annotation Ignore Project Configuration Match
-- Send error email if error while sending query to bridgehead
-- Mailing Black List
-- Sort Mailing Black List by first and last name
+- Send error email if error while sending a query to bridgehead
+- Mailing Blacklist
+- Sort Mailing Blacklist by first and last name
 - Results
-- DRN in exporter label
+- DRN in the exporter label
 - Final User State in results
 - Create State in Frontend DTO's (for project and project bridgehead)
 - Fetch email message and subject HTTP endpoint
 - Send project results only if there are final users
 - User Project State in State Constraints
 - Bridgehead Admin info in the variables for the email templates
-- Results URL in frontend dto
+- Result URL in frontend dto
 - EmailContextKey enum
 - Votum for all
 - Configuration Site
 - REST Service: is project manager admin 
 - Research Environment URL key for Email Context
 - REST Service: Fetch research environment URL
-- REST Service: Exists research environment workspace for user
-- View only last reseach environment workspace for a project
+- REST Service: There exists a research environment workspace for user
+- View only the last research environment workspace for a project
 - Valid Email Aspect
 - EncryptionConverter to encrypt results url
 - Coder Configuration
@@ -217,3 +261,154 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Log App Register Service
 - Removal conditions for ProjectBridgeheadDataShield
 - Check message for HTTP requests to exporter
+- Request Variable annotation
+- Optimize JPA configuration
+- Compatibility with Authentik
+- JWT Decoder configuration
+- AST and AST_DATA as query format
+- Project Form
+- Project Form Services
+- Language annotation
+- Form PDF Service
+- External Execution Not Allowed Profile
+- Download Form PDF
+- Arrange form fields in the right order in PDF
+- DataType in Form PDF
+- Form Variables Config
+- Fetch Form Templates
+- Fetch Form Template Filename
+- Current Date in Form Template
+- Project Form Fields
+- Bridgehead Affiliation
+- Form Data Type Date and Timestamp
+- HTTP Get methods fetch RequestParam and HTTP Post methods fetch RequestVariable except for uploading files
+- Check organizational roles for any bridgehead
+- Form Repository
+- Fetch all project states depending on project code
+- Make user role thread safe
+- Log frontend config
+- SAMPLES project type
+- Project And Form Configuration
+- Multiple types pro-project
+- Remove the project output service
+- Use global conversion service of spring
+- Annotated Parameter Wrapper
+- Request Parameter
+- Synchronization between query outputs and bridgehead executions
+- Project context in form template context
+- Template Filename
+- Send a query with different project types to bridgehead
+- List parameters in a controller
+- Fetch best form templates
+- Description document and related services
+- Cohort definition in a query
+- Send Query To Bridgehead Event
+- Send Query To Bridgehead Event scheduled job
+- Send attachments in emails
+- Final report services
+- Form field blocks
+- Delete Project API endpoint
+- Delete Form Field Block API endpoint
+- Form field properties
+- Normalize paths in constructor parameters
+- Condition in form field config
+- External assets for frontend
+- Form field as a file
+- Form field upload and download
+- Frontend variables
+- Multiple selected configurations
+- Create block for min instances
+- Attribute "active" in form field config
+- Feature all_form_titles_required in form template metadata
+- Form Layout
+- NOT SELECTED configuration
+- Query format constraints
+- Feasibility service and endpoint for Lens-style AST_DATA queries through Beam and Focus
+- ENABLE_FEASIBILITY feature toggle
+- Form title canonical order
+- Pre_info and post_info
+- Override fixed form fields
+- Mailing blacklist file
+- Project Manager admin sees the selected predefined configurations
+- Filter applicants and bridgeheads
+- Form field placeholder
+- Fixed form field condition
+- Cache config
+- Localized success and error messages for frontend actions
+- German translations for action explanations and user-action feedback messages
+- Merged proposed action success and error messages into the action message configuration
+- Researcher Groups
+- Project document constraint
+- Uniform number format
+- Test feasibility result resolver
+- Form templates rules
+- Form configs validator
+- Project code generator
+- Exporter query label template
+- Create request from the dashboard (empty query, no sites)
+- Project-level endpoints work for projects without sites; each action reports whether it needs a site (bridgeheadRequired)
+- Editing a project with an empty list of sites removes all sites
+- Action feedback marker in the redirect URL after creating or editing a request
+- Email recipients in fronend actions
+- Form field instances: a field label configured several times in a form; the first instance whose condition holds is shown
+- Actions batch: at most ACTIONS_BATCH_MAX_ENTRIES entries per batch (default 100, else 413); docs/actions-batch-security.md explains why the batch is safe
+- Actions batch: the projects and bridgeheads of the entries (project-code, bridgehead) are loaded once per batch instead of once per entry
+- Project state LOCAL_APPROVAL after CENTRAL_APPROVAL (optional module LOCAL_APPROVAL, ENABLE_LOCAL_APPROVAL): CENTRAL_APPROVAL -> LOCAL_APPROVAL (START_LOCAL_APPROVAL, email LOCAL_APPROVAL_STARTED) -> DEVELOP or FINAL; without the module the state is not offered (fetch project states) nor accepted
+- Reject a request in CENTRAL_APPROVAL (with REVIEW the main state for rejecting; the state machine already allowed it)
+- Approval contacts per bridgehead (BRIDGEHEADS_CONFIG_<BH>_APPROVALCONTACTS_<n>_NAME_<LANG>, _DESCRIPTION_<LANG>, _EMAILADDRESS): the people of the site's local approval, without access to the project manager; separate from the site contacts, no fallback; in the project bridgeheads (approvalContacts)
+- Document type LOCAL_APPROVAL, one per bridgehead (module LOCAL_APPROVAL): upload (creator, bridgehead admin, project manager admin; in LOCAL_APPROVAL and FINAL), download, description, exists (/local-approval/...; from LOCAL_APPROVAL on, also finished, archived, rejected)
+- Emails to the approval contacts (EmailRecipientType.BRIDGEHEAD_APPROVAL_CONTACTS, template role BRIDGEHEAD_APPROVAL_CONTACT, email-to-name from the configuration); LOCAL_APPROVAL_STARTED also goes to them
+- Email templates per bridgehead (email-templates.json: "bridgeheads": {"<bridgehead>": {"subject", "files"}}), falling back to the general templates (docs/emails.md)
+- @EmailSender(projectStates): an email only in some project states; upload of a local approval: NEW_LOCAL_APPROVAL (LOCAL_APPROVAL) or NEW_LOCAL_APPROVAL_FINAL (FINAL) to creator, bridgehead admin and project manager admins
+- BACK_TO_REVIEW: the project manager admin sends a request in CENTRAL_APPROVAL back to REVIEW (email PROJECT_BACK_TO_REVIEW)
+
+
+### Changed
+- Rename project state CREATED and ACCEPTED as REVIEW and APPROVAL
+- Update to Maven 4
+- Update to Java 25
+- Remove project bridgehead user with role creator
+- View also own-created projects even if they don't belong to own bridgeheads
+- View all project bridgeheads for creator
+- RequestVariableMethodArgumentResolver for complex datatypes
+- Edit form instead of just adding forms to the project
+- Add and rename forms instead of editing services
+- Notifications only for Project Manager Admin
+- Filter templates by selected forms
+- Samples project can generate exports not visible to researcher
+- there isCustomConfig in the Project as nullable
+- Ethical Approval in Project Context
+- Data Type Enum for Form Config
+- Fetch selected forms returns also preconfigured titles
+- Query Details
+- There Exists Publication
+- Refactor fetch projects
+- Short Description in Display Metadata
+- Bridgehead contact data
+- Multiple Fields
+- Generalize Action Explanations as Action Messages while accepting the legacy configuration names
+- PDF design
+- Configurable localized date and time display formats for frontend views and PDFs
+- Project state APPROVAL renamed CENTRAL_APPROVAL (Flyway V003 renames the stored states); the configuration (action messages) must use the new name
+- Emails: an email whose template is not configured (type and role) is not sent, silently, instead of failing with "Template not found"; an email needs both its definition in the code and its template
+
+
+### Removed
+- RStudio Keycloak Groups
+- Application Form Services
+
+### Fixed
+- Log message of an email not sent to an address in the mailing blacklist said "SMTP Server not enabled"
+- Wait asynchronously for feasibility Beam results using dedicated timing configuration
+- Init flyway migration in spring 4
+- Jwt decoder configuration
+- Full name if the first or last name is missing
+- Only one user session at the same time
+- Update query outputs correctly
+- REST Service: Fetch actions batch (several read actions in one request)
+- Form PDF: configured texts with HTML (links, formatting) shown as in the frontend
+- The description of a bridgehead's ethics vote can be fetched in DRAFT, like its upload and download
+- GET actions: one action package without a bridgehead (under "") and one per bridgehead given in the parameter bridgeheads (comma-separated ids), in one request; the parameter bridgehead is gone
+- Results of the project (fetch the bridgeheads' results; send, accept, reject or request changes in the results URL) and the research environment URL no longer require a bridgehead: it only identified the user's role
+- Removing a document no longer requires the organisation role RESEARCHER: the project manager admin can remove documents
+- Fetch project results: no error 500 when the final user has no first or last name

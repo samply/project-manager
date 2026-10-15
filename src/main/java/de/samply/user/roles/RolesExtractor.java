@@ -22,7 +22,7 @@ public class RolesExtractor {
             RoleConstraints roleConstraints = method.getAnnotation(RoleConstraints.class);
             if (roleConstraints != null && roleConstraints.organisationRoles().length > 0) {
                 fetchPath(method).ifPresent(path -> AspectUtils.fetchHttpMethod(method).ifPresent(httpMethod -> result.put(rootPath + path,
-                        new MethodRoles(httpMethod, Arrays.stream(roleConstraints.organisationRoles()).map(role -> role.name()).toArray(String[]::new)))));
+                        new MethodRoles(httpMethod, Arrays.stream(roleConstraints.organisationRoles()).map(Enum::name).toArray(String[]::new)))));
             }
         });
         return result;
@@ -61,7 +61,7 @@ public class RolesExtractor {
 
     public static String getRootPath() {
         Optional<String> path = fetchPath(ProjectManagerController.class.getAnnotation(RequestMapping.class));
-        return (path.isPresent()) ? path.get() : "";
+        return path.orElse("");
     }
 
 }

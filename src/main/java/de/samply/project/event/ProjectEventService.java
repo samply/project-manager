@@ -4,21 +4,23 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.Query;
-import de.samply.db.repository.ProjectBridgeheadRepository;
-import de.samply.db.repository.ProjectRepository;
-import de.samply.db.repository.QueryRepository;
+import de.samply.modules.OptionalModule;
+import de.samply.modules.OptionalModules;
 import de.samply.notification.NotificationService;
 import de.samply.notification.OperationType;
+import de.samply.project.ProjectBridgeheadService;
+import de.samply.project.code.ProjectCodeGenerator;
+import de.samply.project.ProjectService;
 import de.samply.project.ProjectType;
-import de.samply.project.state.ProjectBridgeheadState;
 import de.samply.project.state.ProjectState;
+import de.samply.query.QueryService;
 import de.samply.security.SessionUser;
 import de.samply.user.UserService;
-import de.samply.user.roles.ProjectRole;
 import de.samply.utils.LogUtils;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.ScopeNotActiveException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -32,99 +34,121 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Service
 public class ProjectEventService implements ProjectEventActions {
 
+    /** Attempts to insert a new project before a project code conflict is given up. */
+    static final int MAX_PROJECT_SAVE_ATTEMPTS = 3;
+    private static final String PROJECT_CODE_CONSTRAINT = "uq_project_code";
+
+    // Services
     private final NotificationService notificationService;
-    private final ProjectRepository projectRepository;
-    private final QueryRepository queryRepository;
+    private final ProjectService projectService;
+    private final UserService userService;
+    private final QueryService queryService;
+    private final ProjectBridgeheadService projectBridgeheadService;
+
+
     private final StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory;
     private final LogUtils logUtils;
-    private final ProjectBridgeheadRepository projectBridgeheadRepository;
-    private final UserService userService;
     private final SessionUser sessionUser;
+
     private final int projectExpirationTimeInDays;
+    private final ProjectCodeGenerator projectCodeGenerator;
+    private final OptionalModules optionalModules;
+
+    private static final Set<ProjectEvent> ACTIVATING_EVENTS = EnumSet.of(ProjectEvent.CREATE, ProjectEvent.ACCEPT,
+            ProjectEvent.START_LOCAL_APPROVAL, ProjectEvent.START_DEVELOP, ProjectEvent.START_PILOT, ProjectEvent.START_FINAL);
 
 
     public ProjectEventService(NotificationService notificationService,
-                               ProjectRepository projectRepository,
-                               QueryRepository queryRepository,
+                               ProjectService projectService,
                                StateMachineFactory<ProjectState, ProjectEvent> projectStateMachineFactory,
                                LogUtils logUtils,
-                               ProjectBridgeheadRepository projectBridgeheadRepository,
                                SessionUser sessionUser,
+                               @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays,
+                               ProjectCodeGenerator projectCodeGenerator,
                                UserService userService,
-                               @Value(ProjectManagerConst.PROJECT_DEFAULT_EXPIRATION_TIME_IN_DAYS_SV) int projectExpirationTimeInDays) {
+                               QueryService queryService,
+                               ProjectBridgeheadService projectBridgeheadService,
+                               OptionalModules optionalModules) {
         this.notificationService = notificationService;
-        this.projectRepository = projectRepository;
-        this.queryRepository = queryRepository;
+        this.optionalModules = optionalModules;
+        this.projectService = projectService;
+        this.queryService = queryService;
         this.projectStateMachineFactory = projectStateMachineFactory;
         this.logUtils = logUtils;
-        this.projectBridgeheadRepository = projectBridgeheadRepository;
-        this.userService = userService;
+        this.projectBridgeheadService = projectBridgeheadService;
         this.sessionUser = sessionUser;
         this.projectExpirationTimeInDays = projectExpirationTimeInDays;
+        this.projectCodeGenerator = projectCodeGenerator;
+        this.userService = userService;
     }
 
-    public void loadProject(String projectCode, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isPresent()) {
-            StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.get().getStateMachineKey());
-            stateMachine.stopReactively().subscribe(null, logUtils::logError,
-                    () -> stateMachine.getStateMachineAccessor().doWithAllRegions(stateMachineAccess -> {
-                        stateMachineAccess.addStateMachineInterceptor(new StateMachineInterceptorAdapter<>() {
-                            @Override
-                            public void postStateChange(State<ProjectState, ProjectEvent> state, Message<ProjectEvent> message, Transition<ProjectState, ProjectEvent> transition, StateMachine<ProjectState, ProjectEvent> stateMachine, StateMachine<ProjectState, ProjectEvent> rootStateMachine) {
-                                project.get().setState(state.getId());
-                                saveProject(project.get());
-                            }
-                        });
-                        stateMachineAccess.resetStateMachineReactively(new DefaultStateMachineContext<>(project.get().getState(), null, null, null))
-                                .subscribe(null, logUtils::logError,
-                                        () -> stateMachine.startReactively().subscribe(null, logUtils::logError,
-                                                () -> stateMachineConsumer.accept(stateMachine)));
-                    }));
-        }
+    public void loadProject(Project project, Consumer<StateMachine<ProjectState, ProjectEvent>> stateMachineConsumer) {
+        StateMachine<ProjectState, ProjectEvent> stateMachine = this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
+        stateMachine.stopReactively().subscribe(null, logUtils::logError,
+                () -> stateMachine.getStateMachineAccessor().doWithAllRegions(stateMachineAccess -> {
+                    stateMachineAccess.addStateMachineInterceptor(new StateMachineInterceptorAdapter<>() {
+                        @Override
+                        public void postStateChange(State<ProjectState, ProjectEvent> state, Message<ProjectEvent> message, Transition<ProjectState, ProjectEvent> transition, StateMachine<ProjectState, ProjectEvent> stateMachine, StateMachine<ProjectState, ProjectEvent> rootStateMachine) {
+                            project.setState(state.getId());
+                            saveProject(project);
+                        }
+                    });
+                    stateMachineAccess.resetStateMachineReactively(new DefaultStateMachineContext<>(project.getState(), null, null, null))
+                            .subscribe(null, logUtils::logError,
+                                    () -> stateMachine.startReactively().subscribe(null, logUtils::logError,
+                                            () -> stateMachineConsumer.accept(stateMachine)));
+                }));
     }
 
-    private Project saveProject(@NotNull Project project){
-        project.setModifiedAt(Instant.now());
-        projectRepository.save(project);
+    private Project saveProject(@NotNull Project project) {
+        projectService.saveProject(project);
         return project;
     }
 
-    private void changeEvent(String projectCode, ProjectEvent projectEvent) throws ProjectEventActionsException {
-        changeEvent(projectCode, projectEvent, Optional.empty());
+    private void changeEvent(Project project, ProjectEvent projectEvent) throws ProjectEventActionsException {
+        changeEvent(project, projectEvent, Optional.empty());
     }
 
-    private void changeEvent(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccesfulChangeEvent) throws ProjectEventActionsException {
+    private void changeEvent(Project project, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) throws ProjectEventActionsException {
+        checkProjectTypesAvailable(project, projectEvent);
         try {
-            changeEventWithoutExceptionHandling(projectCode, projectEvent, consumerAfterSuccesfulChangeEvent);
+            changeEventWithoutExceptionHandling(project, projectEvent, consumerAfterSuccessfulChangeEvent);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private void changeEventWithoutExceptionHandling(String projectCode, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccesfulChangeEvent) {
-        loadProject(projectCode, stateMachine -> {
+    // A request whose type's modules are disabled may be closed (reject, archive, finish), but not brought into or
+    // further in an active state - e.g. an archived request accepted again
+    private void checkProjectTypesAvailable(Project project, ProjectEvent projectEvent) throws ProjectEventActionsException {
+        if (ACTIVATING_EVENTS.contains(projectEvent) && project.getQuery() != null) {
+            Optional<ProjectType> unavailable = project.fetchProjectTypes().stream()
+                    .filter(projectType -> !optionalModules.isAvailable(projectType))
+                    .findFirst();
+            if (unavailable.isPresent()) {
+                throw new ProjectEventActionsException("Request " + project.getCode() + " cannot be " + projectEvent
+                        + ": " + optionalModules.describeUnavailable(unavailable.get()));
+            }
+        }
+    }
+
+    private void changeEventWithoutExceptionHandling(Project project, ProjectEvent projectEvent, Optional<Consumer<Project>> consumerAfterSuccessfulChangeEvent) {
+        loadProject(project, stateMachine -> {
             Message<ProjectEvent> createEventMessage = MessageBuilder.withPayload(projectEvent).build();
             stateMachine.sendEvent(Mono.just(createEventMessage)).subscribe(null, logUtils::logError, () -> {
-                Optional<Project> project = this.projectRepository.findByCode(projectCode);
-                if (project.isPresent()) {
-                    project.get().setState(stateMachine.getState().getId());
-                    project.get().setModifiedAt(Instant.now());
-                    saveProject(project.get());
-                    this.notificationService.createNotification(projectCode, null, fetchSessionUserEmailIfSessionIsActive(),
-                            OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
-                    if (consumerAfterSuccesfulChangeEvent.isPresent()) {
-                        consumerAfterSuccesfulChangeEvent.get().accept(project.get());
-                    }
-                }
+                project.setState(stateMachine.getState().getId());
+                project.setModifiedAt(Instant.now());
+                saveProject(project);
+                this.notificationService.createNotification(project, null, fetchSessionUserEmailIfSessionIsActive(),
+                        OperationType.CHANGE_PROJECT_STATE, projectEvent + " project", null, null);
+                consumerAfterSuccessfulChangeEvent.ifPresent(projectConsumer ->
+                        projectConsumer.accept(project));
             });
         });
     }
@@ -138,34 +162,33 @@ public class ProjectEventService implements ProjectEventActions {
     }
 
     @Override
-    public String draft(String[] bridgeheads, String queryCode, ProjectType projectType) throws ProjectEventActionsException {
+    public String draft(String[] bridgeheads, String queryCode) throws ProjectEventActionsException {
         try {
-            return draftWithoutExceptionHandling(bridgeheads, queryCode, projectType);
+            return draftWithoutExceptionHandling(bridgeheads, queryCode);
         } catch (Exception e) {
             throw new ProjectEventActionsException(e);
         }
     }
 
-    private String draftWithoutExceptionHandling(@NotNull String[] bridgeheads, @NotNull String queryCode, ProjectType projectType) throws ProjectEventActionsException {
-        Optional<Query> queryOptional = this.queryRepository.findByCode(queryCode);
+    private String draftWithoutExceptionHandling(@NotNull String[] bridgeheads, @NotNull String queryCode) throws ProjectEventActionsException {
+        Optional<Query> queryOptional = queryService.fetchQuery(queryCode);
         if (queryOptional.isEmpty()) {
             throw new ProjectEventActionsException("Query not found");
         }
-        String projectCode = generateProjectCode();
-        createProjectAsDraft(
-                projectCode,
-                project -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, project)),
-                queryOptional.get(),
-                projectType);
-        return projectCode;
+        Project project = createProjectAsDraft(
+                generateProjectCode(),
+                savedProject -> Arrays.stream(bridgeheads).forEach(bridgehead -> createProjectBridgehead(bridgehead, savedProject)),
+                queryOptional.get());
+        // The code may have been replaced while saving, see saveProjectWithUniqueCode
+        return project.getCode();
     }
 
     private String generateProjectCode() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, ProjectManagerConst.PROJECT_CODE_SIZE);
+        return projectCodeGenerator.generate();
     }
 
 
-    private void createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer, Query query, ProjectType projectType) {
+    private Project createProjectAsDraft(String projectCode, Consumer<Project> projectConsumer, Query query) {
         Project project = new Project();
         project.setCode(projectCode);
         project.setCreatorEmail(sessionUser.getEmail());
@@ -174,90 +197,169 @@ public class ProjectEventService implements ProjectEventActions {
         project.setModifiedAt(Instant.now());
         project.setStateMachineKey(UUID.randomUUID().toString().replace("-", ""));
         project.setQuery(query);
-        project.setType(projectType);
         StateMachine<ProjectState, ProjectEvent> stateMachine =
                 this.projectStateMachineFactory.getStateMachine(project.getStateMachineKey());
         stateMachine.startReactively().subscribe(null, logUtils::logError, () -> {
             project.setState(stateMachine.getState().getId());
-            projectConsumer.accept(saveProject(project));
-            this.notificationService.createNotification(projectCode, null, sessionUser.getEmail(),
+            projectConsumer.accept(saveProjectWithUniqueCode(project));
+            userService.addCreatorIfNotExists();
+            this.notificationService.createNotification(project, null, sessionUser.getEmail(),
                     OperationType.CHANGE_PROJECT_STATE, "Design project", null, null);
         });
+        return project;
+    }
+
+    /**
+     * Inserts a new project. The generator only hands out unused codes, but two
+     * concurrent requests can still get the same code before either is saved; the
+     * unique constraint then rejects the second insert, which retries with a new code.
+     */
+    private Project saveProjectWithUniqueCode(Project project) {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                return saveProject(project);
+            } catch (DataIntegrityViolationException e) {
+                if (attempt >= MAX_PROJECT_SAVE_ATTEMPTS || !isProjectCodeConflict(e)) {
+                    throw e;
+                }
+                project.setId(null);
+                project.setCode(generateProjectCode());
+            }
+        }
+    }
+
+    private boolean isProjectCodeConflict(DataIntegrityViolationException exception) {
+        for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+            if (cause instanceof org.hibernate.exception.ConstraintViolationException violation
+                    && PROJECT_CODE_CONSTRAINT.equalsIgnoreCase(violation.getConstraintName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private LocalDate createExpirationDate() {
         return LocalDate.now().plusDays(projectExpirationTimeInDays);
     }
 
-    private ProjectBridgehead createProjectBridgehead(String bridgehead, Project project) {
+    private void createProjectBridgehead(String bridgehead, Project project) {
         ProjectBridgehead projectBridgehead = new ProjectBridgehead();
         projectBridgehead.setBridgehead(bridgehead.toLowerCase());
         projectBridgehead.setProject(project);
-        projectBridgehead.setState(ProjectBridgeheadState.CREATED); // TODO: Replace with state machine
-        projectBridgehead.setModifiedAt(Instant.now());
-        return this.projectBridgeheadRepository.save(projectBridgehead);
-    }
-
-    private void createProjectBridgeheadUser(String projectCode) throws ProjectEventActionsException {
-        Project project = fetchProject(projectCode);
-        sessionUser.getBridgeheads().stream().forEach(bridgehead -> {
-            Optional<ProjectBridgehead> projectBridgehead = this.projectBridgeheadRepository.findFirstByBridgeheadAndProject(bridgehead, project);
-            if (projectBridgehead.isPresent()) {
-                this.userService.createProjectBridgeheadUserIfNotExists(sessionUser.getEmail(), projectBridgehead.get(), ProjectRole.CREATOR);
-            }
-        });
-    }
-
-    private Project fetchProject(String projectCode) throws ProjectEventActionsException {
-        Optional<Project> project = this.projectRepository.findByCode(projectCode);
-        if (project.isEmpty()) {
-            throw new ProjectEventActionsException("Project not found");
-        }
-        return project.get();
+        projectBridgeheadService.saveBridgehead(projectBridgehead);
     }
 
     @Override
-    public void create(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.CREATE);
-        createProjectBridgeheadUser(projectCode);
+    public void create(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.CREATE);
     }
 
     @Override
-    public void accept(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.ACCEPT);
+    public void accept(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.ACCEPT);
     }
 
     @Override
-    public void reject(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.REJECT);
+    public void reject(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.REJECT);
     }
 
     @Override
-    public void archive(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.ARCHIVE, Optional.of(project -> {
-            project.setArchivedAt(project.getModifiedAt());
-            saveProject(project);
+    public void archive(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.ARCHIVE, Optional.of(tempProject -> {
+            tempProject.setArchivedAt(tempProject.getModifiedAt());
+            saveProject(tempProject);
         }));
     }
 
     @Override
-    public void startDevelopStage(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.START_DEVELOP);
+    public void startLocalApprovalStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_LOCAL_APPROVAL);
     }
 
     @Override
-    public void startPilotStage(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.START_PILOT);
+    public void backToReview(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.BACK_TO_REVIEW);
     }
 
     @Override
-    public void startFinalStage(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.START_FINAL);
+    public void startDevelopStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_DEVELOP);
     }
 
     @Override
-    public void finish(String projectCode) throws ProjectEventActionsException {
-        changeEvent(projectCode, ProjectEvent.FINISH);
+    public void startPilotStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_PILOT);
     }
+
+    @Override
+    public void startFinalStage(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.START_FINAL);
+    }
+
+    @Override
+    public void finish(Project project) throws ProjectEventActionsException {
+        changeEvent(project, ProjectEvent.FINISH);
+    }
+
+    public ProjectState[] fetchAllProjectEvents(Optional<Project> project) {
+        // Without the module LOCAL_APPROVAL, the step is not shown
+        return Arrays.stream(project
+                        .map(Project::fetchProjectTypes)
+                        .map(this::statesFor)
+                        .orElseGet(ProjectState::values))
+                .filter(state -> state != ProjectState.LOCAL_APPROVAL
+                        || optionalModules.isEnabled(OptionalModule.LOCAL_APPROVAL))
+                .toArray(ProjectState[]::new);
+    }
+
+    private ProjectState[] statesFor(Set<ProjectType> types) {
+
+        if (types == null || types.isEmpty()) {
+            return ProjectState.values();
+        }
+
+        // Convert each type to a Set for intersection
+        Set<ProjectState> intersection = types.stream()
+                .map(this::statesForSingleType)
+                .map(Set::of) // convert array to Set
+                .reduce((set1, set2) -> {
+                    Set<ProjectState> result = new HashSet<>(set1);
+                    result.retainAll(set2);
+                    return result;
+                })
+                .orElse(Set.of());
+
+        // Preserve enum declaration order
+        return Arrays.stream(ProjectState.values())
+                .filter(intersection::contains)
+                .toArray(ProjectState[]::new);
+    }
+
+    private ProjectState[] statesForSingleType(ProjectType type) {
+        return switch (type) {
+            case EXPORT -> EXPORT_PROJECT_STATES;
+            case SAMPLES -> SAMPLES_PROJECT_STATES;
+            default -> ProjectState.values();
+        };
+    }
+
+    private static final ProjectState[] EXPORT_PROJECT_STATES = {
+            ProjectState.DRAFT,
+            ProjectState.REVIEW,
+            ProjectState.CENTRAL_APPROVAL,
+            ProjectState.LOCAL_APPROVAL,
+            ProjectState.FINAL,
+            ProjectState.FINISHED
+    };
+
+    private static final ProjectState[] SAMPLES_PROJECT_STATES = {
+            ProjectState.DRAFT,
+            ProjectState.REVIEW,
+            ProjectState.CENTRAL_APPROVAL,
+            ProjectState.LOCAL_APPROVAL,
+            ProjectState.FINAL,
+            ProjectState.FINISHED
+    };
 
 }

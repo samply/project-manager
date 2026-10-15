@@ -2,8 +2,9 @@ package de.samply.project.state;
 
 public enum ProjectState {
     DRAFT,
-    CREATED,
-    ACCEPTED,
+    REVIEW,
+    CENTRAL_APPROVAL,
+    LOCAL_APPROVAL,
     DEVELOP,
     PILOT,
     FINAL,

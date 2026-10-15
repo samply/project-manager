@@ -10,6 +10,8 @@ public enum EmailRecipientType {
     ALL_FINALS,
     ALL_BRIDGEHEAD_ADMINS,
     BRIDGEHEAD_ADMIN,
-    BRIDGHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT,
+    // Approval contacts of the bridgehead (or of all bridgeheads of the project); not users of the project manager
+    BRIDGEHEAD_APPROVAL_CONTACTS,
+    BRIDGEHEAD_ADMINS_WHO_HAVE_NOT_ACCEPTED_NOR_REJECTED_THE_PROJECT,
     PROJECT_ALL
 }

@@ -1,26 +1,29 @@
 package de.samply.coder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.samply.annotations.ConditionalOnModule;
 import de.samply.app.ProjectManagerConst;
 import de.samply.coder.request.CreateRequestBody;
+import de.samply.modules.OptionalModule;
 import de.samply.project.ProjectType;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
 @Data
 @Configuration
+@ConditionalOnModule(OptionalModule.RESEARCH_ENVIRONMENT)
 @ConfigurationProperties(prefix = ProjectManagerConst.CODER_PREFIX)
 public class CoderConfiguration {
 
     private final ObjectMapper objectMapper = new ObjectMapper(); // For deserializing JSON
-    private Map<String, String> path;
+    private Map<String, Path> path;
     private Map<ProjectType, CreateRequestBody> projectTypeCreateRequestBodyMap = new EnumMap<>(ProjectType.class);
 
     @PostConstruct
@@ -30,7 +33,7 @@ public class CoderConfiguration {
             if (projectType != null) {
                 try {
                     // Deserialize JSON file into CreateRequestBody
-                    CreateRequestBody requestBody = objectMapper.readValue(new File(value), CreateRequestBody.class);
+                    CreateRequestBody requestBody = objectMapper.readValue(value.toFile(), CreateRequestBody.class);
                     projectTypeCreateRequestBodyMap.put(projectType, requestBody);
                 } catch (IOException e) {
                     throw new IllegalArgumentException("Failed to parse JSON file for key: " + key, e);
