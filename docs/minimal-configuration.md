@@ -5,8 +5,8 @@ modules are opt-in), and what each module adds. Derived from the code (2026-10-0
 `application.yaml`. Not yet proven by a start-up test - that test is planned (`project-manager-ops/plans/2026-09-30-plan-unit-and-integration-tests.md`,
 phase 2, with exactly this set as its configuration).
 
-Examples: `master-project-manager/production/entrypoint.sh` and `production/frontend/frontend-environment.sh`
-(values for the master deployment) and its `production/` folder (the files).
+Examples: `dktk-project-manager/production/entrypoint.sh` and `production/frontend/frontend-environment.sh`
+(values for the DKTK deployment) and its `production/` folder (the files).
 
 ## 1. Infrastructure
 
@@ -22,7 +22,7 @@ Examples: `master-project-manager/production/entrypoint.sh` and `production/fron
 
 Files and folders (the content comes from the deployment repository's `production/` folder):
 
-| Variable | Example (master) | What |
+| Variable | Example (DKTK) | What |
 |---|---|---|
 | `FORM_FIELDS_DIRECTORY` | `/app/form/form-fields` | The request forms (`*.json`) |
 | `FORM_RESOURCES_DIRECTORY` | `/app/form/templates` | Templates of the request PDF |
@@ -36,7 +36,7 @@ Files and folders (the content comes from the deployment repository's `productio
 
 Roles, security, explorer:
 
-| Variable | Example (master) | What |
+| Variable | Example (DKTK) | What |
 |---|---|---|
 | `PM_ADMIN_GROUPS` | `admin-ccp-office` | Login groups of the project manager admins |
 | `BK_ADMIN_GROUP_PREFIX` / `BK_ADMIN_GROUP_SUFFIX` | `DKTK_CCP_` | Login group of a site's admins: prefix + site + suffix |
@@ -63,7 +63,7 @@ are not needed. Variables and values: `docs/optional-modules.md`.
 | `EXPORTER` | Beam (`BEAM_URL`, `BEAM_API_KEY`, `BEAM_PROJECT_MANAGER_ID`), `EXPORT_TEMPLATES`, `SAMPLES_TEMPLATES`, `DATASHIELD_TEMPLATES`, `RESEARCH_ENVIRONMENT_TEMPLATES`, `EXPORTER_QUERY_LABEL_TEMPLATE`; the sites' focus Beam IDs |
 | `FEASIBILITY` | Beam (as above), `FEASIBILITY_MAPPING`, `FOCUS_LENS_PROJECT` |
 | `EMAILS` | SMTP (`SPRING_MAIL_PRIMARY_*`), `PROJECT_MANAGER_EMAIL_FROM` |
-| `RESEARCH_ENVIRONMENT` | Coder (`CODER_*`, `coder/*.json`), app register (`APP_REGISTER_*`); needs `EXPORTER`. A working configuration: master-project-manager, commit 17579fd (branch feat/optional-modules, 2026-10-08, new variable names; with the old names ENABLE_CODER/ENABLE_TOKEN_MANAGER also on main, d738236) |
+| `RESEARCH_ENVIRONMENT` | Coder (`CODER_*`, `coder/*.json`), app register (`APP_REGISTER_*`); needs `EXPORTER`. A working configuration: dktk-project-manager (then master-project-manager), commit 17579fd (branch feat/optional-modules, 2026-10-08, new variable names; with the old names ENABLE_CODER/ENABLE_TOKEN_MANAGER also on main, d738236) |
 | `DATASHIELD` | `TOKEN_MANAGER_URL`, `MANAGE_TOKENS_CRON_EXPRESSION`; needs `RESEARCH_ENVIRONMENT`. Configuration: as above |
 | `EXTERNAL_EXECUTION` | nothing |
 
