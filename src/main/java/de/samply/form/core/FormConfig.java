@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -325,7 +326,14 @@ public class FormConfig {
             Map.entry(ProjectManagerConst.FORM_CONFIG_FIELD_TYPE, FormFieldConfig::getFieldType),
             Map.entry(ProjectManagerConst.FORM_CONFIG_MULTIPLE, FormFieldConfig::isMultiple),
             Map.entry(ProjectManagerConst.FORM_CONFIG_BLOCK, FormFieldConfig::getBlock),
-            Map.entry(ProjectManagerConst.FORM_CONFIG_AS_FILE, FormFieldConfig::getAsFile));
+            Map.entry(ProjectManagerConst.FORM_CONFIG_AS_FILE, FormFieldConfig::getAsFile),
+            // Compared by value: 150 and 150.0 are the same bound.
+            Map.entry(ProjectManagerConst.FORM_CONFIG_MIN, field -> comparable(field.getMin())),
+            Map.entry(ProjectManagerConst.FORM_CONFIG_MAX, field -> comparable(field.getMax())));
+
+    private static Object comparable(BigDecimal bound) {
+        return bound == null ? null : bound.stripTrailingZeros();
+    }
 
     private static Set<String> findDuplicates(List<String> values) {
         Set<String> seen = new HashSet<>();
@@ -355,7 +363,24 @@ public class FormConfig {
                                 + form.getTitle() + "', field '" + field.getLabel()
                                 + "': placeholder is only supported for STRING, EMAIL and LONG_STRING fields");
             }
+            validateBounds(field, "Invalid form configuration in " + configFile + " at form '"
+                    + form.getTitle() + "', field '" + field.getLabel() + "': ");
         });
+    }
+
+    private static void validateBounds(FormFieldConfig field, String where) {
+        if (field.getMin() == null && field.getMax() == null) {
+            return;
+        }
+        if (field.getDataType() != DataType.INTEGER && field.getDataType() != DataType.DOUBLE) {
+            throw new IllegalArgumentException(where + ProjectManagerConst.FORM_CONFIG_MIN + " and "
+                    + ProjectManagerConst.FORM_CONFIG_MAX + " are only supported for INTEGER and DOUBLE fields");
+        }
+        if (field.getMin() != null && field.getMax() != null && field.getMin().compareTo(field.getMax()) > 0) {
+            throw new IllegalArgumentException(where + ProjectManagerConst.FORM_CONFIG_MIN + " "
+                    + field.getMin().toPlainString() + " is greater than " + ProjectManagerConst.FORM_CONFIG_MAX
+                    + " " + field.getMax().toPlainString());
+        }
     }
 
     private void validateContextualInformation(FormMetadataConfig form, Path configFile) {

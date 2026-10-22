@@ -8,6 +8,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Same cases as tests/formValueValidation.test.cjs in project-manager-ui: keep both in sync.
@@ -310,6 +312,50 @@ class FormFieldValueValidatorTest {
     })
     void messagesNameTheValueAndTheExpectedFormat(DataType dataType, String value, String message) {
         assertThat(FormFieldValueValidator.fetchInvalidValueMessage(dataType, value)).contains(message);
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            // dataType | min | max | value | valid (an empty bound is none)
+            "INTEGER | 0   | 150 | 0      | true",
+            "INTEGER | 0   | 150 | 150    | true",
+            "INTEGER | 0   | 150 | ' 42 ' | true",
+            "INTEGER | 0   | 150 | -1     | false",
+            "INTEGER | 0   | 150 | 151    | false",
+            "INTEGER | 18  |     | 99999  | true",
+            "INTEGER | 18  |     | 17     | false",
+            "INTEGER |     | 10  | -99999 | true",
+            "INTEGER |     | 10  | 11     | false",
+            "DOUBLE  | 0.5 | 1.5 | 1,5    | true",
+            "DOUBLE  | 0.5 | 1.5 | 1e0    | true",
+            "DOUBLE  | 0.5 | 1.5 | 0.4999 | false",
+            "DOUBLE  | 0.5 | 1.5 | 15e-1  | true",
+            "DOUBLE  | 0.5 | 1.5 | 2E0    | false",
+            "INTEGER | 0   | 150 | ''     | true",
+            // Bounds only apply to numbers
+            "STRING  | 0   | 150 | 999    | true"
+    })
+    void checksTheBoundsOfNumbers(DataType dataType, BigDecimal min, BigDecimal max, String value, boolean valid) {
+        assertThat(FormFieldValueValidator.isValid(dataType, min, max, value)).isEqualTo(valid);
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "0   | 150  | 151 | \"151\" must be between 0 and 150",
+            "18  |      | 17  | \"17\" must be at least 18",
+            "    | 1E+2 | 101 | \"101\" must be at most 100",
+            "0.0 | 1.50 | 2   | \"2\" must be between 0 and 1.5"
+    })
+    void boundsMessagesNameTheValueAndTheBounds(BigDecimal min, BigDecimal max, String value, String message) {
+        assertThat(FormFieldValueValidator.fetchInvalidValueMessage(DataType.DOUBLE, min, max, value))
+                .contains(message);
+    }
+
+    @Test
+    void theDataTypeIsCheckedBeforeTheBounds() {
+        assertThat(FormFieldValueValidator.fetchInvalidValueMessage(
+                DataType.INTEGER, BigDecimal.ZERO, BigDecimal.TEN, "abc"))
+                .contains("\"abc\" is not a valid whole number");
     }
 
     @ParameterizedTest

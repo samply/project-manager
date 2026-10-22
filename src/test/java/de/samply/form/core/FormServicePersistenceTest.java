@@ -12,6 +12,7 @@ import de.samply.security.SessionUser;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -205,6 +206,22 @@ class FormServicePersistenceTest {
                 Optional.of(new FormField[]{field}), project))
                 .isInstanceOf(InvalidFormFieldValueException.class)
                 .hasMessageContaining("not a valid whole number");
+    }
+
+    @Test
+    void valueOutsideTheConfiguredBoundsIsRejected() {
+        FormFieldConfig config = new FormFieldConfig();
+        config.setDataType(DataType.INTEGER);
+        config.setMin(BigDecimal.ZERO);
+        config.setMax(new BigDecimal("150"));
+        when(formConfig.fetchFormFieldConfig("request", "age")).thenReturn(config);
+        FormField field = FormField.builder()
+                .title("request").label("age").type(DataType.INTEGER).value("151").build();
+
+        assertThatThrownBy(() -> service().editProjectFormFieldValues(
+                Optional.of(new FormField[]{field}), project))
+                .isInstanceOf(InvalidFormFieldValueException.class)
+                .hasMessageContaining("Field 'age' of form 'request': \"151\" must be between 0 and 150");
     }
 
     @Test

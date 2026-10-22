@@ -2,6 +2,7 @@ package de.samply.form.core;
 
 import de.samply.form.core.model.DataType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.EnumMap;
@@ -67,18 +68,55 @@ public final class FormFieldValueValidator {
      * Checked as it is saved (see normalize): e.g. " 1,5" as "1.5".
      */
     public static Optional<String> fetchInvalidValueMessage(DataType dataType, String rawValue) {
+        return fetchInvalidValueMessage(dataType, null, null, rawValue);
+    }
+
+    /**
+     * As above, and for INTEGER and DOUBLE also checks the inclusive bounds
+     * min and max (each optional, null for none; ignored for other data types).
+     */
+    public static Optional<String> fetchInvalidValueMessage(
+            DataType dataType, BigDecimal min, BigDecimal max, String rawValue) {
         Rule rule = dataType == null ? null : RULES.get(dataType);
         if (rule == null || rawValue == null) {
             return Optional.empty();
         }
         String value = canonicalText(dataType, rawValue);
-        return value.isEmpty() || rule.isValid().test(value)
-                ? Optional.empty()
-                : Optional.of("\"" + value + "\" " + rule.message());
+        if (value.isEmpty()) {
+            return Optional.empty();
+        }
+        if (!rule.isValid().test(value)) {
+            return Optional.of("\"" + value + "\" " + rule.message());
+        }
+        return fetchOutOfBoundsMessage(dataType, min, max, value).map(message -> "\"" + value + "\" " + message);
     }
 
     public static boolean isValid(DataType dataType, String value) {
         return fetchInvalidValueMessage(dataType, value).isEmpty();
+    }
+
+    public static boolean isValid(DataType dataType, BigDecimal min, BigDecimal max, String value) {
+        return fetchInvalidValueMessage(dataType, min, max, value).isEmpty();
+    }
+
+    // For a value that already matches its data type.
+    private static Optional<String> fetchOutOfBoundsMessage(
+            DataType dataType, BigDecimal min, BigDecimal max, String value) {
+        if ((dataType != DataType.INTEGER && dataType != DataType.DOUBLE) || (min == null && max == null)) {
+            return Optional.empty();
+        }
+        BigDecimal number = new BigDecimal(value);
+        if ((min == null || number.compareTo(min) >= 0) && (max == null || number.compareTo(max) <= 0)) {
+            return Optional.empty();
+        }
+        if (min != null && max != null) {
+            return Optional.of("must be between " + format(min) + " and " + format(max));
+        }
+        return Optional.of(min != null ? "must be at least " + format(min) : "must be at most " + format(max));
+    }
+
+    private static String format(BigDecimal bound) {
+        return bound.stripTrailingZeros().toPlainString();
     }
 
     /**

@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
+
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
@@ -47,6 +49,13 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
         throw new IllegalArgumentException("Field '" + label + "': " + ProjectManagerConst.FORM_CONFIG_DISPLAY_FORMAT
                 + " " + displayFormat + " is incompatible with " + ProjectManagerConst.FORM_CONFIG_DATA_TYPE + " " + dataType);
     }
+
+    // Optional inclusive bounds for INTEGER and DOUBLE fields (e.g. "min": 0, "max": 150).
+    @JsonProperty(ProjectManagerConst.FORM_CONFIG_MIN)
+    private BigDecimal min;
+
+    @JsonProperty(ProjectManagerConst.FORM_CONFIG_MAX)
+    private BigDecimal max;
 
     // Optional input hint for editable STRING and LONG_STRING fields.
     private String placeholder;
@@ -90,7 +99,7 @@ public class FormFieldConfig extends ContextualDisplayMetadata {
     // shown, like if / else if. Every instance but the last needs a
     // condition; the last one without a condition is the default. All
     // instances describe one stored value, so data_type, field_type,
-    // multiple, block and as_file must be the same in all of them (see
+    // multiple, block, as_file, min and max must be the same in all of them (see
     // FormConfig.validateInstances).
     private String condition;
 

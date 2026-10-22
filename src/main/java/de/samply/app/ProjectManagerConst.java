@@ -367,6 +367,8 @@ public class ProjectManagerConst {
     public final static String FORM_CONFIG_DATA_TYPE = "data_type";
     public final static String FORM_CONFIG_DISPLAY_FORMAT = "display_format";
     public final static String FORM_CONFIG_ALLOWED_VALUES = "allowed_values";
+    public final static String FORM_CONFIG_MIN = "min";
+    public final static String FORM_CONFIG_MAX = "max";
     public final static String FORM_CONFIG_AS_FILE = "as_file";
 
     // Application Properties

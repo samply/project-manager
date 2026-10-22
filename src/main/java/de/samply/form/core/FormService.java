@@ -121,14 +121,16 @@ public class FormService {
 
     // The value as it is saved, e.g. " 5" as "5" (see FormFieldValueValidator.normalize),
     // according to the data type of its field as configured (not as sent by the
-    // client). Throws InvalidFormFieldValueException when it does not match it.
+    // client). Throws InvalidFormFieldValueException when it does not match it
+    // or lies outside the configured min and max.
     private FormField normalizeAndValidateFormFieldValue(FormField formField) {
         FormFieldConfig config = formConfig.fetchFormFieldConfig(formField.title(), formField.label());
         if (config == null) {
             return formField;
         }
         String value = FormFieldValueValidator.normalize(config.getDataType(), formField.value());
-        FormFieldValueValidator.fetchInvalidValueMessage(config.getDataType(), value).ifPresent(message -> {
+        FormFieldValueValidator.fetchInvalidValueMessage(
+                config.getDataType(), config.getMin(), config.getMax(), value).ifPresent(message -> {
             throw new InvalidFormFieldValueException(
                     "Field '" + formField.label() + "' of form '" + formField.title() + "': " + message);
         });
