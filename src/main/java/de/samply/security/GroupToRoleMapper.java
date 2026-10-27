@@ -17,7 +17,7 @@ public class GroupToRoleMapper {
     /**
      * Optional comma-separated identity-provider groups granting RESEARCHER access
      * independently of any registered bridgehead. Empty by default; matching is
-     * exact and case-sensitive, ignoring whitespace and a leading Keycloak slash.
+     * exact and case-sensitive, ignoring whitespace and a leading slash ({@link GroupNames}).
      * This does not grant bridgehead membership or administrative privileges.
      */
     @Value(ProjectManagerConst.RESEARCHER_GROUPS_SV)
@@ -52,13 +52,13 @@ public class GroupToRoleMapper {
     }
 
     public OrganisationRole getRoleFromGroup(String group, UserOrganisationRoles userOrganisationRoles) {
-        group = removeSlashFromStart(group);
+        group = GroupNames.normalize(group);
         OrganisationRole organisationRole = groupToRoleMapCache.get(group);
         if (organisationRole == null) {
-            if (group.startsWith(bridgeheadUserGroupPrefix) && group.endsWith(bridgeheadUserGroupSuffix)) {
+            if (group.startsWith(userPrefix()) && group.endsWith(bridgeheadUserGroupSuffix)) {
                 organisationRole = OrganisationRole.RESEARCHER;
             }
-            if (group.startsWith(bridgeheadAdminGroupPrefix) && group.endsWith(bridgeheadAdminGroupSuffix)) {
+            if (group.startsWith(adminPrefix()) && group.endsWith(bridgeheadAdminGroupSuffix)) {
                 if (organisationRole != null && isAdminOverUser())
                     organisationRole = OrganisationRole.BRIDGEHEAD_ADMIN;
             } else if (projectManagerAdminGroups.contains(group)) {
@@ -71,9 +71,8 @@ public class GroupToRoleMapper {
         organisationRole = addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole, userOrganisationRoles);
         final String normalizedGroup = group;
         boolean globalResearcher = researcherGroups.stream()
-                .map(String::trim)
+                .map(GroupNames::normalize)
                 .filter(value -> !value.isEmpty())
-                .map(this::removeSlashFromStart)
                 .anyMatch(normalizedGroup::equals);
         if (globalResearcher) {
             userOrganisationRoles.addRoleNotDependentOnBridgehead(OrganisationRole.RESEARCHER);
@@ -86,9 +85,8 @@ public class GroupToRoleMapper {
     private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole, UserOrganisationRoles userOrganisationRoles) {
         if (organisationRole != null) {
             String bridgehead = switch (organisationRole) {
-                case RESEARCHER -> extractBridgehead(bridgeheadUserGroupPrefix, bridgeheadUserGroupSuffix, group);
-                case BRIDGEHEAD_ADMIN ->
-                        extractBridgehead(bridgeheadAdminGroupPrefix, bridgeheadAdminGroupSuffix, group);
+                case RESEARCHER -> extractBridgehead(userPrefix(), bridgeheadUserGroupSuffix, group);
+                case BRIDGEHEAD_ADMIN -> extractBridgehead(adminPrefix(), bridgeheadAdminGroupSuffix, group);
                 default -> null;
             };
             if (bridgehead == null) {
@@ -106,14 +104,18 @@ public class GroupToRoleMapper {
         return ((!suffix.isEmpty()) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
     }
 
-    // Important for Keycloak configuration of the groups
-    private String removeSlashFromStart(String group) {
-        return (group.startsWith("/")) ? group.substring(1) : group;
+    // Prefixes are compared like the groups of the token (without a leading slash); suffixes as configured.
+    private String userPrefix() {
+        return GroupNames.normalize(bridgeheadUserGroupPrefix);
+    }
+
+    private String adminPrefix() {
+        return GroupNames.normalize(bridgeheadAdminGroupPrefix);
     }
 
     private boolean isAdminOverUser() { // TODO: This logic works with the current configuration of DKTK. Please change it with something more reasonable. (@The stressed developer)
         if (adminOverUser == null) {
-            adminOverUser = (bridgeheadUserGroupPrefix + bridgeheadUserGroupSuffix).length() < (bridgeheadAdminGroupPrefix + bridgeheadAdminGroupSuffix).length();
+            adminOverUser = (userPrefix() + bridgeheadUserGroupSuffix).length() < (adminPrefix() + bridgeheadAdminGroupSuffix).length();
         }
         return adminOverUser;
     }

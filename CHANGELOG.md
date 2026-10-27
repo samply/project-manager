@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Group settings (`PM_ADMIN_GROUPS`, `RESEARCHER_GROUPS`, `BK_USER_GROUP_PREFIX`, `BK_ADMIN_GROUP_PREFIX`) may be
+  written with or without the leading slash of a Keycloak group path (`/projects/x/admin` = `projects/x/admin`);
+  before, only `RESEARCHER_GROUPS` accepted the slash. Suffixes are compared as configured
 
 ## [1.0.0] - 2026-10-13
 First release. Until now the deployments ran `develop`; this version is what they run today.

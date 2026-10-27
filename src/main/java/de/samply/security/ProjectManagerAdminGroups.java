@@ -12,11 +12,11 @@ public class ProjectManagerAdminGroups {
     private final List<String> groups;
 
     public ProjectManagerAdminGroups(@Value(ProjectManagerConst.PM_ADMIN_GROUPS_SV) List<String> groups) {
-        this.groups = groups;
+        this.groups = groups.stream().map(GroupNames::normalize).filter(group -> !group.isEmpty()).toList();
     }
 
     public boolean contains(String group) {
-        return this.groups.contains(group);
+        return this.groups.contains(GroupNames.normalize(group));
     }
 
 }
