@@ -304,7 +304,7 @@ public class EmailSenderAspect {
             if (projectRole == null) {
                 Set<ProjectRole> rolesNotDependentOnBridgeheads = userProjectRoles.getRolesNotDependentOnBridgeheads();
                 if (!rolesNotDependentOnBridgeheads.isEmpty()) {
-                    projectRole = rolesNotDependentOnBridgeheads.stream().toList().getFirst();
+                    projectRole = ProjectRolesUtils.orderCollectionInDescendentTime(rolesNotDependentOnBridgeheads).getFirst();
                 }
             }
             if (projectRole == null) {

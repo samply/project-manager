@@ -36,6 +36,7 @@ public class DtoProjectBridgeheadService {
                 .orElseGet(projectService::fetchAllUserVisibleProjects).stream()
                 .flatMap(currentProject -> projectBridgeheadService.fetchBridgeheads(currentProject).stream()
                         .filter(bridgehead -> projectBridgeheadService.isProjectManagerAdmin()
+                                || projectBridgeheadService.isCentralApprovalCommittee()
                                 || projectBridgeheadService.isBridgeheadAdminOfProjectBridgehead(bridgehead)
                                 || projectBridgeheadService.isUserOfProjectBridgehead(bridgehead)
                                 || projectBridgeheadService.isUserCreatorOfProject(currentProject)))

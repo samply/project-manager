@@ -76,6 +76,10 @@ public class ProjectBridgeheadService {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
     }
 
+    protected boolean isCentralApprovalCommittee() {
+        return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.CENTRAL_APPROVAL_COMMITTEE);
+    }
+
     protected boolean isBridgeheadAdminOfProjectBridgehead(ProjectBridgehead projectBridgehead) {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.BRIDGEHEAD_ADMIN, Optional.of(projectBridgehead.getBridgehead()));
     }

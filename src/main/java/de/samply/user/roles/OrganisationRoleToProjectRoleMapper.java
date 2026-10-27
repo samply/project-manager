@@ -20,7 +20,8 @@ public class OrganisationRoleToProjectRoleMapper {
 
     private final Map<OrganisationRole, ProjectRole> organisationToProjectRoleMap = Map.of(
             OrganisationRole.PROJECT_MANAGER_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN,
-            OrganisationRole.BRIDGEHEAD_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN
+            OrganisationRole.BRIDGEHEAD_ADMIN, ProjectRole.BRIDGEHEAD_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE, ProjectRole.CENTRAL_APPROVAL_COMMITTEE
     );
 
     public OrganisationRoleToProjectRoleMapper(SessionUser sessionUser,

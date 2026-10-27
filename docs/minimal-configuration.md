@@ -42,6 +42,7 @@ Roles, security, explorer:
 | `BK_ADMIN_GROUP_PREFIX` / `BK_ADMIN_GROUP_SUFFIX` | `DKTK_CCP_` | Login group of a site's admins: prefix + site + suffix |
 | `BK_USER_GROUP_PREFIX` / `BK_USER_GROUP_SUFFIX` | `DKTK_CCP_` / empty | Login group of a site's users |
 | `RESEARCHER_GROUPS` | `app-ccp-explorer-intern` | Login groups that may create requests without being in a site's group |
+| `CENTRAL_APPROVAL_COMMITTEE_GROUPS` | unset (CCE: `/projects/cce/central-committee`) | Login groups of the central approval committee; unset = nobody |
 | `DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64` | - | Key for the encrypted database columns; generate with `GenerateAESKey.ps1`; never change it afterwards |
 | `EXPLORER_URL` | `https://data.dktk.dkfz.de` | The explorer the requests come from (also allowed as origin) |
 | `EXPLORER_REDIRECT_URI_PARAMETER` | `redirect_uri` | Parameter name for the way back to the explorer |

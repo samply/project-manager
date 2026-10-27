@@ -6,9 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Role central approval committee (`CENTRAL_APPROVAL_COMMITTEE_GROUPS`, unset = nobody): sees every request except
+  the drafts of others (read only: form, documents, sites, notifications) and accepts requests in REVIEW and, with the
+  local approval module, in CENTRAL_APPROVAL; like the project manager admin, it can also reactivate an archived
+  request
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 ### Changed
+- Project manager admins see the same requests as the central approval committee: every request except the drafts
+  of others. Before, the drafts of others were only hidden from the default dashboard view (still returned for
+  `projectState=DRAFT`, in notifications and site lists), and the admin's own drafts were not shown at all
+  (`docs/project-visibility.md`)
+- The form (titles, selected forms, form templates, uploaded form files, PDF summary) can be read in CENTRAL_APPROVAL
 - Group settings (`PM_ADMIN_GROUPS`, `RESEARCHER_GROUPS`, `BK_USER_GROUP_PREFIX`, `BK_ADMIN_GROUP_PREFIX`) may be
   written with or without the leading slash of a Keycloak group path (`/projects/x/admin` = `projects/x/admin`);
   before, only `RESEARCHER_GROUPS` accepted the slash. Suffixes are compared as configured

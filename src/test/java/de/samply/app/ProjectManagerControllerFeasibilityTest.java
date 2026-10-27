@@ -52,7 +52,8 @@ class ProjectManagerControllerFeasibilityTest {
         assertThat(endpoint.getAnnotation(GetMapping.class).value())
                 .containsExactly(ProjectManagerConst.FETCH_FEASIBILITY);
         assertThat(endpoint.getAnnotation(RoleConstraints.class).organisationRoles())
-                .containsExactly(OrganisationRole.RESEARCHER, OrganisationRole.PROJECT_MANAGER_ADMIN);
+                .containsExactly(OrganisationRole.RESEARCHER, OrganisationRole.PROJECT_MANAGER_ADMIN,
+                        OrganisationRole.CENTRAL_APPROVAL_COMMITTEE);
         assertThat(endpoint.getAnnotation(StateConstraints.class).projectStates())
                 .containsExactly(ProjectState.DRAFT, ProjectState.REVIEW);
         assertThat(endpoint.getAnnotation(ProjectConstraints.class).queryFormats())
@@ -68,7 +69,8 @@ class ProjectManagerControllerFeasibilityTest {
         assertThat(endpoint.getAnnotation(GetMapping.class).value())
                 .containsExactly(ProjectManagerConst.IS_FEASIBILITY_ENABLED);
         assertThat(endpoint.getAnnotation(RoleConstraints.class).organisationRoles())
-                .containsExactly(OrganisationRole.RESEARCHER, OrganisationRole.PROJECT_MANAGER_ADMIN);
+                .containsExactly(OrganisationRole.RESEARCHER, OrganisationRole.PROJECT_MANAGER_ADMIN,
+                        OrganisationRole.CENTRAL_APPROVAL_COMMITTEE);
         assertThat(endpoint.getAnnotation(FrontendAction.class).action())
                 .isEqualTo(ProjectManagerConst.IS_FEASIBILITY_ENABLED_ACTION);
 

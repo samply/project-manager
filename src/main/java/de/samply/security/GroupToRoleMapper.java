@@ -23,6 +23,10 @@ public class GroupToRoleMapper {
     @Value(ProjectManagerConst.RESEARCHER_GROUPS_SV)
     private List<String> researcherGroups = List.of();
 
+    // Comma-separated groups of the central approval committee (exact match, leading slash ignored); empty = nobody
+    @Value(ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_GROUPS_SV)
+    private List<String> centralApprovalCommitteeGroups = List.of();
+
     @Value(ProjectManagerConst.BK_USER_GROUP_PREFIX_SV)
     private String bridgeheadUserGroupPrefix;
 
@@ -63,6 +67,8 @@ public class GroupToRoleMapper {
                     organisationRole = OrganisationRole.BRIDGEHEAD_ADMIN;
             } else if (projectManagerAdminGroups.contains(group)) {
                 organisationRole = OrganisationRole.PROJECT_MANAGER_ADMIN;
+            } else if (centralApprovalCommitteeGroups.stream().map(GroupNames::normalize).anyMatch(group::equals)) {
+                organisationRole = OrganisationRole.CENTRAL_APPROVAL_COMMITTEE;
             }
             if (organisationRole != null) {
                 groupToRoleMapCache.put(group, organisationRole);
