@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
+  classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 ### Changed
 - Group settings (`PM_ADMIN_GROUPS`, `RESEARCHER_GROUPS`, `BK_USER_GROUP_PREFIX`, `BK_ADMIN_GROUP_PREFIX`) may be
   written with or without the leading slash of a Keycloak group path (`/projects/x/admin` = `projects/x/admin`);
