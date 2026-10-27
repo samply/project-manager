@@ -62,7 +62,7 @@ public class NotificationService {
         List<Project> projects = project.map(List::of).orElseGet(allUserVisibleProjectFetcher);
         List<String> bridgeheads = fetchUserVisibleBridgeheads(bridgehead.map(ProjectBridgehead::getBridgehead));
         projects.forEach(tempProject -> {
-            if (bridgeheads.isEmpty() && sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
+            if (bridgeheads.isEmpty() && seesAllNotifications()) {
                 result.addAll(notificationRepository.findByProjectOrderByTimestampDesc(tempProject));
             } else {
                 bridgeheads.forEach(tempBridgehead -> result.addAll(
@@ -72,8 +72,14 @@ public class NotificationService {
         return result;
     }
 
+    // Project manager admins and the central approval committee see every notification of a project
+    private boolean seesAllNotifications() {
+        return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)
+                || sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.CENTRAL_APPROVAL_COMMITTEE);
+    }
+
     private List<String> fetchUserVisibleBridgeheads(Optional<String> requestedBridgehead) {
-        if (sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
+        if (seesAllNotifications()) {
             return requestedBridgehead.map(List::of).orElseGet(ArrayList::new);
         } else {
             return requestedBridgehead.<List<String>>map(s -> (sessionUser.getBridgeheads().contains(s)) ?

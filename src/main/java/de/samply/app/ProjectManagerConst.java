@@ -446,6 +446,7 @@ public class ProjectManagerConst {
     // Environment Variables
     public final static String PM_ADMIN_GROUPS = "PM_ADMIN_GROUPS";
     public final static String RESEARCHER_GROUPS = "RESEARCHER_GROUPS";
+    public final static String CENTRAL_APPROVAL_COMMITTEE_GROUPS = "CENTRAL_APPROVAL_COMMITTEE_GROUPS";
     public final static String BK_USER_GROUP_PREFIX = "BK_USER_GROUP_PREFIX";
     public final static String BK_USER_GROUP_SUFFIX = "BK_USER_GROUP_SUFFIX";
     public final static String BK_ADMIN_GROUP_PREFIX = "BK_ADMIN_GROUP_PREFIX";
@@ -570,6 +571,7 @@ public class ProjectManagerConst {
     public final static String BOTTOM_SV = "}";
     public final static String PM_ADMIN_GROUPS_SV = HEAD_SV + PM_ADMIN_GROUPS + BOTTOM_SV;
     public final static String RESEARCHER_GROUPS_SV = HEAD_SV + RESEARCHER_GROUPS + ":" + BOTTOM_SV;
+    public final static String CENTRAL_APPROVAL_COMMITTEE_GROUPS_SV = HEAD_SV + CENTRAL_APPROVAL_COMMITTEE_GROUPS + ":" + BOTTOM_SV;
     public final static String JWT_GROUPS_CLAIM_SV = HEAD_SV + JWT_GROUPS_CLAIM + ":groups" + BOTTOM_SV;
     public final static String JWT_EMAIL_CLAIM_SV = HEAD_SV + JWT_EMAIL_CLAIM + ":email" + BOTTOM_SV;
     public final static String JWT_FIRST_NAME_CLAIM_SV = HEAD_SV + JWT_FIRST_NAME_CLAIM + ":given_name" + BOTTOM_SV;

@@ -15,7 +15,8 @@ public class ProjectRolesUtils {
                     ProjectRole.DEVELOPER, 2,
                     ProjectRole.CREATOR, 3,
                     ProjectRole.BRIDGEHEAD_ADMIN, 4,
-                    ProjectRole.PROJECT_MANAGER_ADMIN, 5
+                    ProjectRole.PROJECT_MANAGER_ADMIN, 5,
+                    ProjectRole.CENTRAL_APPROVAL_COMMITTEE, 6
             );
 
     // Compare two ProjectRoles by their defined order
