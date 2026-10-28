@@ -1008,18 +1008,23 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectEventService.startLocalApprovalStage(project));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.CENTRAL_APPROVAL})
+    // In CENTRAL_APPROVAL the request goes back to REVIEW; in REVIEW the creator can already edit it
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL})
     @EmailSender(templateType = EmailTemplateType.PROJECT_BACK_TO_REVIEW, recipients = {
-            EmailRecipientType.CREATOR})
+            EmailRecipientType.CREATOR, EmailRecipientType.PROJECT_MANAGER_ADMIN,
+            EmailRecipientType.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
-    @FrontendAction(action = ProjectManagerConst.BACK_TO_REVIEW_ACTION)
+    @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_APPROVAL_ACTION)
     @CacheCategory(CacheResource.MUTATION_RESPONSES)
-    @PutMapping(value = ProjectManagerConst.BACK_TO_REVIEW)
-    public ResponseEntity backToReview(
-            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
+    @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_APPROVAL)
+    public ResponseEntity requestChangesInApproval(
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            // Sent per email and stored as a notification
+            @SuppressWarnings("unused") @NotEmpty @Message @RequestVariable(name = ProjectManagerConst.MESSAGE) String message
     ) {
-        return convertToResponseEntity(() -> projectEventService.backToReview(project));
+        return convertToResponseEntity(() -> projectEventService.requestChangesInApproval(project));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -1070,6 +1075,8 @@ public class ProjectManagerController {
             EmailRecipientType.CREATOR})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT_ACCEPTED, recipients = {
             EmailRecipientType.ALL_BRIDGEHEAD_ADMINS})
+    @EmailSender(templateType = EmailTemplateType.NEW_PROJECT_ACCEPTED, recipients = {
+            EmailRecipientType.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ACTION)
     @CacheCategory(CacheResource.MUTATION_RESPONSES)

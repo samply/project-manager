@@ -226,6 +226,8 @@ public class EmailSenderAspect {
                             fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(project);
                     case PROJECT_MANAGER_ADMIN ->
                             fetchEmailRecipientsForProjectManagerAdmin(project, projectBridgehead);
+                    case CENTRAL_APPROVAL_COMMITTEE ->
+                            fetchEmailRecipientsForCentralApprovalCommittee(project, projectBridgehead);
                     case PROJECT_ALL -> fetchEmailRecipientsForAllProjectUsers(project, projectBridgehead);
                 }));
         if (message.isPresent()) {
@@ -412,6 +414,13 @@ public class EmailSenderAspect {
         Set<EmailRecipient> result = new HashSet<>();
         userService.fetchAllProjectManagerAdmins().forEach(projectManagerAdminUser ->
                 result.add(new EmailRecipient(projectManagerAdminUser.getEmail(), project, bridgehead, ProjectRole.PROJECT_MANAGER_ADMIN)));
+        return result;
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForCentralApprovalCommittee(Optional<Project> project, Optional<ProjectBridgehead> bridgehead) {
+        Set<EmailRecipient> result = new HashSet<>();
+        userService.fetchAllCentralApprovalCommitteeUsers().forEach(committeeUser ->
+                result.add(new EmailRecipient(committeeUser.getEmail(), project, bridgehead, ProjectRole.CENTRAL_APPROVAL_COMMITTEE)));
         return result;
     }
 

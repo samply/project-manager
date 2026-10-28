@@ -17,7 +17,7 @@ public interface ProjectEventActions {
 
     void startLocalApprovalStage(Project project) throws ProjectEventActionsException;
 
-    void backToReview(Project project) throws ProjectEventActionsException;
+    void requestChangesInApproval(Project project) throws ProjectEventActionsException;
 
     void startDevelopStage(Project project) throws ProjectEventActionsException;
 

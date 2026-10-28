@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   the drafts of others (read only: form, documents, sites, notifications) and accepts requests in REVIEW and, with the
   local approval module, in CENTRAL_APPROVAL; like the project manager admin, it can also reactivate an archived
   request
+- Request changes in the approval (`/project/approval/request-changes`, action `REQUEST_CHANGES_IN_APPROVAL`, message
+  required), for project manager admins and the committee: in CENTRAL_APPROVAL the request goes back to REVIEW, in
+  REVIEW it stays (the creator can already edit it). Email `PROJECT_BACK_TO_REVIEW` with the message to the creator,
+  the project manager admins and the committee
+- Emails to the central approval committee (recipient `CENTRAL_APPROVAL_COMMITTEE`, template role of the same name):
+  addresses from the new table `central_approval_committee_user`, filled at login; `NEW_PROJECT_ACCEPTED` now also
+  goes to the committee
+- The message of every action with a message (reject, request changes, ...) is stored as a notification of the
+  request (`OperationType.MESSAGE`, author = the acting user), also with emails disabled; before it only went into
+  the email
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 ### Changed
@@ -21,6 +31,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Group settings (`PM_ADMIN_GROUPS`, `RESEARCHER_GROUPS`, `BK_USER_GROUP_PREFIX`, `BK_ADMIN_GROUP_PREFIX`) may be
   written with or without the leading slash of a Keycloak group path (`/projects/x/admin` = `projects/x/admin`);
   before, only `RESEARCHER_GROUPS` accepted the slash. Suffixes are compared as configured
+### Removed
+- `/project/back-to-review` (action `BACK_TO_REVIEW`): replaced by request changes in the approval, which needs a
+  message
 
 ## [1.0.0] - 2026-10-13
 First release. Until now the deployments ran `develop`; this version is what they run today.
