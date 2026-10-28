@@ -1,4 +1,4 @@
-package de.samply.app;
+package de.samply.app.controller;
 
 import de.samply.batch.ActionsBatchRequest;
 import de.samply.batch.ActionsBatchService;
@@ -18,12 +18,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProjectManagerControllerBatchTest {
+class ApplicationControllerBatchTest {
 
     @Mock
     ActionsBatchService actionsBatchService;
     @InjectMocks
-    ProjectManagerController controller;
+    ApplicationController controller;
 
     @Test
     void refusesABatchWithTooManyEntriesBeforeRunningAny() {

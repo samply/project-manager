@@ -1,4 +1,4 @@
-package de.samply.app;
+package de.samply.app.controller;
 
 import de.samply.cache.CacheConfiguration;
 import de.samply.cache.CacheResource;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProjectManagerControllerDisplayFormatsTest {
+class ApplicationControllerDisplayFormatsTest {
 
     @Mock
     private DisplayFormatService displayFormatService;
@@ -31,7 +31,7 @@ class ProjectManagerControllerDisplayFormatsTest {
     private CacheConfiguration cacheConfiguration;
 
     @InjectMocks
-    private ProjectManagerController controller;
+    private ApplicationController controller;
 
     @Test
     void exposesDefaultFormatKeysResolvedPatternsAndCachePolicy() {

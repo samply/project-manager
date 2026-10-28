@@ -15,7 +15,7 @@ On top of that, the batch limits what it accepts and how much it runs at once (2
 | **Only read actions** | An entry must be a GET endpoint with a `@FrontendAction`. Any other action is answered with 405, unknown ones with 404, without calling anything. GET endpoints do not write (audited 2026-10-01). | `ActionsBatchService.runEntry` |
 | **No nested batches** | The batch endpoint is a POST, so it is never a read action: an entry naming it is refused with 405. | same; test `refusesANestedBatch` |
 | **Only JSON answers** | A batch answers only JSON. An entry whose endpoint answers with a file (a `Resource`, `byte[]` or stream, or a content type other than JSON or text) is refused with 406: no file content reaches the batch. The endpoint has run by then (a download has read its file) - the same work the user may cause by calling it directly, bounded by the size of a batch and the thread pool. | `ActionsBatchService.toResult` / `isBinary`; test `refusesWhatIsNotAJsonReadAction` |
-| **Size of a batch** | A batch with more than `ACTIONS_BATCH_MAX_ENTRIES` entries (default 100) is refused as a whole with 413 before any entry runs. The frontend sends a few dozen at most (opening a request: about 20 entries in 4 batches). | `ProjectManagerController.fetchActionsBatch`; test `refusesABatchWithTooManyEntriesBeforeRunningAny` |
+| **Size of a batch** | A batch with more than `ACTIONS_BATCH_MAX_ENTRIES` entries (default 100) is refused as a whole with 413 before any entry runs. The frontend sends a few dozen at most (opening a request: about 20 entries in 4 batches). | `ApplicationController.fetchActionsBatch`; test `refusesABatchWithTooManyEntriesBeforeRunningAny` |
 | **Load** | All batches share one thread pool (`ACTIONS_BATCH_CORE_POOL_SIZE` / `_MAX_POOL_SIZE`, 10 by default): at most that many entries run at once, so batches take at most half of the 20 database connections. When the pool and its queue are full, an entry runs on the thread of its own batch request instead of failing, so overload slows the caller down rather than breaking the page. | `ProjectManagerAsyncConfiguration`; `actions-batch-concurrency.md` |
 | **Entries outliving the request** | The batch waits for all its entries before it answers, so no entry works on a request object the server has already reused. | `actions-batch-concurrency.md` |
 | **Hanging entries** | The waits that can block are bounded below the batch: getting a database connection (30 s, `hikari.connection-timeout`) and calls to other services (the `WebClientFactory` timeouts). | |
@@ -143,7 +143,7 @@ Also tested: a refused entry has no response; entries running in parallel each s
 the user's roles are read from the session in the worker threads; a download is refused (406); a nested batch is
 refused; the worker thread is clean after an entry whose request-scoped bean fails on destruction.
 
-### Automated: `ProjectManagerControllerBatchTest`
+### Automated: `ApplicationControllerBatchTest`
 
 A batch with more entries than allowed is refused with 413 before any entry runs.
 

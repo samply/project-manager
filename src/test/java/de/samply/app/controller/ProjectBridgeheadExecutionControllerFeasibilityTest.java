@@ -1,10 +1,11 @@
-package de.samply.app;
+package de.samply.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.samply.annotations.FrontendAction;
 import de.samply.annotations.ProjectConstraints;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
+import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.feasibility.FeasibilityService;
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProjectManagerControllerFeasibilityTest {
+class ProjectBridgeheadExecutionControllerFeasibilityTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -42,11 +43,11 @@ class ProjectManagerControllerFeasibilityTest {
     private OptionalModules optionalModules;
 
     @InjectMocks
-    private ProjectManagerController controller;
+    private ProjectBridgeheadExecutionController controller;
 
     @Test
     void exposesFeasibilityWithRequiredConstraints() throws Exception {
-        Method endpoint = ProjectManagerController.class.getDeclaredMethod(
+        Method endpoint = ProjectBridgeheadExecutionController.class.getDeclaredMethod(
                 "fetchFeasibility", Project.class, ProjectBridgehead.class);
 
         assertThat(endpoint.getAnnotation(GetMapping.class).value())
@@ -63,7 +64,7 @@ class ProjectManagerControllerFeasibilityTest {
 
     @Test
     void exposesWhetherFeasibilityIsEnabled() throws Exception {
-        Method endpoint = ProjectManagerController.class.getDeclaredMethod("isFeasibilityEnabled");
+        Method endpoint = ProjectBridgeheadExecutionController.class.getDeclaredMethod("isFeasibilityEnabled");
 
         assertThat(endpoint.getAnnotation(GetMapping.class).value())
                 .containsExactly(ProjectManagerConst.IS_FEASIBILITY_ENABLED);

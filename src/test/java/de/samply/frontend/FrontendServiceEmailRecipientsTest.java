@@ -1,17 +1,16 @@
 package de.samply.frontend;
 
-import de.samply.app.ProjectManagerController;
+import de.samply.app.controller.ProjectManagerControllers;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FrontendServiceEmailRecipientsTest {
 
     private static Method controllerMethod(String name) {
-        return Arrays.stream(ProjectManagerController.class.getDeclaredMethods())
+        return ProjectManagerControllers.fetchDeclaredMethods()
                 .filter(method -> method.getName().equals(name))
                 .findFirst()
                 .orElseThrow();

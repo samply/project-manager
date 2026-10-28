@@ -1,4 +1,4 @@
-package de.samply.app;
+package de.samply.app.controller;
 
 import de.samply.annotations.RequiresModule;
 import de.samply.modules.OptionalModule;
@@ -8,16 +8,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.annotation.Profile;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProjectManagerControllerModulesTest {
+class ProjectManagerControllersModulesTest {
 
     // The profile that was meant to disable it had no effect on a controller method; the module does
     @Test
     void executingAQueryAtABridgeheadNeedsTheExternalExecutionModule() {
-        Method endpoint = Arrays.stream(ProjectManagerController.class.getDeclaredMethods())
+        Method endpoint = ProjectManagerControllers.fetchDeclaredMethods()
                 .filter(method -> method.getName().equals("saveAndExecuteQueryInBridgehead"))
                 .findFirst().orElseThrow();
 
@@ -42,7 +41,7 @@ class ProjectManagerControllerModulesTest {
     }
 
     private Method endpoint(String name) {
-        return Arrays.stream(ProjectManagerController.class.getDeclaredMethods())
+        return ProjectManagerControllers.fetchDeclaredMethods()
                 .filter(method -> method.getName().equals(name))
                 .findFirst().orElseThrow();
     }

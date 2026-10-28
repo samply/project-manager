@@ -1,7 +1,8 @@
 package de.samply.user.roles;
 
 import de.samply.annotations.RoleConstraints;
-import de.samply.app.ProjectManagerController;
+import de.samply.app.controller.AbstractController;
+import de.samply.app.controller.ProjectManagerControllers;
 import de.samply.utils.AspectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -18,7 +19,7 @@ public class RolesExtractor {
     public static Map<String, MethodRoles> extractPathRolesMap() {
         Map<String, MethodRoles> result = new HashMap<>();
         String rootPath = getRootPath();
-        Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
+        ProjectManagerControllers.fetchDeclaredMethods().forEach(method -> {
             RoleConstraints roleConstraints = method.getAnnotation(RoleConstraints.class);
             if (roleConstraints != null && roleConstraints.organisationRoles().length > 0) {
                 fetchPath(method).ifPresent(path -> AspectUtils.fetchHttpMethod(method).ifPresent(httpMethod -> result.put(rootPath + path,
@@ -60,7 +61,7 @@ public class RolesExtractor {
     }
 
     public static String getRootPath() {
-        Optional<String> path = fetchPath(ProjectManagerController.class.getAnnotation(RequestMapping.class));
+        Optional<String> path = fetchPath(AbstractController.class.getAnnotation(RequestMapping.class));
         return path.orElse("");
     }
 

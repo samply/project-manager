@@ -1,8 +1,9 @@
-package de.samply.app;
+package de.samply.app.controller;
 
 import de.samply.annotations.FrontendAction;
 import de.samply.annotations.RoleConstraints;
 import de.samply.annotations.StateConstraints;
+import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import org.junit.jupiter.api.Test;
@@ -12,14 +13,14 @@ import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProjectManagerControllerFormLayoutsTest {
+class ProjectFormControllerFormLayoutsTest {
 
     @Test
     void exposesLayoutsWithTheSameRoleAndStateRestrictionsAsFormFields() throws Exception {
-        Method formFieldsEndpoint = ProjectManagerController.class.getDeclaredMethod(
+        Method formFieldsEndpoint = ProjectFormController.class.getDeclaredMethod(
                 "fetchProjectFormFields",
                 Project.class, ProjectBridgehead.class, String.class, String.class);
-        Method formLayoutsEndpoint = ProjectManagerController.class.getDeclaredMethod(
+        Method formLayoutsEndpoint = ProjectFormController.class.getDeclaredMethod(
                 "fetchProjectFormLayouts",
                 Project.class, ProjectBridgehead.class, String.class);
 

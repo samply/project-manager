@@ -1,4 +1,4 @@
-package de.samply.app;
+package de.samply.app.controller;
 
 import de.samply.annotations.FrontendAction;
 import de.samply.db.model.Project;
@@ -10,11 +10,11 @@ import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProjectManagerControllerFormTitleOrderTest {
+class ProjectFormControllerFormTitleOrderTest {
 
     @Test
     void exposesConfiguredFormTitleOrderForTheFrontend() throws Exception {
-        Method endpoint = ProjectManagerController.class.getDeclaredMethod(
+        Method endpoint = ProjectFormController.class.getDeclaredMethod(
                 "fetchProjectFormTitleCanonicalOrder",
                 Project.class, ProjectBridgehead.class, String.class);
 

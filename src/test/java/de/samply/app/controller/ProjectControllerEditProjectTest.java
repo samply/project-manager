@@ -1,5 +1,6 @@
-package de.samply.app;
+package de.samply.app.controller;
 
+import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.Project;
 import de.samply.frontend.FrontendService;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProjectManagerControllerEditProjectTest {
+class ProjectControllerEditProjectTest {
 
     @Mock
     private FrontendService frontendService;
@@ -32,7 +33,7 @@ class ProjectManagerControllerEditProjectTest {
     @Mock
     private BridgeheadsConfiguration bridgeheadsConfiguration;
     @InjectMocks
-    private ProjectManagerController controller;
+    private ProjectController controller;
 
     @Test
     void updatesBridgeheadsWhenOnlyExplorerIdsAreProvided() {

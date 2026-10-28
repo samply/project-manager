@@ -1,12 +1,11 @@
 package de.samply.cache;
 
-import de.samply.app.ProjectManagerController;
 import de.samply.app.ProjectManagerWebConfig;
+import de.samply.app.controller.ProjectManagerControllers;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,13 +18,13 @@ class CacheCategoryValidatorTest {
     void everyControllerEndpointHasCacheCategory() {
         List<String> violations = new ArrayList<>();
 
-        for (Method method : ProjectManagerController.class.getDeclaredMethods()) {
+        ProjectManagerControllers.fetchDeclaredMethods().forEach(method -> {
             if (AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class) != null
                     && AnnotatedElementUtils.findMergedAnnotation(method, CacheCategory.class) == null) {
-                violations.add(ProjectManagerController.class.getSimpleName() + "#" + method.getName()
+                violations.add(method.getDeclaringClass().getSimpleName() + "#" + method.getName()
                         + ": missing @CacheCategory");
             }
-        }
+        });
 
         CacheCategory assetsCategory = AnnotatedElementUtils.findMergedAnnotation(
                 ProjectManagerWebConfig.class, CacheCategory.class);

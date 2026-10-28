@@ -3,7 +3,7 @@ package de.samply.frontend;
 import de.samply.annotations.*;
 import de.samply.aop.ConstraintsService;
 import de.samply.app.ProjectManagerConst;
-import de.samply.app.ProjectManagerController;
+import de.samply.app.controller.ProjectManagerControllers;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -61,7 +61,7 @@ public class FrontendService {
         String rootPath = RolesExtractor.getRootPath();
         String tempLanguage = language.orElse(defaultLanguage);
         Optional<ProjectBridgeheadUser> projectBridgeheadUser = fetchProjectBridgeheadUser(bridgehead);
-        Arrays.stream(ProjectManagerController.class.getDeclaredMethods()).forEach(method -> {
+        ProjectManagerControllers.fetchDeclaredMethods().forEach(method -> {
             FrontendSiteModules frontendSiteModules = method.getAnnotation(FrontendSiteModules.class);
             FrontendSiteModule frontendSiteModule = method.getAnnotation(FrontendSiteModule.class);
             FrontendAction frontendAction = method.getAnnotation((FrontendAction.class));
