@@ -40,6 +40,8 @@ public class BridgeheadsConfiguration {
         private List<Contact> contacts = new ArrayList<>();
         // People who run the site's local approval; they have no access to the project manager, they get emails
         private List<Contact> approvalContacts = new ArrayList<>();
+        // Site admins always in the email list of the site (comma-separated), also before their first login
+        private List<String> adminEmails = new ArrayList<>();
     }
 
     @Data

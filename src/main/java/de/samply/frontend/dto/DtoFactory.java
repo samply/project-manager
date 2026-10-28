@@ -222,7 +222,8 @@ public class DtoFactory {
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
                 projectBridgeheadUser.getProjectRole(),
-                projectBridgeheadUser.getProjectState()
+                projectBridgeheadUser.getProjectState(),
+                null
         );
     }
 
@@ -234,6 +235,7 @@ public class DtoFactory {
                 user.map(de.samply.db.model.User::getLastName).orElse(null),
                 projectBridgeheadUser.getProjectBridgehead().getBridgehead(),
                 fetchHumanReadableBridgehead(projectBridgeheadUser.getProjectBridgehead()),
+                null,
                 null,
                 null
         );
@@ -274,7 +276,7 @@ public class DtoFactory {
     }
 
     public static User convert(de.samply.db.model.User user) {
-        return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null);
+        return new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null, null);
     }
 
     public FormField convert(@NotNull String title, Optional<String> label, Optional<Integer> blockInstance, Optional<Integer> fieldInstance, Optional<String> value, Optional<String> language) {

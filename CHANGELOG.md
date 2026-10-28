@@ -23,7 +23,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Configuration page endpoints to list, add and remove project manager admins (`/project-manager-admins`), committee
   members (`/central-approval-committee-members`) and site admins (`/bridgehead-admins`), project manager admin only.
   The lists only decide who gets emails (also before the first login); permissions still come from the groups, and
-  the login still adds (`docs/user-lists.md`)
+  the login still adds (`docs/user-lists.md`); the registered sites (`FETCH_ALL_REGISTERED_BRIDGEHEADS`) are also
+  offered on the configuration page, to choose the site of a new site admin
+- `PROJECT_MANAGER_ADMIN_EMAILS`, `CENTRAL_APPROVAL_COMMITTEE_EMAILS` and `BRIDGEHEADS_CONFIG_<SITE>_ADMINEMAILS`
+  (comma-separated): addresses put into these email lists at every start, so that they get emails also before their
+  first login; they cannot be removed in the configuration page (409), only in the configuration. A malformed address
+  stops the start. These lists give emails only: the role itself still needs the group in the identity provider
+- The email lists of project manager admins, committee members and site admins store addresses in lower case
+  (migration `V005` converts the existing entries and removes resulting duplicates); the endpoints' email check and
+  the lists share `EmailUtils`
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 ### Changed

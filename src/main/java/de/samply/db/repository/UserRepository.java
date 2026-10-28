@@ -12,6 +12,8 @@ public interface UserRepository extends JpaRepository<User, Long>
 {
     Optional<User> findByEmail(String email);
 
+    Optional<User> findFirstByEmailIgnoreCase(String email);
+
     List<User> findByIsInMailingBlackListIsTrue();
 
     List<User> findByEmailContainingIgnoreCaseAndIsInMailingBlackListIsFalse(String emailFragment);

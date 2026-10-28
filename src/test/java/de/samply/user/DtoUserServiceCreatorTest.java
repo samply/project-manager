@@ -25,7 +25,7 @@ class DtoUserServiceCreatorTest {
         when(userService.fetchUser("a@example.org")).thenReturn(Optional.empty());
 
         Set<de.samply.frontend.dto.User> creators =
-                new DtoUserService(userService, mock(DtoFactory.class), mock(BridgeheadsConfiguration.class)).fetchProjectCreators(Optional.empty());
+                new DtoUserService(userService, mock(DtoFactory.class), mock(BridgeheadsConfiguration.class), mock(ConfiguredUserLists.class)).fetchProjectCreators(Optional.empty());
 
         assertThat(creators).extracting(de.samply.frontend.dto.User::email)
                 .containsExactly("a@example.org", "z@example.org");

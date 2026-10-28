@@ -2,8 +2,13 @@
 
 **Status:** Decision (2026-10-27, D12 of the central committee plan)
 **Decision:** The project manager admin can add and remove project manager admins, committee members and site admins
-by hand in the configuration page. These lists only decide **who gets emails**. Permissions always come from the
-identity provider's groups.
+by hand in the configuration page, and the configuration can name addresses that are always in the lists. These lists
+only decide **who gets emails**. Permissions always come from the identity provider's groups.
+
+> **Adding someone to a list is not enough to give them the role.** The lists (configuration page or configuration)
+> only decide who gets the emails of a role. To act as project manager admin, committee member or site admin, the
+> person must also be in the role's group in the identity provider (e.g. Keycloak via mcauth, Authentik). Without
+> the group they get the emails but cannot log in with the role. The configuration page says this next to the lists.
 
 ## Why the lists exist
 
@@ -49,6 +54,34 @@ What adding and removing mean:
 No other table references these lists, so removing an entry cannot break anything else. The notifications stay
 intact: they store the acting person's address as plain text and look the name up in the user table, which a removal
 never touches.
+
+## Addresses in the configuration
+
+Some people must get the emails of their role in any case, also if they never log in. Their addresses can be set in
+the configuration:
+
+| Variable | List |
+|---|---|
+| `PROJECT_MANAGER_ADMIN_EMAILS=a@example.org,b@example.org` | project manager admins |
+| `CENTRAL_APPROVAL_COMMITTEE_EMAILS=c@example.org` | committee members |
+| `BRIDGEHEADS_CONFIG_<SITE>_ADMINEMAILS=d@example.org,e@example.org` | site admins of that site (part of the site's configuration, like its contacts) |
+
+- **At every start** these addresses are put into their lists (`ConfiguredUserListsImporter`). It only adds: entries
+  from logins or added by hand stay.
+- **A malformed address stops the start**, with an error naming the variable and the address: a typo would otherwise
+  mean that someone silently gets no emails.
+- **They cannot be removed in the configuration page**: the lists mark them (`configured: true`), and the endpoint
+  refuses to remove them (409, naming the variable), since the next start would add them again. Remove them in the
+  configuration.
+- Like every entry, they give **emails, not permissions**: to act in the project manager, the person needs the group.
+
+## Addresses are stored in lower case
+
+The login, the configuration and the configuration page may write the same address differently
+(`Zoe@Example.org`, `zoe@example.org`). The three lists store every address trimmed and in lower case (`EmailUtils`),
+whoever adds it, and compare in that form, so one person is one entry. Migration `V005` converted the existing
+entries and removed the duplicates this created (keeping the oldest entry, so a site's first admin stays its contact).
+The user table keeps the address as the login wrote it; the lists look the name up there without case.
 
 ## Why no synchronization with the identity provider
 

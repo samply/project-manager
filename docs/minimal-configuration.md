@@ -55,6 +55,10 @@ plain names (`DKTK_CCP_<site>`). The group settings and prefixes may therefore b
 
 - **Sites**: `BRIDGEHEADS_CONFIG_<SITE>_...` (human-readable name, affiliation, contacts, the Beam IDs for the modules
   that talk to the site). Without sites no request can be made.
+- **Email lists of the roles** (optional): `PROJECT_MANAGER_ADMIN_EMAILS`, `CENTRAL_APPROVAL_COMMITTEE_EMAILS`
+  (comma-separated addresses) and `BRIDGEHEADS_CONFIG_<SITE>_ADMINEMAILS` (per site): these people get the emails of
+  their role also before their first login, and cannot be removed in the configuration page
+  ([user-lists.md](user-lists.md)).
 - **Frontend**: `FRONTEND_BASEURL` and the `FRONTEND_SITES_*` paths (links in emails and notifications);
   `FRONTEND_VARIABLES_*` configure the UI.
 - **Email texts**: `EMAIL_CONTEXT_*` (signature, support information), used by the templates.
