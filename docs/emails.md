@@ -52,6 +52,14 @@ notification). A deployment chooses its emails by configuring their templates. S
   `_EMAILADDRESS`. They are not users: their template role is `BRIDGEHEAD_APPROVAL_CONTACT` (only for emails, never
   for permissions) and `<email-to-name/>` is the configured name in the default language.
 
+### One person, several roles
+
+A user can be a recipient several times in one action (e.g. project manager admin and committee member, or creator
+and site admin). Each role can have its own template, so one action can mean different texts for the same person:
+those are all sent. Only emails that would be identical are merged: same address, same type, same template file,
+same subject and same site. Of those, one is sent (with the first role in time order, `ProjectRolesUtils`). This
+applies across all `@EmailSender` annotations of the endpoint.
+
 ## Emails by project state
 
 `@EmailSender(projectStates = {...})` sends the email only when the request is in one of these states after the call.
