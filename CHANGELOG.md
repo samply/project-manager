@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Two bridgeheads with the same explorer, focus or token manager id stop the start; before, the last one silently
   won and the other was unreachable
+- Someone who is a recipient in several roles of one action (e.g. project manager admin and committee member) gets
+  an identical email only once: emails to the same address are merged when they use the same type, template file,
+  subject and site; different templates are still all sent (`docs/emails.md`)
 - Project manager admins see the same requests as the central approval committee: every request except the drafts
   of others. Before, the drafts of others were only hidden from the default dashboard view (still returned for
   `projectState=DRAFT`, in notifications and site lists), and the admin's own drafts were not shown at all
