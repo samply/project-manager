@@ -11,4 +11,6 @@ public interface ProjectManagerAdminUserRepository extends JpaRepository<Project
 
     Optional<ProjectManagerAdminUser> findFirstByEmail(String email);
 
+    void deleteByEmail(String email);
+
 }

@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The message of every action with a message (reject, request changes, ...) is stored as a notification of the
   request (`OperationType.MESSAGE`, author = the acting user), also with emails disabled; before it only went into
   the email
+- Configuration page endpoints to list, add and remove project manager admins (`/project-manager-admins`), committee
+  members (`/central-approval-committee-members`) and site admins (`/bridgehead-admins`), project manager admin only.
+  The lists only decide who gets emails (also before the first login); permissions still come from the groups, and
+  the login still adds (`docs/user-lists.md`)
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 ### Changed

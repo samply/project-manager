@@ -138,6 +138,15 @@ public class ProjectManagerConst {
     public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST_ACTION = "REMOVE_USER_FROM_MAILING_BLACK_LIST";
     public final static String FETCH_MAILING_BLACK_LIST_ACTION = "FETCH_MAILING_BLACK_LIST";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST_ACTION = "FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST";
+    public final static String FETCH_PROJECT_MANAGER_ADMINS_ACTION = "FETCH_PROJECT_MANAGER_ADMINS";
+    public final static String ADD_PROJECT_MANAGER_ADMIN_ACTION = "ADD_PROJECT_MANAGER_ADMIN";
+    public final static String REMOVE_PROJECT_MANAGER_ADMIN_ACTION = "REMOVE_PROJECT_MANAGER_ADMIN";
+    public final static String FETCH_CENTRAL_APPROVAL_COMMITTEE_MEMBERS_ACTION = "FETCH_CENTRAL_APPROVAL_COMMITTEE_MEMBERS";
+    public final static String ADD_CENTRAL_APPROVAL_COMMITTEE_MEMBER_ACTION = "ADD_CENTRAL_APPROVAL_COMMITTEE_MEMBER";
+    public final static String REMOVE_CENTRAL_APPROVAL_COMMITTEE_MEMBER_ACTION = "REMOVE_CENTRAL_APPROVAL_COMMITTEE_MEMBER";
+    public final static String FETCH_BRIDGEHEAD_ADMINS_ACTION = "FETCH_BRIDGEHEAD_ADMINS";
+    public final static String ADD_BRIDGEHEAD_ADMIN_ACTION = "ADD_BRIDGEHEAD_ADMIN";
+    public final static String REMOVE_BRIDGEHEAD_ADMIN_ACTION = "REMOVE_BRIDGEHEAD_ADMIN";
     public final static String ADD_PROJECT_BRIDGEHEAD_RESULTS_URL_ACTION = "ADD_PROJECT_BRIDGEHEAD_RESULTS_URL";
     public final static String ADD_PROJECT_RESULTS_URL_ACTION = "ADD_PROJECT_RESULTS_URL";
     public final static String ACCEPT_PROJECT_RESULTS_URL_ACTION = "ACCEPT_PROJECT_RESULTS_URL";
@@ -197,6 +206,10 @@ public class ProjectManagerConst {
     public final static String REMOVE_USER_FROM_MAILING_BLACK_LIST = "/mailing-black-list";
     public final static String FETCH_MAILING_BLACK_LIST = "/mailing-black-list";
     public final static String FETCH_USERS_FOR_AUTOCOMPLETE_IN_MAILING_BLACK_LIST = "/mailing-black-list/autocomplete";
+    // The email lists of the configuration page: GET lists, POST adds, DELETE removes
+    public final static String PROJECT_MANAGER_ADMINS = "/project-manager-admins";
+    public final static String CENTRAL_APPROVAL_COMMITTEE_MEMBERS = "/central-approval-committee-members";
+    public final static String BRIDGEHEAD_ADMINS = "/bridgehead-admins";
     public final static String ACCEPT_BRIDGEHEAD_PROJECT = "/project/bridgehead/accept";
     public final static String REJECT_BRIDGEHEAD_PROJECT = "/project/bridgehead/reject";
     public final static String ACCEPT_SCRIPT = "/script/accept";
