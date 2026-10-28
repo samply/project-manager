@@ -20,7 +20,7 @@ class FrontendServiceEmailRecipientsTest {
     @Test
     void recipientsOfEveryEmailSenderAreListedOnce() {
         assertThat(FrontendService.fetchEmailRecipients(controllerMethod("acceptProject")))
-                .containsExactlyInAnyOrder("CREATOR", "ALL_BRIDGEHEAD_ADMINS");
+                .containsExactlyInAnyOrder("CREATOR", "ALL_BRIDGEHEAD_ADMINS", "CENTRAL_APPROVAL_COMMITTEE");
     }
 
     @Test

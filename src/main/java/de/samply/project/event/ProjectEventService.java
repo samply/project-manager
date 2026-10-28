@@ -277,9 +277,12 @@ public class ProjectEventService implements ProjectEventActions {
         changeEvent(project, ProjectEvent.START_LOCAL_APPROVAL);
     }
 
+    // Back to REVIEW from CENTRAL_APPROVAL; in REVIEW the request stays (the creator can already edit it)
     @Override
-    public void backToReview(Project project) throws ProjectEventActionsException {
-        changeEvent(project, ProjectEvent.BACK_TO_REVIEW);
+    public void requestChangesInApproval(Project project) throws ProjectEventActionsException {
+        if (project.getState() == ProjectState.CENTRAL_APPROVAL) {
+            changeEvent(project, ProjectEvent.BACK_TO_REVIEW);
+        }
     }
 
     @Override

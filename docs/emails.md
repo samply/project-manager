@@ -65,4 +65,20 @@ The upload of a local approval uses it for two texts: `NEW_LOCAL_APPROVAL` (in `
 | `LOCAL_APPROVAL_STARTED` | `CENTRAL_APPROVAL` -> `LOCAL_APPROVAL` | approval contacts (with the form: `attachment_files: ["FORM"]`), creator, bridgehead admins |
 | `NEW_LOCAL_APPROVAL` | local approval uploaded in `LOCAL_APPROVAL` | creator, bridgehead admin of the site, project manager admins |
 | `NEW_LOCAL_APPROVAL_FINAL` | local approval uploaded in `FINAL` | creator, bridgehead admin of the site, project manager admins |
-| `PROJECT_BACK_TO_REVIEW` | `CENTRAL_APPROVAL` -> `REVIEW` | creator |
+
+## Emails of the central approval
+
+| Type | When | Recipients |
+|---|---|---|
+| `NEW_PROJECT_ACCEPTED` | technical approval: `REVIEW` (or `ARCHIVED`) -> `CENTRAL_APPROVAL` | creator, bridgehead admins, central approval committee |
+| `PROJECT_BACK_TO_REVIEW` | request changes (with message) in `REVIEW` (stays) or `CENTRAL_APPROVAL` (-> `REVIEW`) | creator, project manager admins, central approval committee |
+
+The committee's addresses come from the table `central_approval_committee_user`, filled when a member logs in (like
+the project manager admins); its template role is `CENTRAL_APPROVAL_COMMITTEE`. A member who has never logged in gets
+no email.
+
+## Messages
+
+The message of an action (`@Message`: reject, request changes, ...) is put into the email (`<message/>`) and also
+stored as a notification of the request (`OperationType.MESSAGE`, `details` = the message, `email` = its author), also
+when emails are disabled.

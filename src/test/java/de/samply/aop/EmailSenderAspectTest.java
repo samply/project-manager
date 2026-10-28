@@ -4,6 +4,7 @@ import de.samply.annotations.Bridgehead;
 import de.samply.annotations.EmailSender;
 import de.samply.annotations.ProjectCode;
 import de.samply.bridgehead.BridgeheadsConfiguration;
+import de.samply.db.model.CentralApprovalCommitteeUser;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.email.EmailKeyValues;
@@ -43,6 +44,7 @@ class EmailSenderAspectTest {
     private final EmailSendingService emailSendingService = mock(EmailSendingService.class);
     private final EmailKeyValues keyValues = mock(EmailKeyValues.class, RETURNS_SELF);
     private final BridgeheadsConfiguration bridgeheadsConfiguration = new BridgeheadsConfiguration();
+    private final UserService userService = mock(UserService.class);
     private Endpoints endpoints;
     private Project project;
     private ProjectBridgehead jurassicPark;
@@ -57,7 +59,7 @@ class EmailSenderAspectTest {
         EmailKeyValuesFactory keyValuesFactory = mock(EmailKeyValuesFactory.class);
         when(keyValuesFactory.newInstance()).thenReturn(keyValues);
         EmailSenderAspect aspect = new EmailSenderAspect(emailSendingService, mock(SessionUser.class),
-                mock(UserService.class), mock(ProjectBridgeheadService.class), mock(ProjectBridgeheadUserService.class),
+                userService, mock(ProjectBridgeheadService.class), mock(ProjectBridgeheadUserService.class),
                 mock(OrganisationRoleToProjectRoleMapper.class), keyValuesFactory, bridgeheadsConfiguration, "en");
         AspectJProxyFactory factory = new AspectJProxyFactory(new Endpoints());
         factory.setProxyTargetClass(true);
@@ -98,6 +100,18 @@ class EmailSenderAspectTest {
         verify(emailSendingService, never()).sendEmail(any(), any(), any(), any(), eq(EmailTemplateType.NEW_LOCAL_APPROVAL), any());
     }
 
+    // The committee members' addresses come from their table (filled at login), with the committee's template
+    @Test
+    void sendsToTheCentralApprovalCommittee() throws Exception {
+        when(userService.fetchAllCentralApprovalCommitteeUsers()).thenReturn(List.of(
+                new CentralApprovalCommitteeUser(1L, "committee@example.org")));
+
+        endpoints.accept(project);
+
+        verify(emailSendingService).sendEmail(eq("committee@example.org"), eq(Optional.of(project)), eq(Optional.empty()),
+                eq(ProjectRole.CENTRAL_APPROVAL_COMMITTEE), eq(EmailTemplateType.NEW_PROJECT_ACCEPTED), any());
+    }
+
     private static BridgeheadsConfiguration.Contact contact(Map<String, String> name, String emailAddress) {
         BridgeheadsConfiguration.Contact contact = new BridgeheadsConfiguration.Contact();
         contact.setName(name);
@@ -112,6 +126,12 @@ class EmailSenderAspectTest {
         @EmailSender(templateType = EmailTemplateType.NEW_LOCAL_APPROVAL_FINAL, projectStates = {ProjectState.FINAL},
                 recipients = {EmailRecipientType.BRIDGEHEAD_APPROVAL_CONTACTS})
         public ResponseEntity<Void> upload(@ProjectCode Project project, @Bridgehead ProjectBridgehead bridgehead) {
+            return ResponseEntity.ok().build();
+        }
+
+        @EmailSender(templateType = EmailTemplateType.NEW_PROJECT_ACCEPTED,
+                recipients = {EmailRecipientType.CENTRAL_APPROVAL_COMMITTEE})
+        public ResponseEntity<Void> accept(@ProjectCode Project project) {
             return ResponseEntity.ok().build();
         }
 

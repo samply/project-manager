@@ -31,7 +31,7 @@ class ProjectManagerControllerModulesTest {
         assertThat(endpoint("startLocalApprovalStage").getAnnotation(RequiresModule.class).value())
                 .isEqualTo(OptionalModule.LOCAL_APPROVAL);
         assertThat(endpoint("startFinalStage").getAnnotation(RequiresModule.class)).isNull();
-        assertThat(endpoint("backToReview").getAnnotation(RequiresModule.class)).isNull();
+        assertThat(endpoint("requestChangesInApproval").getAnnotation(RequiresModule.class)).isNull();
     }
 
     @ParameterizedTest

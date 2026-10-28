@@ -2,6 +2,7 @@ package de.samply.user;
 
 import de.samply.db.model.*;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
+import de.samply.db.repository.CentralApprovalCommitteeUserRepository;
 import de.samply.db.repository.CreatorUserRepository;
 import de.samply.db.repository.ProjectManagerAdminUserRepository;
 import de.samply.db.repository.UserRepository;
@@ -41,6 +42,7 @@ public class UserService {
     // Repositories
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
     private final ProjectManagerAdminUserRepository projectManagerAdminUserRepository;
+    private final CentralApprovalCommitteeUserRepository centralApprovalCommitteeUserRepository;
     private final UserRepository userRepository;
     private final CreatorUserRepository creatorUserRepository;
 
@@ -48,6 +50,7 @@ public class UserService {
     public UserService(NotificationService notificationService,
                        BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
                        ProjectManagerAdminUserRepository projectManagerAdminUserRepository,
+                       CentralApprovalCommitteeUserRepository centralApprovalCommitteeUserRepository,
                        UserRepository userRepository,
                        CreatorUserRepository creatorUserRepository,
                        SessionUser sessionUser,
@@ -58,6 +61,7 @@ public class UserService {
         this.notificationService = notificationService;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
+        this.centralApprovalCommitteeUserRepository = centralApprovalCommitteeUserRepository;
         this.userRepository = userRepository;
         this.creatorUserRepository = creatorUserRepository;
         this.sessionUser = sessionUser;
@@ -85,6 +89,14 @@ public class UserService {
             result = new ProjectManagerAdminUser();
             result.setEmail(email);
             this.projectManagerAdminUserRepository.save(result);
+        }
+    }
+
+    public void createCentralApprovalCommitteeUserIfNotExists(@NotNull String email) {
+        if (this.centralApprovalCommitteeUserRepository.findFirstByEmail(email).isEmpty()) {
+            CentralApprovalCommitteeUser centralApprovalCommitteeUser = new CentralApprovalCommitteeUser();
+            centralApprovalCommitteeUser.setEmail(email);
+            this.centralApprovalCommitteeUserRepository.save(centralApprovalCommitteeUser);
         }
     }
 
@@ -243,6 +255,10 @@ public class UserService {
 
     public List<ProjectManagerAdminUser> fetchAllProjectManagerAdmins() {
         return projectManagerAdminUserRepository.findAll();
+    }
+
+    public List<CentralApprovalCommitteeUser> fetchAllCentralApprovalCommitteeUsers() {
+        return centralApprovalCommitteeUserRepository.findAll();
     }
 
     public Set<CreatorUser> fetchCreatorUser(String email) {

@@ -22,5 +22,7 @@ public enum OperationType {
     UNREGISTER_IN_APP_REGISTER,
     TRANSFER_FILES_TO_RESEARCH_ENVIRONMENT,
     ADD_PROJECT_FORM_LABEL,
-    EDIT_PROJECT_FORM_LABEL
+    EDIT_PROJECT_FORM_LABEL,
+    // The message of an action (e.g. reject, request changes): details = the message, email = its author
+    MESSAGE
 }

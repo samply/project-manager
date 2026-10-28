@@ -48,6 +48,7 @@ class ProjectEventServiceTest {
     private ProjectBridgeheadService projectBridgeheadService;
     private ProjectEventService projectEventService;
     private OptionalModules optionalModules;
+    private StateMachineFactory<ProjectState, ProjectEvent> stateMachineFactory;
     private final List<String> attemptedCodes = new ArrayList<>();
 
     @BeforeEach
@@ -69,7 +70,7 @@ class ProjectEventServiceTest {
         // A transition (archive, accept) loads the state machine; the accessor does nothing here
         when(stateMachine.stopReactively()).thenReturn(Mono.empty());
         when(stateMachine.getStateMachineAccessor()).thenReturn(mock(StateMachineAccessor.class));
-        StateMachineFactory<ProjectState, ProjectEvent> stateMachineFactory = mock(StateMachineFactory.class);
+        stateMachineFactory = mock(StateMachineFactory.class);
         when(stateMachineFactory.getStateMachine(anyString())).thenReturn(stateMachine);
 
         optionalModules = mock(OptionalModules.class);
@@ -122,6 +123,27 @@ class ProjectEventServiceTest {
         when(optionalModules.isAvailable(ProjectType.DATASHIELD)).thenReturn(false);
 
         assertThatCode(() -> projectEventService.archive(projectOfType(ProjectType.DATASHIELD))).doesNotThrowAnyException();
+    }
+
+    // Request changes: in CENTRAL_APPROVAL back to REVIEW; in REVIEW no transition (the creator can already edit)
+    @Test
+    void requestingChangesInReviewKeepsTheState() throws Exception {
+        Project project = projectOfType(ProjectType.EXPORT);
+        project.setState(ProjectState.REVIEW);
+
+        projectEventService.requestChangesInApproval(project);
+
+        verify(stateMachineFactory, never()).getStateMachine(anyString());
+    }
+
+    @Test
+    void requestingChangesInCentralApprovalGoesBackToReview() throws Exception {
+        Project project = projectOfType(ProjectType.EXPORT);
+        project.setState(ProjectState.CENTRAL_APPROVAL);
+
+        projectEventService.requestChangesInApproval(project);
+
+        verify(stateMachineFactory).getStateMachine("key");
     }
 
     // The step LOCAL_APPROVAL is only shown with its module

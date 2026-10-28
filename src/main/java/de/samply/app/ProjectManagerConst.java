@@ -40,7 +40,7 @@ public class ProjectManagerConst {
     public final static String REJECT_PROJECT_ACTION = "REJECT_PROJECT";
     public final static String ARCHIVE_PROJECT_ACTION = "ARCHIVE_PROJECT";
     public final static String START_LOCAL_APPROVAL_STAGE_ACTION = "START_LOCAL_APPROVAL_STAGE";
-    public final static String BACK_TO_REVIEW_ACTION = "BACK_TO_REVIEW";
+    public final static String REQUEST_CHANGES_IN_APPROVAL_ACTION = "REQUEST_CHANGES_IN_APPROVAL";
     public final static String START_DEVELOP_STAGE_ACTION = "START_DEVELOP_STAGE";
     public final static String START_PILOT_STAGE_ACTION = "START_PILOT_STAGE";
     public final static String START_FINAL_STAGE_ACTION = "START_FINAL_STAGE";
@@ -219,7 +219,7 @@ public class ProjectManagerConst {
     public final static String FETCH_DISPLAY_FORMATS = "/frontend/display-formats";
     public final static String ARCHIVE_PROJECT = "/project/archive";
     public final static String START_LOCAL_APPROVAL_STAGE = "/project/start-local-approval";
-    public final static String BACK_TO_REVIEW = "/project/back-to-review";
+    public final static String REQUEST_CHANGES_IN_APPROVAL = "/project/approval/request-changes";
     public final static String START_DEVELOP_STAGE = "/project/start-develop";
     public final static String START_PILOT_STAGE = "/project/start-pilot";
     public final static String START_FINAL_STAGE = "/project/start-final";
