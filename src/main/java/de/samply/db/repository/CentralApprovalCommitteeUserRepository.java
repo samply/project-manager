@@ -11,4 +11,6 @@ public interface CentralApprovalCommitteeUserRepository extends JpaRepository<Ce
 
     Optional<CentralApprovalCommitteeUser> findFirstByEmail(String email);
 
+    void deleteByEmail(String email);
+
 }

@@ -21,6 +21,7 @@ import de.samply.user.roles.UserProjectRoles;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -259,6 +260,28 @@ public class UserService {
 
     public List<CentralApprovalCommitteeUser> fetchAllCentralApprovalCommitteeUsers() {
         return centralApprovalCommitteeUserRepository.findAll();
+    }
+
+    public List<BridgeheadAdminUser> fetchAllBridgeheadAdmins() {
+        return bridgeheadAdminUserRepository.findAll();
+    }
+
+    // The user lists below are email lists only (who gets which emails): removing an entry never touches the user,
+    // its projects or its permissions, which come from the identity provider's groups. Someone removed who still has
+    // the group is added again at the next login (docs/user-lists.md).
+    @Transactional
+    public void removeProjectManagerAdminUser(@NotNull String email) {
+        projectManagerAdminUserRepository.deleteByEmail(email);
+    }
+
+    @Transactional
+    public void removeCentralApprovalCommitteeUser(@NotNull String email) {
+        centralApprovalCommitteeUserRepository.deleteByEmail(email);
+    }
+
+    @Transactional
+    public void removeBridgeheadAdminUser(@NotNull String email, @NotNull String bridgehead) {
+        bridgeheadAdminUserRepository.deleteByEmailAndBridgehead(email, bridgehead);
     }
 
     public Set<CreatorUser> fetchCreatorUser(String email) {

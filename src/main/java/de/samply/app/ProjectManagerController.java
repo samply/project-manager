@@ -1147,6 +1147,108 @@ public class ProjectManagerController {
                 () -> dtoUserService.fetchUsersForAutocompleteInMailingBlackList(partialEmail));
     }
 
+    // The email lists of project manager admins, committee members and site admins (docs/user-lists.md): maintained
+    // by hand besides the login, which still adds; they decide who gets emails, never permissions
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_MANAGER_ADMINS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
+    @GetMapping(value = ProjectManagerConst.PROJECT_MANAGER_ADMINS)
+    public ResponseEntity fetchProjectManagerAdmins() {
+        return convertToResponseEntity(dtoUserService::fetchProjectManagerAdmins);
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_MANAGER_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.PROJECT_MANAGER_ADMINS)
+    public ResponseEntity addProjectManagerAdmin(
+            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.createProjectManagerAdminUserIfNotExists(email.trim()));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_PROJECT_MANAGER_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @DeleteMapping(value = ProjectManagerConst.PROJECT_MANAGER_ADMINS)
+    public ResponseEntity removeProjectManagerAdmin(
+            @RequestParameter(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.removeProjectManagerAdminUser(email));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_CENTRAL_APPROVAL_COMMITTEE_MEMBERS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
+    @GetMapping(value = ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_MEMBERS)
+    public ResponseEntity fetchCentralApprovalCommitteeMembers() {
+        return convertToResponseEntity(dtoUserService::fetchCentralApprovalCommitteeMembers);
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_CENTRAL_APPROVAL_COMMITTEE_MEMBER_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_MEMBERS)
+    public ResponseEntity addCentralApprovalCommitteeMember(
+            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.createCentralApprovalCommitteeUserIfNotExists(email.trim()));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_CENTRAL_APPROVAL_COMMITTEE_MEMBER_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @DeleteMapping(value = ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_MEMBERS)
+    public ResponseEntity removeCentralApprovalCommitteeMember(
+            @RequestParameter(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.removeCentralApprovalCommitteeUser(email));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_BRIDGEHEAD_ADMINS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
+    @GetMapping(value = ProjectManagerConst.BRIDGEHEAD_ADMINS)
+    public ResponseEntity fetchBridgeheadAdmins() {
+        return convertToResponseEntity(dtoUserService::fetchBridgeheadAdmins);
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_BRIDGEHEAD_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.BRIDGEHEAD_ADMINS)
+    public ResponseEntity addBridgeheadAdmin(
+            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email,
+            @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        // Only sites of this deployment
+        if (!bridgeheadsConfiguration.getRegisteredBridgeheads().contains(bridgehead)) {
+            return ResponseEntity.badRequest().body("Unknown site: " + bridgehead);
+        }
+        return convertToResponseEntity(() -> userService.createBridgeheadAdminUserIfNotExists(email.trim(), bridgehead));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_BRIDGEHEAD_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @DeleteMapping(value = ProjectManagerConst.BRIDGEHEAD_ADMINS)
+    public ResponseEntity removeBridgeheadAdmin(
+            @RequestParameter(name = ProjectManagerConst.EMAIL) String email,
+            @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        return convertToResponseEntity(() -> userService.removeBridgeheadAdminUser(email, bridgehead));
+    }
+
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
     @StateConstraints(projectStates = {ProjectState.FINAL}, projectBridgeheadStates = {
             ProjectBridgeheadState.ACCEPTED})
