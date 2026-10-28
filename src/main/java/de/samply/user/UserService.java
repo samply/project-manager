@@ -18,6 +18,7 @@ import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
+import de.samply.utils.EmailUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -72,7 +73,9 @@ public class UserService {
         this.projectService = projectService;
     }
 
+    // The role lists store addresses normalized (EmailUtils), whoever adds them: login, configuration, configuration page
     public void createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
+        email = EmailUtils.normalize(email);
         Optional<BridgeheadAdminUser> bridgeheadAdminUserOptional = this.bridgeheadAdminUserRepository.findFirstByEmailAndBridgehead(email, bridgehead);
         BridgeheadAdminUser result;
         if (bridgeheadAdminUserOptional.isEmpty()) {
@@ -84,6 +87,7 @@ public class UserService {
     }
 
     public void createProjectManagerAdminUserIfNotExists(@NotNull String email) {
+        email = EmailUtils.normalize(email);
         Optional<ProjectManagerAdminUser> projectManagerAdminUserOptional = this.projectManagerAdminUserRepository.findFirstByEmail(email);
         ProjectManagerAdminUser result;
         if (projectManagerAdminUserOptional.isEmpty()) {
@@ -94,6 +98,7 @@ public class UserService {
     }
 
     public void createCentralApprovalCommitteeUserIfNotExists(@NotNull String email) {
+        email = EmailUtils.normalize(email);
         if (this.centralApprovalCommitteeUserRepository.findFirstByEmail(email).isEmpty()) {
             CentralApprovalCommitteeUser centralApprovalCommitteeUser = new CentralApprovalCommitteeUser();
             centralApprovalCommitteeUser.setEmail(email);
@@ -271,17 +276,17 @@ public class UserService {
     // the group is added again at the next login (docs/user-lists.md).
     @Transactional
     public void removeProjectManagerAdminUser(@NotNull String email) {
-        projectManagerAdminUserRepository.deleteByEmail(email);
+        projectManagerAdminUserRepository.deleteByEmail(EmailUtils.normalize(email));
     }
 
     @Transactional
     public void removeCentralApprovalCommitteeUser(@NotNull String email) {
-        centralApprovalCommitteeUserRepository.deleteByEmail(email);
+        centralApprovalCommitteeUserRepository.deleteByEmail(EmailUtils.normalize(email));
     }
 
     @Transactional
     public void removeBridgeheadAdminUser(@NotNull String email, @NotNull String bridgehead) {
-        bridgeheadAdminUserRepository.deleteByEmailAndBridgehead(email, bridgehead);
+        bridgeheadAdminUserRepository.deleteByEmailAndBridgehead(EmailUtils.normalize(email), bridgehead);
     }
 
     public Set<CreatorUser> fetchCreatorUser(String email) {
@@ -290,6 +295,11 @@ public class UserService {
 
     public Optional<User> fetchUser(String user) {
         return userRepository.findByEmail(user);
+    }
+
+    // The role lists store addresses in lower case; the user table keeps them as the login wrote them
+    public Optional<User> fetchUserIgnoringCase(String email) {
+        return userRepository.findFirstByEmailIgnoreCase(email);
     }
 
     public Set<BridgeheadAdminUser> fetchBridgeheadAdmin(ProjectBridgehead bridgehead) {

@@ -23,6 +23,7 @@ import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
 import de.samply.utils.AspectUtils;
+import de.samply.utils.EmailUtils;
 import de.samply.utils.LanguageUtils;
 import de.samply.utils.ProjectRolesUtils;
 import org.aspectj.lang.JoinPoint;
@@ -160,13 +161,13 @@ public class EmailSenderAspect {
     }
 
     // A user with several roles (e.g. project manager admin and committee member) gets an email once per text: emails to
-    // the same address are only merged when they use the same template (type, template, subject and bridgehead).
+    // the same address (compared normalized) are only merged when they use the same template (type, template, subject and bridgehead).
     // Different templates mean different texts, so they are all sent. The first role in time order is kept.
     private Collection<Email> removeIdenticalEmails(List<Email> emails) {
         Map<List<Object>, Email> result = new LinkedHashMap<>();
         ProjectRolesUtils.orderCollectionInDescendentTime(emails, email -> email.recipient().getRole())
                 .forEach(email -> result.putIfAbsent(Arrays.asList(
-                        email.recipient().getEmail(),
+                        EmailUtils.normalize(email.recipient().getEmail()),
                         email.type(),
                         email.recipient().getBridgehead().map(ProjectBridgehead::getBridgehead),
                         emailTemplates.getTemplateAndSubject(email.type(), email.recipient().getRole(),

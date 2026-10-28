@@ -48,6 +48,7 @@ import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
 import de.samply.query.QueryState;
+import de.samply.user.ConfiguredUserLists;
 import de.samply.user.DtoUserService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
@@ -121,6 +122,7 @@ public class ProjectManagerController {
     private final DisplayFormatService displayFormatService;
     private final ActionsBatchService actionsBatchService;
     private final OptionalModules optionalModules;
+    private final ConfiguredUserLists configuredUserLists;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -150,7 +152,8 @@ public class ProjectManagerController {
                                     FeasibilityService feasibilityService,
                                     DisplayFormatService displayFormatService,
                                     ActionsBatchService actionsBatchService,
-                                    OptionalModules optionalModules) {
+                                    OptionalModules optionalModules,
+                                    ConfiguredUserLists configuredUserLists) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -180,6 +183,7 @@ public class ProjectManagerController {
         this.displayFormatService = displayFormatService;
         this.actionsBatchService = actionsBatchService;
         this.optionalModules = optionalModules;
+        this.configuredUserLists = configuredUserLists;
     }
 
     @CacheCategory(CacheResource.PUBLIC_INFORMATION)
@@ -1178,6 +1182,9 @@ public class ProjectManagerController {
     public ResponseEntity removeProjectManagerAdmin(
             @RequestParameter(name = ProjectManagerConst.EMAIL) String email
     ) {
+        if (configuredUserLists.isProjectManagerAdmin(email)) {
+            return configuredUserCannotBeRemoved(ProjectManagerConst.PROJECT_MANAGER_ADMIN_EMAILS);
+        }
         return convertToResponseEntity(() -> userService.removeProjectManagerAdminUser(email));
     }
 
@@ -1209,6 +1216,9 @@ public class ProjectManagerController {
     public ResponseEntity removeCentralApprovalCommitteeMember(
             @RequestParameter(name = ProjectManagerConst.EMAIL) String email
     ) {
+        if (configuredUserLists.isCentralApprovalCommitteeMember(email)) {
+            return configuredUserCannotBeRemoved(ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_EMAILS);
+        }
         return convertToResponseEntity(() -> userService.removeCentralApprovalCommitteeUser(email));
     }
 
@@ -1246,7 +1256,16 @@ public class ProjectManagerController {
             @RequestParameter(name = ProjectManagerConst.EMAIL) String email,
             @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
     ) {
+        if (configuredUserLists.isBridgeheadAdmin(email, bridgehead)) {
+            return configuredUserCannotBeRemoved("BRIDGEHEADS_CONFIG_<site>_ADMINEMAILS");
+        }
         return convertToResponseEntity(() -> userService.removeBridgeheadAdminUser(email, bridgehead));
+    }
+
+    // An address of the configuration is loaded again at every start: it can only be removed there
+    private ResponseEntity configuredUserCannotBeRemoved(String variable) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Set in the configuration (" + variable + "): remove it there");
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
@@ -2588,6 +2607,8 @@ public class ProjectManagerController {
             OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    // Configuration page: the sites to choose from when adding a site admin
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
