@@ -15,10 +15,8 @@ class GroupToRoleMapperResearcherTest {
         var sites = mock(BridgeheadsConfiguration.class);
         var admins = mock(ProjectManagerAdminGroups.class);
         var mapper = new GroupToRoleMapper(admins, sites);
-        ReflectionTestUtils.setField(mapper, "bridgeheadUserGroupPrefix", "SITE_");
-        ReflectionTestUtils.setField(mapper, "bridgeheadUserGroupSuffix", "");
-        ReflectionTestUtils.setField(mapper, "bridgeheadAdminGroupPrefix", "SITE_ADMIN_");
-        ReflectionTestUtils.setField(mapper, "bridgeheadAdminGroupSuffix", "");
+        ReflectionTestUtils.setField(mapper, "bridgeheadUserGroupRegex", "SITE_(.+)");
+        ReflectionTestUtils.setField(mapper, "bridgeheadAdminGroupRegex", "SITE_ADMIN_(?<bridgehead>.+)");
 
         assertThat(mapper.getRoleFromGroup("external", roles)).isNull();
         ReflectionTestUtils.setField(mapper, "researcherGroups", List.of(" external ", "/another", ""));

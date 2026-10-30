@@ -19,10 +19,8 @@ class GroupToRoleMapperLeadingSlashTest {
         when(sites.isRegisteredBridgehead("cce-gr")).thenReturn(true);
         var admins = new ProjectManagerAdminGroups(List.of(slash + "projects/cce/project-manager-admin", ""));
         var mapper = new GroupToRoleMapper(admins, sites);
-        ReflectionTestUtils.setField(mapper, "bridgeheadUserGroupPrefix", slash + "projects/cce/sites/");
-        ReflectionTestUtils.setField(mapper, "bridgeheadUserGroupSuffix", "");
-        ReflectionTestUtils.setField(mapper, "bridgeheadAdminGroupPrefix", slash + "projects/cce/sites/");
-        ReflectionTestUtils.setField(mapper, "bridgeheadAdminGroupSuffix", "/admin");
+        ReflectionTestUtils.setField(mapper, "bridgeheadUserGroupRegex", slash + "projects/cce/sites/([^/]+)");
+        ReflectionTestUtils.setField(mapper, "bridgeheadAdminGroupRegex", slash + "projects/cce/sites/([^/]+)/admin");
         ReflectionTestUtils.setField(mapper, "researcherGroups", List.of(slash + "apps/cce-federated-explorer"));
 
         assertThat(mapper.getRoleFromGroup("/projects/cce/project-manager-admin", roles))

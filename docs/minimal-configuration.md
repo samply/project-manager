@@ -39,16 +39,21 @@ Roles, security, explorer:
 | Variable | Example (DKTK) | What |
 |---|---|---|
 | `PM_ADMIN_GROUPS` | `admin-ccp-office` | Login groups of the project manager admins |
-| `BK_ADMIN_GROUP_PREFIX` / `BK_ADMIN_GROUP_SUFFIX` | `DKTK_CCP_` | Login group of a site's admins: prefix + site + suffix |
-| `BK_USER_GROUP_PREFIX` / `BK_USER_GROUP_SUFFIX` | `DKTK_CCP_` / empty | Login group of a site's users |
+| `BK_ADMIN_GROUP_REGEX` | `DKTK_CCP_(.+)_Verwalter` | Login groups of a site's admins: regular expression over the whole group; the site is the group `(?<bridgehead>...)`, otherwise the first capturing group |
+| `BK_USER_GROUP_REGEX` | `DKTK_CCP_(.+)` | Login groups of a site's users, same form; may also match the admin groups (the admin expression is checked first) |
 | `RESEARCHER_GROUPS` | `app-ccp-explorer-intern` | Login groups that may create requests without being in a site's group |
 | `DB_ENCRYPTION_PRIVATE_KEY_IN_BASE64` | - | Key for the encrypted database columns; generate with `GenerateAESKey.ps1`; never change it afterwards |
 | `EXPLORER_URL` | `https://data.dktk.dkfz.de` | The explorer the requests come from (also allowed as origin) |
 | `EXPLORER_REDIRECT_URI_PARAMETER` | `redirect_uri` | Parameter name for the way back to the explorer |
 
 Groups are compared without a leading slash: Keycloak sends full paths (`/projects/cce/sites/cce-gr/admin`), Authentik
-plain names (`DKTK_CCP_<site>`). The group settings and prefixes may therefore be written with or without the slash
-(`/projects/cce/project-manager-admin` = `projects/cce/project-manager-admin`); suffixes are compared as written.
+plain names (`DKTK_CCP_<site>`). The group settings and expressions may therefore be written with or without the slash
+(`/projects/cce/project-manager-admin` = `projects/cce/project-manager-admin`). The site part of a group is compared
+lower case with the registered sites; a group of an unregistered site grants nothing. Keycloak example (CCE):
+`BK_ADMIN_GROUP_REGEX=projects/cce/sites/([^/]+)/admin`, `BK_USER_GROUP_REGEX=projects/cce/sites/([^/]+)`.
+
+Deprecated: without `BK_*_GROUP_REGEX`, the former `BK_*_GROUP_PREFIX` / `BK_*_GROUP_SUFFIX` are still read as
+prefix + site + suffix (both taken literally).
 
 ## 3. Needed in practice (the start does not fail without them)
 

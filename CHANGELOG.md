@@ -8,10 +8,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
+- `BK_USER_GROUP_REGEX` / `BK_ADMIN_GROUP_REGEX`: the login groups of a site's users and admins as regular
+  expressions capturing the site (`(?<bridgehead>...)` or the first group), for group names that are not
+  prefix + site + suffix
 ### Changed
+- The admin group expression is checked before the user expression, replacing the length comparison of prefix and
+  suffix that decided between user and admin
 - Group settings (`PM_ADMIN_GROUPS`, `RESEARCHER_GROUPS`, `BK_USER_GROUP_PREFIX`, `BK_ADMIN_GROUP_PREFIX`) may be
   written with or without the leading slash of a Keycloak group path (`/projects/x/admin` = `projects/x/admin`);
   before, only `RESEARCHER_GROUPS` accepted the slash. Suffixes are compared as configured
+### Deprecated
+- `BK_USER_GROUP_PREFIX`, `BK_USER_GROUP_SUFFIX`, `BK_ADMIN_GROUP_PREFIX`, `BK_ADMIN_GROUP_SUFFIX`: still read when
+  the corresponding `BK_*_GROUP_REGEX` is not set
 
 ## [1.0.0] - 2026-10-13
 First release. Until now the deployments ran `develop`; this version is what they run today.

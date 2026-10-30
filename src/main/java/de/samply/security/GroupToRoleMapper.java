@@ -4,15 +4,22 @@ import de.samply.app.ProjectManagerConst;
 import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.UserOrganisationRoles;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class GroupToRoleMapper {
+
+    /**
+     * Name of the capturing group holding the bridgehead in {@code BK_USER_GROUP_REGEX} / {@code BK_ADMIN_GROUP_REGEX}.
+     * Without it, the first capturing group is the bridgehead.
+     */
+    public static final String BRIDGEHEAD_REGEX_GROUP = "bridgehead";
 
     /**
      * Optional comma-separated identity-provider groups granting RESEARCHER access
@@ -23,26 +30,33 @@ public class GroupToRoleMapper {
     @Value(ProjectManagerConst.RESEARCHER_GROUPS_SV)
     private List<String> researcherGroups = List.of();
 
+    // Regular expressions matched against the whole group (without leading slash); they capture the bridgehead.
+    @Value(ProjectManagerConst.BK_USER_GROUP_REGEX_SV)
+    private String bridgeheadUserGroupRegex = "";
+
+    @Value(ProjectManagerConst.BK_ADMIN_GROUP_REGEX_SV)
+    private String bridgeheadAdminGroupRegex = "";
+
+    // Deprecated: only used while the corresponding regex is not set (prefix + bridgehead + suffix).
     @Value(ProjectManagerConst.BK_USER_GROUP_PREFIX_SV)
-    private String bridgeheadUserGroupPrefix;
+    private String bridgeheadUserGroupPrefix = "";
 
     @Value(ProjectManagerConst.BK_USER_GROUP_SUFFIX_SV)
-    private String bridgeheadUserGroupSuffix;
+    private String bridgeheadUserGroupSuffix = "";
 
     @Value(ProjectManagerConst.BK_ADMIN_GROUP_PREFIX_SV)
-    private String bridgeheadAdminGroupPrefix;
+    private String bridgeheadAdminGroupPrefix = "";
 
     @Value(ProjectManagerConst.BK_ADMIN_GROUP_SUFFIX_SV)
-    private String bridgeheadAdminGroupSuffix;
+    private String bridgeheadAdminGroupSuffix = "";
 
     private final ProjectManagerAdminGroups projectManagerAdminGroups;
 
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
 
-    private Boolean adminOverUser;
+    private Pattern userGroupPattern;
 
-
-    private final Map<String, OrganisationRole> groupToRoleMapCache = new ConcurrentHashMap<>();
+    private Pattern adminGroupPattern;
 
     public GroupToRoleMapper(
             ProjectManagerAdminGroups projectManagerAdminGroups,
@@ -51,24 +65,28 @@ public class GroupToRoleMapper {
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
     }
 
+    // Fails the start on a missing or invalid group pattern instead of at the first login.
+    @PostConstruct
+    void compileGroupPatterns() {
+        userGroupPattern();
+        adminGroupPattern();
+    }
+
     public OrganisationRole getRoleFromGroup(String group, UserOrganisationRoles userOrganisationRoles) {
         group = GroupNames.normalize(group);
-        OrganisationRole organisationRole = groupToRoleMapCache.get(group);
-        if (organisationRole == null) {
-            if (group.startsWith(userPrefix()) && group.endsWith(bridgeheadUserGroupSuffix)) {
-                organisationRole = OrganisationRole.RESEARCHER;
-            }
-            if (group.startsWith(adminPrefix()) && group.endsWith(bridgeheadAdminGroupSuffix)) {
-                if (organisationRole != null && isAdminOverUser())
-                    organisationRole = OrganisationRole.BRIDGEHEAD_ADMIN;
-            } else if (projectManagerAdminGroups.contains(group)) {
-                organisationRole = OrganisationRole.PROJECT_MANAGER_ADMIN;
-            }
-            if (organisationRole != null) {
-                groupToRoleMapCache.put(group, organisationRole);
+        OrganisationRole organisationRole = null;
+        if (projectManagerAdminGroups.contains(group)) {
+            organisationRole = OrganisationRole.PROJECT_MANAGER_ADMIN;
+            userOrganisationRoles.addRoleNotDependentOnBridgehead(organisationRole);
+        } else {
+            // The admin pattern is checked first: the user pattern may match the admin groups too (DKTK_CCP_(.+)).
+            Matcher matcher = adminGroupPattern().matcher(group);
+            if (matcher.matches()) {
+                organisationRole = addBridgeheadRole(matcher, OrganisationRole.BRIDGEHEAD_ADMIN, userOrganisationRoles);
+            } else if ((matcher = userGroupPattern().matcher(group)).matches()) {
+                organisationRole = addBridgeheadRole(matcher, OrganisationRole.RESEARCHER, userOrganisationRoles);
             }
         }
-        organisationRole = addBridgheadToUserInfoAndFilterOrganisationRole(group, organisationRole, userOrganisationRoles);
         final String normalizedGroup = group;
         boolean globalResearcher = researcherGroups.stream()
                 .map(GroupNames::normalize)
@@ -82,43 +100,54 @@ public class GroupToRoleMapper {
         return organisationRole;
     }
 
-    private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole, UserOrganisationRoles userOrganisationRoles) {
-        if (organisationRole != null) {
-            String bridgehead = switch (organisationRole) {
-                case RESEARCHER -> extractBridgehead(userPrefix(), bridgeheadUserGroupSuffix, group);
-                case BRIDGEHEAD_ADMIN -> extractBridgehead(adminPrefix(), bridgeheadAdminGroupSuffix, group);
-                default -> null;
-            };
-            if (bridgehead == null) {
-                userOrganisationRoles.addRoleNotDependentOnBridgehead(organisationRole);
-            } else if (bridgeheadsConfiguration.isRegisteredBridgehead(bridgehead)) {
-                userOrganisationRoles.addBridgeheadRole(bridgehead, organisationRole);
-            } else {
-                organisationRole = null;
-            }
+    // Returns null if the group names a bridgehead that is not registered.
+    private OrganisationRole addBridgeheadRole(Matcher matcher, OrganisationRole organisationRole, UserOrganisationRoles userOrganisationRoles) {
+        String bridgehead = extractBridgehead(matcher);
+        if (!bridgeheadsConfiguration.isRegisteredBridgehead(bridgehead)) {
+            return null;
         }
+        userOrganisationRoles.addBridgeheadRole(bridgehead, organisationRole);
         return organisationRole;
     }
 
-    private String extractBridgehead(String prefix, String suffix, String group) {
-        return ((!suffix.isEmpty()) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
+    private String extractBridgehead(Matcher matcher) {
+        String bridgehead = matcher.pattern().namedGroups().containsKey(BRIDGEHEAD_REGEX_GROUP)
+                ? matcher.group(BRIDGEHEAD_REGEX_GROUP) : matcher.group(1);
+        return (bridgehead == null) ? "" : bridgehead.toLowerCase();
     }
 
-    // Prefixes are compared like the groups of the token (without a leading slash); suffixes as configured.
-    private String userPrefix() {
-        return GroupNames.normalize(bridgeheadUserGroupPrefix);
-    }
-
-    private String adminPrefix() {
-        return GroupNames.normalize(bridgeheadAdminGroupPrefix);
-    }
-
-    private boolean isAdminOverUser() { // TODO: This logic works with the current configuration of DKTK. Please change it with something more reasonable. (@The stressed developer)
-        if (adminOverUser == null) {
-            adminOverUser = (userPrefix() + bridgeheadUserGroupSuffix).length() < (adminPrefix() + bridgeheadAdminGroupSuffix).length();
+    private Pattern userGroupPattern() {
+        if (userGroupPattern == null) {
+            userGroupPattern = compileGroupPattern(ProjectManagerConst.BK_USER_GROUP_REGEX, bridgeheadUserGroupRegex,
+                    bridgeheadUserGroupPrefix, bridgeheadUserGroupSuffix);
         }
-        return adminOverUser;
+        return userGroupPattern;
     }
 
+    private Pattern adminGroupPattern() {
+        if (adminGroupPattern == null) {
+            adminGroupPattern = compileGroupPattern(ProjectManagerConst.BK_ADMIN_GROUP_REGEX, bridgeheadAdminGroupRegex,
+                    bridgeheadAdminGroupPrefix, bridgeheadAdminGroupSuffix);
+        }
+        return adminGroupPattern;
+    }
+
+    // The regex (or the prefix) is compared like the groups of the token, without a leading slash.
+    private static Pattern compileGroupPattern(String variable, String regex, String prefix, String suffix) {
+        String normalizedRegex = GroupNames.normalize(regex);
+        if (normalizedRegex.isEmpty()) {
+            if (GroupNames.normalize(prefix).isEmpty() && (suffix == null || suffix.isEmpty())) {
+                throw new IllegalStateException(variable + " is not set");
+            }
+            normalizedRegex = Pattern.quote(GroupNames.normalize(prefix)) + "(.+)"
+                    + ((suffix == null || suffix.isEmpty()) ? "" : Pattern.quote(suffix));
+        }
+        Pattern pattern = Pattern.compile(normalizedRegex);
+        if (pattern.matcher("").groupCount() == 0) {
+            throw new IllegalStateException(variable + " needs a capturing group for the bridgehead, e.g. (?<"
+                    + BRIDGEHEAD_REGEX_GROUP + ">.+): " + normalizedRegex);
+        }
+        return pattern;
+    }
 
 }
