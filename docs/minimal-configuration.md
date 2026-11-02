@@ -53,7 +53,7 @@ plain names (`DKTK_CCP_<site>`). The group settings and prefixes may therefore b
 ## 3. Needed in practice (the start does not fail without them)
 
 - **Sites**: `BRIDGEHEADS_CONFIG_<SITE>_...` (human-readable name, affiliation, contacts, the Beam IDs for the modules
-  that talk to the site). Without sites no request can be made.
+  that talk to the site, the site group). Without sites no request can be made. Details: `docs/bridgeheads.md`.
 - **Frontend**: `FRONTEND_BASEURL` and the `FRONTEND_SITES_*` paths (links in emails and notifications);
   `FRONTEND_VARIABLES_*` configure the UI.
 - **Email texts**: `EMAIL_CONTEXT_*` (signature, support information), used by the templates.

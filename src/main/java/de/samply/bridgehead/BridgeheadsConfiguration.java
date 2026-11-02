@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -27,10 +28,14 @@ public class BridgeheadsConfiguration {
     private Map<String, String> explorerIdBridgeheadMap = new HashMap<>();
     private Map<String, String> tokenManagerIdBridgeheadMap = new HashMap<>();
     private Map<String, String> focusIdBridgeheadMap = new HashMap<>();
+    // Site group (lower case) -> bridgeheads of the site, e.g. dresden -> [dresden, dresden-test]
+    private Map<String, List<String>> groupBridgeheadsMap = new HashMap<>();
 
 
     @Data
     public static class BridgeheadConfig {
+        // Site group of the identity provider (BRIDGEHEADS_CONFIG_<ID>_GROUP); empty = the bridgehead id
+        private String group;
         private String explorerId;
         private String focusBeamId;
         private String fileDispatcherBeamId;
@@ -52,12 +57,38 @@ public class BridgeheadsConfiguration {
     @PostConstruct
     private void initIdBridgeheadMaps() {
         replaceHyphenInBridgeheads();
+        checkUniqueIds("explorer id", BridgeheadConfig::getExplorerId);
+        checkUniqueIds("focus beam id", BridgeheadConfig::getFocusBeamId);
+        checkUniqueIds("token manager id", BridgeheadConfig::getTokenManagerId);
         config.forEach((bridgehead, bridgeheadConfig) -> {
             addBridgeheadId(bridgehead, bridgeheadConfig.getExplorerId(), explorerIdBridgeheadMap);
             addBridgeheadId(bridgehead, bridgeheadConfig.getFocusBeamId(), focusIdBridgeheadMap);
             addBridgeheadId(bridgehead, bridgeheadConfig.getTokenManagerId(), tokenManagerIdBridgeheadMap);
         });
+        groupBridgeheadsMap = config.keySet().stream().sorted()
+                .collect(Collectors.groupingBy(this::fetchGroup, HashMap::new, Collectors.toList()));
         logBridgeheads();
+    }
+
+    // Two bridgeheads with the same id would make one of them unreachable: a configuration error, the start fails
+    private void checkUniqueIds(String idName, Function<BridgeheadConfig, String> idGetter) {
+        Map<String, List<String>> idBridgeheads = config.entrySet().stream()
+                .filter(entry -> StringUtils.hasText(idGetter.apply(entry.getValue())))
+                .collect(Collectors.groupingBy(entry -> idGetter.apply(entry.getValue()),
+                        Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
+        String duplicates = idBridgeheads.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 1)
+                .map(entry -> entry.getKey() + " " + entry.getValue().stream().sorted().toList())
+                .sorted()
+                .collect(Collectors.joining(", "));
+        if (!duplicates.isEmpty()) {
+            throw new IllegalStateException("Bridgeheads with the same " + idName + ": " + duplicates);
+        }
+    }
+
+    private String fetchGroup(String bridgehead) {
+        String group = config.get(bridgehead).getGroup();
+        return StringUtils.hasText(group) ? group.trim().toLowerCase() : bridgehead;
     }
 
     private void replaceHyphenInBridgeheads() {
@@ -68,7 +99,8 @@ public class BridgeheadsConfiguration {
 
     private void logBridgeheads() {
         log.info("Registered bridgeheads: ({})", config.size());
-        config.keySet().stream().sorted().forEach(bridgehead -> log.info("\t- {} ({})", bridgehead, getHumanReadable(bridgehead).orElse("")));
+        config.keySet().stream().sorted().forEach(bridgehead -> log.info("\t- {} ({}, group {})", bridgehead,
+                getHumanReadable(bridgehead).orElse(""), fetchGroup(bridgehead)));
     }
 
     private String replaceHyphen(String var) {
@@ -91,6 +123,11 @@ public class BridgeheadsConfiguration {
 
     public boolean isRegisteredBridgehead(String bridgehead) {
         return config.containsKey(bridgehead);
+    }
+
+    // Registered bridgeheads whose site group is the given one (case-insensitive); empty if none
+    public List<String> getBridgeheadsForGroup(String group) {
+        return (group == null) ? List.of() : groupBridgeheadsMap.getOrDefault(group.trim().toLowerCase(), List.of());
     }
 
     public Optional<String> getFocusBeamId(String bridgehead) {
