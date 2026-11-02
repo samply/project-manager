@@ -30,6 +30,7 @@ BRIDGEHEADS_CONFIG_BERLINMINUSTEST_EXPLORERID=lens-berlin-test
 BRIDGEHEADS_CONFIG_BERLINMINUSTEST_GROUP=berlin               # site group: berlin
 ```
 
-With `BK_ADMIN_GROUP_PREFIX=/projects/dktk/sites/` and `BK_ADMIN_GROUP_SUFFIX=/admin`, the group
-`/projects/dktk/sites/berlin/admin` makes the user bridgehead admin of `berlin` and `berlin-test`. A site group
+With `BK_USER_GROUP_PREFIX` = `BK_ADMIN_GROUP_PREFIX` = `/projects/dktk/bridgeheads/`, `BK_USER_GROUP_SUFFIX=/user`
+and `BK_ADMIN_GROUP_SUFFIX=/admin`, the group `/projects/dktk/bridgeheads/berlin/admin` makes the user bridgehead admin
+of `berlin` and `berlin-test`, `/projects/dktk/bridgeheads/berlin/user` researcher of both. A site group
 without a registered bridgehead on this server gives no role. Groups are compared case-insensitively.

@@ -59,7 +59,10 @@ public class GroupToRoleMapper {
                 organisationRole = OrganisationRole.RESEARCHER;
             }
             if (group.startsWith(adminPrefix()) && group.endsWith(bridgeheadAdminGroupSuffix)) {
-                if (organisationRole != null && isAdminOverUser())
+                // An admin group that does not match the user pattern (suffixes /user and /admin) is an admin group; one
+                // that matches both (DKTK_CCP_Berlin_Verwalter with user prefix DKTK_CCP_ and an empty user suffix) is
+                // one when the admin pattern is the longer one.
+                if (organisationRole == null || isAdminOverUser())
                     organisationRole = OrganisationRole.BRIDGEHEAD_ADMIN;
             } else if (projectManagerAdminGroups.contains(group)) {
                 organisationRole = OrganisationRole.PROJECT_MANAGER_ADMIN;
