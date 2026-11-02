@@ -61,7 +61,9 @@ jobs:
       - name: Build with Maven
         run: mvn -B package -DskipTests
 
+      # Pull requests only build the image; Docker Hub gets main, develop, latest and the versions (no pr-/sha- tags)
       - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -81,30 +83,31 @@ jobs:
             samply/project-manager
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=long
-            type=raw,value=latest,enable={{is_default_branch}}                                                  
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push image
         uses: docker/build-push-action@v2
         with:
           context: .
           platforms: linux/amd64, linux/arm64
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.docker-meta.outputs.tags }}
           labels: ${{ steps.docker-meta.outputs.labels }}
 
+      # Scans the image just pushed: its branch (main, develop) or version tag
       - name: Run Trivy vulnerability scanner
+        if: github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: samply/project-manager:sha-${{ github.sha }}
+          image-ref: samply/project-manager:${{ steps.docker-meta.outputs.version }}
           format: sarif
           output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy scan results to GitHub Security tab
+        if: github.event_name != 'pull_request'
         uses: github/codeql-action/upload-sarif@codeql-bundle-20220401
         with:
           sarif_file: trivy-results.sarif
