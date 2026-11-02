@@ -36,7 +36,7 @@ class GroupToRoleMapperResearcherTest {
         roles.getRolesNotDependentOnBridgeheads().clear();
         assertThat(mapper.getRoleFromGroup("external", roles)).isEqualTo(OrganisationRole.RESEARCHER);
         assertThat(roles.containsRole(OrganisationRole.RESEARCHER)).isTrue();
-        when(sites.isRegisteredBridgehead("alpha")).thenReturn(true);
+        when(sites.getBridgeheadsForGroup("alpha")).thenReturn(List.of("alpha"));
         assertThat(mapper.getRoleFromGroup("SITE_alpha", roles)).isEqualTo(OrganisationRole.RESEARCHER);
         assertThat(roles.getBridgeheadRoles("alpha")).containsExactly(OrganisationRole.RESEARCHER);
         when(admins.contains("office")).thenReturn(true);

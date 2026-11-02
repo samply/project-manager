@@ -82,25 +82,30 @@ public class GroupToRoleMapper {
         return organisationRole;
     }
 
+    // The group names a site (BRIDGEHEADS_CONFIG_<ID>_GROUP, default the bridgehead id): the role goes to every
+    // registered bridgehead of the site, e.g. the group dresden to dresden and dresden-test.
     private OrganisationRole addBridgheadToUserInfoAndFilterOrganisationRole(String group, OrganisationRole organisationRole, UserOrganisationRoles userOrganisationRoles) {
         if (organisationRole != null) {
-            String bridgehead = switch (organisationRole) {
-                case RESEARCHER -> extractBridgehead(userPrefix(), bridgeheadUserGroupSuffix, group);
-                case BRIDGEHEAD_ADMIN -> extractBridgehead(adminPrefix(), bridgeheadAdminGroupSuffix, group);
+            String siteGroup = switch (organisationRole) {
+                case RESEARCHER -> extractSiteGroup(userPrefix(), bridgeheadUserGroupSuffix, group);
+                case BRIDGEHEAD_ADMIN -> extractSiteGroup(adminPrefix(), bridgeheadAdminGroupSuffix, group);
                 default -> null;
             };
-            if (bridgehead == null) {
+            if (siteGroup == null) {
                 userOrganisationRoles.addRoleNotDependentOnBridgehead(organisationRole);
-            } else if (bridgeheadsConfiguration.isRegisteredBridgehead(bridgehead)) {
-                userOrganisationRoles.addBridgeheadRole(bridgehead, organisationRole);
             } else {
-                organisationRole = null;
+                List<String> bridgeheads = bridgeheadsConfiguration.getBridgeheadsForGroup(siteGroup);
+                final OrganisationRole role = organisationRole;
+                bridgeheads.forEach(bridgehead -> userOrganisationRoles.addBridgeheadRole(bridgehead, role));
+                if (bridgeheads.isEmpty()) {
+                    organisationRole = null;
+                }
             }
         }
         return organisationRole;
     }
 
-    private String extractBridgehead(String prefix, String suffix, String group) {
+    private String extractSiteGroup(String prefix, String suffix, String group) {
         return ((!suffix.isEmpty()) ? group.substring(prefix.length(), group.indexOf(suffix)) : group.substring(prefix.length())).toLowerCase();
     }
 

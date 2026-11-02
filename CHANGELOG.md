@@ -8,7 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
+- Site groups: `BRIDGEHEADS_CONFIG_<ID>_GROUP` names the identity provider group of a bridgehead's site (default: the
+  bridgehead id); a site group gives its role on every registered bridgehead of the site, e.g. `berlin` on `berlin`
+  and `berlin-test` (`docs/bridgeheads.md`)
 ### Changed
+- Two bridgeheads with the same explorer, focus or token manager id stop the start; before, the last one silently
+  won and the other was unreachable
 - Group settings (`PM_ADMIN_GROUPS`, `RESEARCHER_GROUPS`, `BK_USER_GROUP_PREFIX`, `BK_ADMIN_GROUP_PREFIX`) may be
   written with or without the leading slash of a Keycloak group path (`/projects/x/admin` = `projects/x/admin`);
   before, only `RESEARCHER_GROUPS` accepted the slash. Suffixes are compared as configured

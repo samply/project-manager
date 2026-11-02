@@ -16,7 +16,7 @@ class GroupToRoleMapperLeadingSlashTest {
     void groupSettingsMatchWithAndWithoutLeadingSlash(String slash) {
         var roles = new UserOrganisationRoles();
         var sites = mock(BridgeheadsConfiguration.class);
-        when(sites.isRegisteredBridgehead("cce-gr")).thenReturn(true);
+        when(sites.getBridgeheadsForGroup("cce-gr")).thenReturn(List.of("cce-gr"));
         var admins = new ProjectManagerAdminGroups(List.of(slash + "projects/cce/project-manager-admin", ""));
         var mapper = new GroupToRoleMapper(admins, sites);
         ReflectionTestUtils.setField(mapper, "bridgeheadUserGroupPrefix", slash + "projects/cce/sites/");
