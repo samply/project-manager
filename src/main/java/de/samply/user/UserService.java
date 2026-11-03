@@ -215,18 +215,24 @@ public class UserService {
 
     public void updateUserInMailingBlackList(@NotNull String email, @NotNull boolean addedToBlackList) throws UserServiceException {
         if (StringUtils.hasText(email)) {
-            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
+            Optional<de.samply.db.model.User> userOptional = userRepository.findFirstByEmailIgnoreCase(email.trim());
             if (userOptional.isPresent()) {
                 userOptional.get().setInMailingBlackList(addedToBlackList);
                 userRepository.save(userOptional.get());
+            } else if (addedToBlackList) {
+                // Also someone who has never logged in, as the blacklist file does: the name comes with the login
+                de.samply.db.model.User user = new de.samply.db.model.User();
+                user.setEmail(EmailUtils.normalize(email));
+                user.setInMailingBlackList(true);
+                userRepository.save(user);
             }
         }
     }
 
     public boolean isUserInMailingBlackList(@NotNull String email) throws UserServiceException {
         if (StringUtils.hasText(email)) {
-            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
-            return userOptional.isPresent() && userOptional.get().isInMailingBlackList();
+            // Ignoring case: the blacklist may write the address differently than the login
+            return userRepository.existsByEmailIgnoreCaseAndIsInMailingBlackListIsTrue(email.trim());
         }
         return false;
     }

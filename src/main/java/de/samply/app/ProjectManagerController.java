@@ -49,6 +49,7 @@ import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
 import de.samply.query.QueryState;
 import de.samply.user.ConfiguredUserLists;
+import de.samply.user.MailingBlacklistFileImporter;
 import de.samply.user.DtoUserService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
@@ -123,6 +124,7 @@ public class ProjectManagerController {
     private final ActionsBatchService actionsBatchService;
     private final OptionalModules optionalModules;
     private final ConfiguredUserLists configuredUserLists;
+    private final MailingBlacklistFileImporter mailingBlacklistFileImporter;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -153,7 +155,8 @@ public class ProjectManagerController {
                                     DisplayFormatService displayFormatService,
                                     ActionsBatchService actionsBatchService,
                                     OptionalModules optionalModules,
-                                    ConfiguredUserLists configuredUserLists) {
+                                    ConfiguredUserLists configuredUserLists,
+                                    MailingBlacklistFileImporter mailingBlacklistFileImporter) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -184,6 +187,7 @@ public class ProjectManagerController {
         this.actionsBatchService = actionsBatchService;
         this.optionalModules = optionalModules;
         this.configuredUserLists = configuredUserLists;
+        this.mailingBlacklistFileImporter = mailingBlacklistFileImporter;
     }
 
     @CacheCategory(CacheResource.PUBLIC_INFORMATION)
@@ -1127,6 +1131,9 @@ public class ProjectManagerController {
     public ResponseEntity removeUserFromMailingBlackList(
             @Email @RequestParameter(name = ProjectManagerConst.EMAIL) String email
     ) {
+        if (mailingBlacklistFileImporter.isConfigured(email)) {
+            return configuredUserCannotBeRemoved(ProjectManagerConst.MAILING_BLACK_LIST_FILE_PATH);
+        }
         return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, false));
     }
 

@@ -20,13 +20,16 @@ public class DtoUserService {
     private final DtoFactory dtoFactory;
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
     private final ConfiguredUserLists configuredUserLists;
+    private final MailingBlacklistFileImporter mailingBlacklistFileImporter;
 
     public DtoUserService(UserService userService, DtoFactory dtoFactory,
-                          BridgeheadsConfiguration bridgeheadsConfiguration, ConfiguredUserLists configuredUserLists) {
+                          BridgeheadsConfiguration bridgeheadsConfiguration, ConfiguredUserLists configuredUserLists,
+                          MailingBlacklistFileImporter mailingBlacklistFileImporter) {
         this.userService = userService;
         this.dtoFactory = dtoFactory;
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
         this.configuredUserLists = configuredUserLists;
+        this.mailingBlacklistFileImporter = mailingBlacklistFileImporter;
     }
 
     public Set<User> fetchUsersForAutocomplete(@NotNull String partialEmail, @NotNull ProjectBridgehead bridgehead) {
@@ -67,8 +70,11 @@ public class DtoUserService {
         return userService
                 .fetchMailingBlackList()
                 .stream()
-                .map(DtoFactory::convert)
-                .sorted(Comparator.comparing(User::firstName).thenComparing(User::lastName))
+                // configured = in the blacklist file (MAILING_BLACK_LIST_FILE_PATH): it can only be removed there
+                .map(user -> new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null,
+                        mailingBlacklistFileImporter.isConfigured(user.getEmail())))
+                // By name, else by address: someone who has never logged in has no name
+                .sorted(Comparator.comparing(this::sortValue, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
     }
 

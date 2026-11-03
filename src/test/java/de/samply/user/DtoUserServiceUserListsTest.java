@@ -24,6 +24,7 @@ class DtoUserServiceUserListsTest {
     private final UserService userService = mock(UserService.class);
     private final BridgeheadsConfiguration bridgeheadsConfiguration = mock(BridgeheadsConfiguration.class);
     private final ConfiguredUserLists configuredUserLists = mock(ConfiguredUserLists.class);
+    private final MailingBlacklistFileImporter mailingBlacklistFileImporter = mock(MailingBlacklistFileImporter.class);
     private DtoUserService dtoUserService;
 
     @BeforeEach
@@ -31,7 +32,8 @@ class DtoUserServiceUserListsTest {
         when(userService.fetchUserIgnoringCase(any())).thenReturn(Optional.empty());
         when(userService.fetchUserIgnoringCase("zoe@example.org"))
                 .thenReturn(Optional.of(new User(1L, "zoe@example.org", "Zoe", "Zimmer", false)));
-        dtoUserService = new DtoUserService(userService, mock(DtoFactory.class), bridgeheadsConfiguration, configuredUserLists);
+        dtoUserService = new DtoUserService(userService, mock(DtoFactory.class), bridgeheadsConfiguration, configuredUserLists,
+                mailingBlacklistFileImporter);
     }
 
     // Sorted by name; someone who has not logged in yet has no name and is sorted by the address
@@ -73,6 +75,21 @@ class DtoUserServiceUserListsTest {
         assertThat(admins).extracting(de.samply.frontend.dto.User::bridgehead)
                 .containsExactly("atlantis", "jurassic-park");
         assertThat(admins.get(1).humanReadableBridgehead()).isEqualTo("Jurassic Park");
+    }
+
+    // The addresses of the blacklist file are marked; people without a name (never logged in) are sorted by address
+    @Test
+    void marksTheBlacklistAddressesOfTheFile() {
+        when(mailingBlacklistFileImporter.isConfigured("file@example.org")).thenReturn(true);
+        when(userService.fetchMailingBlackList()).thenReturn(List.of(
+                new User(1L, "zoe@example.org", "Zoe", "Zimmer", true),
+                new User(2L, "file@example.org", null, null, true),
+                new User(3L, "other@example.org", null, null, true)));
+
+        assertThat(dtoUserService.fetchMailingBlackList())
+                .extracting(de.samply.frontend.dto.User::email, de.samply.frontend.dto.User::configured)
+                .containsExactly(tuple("file@example.org", true), tuple("other@example.org", false),
+                        tuple("zoe@example.org", false));
     }
 
 }

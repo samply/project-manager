@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   the lists share `EmailUtils`. Each address is in a list only once: parallel requests after a login could add it
   twice; migration `V006` removes duplicates and adds unique indexes, inserts skip an existing entry
   (`docs/user-lists.md`)
+- Mailing blacklist: the addresses of the blacklist file (`MAILING_BLACK_LIST_FILE_PATH`) are marked as configured
+  and cannot be removed in the configuration page (409), only in the file; adding an address that is not in the user
+  table yet (never logged in) creates its entry, before it was silently ignored; the blacklist is compared ignoring
+  case
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 - Site groups: `BRIDGEHEADS_CONFIG_<ID>_GROUP` names the identity provider group of a bridgehead's site (default: the

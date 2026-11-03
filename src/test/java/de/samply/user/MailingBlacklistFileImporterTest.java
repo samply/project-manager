@@ -57,4 +57,16 @@ class MailingBlacklistFileImporterTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Failed to read mailing blacklist file");
     }
+
+    // The addresses of the file cannot be removed in the configuration page: compared ignoring case
+    @Test
+    void knowsTheAddressesOfTheFile(@TempDir Path tempDir) throws Exception {
+        Path file = tempDir.resolve("mailing-black-list.txt");
+        Files.writeString(file, "Manager@Example.org # comment" + System.lineSeparator());
+
+        MailingBlacklistFileImporter importer = new MailingBlacklistFileImporter(mock(UserRepository.class), file);
+
+        assertThat(importer.isConfigured("manager@example.org")).isTrue();
+        assertThat(importer.isConfigured("other@example.org")).isFalse();
+    }
 }
