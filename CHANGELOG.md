@@ -38,6 +38,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   and cannot be removed in the configuration page (409), only in the file; adding an address that is not in the user
   table yet (never logged in) creates its entry, before it was silently ignored; the blacklist is compared ignoring
   case
+- "An email is sent to ..." (the email recipients of an action for the frontend) lists only who really gets an email
+  in this deployment: a recipient only with a template of the email for its role (or `DEFAULT`, also of one site) in
+  `email-templates.json`, nobody with `ENABLE_EMAILS=false`. E.g. DKTK no longer mentions the committee, which has no
+  templates there
+- At login, a user who already exists without a name (added to the mailing blacklist before the first login, maybe
+  with a different case) gets the name of the login; the user is looked up ignoring case
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 - Site groups: `BRIDGEHEADS_CONFIG_<ID>_GROUP` names the identity provider group of a bridgehead's site (default: the

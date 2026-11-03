@@ -33,7 +33,8 @@ class FrontendServiceActionPackagesByBridgeheadTest {
 
     @Test
     void onePackageWithoutBridgeheadAndOnePerBridgeheadInOrder() {
-        FrontendService service = spy(new FrontendService(null, null, null, null, null, null, "en"));
+        FrontendService service = spy(new FrontendService(null, null, null, null, null, null,
+                mock(de.samply.modules.OptionalModules.class), null, "en"));
         Project project = mock(Project.class);
         ProjectBridgehead tum = bridgehead("tum");
         ProjectBridgehead lmu = bridgehead("lmu");

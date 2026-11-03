@@ -199,9 +199,11 @@ public class UserService {
                 .toList();
     }
 
+    // At login. The user may exist already without a name: added to the mailing blacklist (file or configuration page)
+    // before the first login, maybe written with a different case; then the name is filled in, once
     public synchronized void addUserInformationIfNotExists(String email, String firstName, String lastName) {
         if (StringUtils.hasText(email) && (StringUtils.hasText(firstName) || StringUtils.hasText(lastName))) {
-            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
+            Optional<de.samply.db.model.User> userOptional = userRepository.findFirstByEmailIgnoreCase(email.trim());
             if (userOptional.isEmpty()) {
                 de.samply.db.model.User user = new de.samply.db.model.User();
                 user.setEmail(email);
@@ -209,6 +211,12 @@ public class UserService {
                 user.setLastName(lastName);
                 userRepository.save(user);
                 log.info("Added user information for {}", email);
+            } else if (!StringUtils.hasText(userOptional.get().getFirstName())
+                    && !StringUtils.hasText(userOptional.get().getLastName())) {
+                userOptional.get().setFirstName(firstName);
+                userOptional.get().setLastName(lastName);
+                userRepository.save(userOptional.get());
+                log.info("Completed user information for {}", email);
             }
         }
     }

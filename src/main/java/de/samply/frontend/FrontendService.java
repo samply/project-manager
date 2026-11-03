@@ -8,6 +8,9 @@ import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
 import de.samply.email.EmailRecipientType;
+import de.samply.email.EmailTemplates;
+import de.samply.modules.OptionalModule;
+import de.samply.modules.OptionalModules;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.RolesExtractor;
@@ -34,6 +37,8 @@ public class FrontendService {
     private final FrontendConfiguration frontendConfiguration;
     private final ActionMessages actionMessages;
     private final SessionUser sessionUser;
+    private final EmailTemplates emailTemplates;
+    private final boolean emailsEnabled;
 
     private final String explorerUrlRedirectUriParameter;
     private final String defaultLanguage;
@@ -44,6 +49,8 @@ public class FrontendService {
             FrontendConfiguration frontendConfiguration,
             ActionMessages actionMessages,
             SessionUser sessionUser,
+            EmailTemplates emailTemplates,
+            OptionalModules optionalModules,
             @Value(ProjectManagerConst.EXPLORER_REDIRECT_URI_PARAMETER_SV) String explorerUrlRedirectUriParameter,
             @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
         this.constraintsService = constraintsService;
@@ -53,6 +60,8 @@ public class FrontendService {
         this.actionMessages = actionMessages;
         this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
         this.sessionUser = sessionUser;
+        this.emailTemplates = emailTemplates;
+        this.emailsEnabled = optionalModules.isEnabled(OptionalModule.EMAILS);
     }
 
     public Map<String, Map<String, Action>> fetchModuleActionPackage(String site, Optional<Project> project,
@@ -150,16 +159,22 @@ public class FrontendService {
                         resolvedMessages.map(ResolvedActionMessages::errorMessage).orElse(null),
                         resolvedMessages.map(ResolvedActionMessages::priority).orElse(null),
                         requiresBridgehead(method),
-                        fetchEmailRecipients(method)
+                        fetchEmailRecipients(method, emailTemplates, emailsEnabled)
                 ));
     }
 
-    // The recipients of the emails sent when the action succeeds (@EmailSender). Not @EmailSenderIfError, which only
-    // sends when the action fails, and not the user who performs the action (SESSION_USER).
-    static List<String> fetchEmailRecipients(Method method) {
+    // The recipients of the emails sent when the action succeeds (@EmailSender), for "An email is sent to ...". Not
+    // @EmailSenderIfError, which only sends when the action fails, and not the user who performs the action
+    // (SESSION_USER). Only who really gets an email in this deployment: nobody with emails disabled, and a recipient
+    // only with a template of the email for its role (email-templates.json)
+    static List<String> fetchEmailRecipients(Method method, EmailTemplates emailTemplates, boolean emailsEnabled) {
+        if (!emailsEnabled) {
+            return List.of();
+        }
         return Arrays.stream(method.getAnnotationsByType(EmailSender.class))
-                .flatMap(emailSender -> Arrays.stream(emailSender.recipients()))
-                .filter(recipient -> recipient != EmailRecipientType.SESSION_USER)
+                .flatMap(emailSender -> Arrays.stream(emailSender.recipients())
+                        .filter(recipient -> recipient != EmailRecipientType.SESSION_USER)
+                        .filter(recipient -> emailTemplates.hasTemplate(emailSender.templateType(), recipient)))
                 .map(Enum::name)
                 .distinct()
                 .toList();

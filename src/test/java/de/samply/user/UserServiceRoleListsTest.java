@@ -96,4 +96,29 @@ class UserServiceRoleListsTest {
         verify(userRepository, never()).save(any());
     }
 
+    // At login: someone added to the blacklist before the first login gets the name of the login
+    @Test
+    void theLoginFillsInAMissingName() {
+        de.samply.db.model.User added = new de.samply.db.model.User(1L, "zoe@example.org", null, null, true);
+        when(userRepository.findFirstByEmailIgnoreCase("Zoe@Example.org")).thenReturn(Optional.of(added));
+
+        userService.addUserInformationIfNotExists("Zoe@Example.org", "Zoe", "Zimmer");
+
+        assertThat(added.getFirstName()).isEqualTo("Zoe");
+        assertThat(added.getLastName()).isEqualTo("Zimmer");
+        assertThat(added.isInMailingBlackList()).isTrue();
+        verify(userRepository).save(added);
+    }
+
+    @Test
+    void theLoginKeepsAnExistingName() {
+        de.samply.db.model.User known = new de.samply.db.model.User(1L, "zoe@example.org", "Zoe", "Zimmer", false);
+        when(userRepository.findFirstByEmailIgnoreCase("zoe@example.org")).thenReturn(Optional.of(known));
+
+        userService.addUserInformationIfNotExists("zoe@example.org", "Zoé", "Zimmermann");
+
+        assertThat(known.getLastName()).isEqualTo("Zimmer");
+        verify(userRepository, never()).save(any());
+    }
+
 }
