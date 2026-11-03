@@ -83,6 +83,14 @@ whoever adds it, and compare in that form, so one person is one entry. Migration
 entries and removed the duplicates this created (keeping the oldest entry, so a site's first admin stays its contact).
 The user table keeps the address as the login wrote it; the lists look the name up there without case.
 
+## One entry per address
+
+The login adds the session user to its lists on every authenticated request. Right after a login the UI sends several
+requests at once, and each could find no entry and insert one, so the same person appeared twice. Since `V006` the
+database refuses a second entry (unique index on the address, for site admins on address and site; existing duplicates
+removed, oldest kept), and the backend inserts with `ON CONFLICT DO NOTHING`. The lookup before the insert stays, so
+an existing entry costs no write.
+
 ## Why no synchronization with the identity provider
 
 Reading the groups from the identity provider (e.g. the Keycloak admin API) would keep the lists exact. We decided

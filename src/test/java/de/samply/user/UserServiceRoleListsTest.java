@@ -13,11 +13,9 @@ import de.samply.project.ProjectService;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -42,9 +40,8 @@ class UserServiceRoleListsTest {
 
         userService.createCentralApprovalCommitteeUserIfNotExists(" Zoe@Example.org");
 
-        ArgumentCaptor<CentralApprovalCommitteeUser> saved = ArgumentCaptor.forClass(CentralApprovalCommitteeUser.class);
-        verify(committeeRepository).save(saved.capture());
-        assertThat(saved.getValue().getEmail()).isEqualTo("zoe@example.org");
+        verify(committeeRepository).insertIfAbsent("zoe@example.org");
+        verify(committeeRepository, never()).save(any());
     }
 
     @Test
@@ -54,7 +51,7 @@ class UserServiceRoleListsTest {
 
         userService.createCentralApprovalCommitteeUserIfNotExists("ZOE@example.org");
 
-        verify(committeeRepository, never()).save(any());
+        verify(committeeRepository, never()).insertIfAbsent(any());
     }
 
     @Test

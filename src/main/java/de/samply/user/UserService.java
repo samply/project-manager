@@ -73,36 +73,27 @@ public class UserService {
         this.projectService = projectService;
     }
 
-    // The role lists store addresses normalized (EmailUtils), whoever adds them: login, configuration, configuration page
+    // The role lists store addresses normalized (EmailUtils), whoever adds them: login, configuration, configuration page.
+    // Login runs on every authenticated request, so the lookup avoids a write each time; the insert itself skips an
+    // existing entry in the database (unique index, V006), because parallel requests may all pass the lookup at once.
     public void createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
-        email = EmailUtils.normalize(email);
-        Optional<BridgeheadAdminUser> bridgeheadAdminUserOptional = this.bridgeheadAdminUserRepository.findFirstByEmailAndBridgehead(email, bridgehead);
-        BridgeheadAdminUser result;
-        if (bridgeheadAdminUserOptional.isEmpty()) {
-            result = new BridgeheadAdminUser();
-            result.setBridgehead(bridgehead);
-            result.setEmail(email);
-            this.bridgeheadAdminUserRepository.save(result);
+        String normalizedEmail = EmailUtils.normalize(email);
+        if (bridgeheadAdminUserRepository.findFirstByEmailAndBridgehead(normalizedEmail, bridgehead).isEmpty()) {
+            bridgeheadAdminUserRepository.insertIfAbsent(normalizedEmail, bridgehead);
         }
     }
 
     public void createProjectManagerAdminUserIfNotExists(@NotNull String email) {
-        email = EmailUtils.normalize(email);
-        Optional<ProjectManagerAdminUser> projectManagerAdminUserOptional = this.projectManagerAdminUserRepository.findFirstByEmail(email);
-        ProjectManagerAdminUser result;
-        if (projectManagerAdminUserOptional.isEmpty()) {
-            result = new ProjectManagerAdminUser();
-            result.setEmail(email);
-            this.projectManagerAdminUserRepository.save(result);
+        String normalizedEmail = EmailUtils.normalize(email);
+        if (projectManagerAdminUserRepository.findFirstByEmail(normalizedEmail).isEmpty()) {
+            projectManagerAdminUserRepository.insertIfAbsent(normalizedEmail);
         }
     }
 
     public void createCentralApprovalCommitteeUserIfNotExists(@NotNull String email) {
-        email = EmailUtils.normalize(email);
-        if (this.centralApprovalCommitteeUserRepository.findFirstByEmail(email).isEmpty()) {
-            CentralApprovalCommitteeUser centralApprovalCommitteeUser = new CentralApprovalCommitteeUser();
-            centralApprovalCommitteeUser.setEmail(email);
-            this.centralApprovalCommitteeUserRepository.save(centralApprovalCommitteeUser);
+        String normalizedEmail = EmailUtils.normalize(email);
+        if (centralApprovalCommitteeUserRepository.findFirstByEmail(normalizedEmail).isEmpty()) {
+            centralApprovalCommitteeUserRepository.insertIfAbsent(normalizedEmail);
         }
     }
 

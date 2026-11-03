@@ -31,7 +31,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   stops the start. These lists give emails only: the role itself still needs the group in the identity provider
 - The email lists of project manager admins, committee members and site admins store addresses in lower case
   (migration `V005` converts the existing entries and removes resulting duplicates); the endpoints' email check and
-  the lists share `EmailUtils`
+  the lists share `EmailUtils`. Each address is in a list only once: parallel requests after a login could add it
+  twice; migration `V006` removes duplicates and adds unique indexes, inserts skip an existing entry
+  (`docs/user-lists.md`)
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 - Site groups: `BRIDGEHEADS_CONFIG_<ID>_GROUP` names the identity provider group of a bridgehead's site (default: the
