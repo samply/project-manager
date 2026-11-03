@@ -2570,8 +2570,8 @@ public class ProjectManagerController {
                 () -> this.dataShieldService.existsAuthenticationScript(project, bridgehead));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN,
-            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
+    // Not the central approval committee: too much noise for it; its messages will be shown in the user tasks
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_NOTIFICATIONS_ACTION)
@@ -2588,8 +2588,7 @@ public class ProjectManagerController {
                         projectService::fetchAllUserVisibleProjects));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN,
-            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendAction(action = ProjectManagerConst.SET_NOTIFICATION_AS_READ_ACTION)

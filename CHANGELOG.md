@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Role central approval committee (`CENTRAL_APPROVAL_COMMITTEE_GROUPS`, unset = nobody): sees every request except
-  the drafts of others (read only: form, documents, sites, notifications) and accepts requests in REVIEW and, with the
-  local approval module, in CENTRAL_APPROVAL; like the project manager admin, it can also reactivate an archived
+  the drafts of others (read only: form, documents, sites; not the notifications, too much noise - its messages will
+  be shown in the user tasks) and accepts requests in REVIEW and, with the local approval module, in CENTRAL_APPROVAL; like the project manager admin, it can also reactivate an archived
   request
 - Request changes in the approval (`/project/approval/request-changes`, action `REQUEST_CHANGES_IN_APPROVAL`, message
   required), for project manager admins and the committee: in CENTRAL_APPROVAL the request goes back to REVIEW, in
