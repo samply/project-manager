@@ -1,5 +1,6 @@
 package de.samply.user;
 
+import de.samply.bridgehead.BridgeheadsConfiguration;
 import de.samply.db.model.Project;
 import de.samply.db.model.ProjectBridgehead;
 import de.samply.db.model.ProjectBridgeheadUser;
@@ -10,16 +11,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class DtoUserService {
 
     private final UserService userService;
     private final DtoFactory dtoFactory;
+    private final BridgeheadsConfiguration bridgeheadsConfiguration;
+    private final ConfiguredUserLists configuredUserLists;
+    private final MailingBlacklistFileImporter mailingBlacklistFileImporter;
 
-    public DtoUserService(UserService userService, DtoFactory dtoFactory) {
+    public DtoUserService(UserService userService, DtoFactory dtoFactory,
+                          BridgeheadsConfiguration bridgeheadsConfiguration, ConfiguredUserLists configuredUserLists,
+                          MailingBlacklistFileImporter mailingBlacklistFileImporter) {
         this.userService = userService;
         this.dtoFactory = dtoFactory;
+        this.bridgeheadsConfiguration = bridgeheadsConfiguration;
+        this.configuredUserLists = configuredUserLists;
+        this.mailingBlacklistFileImporter = mailingBlacklistFileImporter;
     }
 
     public Set<User> fetchUsersForAutocomplete(@NotNull String partialEmail, @NotNull ProjectBridgehead bridgehead) {
@@ -51,7 +61,7 @@ public class DtoUserService {
         return userService.fetchProjectCreators(project).stream()
                 .map(email -> userService.fetchUser(email)
                         .map(DtoFactory::convert)
-                        .orElseGet(() -> new User(email, null, null, null, null, null, null)))
+                        .orElseGet(() -> new User(email, null, null, null, null, null, null, null)))
                 .sorted(Comparator.comparing(this::sortValue, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -60,8 +70,11 @@ public class DtoUserService {
         return userService
                 .fetchMailingBlackList()
                 .stream()
-                .map(DtoFactory::convert)
-                .sorted(Comparator.comparing(User::firstName).thenComparing(User::lastName))
+                // configured = in the blacklist file (MAILING_BLACK_LIST_FILE_PATH): it can only be removed there
+                .map(user -> new User(user.getEmail(), user.getFirstName(), user.getLastName(), null, null, null, null,
+                        mailingBlacklistFileImporter.isConfigured(user.getEmail())))
+                // By name, else by address: someone who has never logged in has no name
+                .sorted(Comparator.comparing(this::sortValue, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
     }
 
@@ -71,6 +84,40 @@ public class DtoUserService {
                 .stream()
                 .map(DtoFactory::convert)
                 .collect(Collectors.toList());
+    }
+
+    // The email lists of the configuration page: name from the user table if the person has logged in already
+    public List<User> fetchProjectManagerAdmins() {
+        return sortByName(userService.fetchAllProjectManagerAdmins().stream()
+                .map(admin -> convertEmail(admin.getEmail(), null,
+                        configuredUserLists.isProjectManagerAdmin(admin.getEmail()))));
+    }
+
+    public List<User> fetchCentralApprovalCommitteeMembers() {
+        return sortByName(userService.fetchAllCentralApprovalCommitteeUsers().stream()
+                .map(member -> convertEmail(member.getEmail(), null,
+                        configuredUserLists.isCentralApprovalCommitteeMember(member.getEmail()))));
+    }
+
+    public List<User> fetchBridgeheadAdmins() {
+        return userService.fetchAllBridgeheadAdmins().stream()
+                .map(admin -> convertEmail(admin.getEmail(), admin.getBridgehead(),
+                        configuredUserLists.isBridgeheadAdmin(admin.getEmail(), admin.getBridgehead())))
+                .sorted(Comparator.comparing(User::bridgehead)
+                        .thenComparing(this::sortValue, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private User convertEmail(String email, String bridgehead, boolean configured) {
+        Optional<de.samply.db.model.User> user = userService.fetchUserIgnoringCase(email);
+        return new User(email, user.map(de.samply.db.model.User::getFirstName).orElse(null),
+                user.map(de.samply.db.model.User::getLastName).orElse(null), bridgehead,
+                Optional.ofNullable(bridgehead).flatMap(bridgeheadsConfiguration::getHumanReadable).orElse(null),
+                null, null, configured);
+    }
+
+    private List<User> sortByName(Stream<User> entries) {
+        return entries.sorted(Comparator.comparing(this::sortValue, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     private Set<User> convert(Collection<ProjectBridgeheadUser> users) {

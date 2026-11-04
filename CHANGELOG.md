@@ -6,6 +6,44 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Role central approval committee (`CENTRAL_APPROVAL_COMMITTEE_GROUPS`, unset = nobody): sees every request except
+  the drafts of others (read only: form, documents, sites; not the notifications, too much noise - its messages will
+  be shown in the user tasks) and accepts requests in REVIEW and, with the local approval module, in CENTRAL_APPROVAL; like the project manager admin, it can also reactivate an archived
+  request
+- Request changes in the approval (`/project/approval/request-changes`, action `REQUEST_CHANGES_IN_APPROVAL`, message
+  required), for project manager admins and the committee: in CENTRAL_APPROVAL the request goes back to REVIEW, in
+  REVIEW it stays (the creator can already edit it). Email `PROJECT_BACK_TO_REVIEW` with the message to the creator,
+  the project manager admins and the committee
+- Emails to the central approval committee (recipient `CENTRAL_APPROVAL_COMMITTEE`, template role of the same name):
+  addresses from the new table `central_approval_committee_user`, filled at login; `NEW_PROJECT_ACCEPTED` now also
+  goes to the committee
+- The message of every action with a message (reject, request changes, ...) is stored as a notification of the
+  request (`OperationType.MESSAGE`, author = the acting user), also with emails disabled; before it only went into
+  the email
+- Configuration page endpoints to list, add and remove project manager admins (`/project-manager-admins`), committee
+  members (`/central-approval-committee-members`) and site admins (`/bridgehead-admins`), project manager admin only.
+  The lists only decide who gets emails (also before the first login); permissions still come from the groups, and
+  the login still adds (`docs/user-lists.md`); the registered sites (`FETCH_ALL_REGISTERED_BRIDGEHEADS`) are also
+  offered on the configuration page, to choose the site of a new site admin
+- `PROJECT_MANAGER_ADMIN_EMAILS`, `CENTRAL_APPROVAL_COMMITTEE_EMAILS` and `BRIDGEHEADS_CONFIG_<SITE>_ADMINEMAILS`
+  (comma-separated): addresses put into these email lists at every start, so that they get emails also before their
+  first login; they cannot be removed in the configuration page (409), only in the configuration. A malformed address
+  stops the start. These lists give emails only: the role itself still needs the group in the identity provider
+- The email lists of project manager admins, committee members and site admins store addresses in lower case
+  (migration `V005` converts the existing entries and removes resulting duplicates); the endpoints' email check and
+  the lists share `EmailUtils`. Each address is in a list only once: parallel requests after a login could add it
+  twice; migration `V006` removes duplicates and adds unique indexes, inserts skip an existing entry
+  (`docs/user-lists.md`)
+- Mailing blacklist: the addresses of the blacklist file (`MAILING_BLACK_LIST_FILE_PATH`) are marked as configured
+  and cannot be removed in the configuration page (409), only in the file; adding an address that is not in the user
+  table yet (never logged in) creates its entry, before it was silently ignored; the blacklist is compared ignoring
+  case
+- "An email is sent to ..." (the email recipients of an action for the frontend) lists only who really gets an email
+  in this deployment: a recipient only with a template of the email for its role (or `DEFAULT`, also of one site) in
+  `email-templates.json`, nobody with `ENABLE_EMAILS=false`. E.g. DKTK no longer mentions the committee, which has no
+  templates there
+- At login, a user who already exists without a name (added to the mailing blacklist before the first login, maybe
+  with a different case) gets the name of the login; the user is looked up ignoring case
 - Hot reload for local development: `spring-boot-devtools` restarts the backend started from the IDE when its
   classes or the watched configuration files change (`docs/hot-reload.md`); not part of the jar or the images
 - Site groups: `BRIDGEHEADS_CONFIG_<ID>_GROUP` names the identity provider group of a bridgehead's site (default: the
@@ -14,9 +52,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Two bridgeheads with the same explorer, focus or token manager id stop the start; before, the last one silently
   won and the other was unreachable
+- Someone who is a recipient in several roles of one action (e.g. project manager admin and committee member) gets
+  an identical email only once: emails to the same address are merged when they use the same type, template file,
+  subject and site; different templates are still all sent (`docs/emails.md`)
+- Project manager admins see the same requests as the central approval committee: every request except the drafts
+  of others. Before, the drafts of others were only hidden from the default dashboard view (still returned for
+  `projectState=DRAFT`, in notifications and site lists), and the admin's own drafts were not shown at all
+  (`docs/project-visibility.md`)
+- The form (titles, selected forms, form templates, uploaded form files, PDF summary) can be read in CENTRAL_APPROVAL
 - Group settings (`PM_ADMIN_GROUPS`, `RESEARCHER_GROUPS`, `BK_USER_GROUP_PREFIX`, `BK_ADMIN_GROUP_PREFIX`) may be
   written with or without the leading slash of a Keycloak group path (`/projects/x/admin` = `projects/x/admin`);
   before, only `RESEARCHER_GROUPS` accepted the slash. Suffixes are compared as configured
+### Removed
+- `/project/back-to-review` (action `BACK_TO_REVIEW`): replaced by request changes in the approval, which needs a
+  message
 ### Fixed
 - Bridgehead admin groups that do not also match the user pattern give the admin role (e.g. user suffix `/user`,
   admin suffix `/admin`); before, the admin role was only given to groups that matched both patterns

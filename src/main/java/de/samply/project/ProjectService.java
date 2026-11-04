@@ -134,22 +134,24 @@ public class ProjectService {
      */
     public List<Project> fetchAllUserVisibleProjects() {
         return projectRepository.findAll(
-                buildUserVisibilitySpecification(isProjectManagerAdmin()),
+                buildUserVisibilitySpecification(),
                 Sort.by(Sort.Direction.DESC, Project_.MODIFIED_AT));
     }
 
     public ProjectState[] fetchVisibleProjectStates() {
-        boolean projectManagerAdmin = isProjectManagerAdmin();
         return fetchAllUserVisibleProjects().stream()
                 .map(Project::getState)
                 .filter(Objects::nonNull)
-                .filter(state -> !projectManagerAdmin || state != ProjectState.DRAFT)
                 .distinct()
                 .toArray(ProjectState[]::new);
     }
 
     protected boolean isProjectManagerAdmin() {
         return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.PROJECT_MANAGER_ADMIN);
+    }
+
+    protected boolean isCentralApprovalCommittee() {
+        return sessionUser.getUserOrganisationRoles().containsRole(OrganisationRole.CENTRAL_APPROVAL_COMMITTEE);
     }
 
     protected boolean isBridgeheadAdmin() {
@@ -180,12 +182,11 @@ public class ProjectService {
     private Specification<Project> buildUserVisibleProjectsSpecification(
             Optional<ProjectState> projectState, Optional<Boolean> archived,
             Optional<String> projectCreatorEmail, Optional<String> bridgehead) {
-        boolean isProjectManagerAdmin = isProjectManagerAdmin();
         // allOf combines the independent specifications with a logical AND.
         return Specification.allOf(List.of(
-                buildProjectStateSpecification(projectState, isProjectManagerAdmin),
+                buildProjectStateSpecification(projectState),
                 buildArchivedStatusSpecification(archived),
-                buildUserVisibilitySpecification(isProjectManagerAdmin),
+                buildUserVisibilitySpecification(),
                 buildProjectCreatorSpecification(projectCreatorEmail),
                 buildBridgeheadSpecification(bridgehead)
         ));
@@ -216,19 +217,13 @@ public class ProjectService {
     }
 
     /**
-     * Filters by the requested state. Without an explicit state, project manager admins see every
-     * state except DRAFT; other users receive no state restriction here because their visibility
-     * is handled separately.
+     * Filters by the requested state. Without an explicit state there is no restriction: which drafts a user sees is
+     * decided by buildUserVisibilitySpecification.
      */
-    private Specification<Project> buildProjectStateSpecification(
-            Optional<ProjectState> projectState, boolean isProjectManagerAdmin) {
-        // Criterion: match the requested state or exclude DRAFT by default for admins.
+    private Specification<Project> buildProjectStateSpecification(Optional<ProjectState> projectState) {
         return (project, _, criteriaBuilder) -> projectState
-                .map(state ->
-                        criteriaBuilder.equal(project.get(Project_.state), state))
-                .orElseGet(() -> isProjectManagerAdmin
-                        ? criteriaBuilder.notEqual(project.get(Project_.state), ProjectState.DRAFT)
-                        : criteriaBuilder.conjunction());
+                .map(state -> criteriaBuilder.equal(project.get(Project_.state), state))
+                .orElseGet(criteriaBuilder::conjunction);
     }
 
     /**
@@ -245,24 +240,25 @@ public class ProjectService {
     }
 
     /**
-     * Project manager admins have unrestricted visibility. Other users can see projects they
-     * created or projects reachable through one of their bridgeheads.
+     * Users see the projects they created and the projects reachable through one of their bridgeheads. Project manager
+     * admins and the central approval committee also see every other project except the drafts of others
+     * (docs/project-visibility.md).
      */
-    private Specification<Project> buildUserVisibilitySpecification(boolean isProjectManagerAdmin) {
-        if (isProjectManagerAdmin) {
-            // A conjunction adds no visibility restriction for project manager admins.
-            return (_, _, criteriaBuilder) -> criteriaBuilder.conjunction();
-        }
-
+    private Specification<Project> buildUserVisibilitySpecification() {
         String email = sessionUser.getEmail();
         Set<String> bridgeheads = sessionUser.getBridgeheads();
         boolean bridgeheadAdmin = isBridgeheadAdmin();
+        boolean seesAllButOthersDrafts = isProjectManagerAdmin() || isCentralApprovalCommittee();
 
-        // Criterion: the user is the creator OR a permitted bridgehead row exists.
+        // Criterion: the user is the creator OR a permitted bridgehead row exists
+        // (OR, for admins and the committee, the project is no draft).
         return (project, query, criteriaBuilder) -> criteriaBuilder.or(
                 criteriaBuilder.equal(project.get(Project_.creatorEmail), email),
                 criteriaBuilder.exists(buildVisibleBridgeheadSubquery(
-                        project, query, criteriaBuilder, email, bridgeheads, bridgeheadAdmin))
+                        project, query, criteriaBuilder, email, bridgeheads, bridgeheadAdmin)),
+                seesAllButOthersDrafts
+                        ? criteriaBuilder.notEqual(project.get(Project_.state), ProjectState.DRAFT)
+                        : criteriaBuilder.disjunction()
         );
     }
 

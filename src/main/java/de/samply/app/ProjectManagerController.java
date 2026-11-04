@@ -48,6 +48,8 @@ import de.samply.query.OutputFormat;
 import de.samply.query.QueryFormat;
 import de.samply.query.QueryService;
 import de.samply.query.QueryState;
+import de.samply.user.ConfiguredUserLists;
+import de.samply.user.MailingBlacklistFileImporter;
 import de.samply.user.DtoUserService;
 import de.samply.user.UserService;
 import de.samply.user.roles.OrganisationRole;
@@ -121,6 +123,8 @@ public class ProjectManagerController {
     private final DisplayFormatService displayFormatService;
     private final ActionsBatchService actionsBatchService;
     private final OptionalModules optionalModules;
+    private final ConfiguredUserLists configuredUserLists;
+    private final MailingBlacklistFileImporter mailingBlacklistFileImporter;
 
     public ProjectManagerController(ProjectEventService projectEventService,
                                     FrontendService frontendService,
@@ -150,7 +154,9 @@ public class ProjectManagerController {
                                     FeasibilityService feasibilityService,
                                     DisplayFormatService displayFormatService,
                                     ActionsBatchService actionsBatchService,
-                                    OptionalModules optionalModules) {
+                                    OptionalModules optionalModules,
+                                    ConfiguredUserLists configuredUserLists,
+                                    MailingBlacklistFileImporter mailingBlacklistFileImporter) {
         this.projectEventService = projectEventService;
         this.frontendService = frontendService;
         this.userService = userService;
@@ -180,6 +186,8 @@ public class ProjectManagerController {
         this.displayFormatService = displayFormatService;
         this.actionsBatchService = actionsBatchService;
         this.optionalModules = optionalModules;
+        this.configuredUserLists = configuredUserLists;
+        this.mailingBlacklistFileImporter = mailingBlacklistFileImporter;
     }
 
     @CacheCategory(CacheResource.PUBLIC_INFORMATION)
@@ -282,7 +290,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
-            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ACTION)
     @CacheCategory(CacheResource.PROJECT_DETAIL)
@@ -308,7 +317,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_VISIBLE_PROJECT_STATES_ACTION)
     @CacheCategory(CacheResource.REFERENCE_DATA)
@@ -341,7 +351,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.PROJECT_MANAGER_ADMIN, OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE,
             module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.IS_FEASIBILITY_ENABLED_ACTION)
@@ -353,7 +363,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.PROJECT_MANAGER_ADMIN, OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
     @ProjectConstraints(queryFormats = {QueryFormat.AST_DATA})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE,
@@ -562,9 +572,10 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
-            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,
-            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TITLES_ACTION)
     @CacheCategory(CacheResource.FORM_METADATA)
@@ -580,9 +591,10 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
-            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,
-            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TITLE_ORDER_ACTION)
     @CacheCategory(CacheResource.FORM_METADATA)
@@ -598,7 +610,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
-            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_FIELDS_ACTION)
     @CacheCategory(CacheResource.FORM_METADATA)
@@ -616,7 +629,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
-            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_LAYOUTS_ACTION)
     @CacheCategory(CacheResource.FORM_METADATA)
@@ -632,9 +646,10 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
-            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,
-            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.DEVELOPER, ProjectRole.FINAL, ProjectRole.PILOT,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_SELECTED_PROJECT_FORMS_ACTION)
     @CacheCategory(CacheResource.PROJECT_DETAIL)
@@ -733,9 +748,9 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
-            ProjectRole.BRIDGEHEAD_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,
-            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FORM_AS_PDF_ACTION)
     @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
@@ -761,9 +776,9 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
-            ProjectRole.BRIDGEHEAD_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.DEVELOP,
-            ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
+            ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
+            ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_FORM_TEMPLATES_ACTION)
     @CacheCategory(CacheResource.FORM_METADATA)
@@ -805,7 +820,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ORGANISATION_ROLES_ACTION)
     @CacheCategory(CacheResource.USER_ROLES)
@@ -815,7 +831,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.NAVIGATION_BAR_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.IS_PROJECT_MANAGER_ADMIN_ACTION)
     @CacheCategory(CacheResource.USER_ROLES)
@@ -826,7 +843,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
-            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.USER_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_ROLES_ACTION)
     @CacheCategory(CacheResource.USER_ROLES)
@@ -982,7 +1000,8 @@ public class ProjectManagerController {
 
     // Only with ENABLE_LOCAL_APPROVAL=true (disabled by default): otherwise neither offered nor accepted
     @RequiresModule(OptionalModule.LOCAL_APPROVAL)
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.CENTRAL_APPROVAL})
     @EmailSender(templateType = EmailTemplateType.LOCAL_APPROVAL_STARTED, recipients = {
             EmailRecipientType.BRIDGEHEAD_APPROVAL_CONTACTS, EmailRecipientType.CREATOR,
@@ -997,18 +1016,23 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectEventService.startLocalApprovalStage(project));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.CENTRAL_APPROVAL})
+    // In CENTRAL_APPROVAL the request goes back to REVIEW; in REVIEW the creator can already edit it
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL})
     @EmailSender(templateType = EmailTemplateType.PROJECT_BACK_TO_REVIEW, recipients = {
-            EmailRecipientType.CREATOR})
+            EmailRecipientType.CREATOR, EmailRecipientType.PROJECT_MANAGER_ADMIN,
+            EmailRecipientType.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
-    @FrontendAction(action = ProjectManagerConst.BACK_TO_REVIEW_ACTION)
+    @FrontendAction(action = ProjectManagerConst.REQUEST_CHANGES_IN_APPROVAL_ACTION)
     @CacheCategory(CacheResource.MUTATION_RESPONSES)
-    @PutMapping(value = ProjectManagerConst.BACK_TO_REVIEW)
-    public ResponseEntity backToReview(
-            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project
+    @PutMapping(value = ProjectManagerConst.REQUEST_CHANGES_IN_APPROVAL)
+    public ResponseEntity requestChangesInApproval(
+            @ProjectCode @RequestVariable(name = ProjectManagerConst.PROJECT_CODE) Project project,
+            // Sent per email and stored as a notification
+            @SuppressWarnings("unused") @NotEmpty @Message @RequestVariable(name = ProjectManagerConst.MESSAGE) String message
     ) {
-        return convertToResponseEntity(() -> projectEventService.backToReview(project));
+        return convertToResponseEntity(() -> projectEventService.requestChangesInApproval(project));
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
@@ -1052,12 +1076,15 @@ public class ProjectManagerController {
         return convertToResponseEntity(() -> projectEventService.startFinalStage(project));
     }
 
-    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.REVIEW, ProjectState.ARCHIVED})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT_ACCEPTED, recipients = {
             EmailRecipientType.CREATOR})
     @EmailSender(templateType = EmailTemplateType.NEW_PROJECT_ACCEPTED, recipients = {
             EmailRecipientType.ALL_BRIDGEHEAD_ADMINS})
+    @EmailSender(templateType = EmailTemplateType.NEW_PROJECT_ACCEPTED, recipients = {
+            EmailRecipientType.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_STATE_MODULE)
     @FrontendAction(action = ProjectManagerConst.ACCEPT_PROJECT_ACTION)
     @CacheCategory(CacheResource.MUTATION_RESPONSES)
@@ -1104,6 +1131,9 @@ public class ProjectManagerController {
     public ResponseEntity removeUserFromMailingBlackList(
             @Email @RequestParameter(name = ProjectManagerConst.EMAIL) String email
     ) {
+        if (mailingBlacklistFileImporter.isConfigured(email)) {
+            return configuredUserCannotBeRemoved(ProjectManagerConst.MAILING_BLACK_LIST_FILE_PATH);
+        }
         return convertToResponseEntity(() -> userService.updateUserInMailingBlackList(email, false));
     }
 
@@ -1126,6 +1156,123 @@ public class ProjectManagerController {
     ) {
         return convertToResponseEntity(
                 () -> dtoUserService.fetchUsersForAutocompleteInMailingBlackList(partialEmail));
+    }
+
+    // The email lists of project manager admins, committee members and site admins (docs/user-lists.md): maintained
+    // by hand besides the login, which still adds; they decide who gets emails, never permissions
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_MANAGER_ADMINS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
+    @GetMapping(value = ProjectManagerConst.PROJECT_MANAGER_ADMINS)
+    public ResponseEntity fetchProjectManagerAdmins() {
+        return convertToResponseEntity(dtoUserService::fetchProjectManagerAdmins);
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_PROJECT_MANAGER_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.PROJECT_MANAGER_ADMINS)
+    public ResponseEntity addProjectManagerAdmin(
+            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.createProjectManagerAdminUserIfNotExists(email.trim()));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_PROJECT_MANAGER_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @DeleteMapping(value = ProjectManagerConst.PROJECT_MANAGER_ADMINS)
+    public ResponseEntity removeProjectManagerAdmin(
+            @RequestParameter(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        if (configuredUserLists.isProjectManagerAdmin(email)) {
+            return configuredUserCannotBeRemoved(ProjectManagerConst.PROJECT_MANAGER_ADMIN_EMAILS);
+        }
+        return convertToResponseEntity(() -> userService.removeProjectManagerAdminUser(email));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_CENTRAL_APPROVAL_COMMITTEE_MEMBERS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
+    @GetMapping(value = ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_MEMBERS)
+    public ResponseEntity fetchCentralApprovalCommitteeMembers() {
+        return convertToResponseEntity(dtoUserService::fetchCentralApprovalCommitteeMembers);
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_CENTRAL_APPROVAL_COMMITTEE_MEMBER_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_MEMBERS)
+    public ResponseEntity addCentralApprovalCommitteeMember(
+            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        return convertToResponseEntity(() -> userService.createCentralApprovalCommitteeUserIfNotExists(email.trim()));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_CENTRAL_APPROVAL_COMMITTEE_MEMBER_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @DeleteMapping(value = ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_MEMBERS)
+    public ResponseEntity removeCentralApprovalCommitteeMember(
+            @RequestParameter(name = ProjectManagerConst.EMAIL) String email
+    ) {
+        if (configuredUserLists.isCentralApprovalCommitteeMember(email)) {
+            return configuredUserCannotBeRemoved(ProjectManagerConst.CENTRAL_APPROVAL_COMMITTEE_EMAILS);
+        }
+        return convertToResponseEntity(() -> userService.removeCentralApprovalCommitteeUser(email));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.FETCH_BRIDGEHEAD_ADMINS_ACTION)
+    @CacheCategory(CacheResource.USER_DATA)
+    @GetMapping(value = ProjectManagerConst.BRIDGEHEAD_ADMINS)
+    public ResponseEntity fetchBridgeheadAdmins() {
+        return convertToResponseEntity(dtoUserService::fetchBridgeheadAdmins);
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.ADD_BRIDGEHEAD_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @PostMapping(value = ProjectManagerConst.BRIDGEHEAD_ADMINS)
+    public ResponseEntity addBridgeheadAdmin(
+            @Email @RequestVariable(name = ProjectManagerConst.EMAIL) String email,
+            @RequestVariable(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        // Only sites of this deployment
+        if (!bridgeheadsConfiguration.getRegisteredBridgeheads().contains(bridgehead)) {
+            return ResponseEntity.badRequest().body("Unknown site: " + bridgehead);
+        }
+        return convertToResponseEntity(() -> userService.createBridgeheadAdminUserIfNotExists(email.trim(), bridgehead));
+    }
+
+    @RoleConstraints(organisationRoles = OrganisationRole.PROJECT_MANAGER_ADMIN)
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.USER_MODULE)
+    @FrontendAction(action = ProjectManagerConst.REMOVE_BRIDGEHEAD_ADMIN_ACTION)
+    @CacheCategory(CacheResource.MUTATION_RESPONSES)
+    @DeleteMapping(value = ProjectManagerConst.BRIDGEHEAD_ADMINS)
+    public ResponseEntity removeBridgeheadAdmin(
+            @RequestParameter(name = ProjectManagerConst.EMAIL) String email,
+            @RequestParameter(name = ProjectManagerConst.BRIDGEHEAD) String bridgehead
+    ) {
+        if (configuredUserLists.isBridgeheadAdmin(email, bridgehead)) {
+            return configuredUserCannotBeRemoved("BRIDGEHEADS_CONFIG_<site>_ADMINEMAILS");
+        }
+        return convertToResponseEntity(() -> userService.removeBridgeheadAdminUser(email, bridgehead));
+    }
+
+    // An address of the configuration is loaded again at every start: it can only be removed there
+    private ResponseEntity configuredUserCannotBeRemoved(String variable) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Set in the configuration (" + variable + "): remove it there");
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.BRIDGEHEAD_ADMIN})
@@ -1320,7 +1467,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_RESULTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_EMAIL_MESSAGE_AND_SUBJECT_ACTION)
     @CacheCategory(CacheResource.PROJECT_DETAIL)
@@ -1862,7 +2010,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
             ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -1878,7 +2026,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_DESCRIPTION_ACTION)
@@ -1891,8 +2039,9 @@ public class ProjectManagerController {
         return downloadProjectDocument(project, Optional.empty(), Optional.empty(), DocumentType.DESCRIPTION);
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FORM_FIELD_ACTION)
@@ -1906,7 +2055,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
             ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -1922,7 +2071,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
             ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -1940,7 +2089,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
             ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -1957,8 +2106,9 @@ public class ProjectManagerController {
                         Optional.empty(), DocumentType.DESCRIPTION));
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN})
-    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.PROJECT_MANAGER_ADMIN,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
+    @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_FORM_FIELD_FILE_ACTION)
@@ -1974,7 +2124,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
             ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -1992,7 +2142,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
             ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED,
             ProjectState.ARCHIVED, ProjectState.REJECTED})
@@ -2037,7 +2187,7 @@ public class ProjectManagerController {
 
     @RequiresModule(OptionalModule.LOCAL_APPROVAL)
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP,
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -2053,7 +2203,7 @@ public class ProjectManagerController {
 
     @RequiresModule(OptionalModule.LOCAL_APPROVAL)
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP,
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -2071,7 +2221,7 @@ public class ProjectManagerController {
 
     @RequiresModule(OptionalModule.LOCAL_APPROVAL)
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP,
             ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED, ProjectState.ARCHIVED, ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -2086,7 +2236,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.FINISHED, ProjectState.ARCHIVED,
             ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -2101,7 +2251,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.FINISHED, ProjectState.ARCHIVED,
             ProjectState.REJECTED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
@@ -2116,7 +2266,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_EDITION_MODULE)
     @FrontendAction(action = ProjectManagerConst.EXISTS_DESCRIPTION_ACTION)
@@ -2144,7 +2294,7 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
-            ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.DRAFT, ProjectState.REVIEW, ProjectState.CENTRAL_APPROVAL,
             ProjectState.LOCAL_APPROVAL, ProjectState.DEVELOP, ProjectState.PILOT, ProjectState.FINAL, ProjectState.FINISHED,
             ProjectState.ARCHIVED, ProjectState.REJECTED})
@@ -2172,7 +2322,8 @@ public class ProjectManagerController {
         return downloadProjectDocument(project, Optional.empty(), Optional.ofNullable(filename), DocumentType.PUBLICATION);
     }
 
-    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+    @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.BRIDGEHEAD_ADMIN,
+            ProjectRole.PROJECT_MANAGER_ADMIN, ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @StateConstraints(projectStates = {ProjectState.FINISHED})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_FINAL_REPORT_ACTION)
@@ -2208,7 +2359,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
-            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.DOWNLOAD_OTHER_DOCUMENT_ACTION)
     @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
@@ -2222,7 +2374,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(projectRoles = {ProjectRole.CREATOR, ProjectRole.DEVELOPER, ProjectRole.PILOT,
-            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN})
+            ProjectRole.FINAL, ProjectRole.BRIDGEHEAD_ADMIN, ProjectRole.PROJECT_MANAGER_ADMIN,
+            ProjectRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_DOCUMENTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_OTHER_DOCUMENTS_ACTION)
     @CacheCategory(CacheResource.PROJECT_DOCUMENTS)
@@ -2424,6 +2577,7 @@ public class ProjectManagerController {
                 () -> this.dataShieldService.existsAuthenticationScript(project, bridgehead));
     }
 
+    // Not the central approval committee: too much noise for it; its messages will be shown in the user tasks
     @RoleConstraints(organisationRoles = {OrganisationRole.PROJECT_MANAGER_ADMIN})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.NOTIFICATIONS_MODULE)
@@ -2455,9 +2609,12 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_VIEW_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
+    // Configuration page: the sites to choose from when adding a site admin
+    @FrontendSiteModule(site = ProjectManagerConst.CONFIGURATION_SITE, module = ProjectManagerConst.PROJECT_BRIDGEHEAD_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS_ACTION)
     @CacheCategory(CacheResource.REFERENCE_DATA)
     @GetMapping(value = ProjectManagerConst.FETCH_ALL_REGISTERED_BRIDGEHEADS)
@@ -2498,7 +2655,8 @@ public class ProjectManagerController {
     }
 
     @RoleConstraints(organisationRoles = {OrganisationRole.RESEARCHER,
-            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN})
+            OrganisationRole.BRIDGEHEAD_ADMIN, OrganisationRole.PROJECT_MANAGER_ADMIN,
+            OrganisationRole.CENTRAL_APPROVAL_COMMITTEE})
     @FrontendSiteModule(site = ProjectManagerConst.PROJECT_DASHBOARD_SITE, module = ProjectManagerConst.PROJECTS_MODULE)
     @FrontendAction(action = ProjectManagerConst.FETCH_PROJECT_CREATORS_ACTION)
     @CacheCategory(CacheResource.USER_DATA)

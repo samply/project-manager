@@ -2,6 +2,7 @@ package de.samply.user;
 
 import de.samply.db.model.*;
 import de.samply.db.repository.BridgeheadAdminUserRepository;
+import de.samply.db.repository.CentralApprovalCommitteeUserRepository;
 import de.samply.db.repository.CreatorUserRepository;
 import de.samply.db.repository.ProjectManagerAdminUserRepository;
 import de.samply.db.repository.UserRepository;
@@ -17,9 +18,11 @@ import de.samply.user.roles.OrganisationRole;
 import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
+import de.samply.utils.EmailUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -41,6 +44,7 @@ public class UserService {
     // Repositories
     private final BridgeheadAdminUserRepository bridgeheadAdminUserRepository;
     private final ProjectManagerAdminUserRepository projectManagerAdminUserRepository;
+    private final CentralApprovalCommitteeUserRepository centralApprovalCommitteeUserRepository;
     private final UserRepository userRepository;
     private final CreatorUserRepository creatorUserRepository;
 
@@ -48,6 +52,7 @@ public class UserService {
     public UserService(NotificationService notificationService,
                        BridgeheadAdminUserRepository bridgeheadAdminUserRepository,
                        ProjectManagerAdminUserRepository projectManagerAdminUserRepository,
+                       CentralApprovalCommitteeUserRepository centralApprovalCommitteeUserRepository,
                        UserRepository userRepository,
                        CreatorUserRepository creatorUserRepository,
                        SessionUser sessionUser,
@@ -58,6 +63,7 @@ public class UserService {
         this.notificationService = notificationService;
         this.bridgeheadAdminUserRepository = bridgeheadAdminUserRepository;
         this.projectManagerAdminUserRepository = projectManagerAdminUserRepository;
+        this.centralApprovalCommitteeUserRepository = centralApprovalCommitteeUserRepository;
         this.userRepository = userRepository;
         this.creatorUserRepository = creatorUserRepository;
         this.sessionUser = sessionUser;
@@ -67,24 +73,27 @@ public class UserService {
         this.projectService = projectService;
     }
 
+    // The role lists store addresses normalized (EmailUtils), whoever adds them: login, configuration, configuration page.
+    // Login runs on every authenticated request, so the lookup avoids a write each time; the insert itself skips an
+    // existing entry in the database (unique index, V006), because parallel requests may all pass the lookup at once.
     public void createBridgeheadAdminUserIfNotExists(@NotNull String email, @NotNull String bridgehead) {
-        Optional<BridgeheadAdminUser> bridgeheadAdminUserOptional = this.bridgeheadAdminUserRepository.findFirstByEmailAndBridgehead(email, bridgehead);
-        BridgeheadAdminUser result;
-        if (bridgeheadAdminUserOptional.isEmpty()) {
-            result = new BridgeheadAdminUser();
-            result.setBridgehead(bridgehead);
-            result.setEmail(email);
-            this.bridgeheadAdminUserRepository.save(result);
+        String normalizedEmail = EmailUtils.normalize(email);
+        if (bridgeheadAdminUserRepository.findFirstByEmailAndBridgehead(normalizedEmail, bridgehead).isEmpty()) {
+            bridgeheadAdminUserRepository.insertIfAbsent(normalizedEmail, bridgehead);
         }
     }
 
     public void createProjectManagerAdminUserIfNotExists(@NotNull String email) {
-        Optional<ProjectManagerAdminUser> projectManagerAdminUserOptional = this.projectManagerAdminUserRepository.findFirstByEmail(email);
-        ProjectManagerAdminUser result;
-        if (projectManagerAdminUserOptional.isEmpty()) {
-            result = new ProjectManagerAdminUser();
-            result.setEmail(email);
-            this.projectManagerAdminUserRepository.save(result);
+        String normalizedEmail = EmailUtils.normalize(email);
+        if (projectManagerAdminUserRepository.findFirstByEmail(normalizedEmail).isEmpty()) {
+            projectManagerAdminUserRepository.insertIfAbsent(normalizedEmail);
+        }
+    }
+
+    public void createCentralApprovalCommitteeUserIfNotExists(@NotNull String email) {
+        String normalizedEmail = EmailUtils.normalize(email);
+        if (centralApprovalCommitteeUserRepository.findFirstByEmail(normalizedEmail).isEmpty()) {
+            centralApprovalCommitteeUserRepository.insertIfAbsent(normalizedEmail);
         }
     }
 
@@ -190,9 +199,11 @@ public class UserService {
                 .toList();
     }
 
+    // At login. The user may exist already without a name: added to the mailing blacklist (file or configuration page)
+    // before the first login, maybe written with a different case; then the name is filled in, once
     public synchronized void addUserInformationIfNotExists(String email, String firstName, String lastName) {
         if (StringUtils.hasText(email) && (StringUtils.hasText(firstName) || StringUtils.hasText(lastName))) {
-            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
+            Optional<de.samply.db.model.User> userOptional = userRepository.findFirstByEmailIgnoreCase(email.trim());
             if (userOptional.isEmpty()) {
                 de.samply.db.model.User user = new de.samply.db.model.User();
                 user.setEmail(email);
@@ -200,24 +211,36 @@ public class UserService {
                 user.setLastName(lastName);
                 userRepository.save(user);
                 log.info("Added user information for {}", email);
+            } else if (!StringUtils.hasText(userOptional.get().getFirstName())
+                    && !StringUtils.hasText(userOptional.get().getLastName())) {
+                userOptional.get().setFirstName(firstName);
+                userOptional.get().setLastName(lastName);
+                userRepository.save(userOptional.get());
+                log.info("Completed user information for {}", email);
             }
         }
     }
 
     public void updateUserInMailingBlackList(@NotNull String email, @NotNull boolean addedToBlackList) throws UserServiceException {
         if (StringUtils.hasText(email)) {
-            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
+            Optional<de.samply.db.model.User> userOptional = userRepository.findFirstByEmailIgnoreCase(email.trim());
             if (userOptional.isPresent()) {
                 userOptional.get().setInMailingBlackList(addedToBlackList);
                 userRepository.save(userOptional.get());
+            } else if (addedToBlackList) {
+                // Also someone who has never logged in, as the blacklist file does: the name comes with the login
+                de.samply.db.model.User user = new de.samply.db.model.User();
+                user.setEmail(EmailUtils.normalize(email));
+                user.setInMailingBlackList(true);
+                userRepository.save(user);
             }
         }
     }
 
     public boolean isUserInMailingBlackList(@NotNull String email) throws UserServiceException {
         if (StringUtils.hasText(email)) {
-            Optional<de.samply.db.model.User> userOptional = userRepository.findByEmail(email);
-            return userOptional.isPresent() && userOptional.get().isInMailingBlackList();
+            // Ignoring case: the blacklist may write the address differently than the login
+            return userRepository.existsByEmailIgnoreCaseAndIsInMailingBlackListIsTrue(email.trim());
         }
         return false;
     }
@@ -245,12 +268,43 @@ public class UserService {
         return projectManagerAdminUserRepository.findAll();
     }
 
+    public List<CentralApprovalCommitteeUser> fetchAllCentralApprovalCommitteeUsers() {
+        return centralApprovalCommitteeUserRepository.findAll();
+    }
+
+    public List<BridgeheadAdminUser> fetchAllBridgeheadAdmins() {
+        return bridgeheadAdminUserRepository.findAll();
+    }
+
+    // The user lists below are email lists only (who gets which emails): removing an entry never touches the user,
+    // its projects or its permissions, which come from the identity provider's groups. Someone removed who still has
+    // the group is added again at the next login (docs/user-lists.md).
+    @Transactional
+    public void removeProjectManagerAdminUser(@NotNull String email) {
+        projectManagerAdminUserRepository.deleteByEmail(EmailUtils.normalize(email));
+    }
+
+    @Transactional
+    public void removeCentralApprovalCommitteeUser(@NotNull String email) {
+        centralApprovalCommitteeUserRepository.deleteByEmail(EmailUtils.normalize(email));
+    }
+
+    @Transactional
+    public void removeBridgeheadAdminUser(@NotNull String email, @NotNull String bridgehead) {
+        bridgeheadAdminUserRepository.deleteByEmailAndBridgehead(EmailUtils.normalize(email), bridgehead);
+    }
+
     public Set<CreatorUser> fetchCreatorUser(String email) {
         return creatorUserRepository.findByEmail(email);
     }
 
     public Optional<User> fetchUser(String user) {
         return userRepository.findByEmail(user);
+    }
+
+    // The role lists store addresses in lower case; the user table keeps them as the login wrote them
+    public Optional<User> fetchUserIgnoringCase(String email) {
+        return userRepository.findFirstByEmailIgnoreCase(email);
     }
 
     public Set<BridgeheadAdminUser> fetchBridgeheadAdmin(ProjectBridgehead bridgehead) {

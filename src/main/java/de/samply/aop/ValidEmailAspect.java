@@ -1,6 +1,7 @@
 package de.samply.aop;
 
 import de.samply.annotations.Email;
+import de.samply.utils.EmailUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,7 +14,6 @@ import org.springframework.util.StringUtils;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 // It checks if the parameters marked with the annotation @Email of a REST service are valid emails.
@@ -21,10 +21,6 @@ import java.util.stream.IntStream;
 @Component
 @Aspect
 public class ValidEmailAspect {
-
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$"
-    );
 
     @SuppressWarnings("EmptyMethod")
     @Pointcut("execution(* *(.., @de.samply.annotations.Email (*), ..))")
@@ -57,7 +53,7 @@ public class ValidEmailAspect {
 
     private boolean isValidEmail(String email){
         if (StringUtils.hasText(email)){
-            return EMAIL_PATTERN.matcher(email).matches();
+            return EmailUtils.isValid(email);
         }
         return true; // Ignore null parameters
     }

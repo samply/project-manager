@@ -19,6 +19,9 @@ public class NewUsersImporter {
         if (sessionUser.getUserOrganisationRoles().getRolesNotDependentOnBridgeheads().contains(OrganisationRole.PROJECT_MANAGER_ADMIN)) {
             userService.createProjectManagerAdminUserIfNotExists(sessionUser.getEmail());
         }
+        if (sessionUser.getUserOrganisationRoles().getRolesNotDependentOnBridgeheads().contains(OrganisationRole.CENTRAL_APPROVAL_COMMITTEE)) {
+            userService.createCentralApprovalCommitteeUserIfNotExists(sessionUser.getEmail());
+        }
         sessionUser.getBridgeheads().forEach(bridgehead -> {
             if (sessionUser.getUserOrganisationRoles().getBridgeheadRoles(bridgehead).contains(OrganisationRole.BRIDGEHEAD_ADMIN)) {
                 userService.createBridgeheadAdminUserIfNotExists(sessionUser.getEmail(), bridgehead);

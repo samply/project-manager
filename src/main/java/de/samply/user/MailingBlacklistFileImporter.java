@@ -3,6 +3,7 @@ package de.samply.user;
 import de.samply.app.ProjectManagerConst;
 import de.samply.db.model.User;
 import de.samply.db.repository.UserRepository;
+import de.samply.utils.EmailUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,8 @@ import java.util.stream.Stream;
  * Seeds the existing global mailing blacklist from deployment configuration.
  * The import is additive: administrators may maintain additional blacklist
  * entries through the frontend, and those database entries are never removed.
+ * The addresses of the file cannot be removed in the configuration page, only in
+ * the file (they would be added again at the next start): see {@link #isConfigured}.
  *
  * <p>Example file configured through {@code MAILING_BLACK_LIST_FILE_PATH}:</p>
  * <pre>{@code
@@ -42,18 +45,28 @@ public class MailingBlacklistFileImporter implements ApplicationRunner {
 
     private final UserRepository userRepository;
     private final Path blacklistFilePath;
+    // Read once at startup; a missing or unreadable file stops the start
+    private final ParsedEmails parsed;
+    // Normalized (EmailUtils): the login may write the addresses with a different case
+    private final Set<String> configuredEmails;
 
     public  MailingBlacklistFileImporter(
             UserRepository userRepository,
             @Value(ProjectManagerConst.MAILING_BLACK_LIST_FILE_PATH_SV) Path blacklistFilePath) {
         this.userRepository = userRepository;
         this.blacklistFilePath = blacklistFilePath;
+        this.parsed = readEmails(blacklistFilePath);
+        this.configuredEmails = parsed.emails().stream().map(EmailUtils::normalize)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public boolean isConfigured(String email) {
+        return configuredEmails.contains(EmailUtils.normalize(email));
     }
 
     @Override
     @Transactional
     public void run(@NonNull ApplicationArguments args) {
-        ParsedEmails parsed = readEmails(blacklistFilePath);
         // Grouping the per-user result keeps the startup log useful without
         // logging the configured email addresses themselves.
         Map<ImportOutcome, Long> outcomes = parsed

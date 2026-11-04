@@ -23,6 +23,7 @@ import de.samply.user.roles.OrganisationRoleToProjectRoleMapper;
 import de.samply.user.roles.ProjectRole;
 import de.samply.user.roles.UserProjectRoles;
 import de.samply.utils.AspectUtils;
+import de.samply.utils.EmailUtils;
 import de.samply.utils.LanguageUtils;
 import de.samply.utils.ProjectRolesUtils;
 import org.aspectj.lang.JoinPoint;
@@ -56,6 +57,7 @@ public class EmailSenderAspect {
     private final OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper;
     private final EmailKeyValuesFactory emailKeyValuesFactory;
     private final BridgeheadsConfiguration bridgeheadsConfiguration;
+    private final EmailTemplates emailTemplates;
     private final String defaultLanguage;
 
     public EmailSenderAspect(EmailSendingService emailSendingService,
@@ -66,6 +68,7 @@ public class EmailSenderAspect {
                              OrganisationRoleToProjectRoleMapper organisationRoleToProjectRoleMapper,
                              EmailKeyValuesFactory emailKeyValuesFactory,
                              BridgeheadsConfiguration bridgeheadsConfiguration,
+                             EmailTemplates emailTemplates,
                              @Value(ProjectManagerConst.DEFAULT_LANGUAGE_SV) String defaultLanguage) {
         this.emailSendingService = emailSendingService;
         this.sessionUser = sessionUser;
@@ -75,6 +78,7 @@ public class EmailSenderAspect {
         this.organisationRoleToProjectRoleMapper = organisationRoleToProjectRoleMapper;
         this.emailKeyValuesFactory = emailKeyValuesFactory;
         this.bridgeheadsConfiguration = bridgeheadsConfiguration;
+        this.emailTemplates = emailTemplates;
         this.defaultLanguage = LanguageUtils.normalize(defaultLanguage);
     }
 
@@ -134,32 +138,55 @@ public class EmailSenderAspect {
         }
     }
 
+    // An email to send: the recipient and its type
+    private record Email(EmailRecipient recipient, EmailTemplateType type) {
+    }
+
     private void sendEmail(ProceedingJoinPoint joinPoint, boolean isSingleEmailSender, boolean ifError) {
+        List<Email> emails = new ArrayList<>();
         if (isSingleEmailSender) {
             if (ifError) {
-                sendEmailFromEmailSenderIfError(joinPoint, fetchEmailSenderIfError(joinPoint));
+                addEmailsFromEmailSenderIfError(joinPoint, fetchEmailSenderIfError(joinPoint), emails);
             } else {
-                sendEmailFromEmailSender(joinPoint, fetchEmailSender(joinPoint));
+                addEmailsFromEmailSender(joinPoint, fetchEmailSender(joinPoint), emails);
             }
         } else {
             if (ifError) {
-                sendEmailFromEmailSendersIfError(joinPoint, fetchEmailSendersIfError(joinPoint));
+                addEmailsFromEmailSendersIfError(joinPoint, fetchEmailSendersIfError(joinPoint), emails);
             } else {
-                sendEmailFromEmailSenders(joinPoint, fetchEmailSenders(joinPoint));
+                addEmailsFromEmailSenders(joinPoint, fetchEmailSenders(joinPoint), emails);
             }
         }
+        removeIdenticalEmails(emails).forEach(email -> sendEmail(email.recipient(), email::type));
     }
 
-    private void sendEmailFromEmailSenders(ProceedingJoinPoint joinPoint, Optional<EmailSenders> emailSendersOptional) {
+    // A user with several roles (e.g. project manager admin and committee member) gets an email once per text: emails to
+    // the same address (compared normalized) are only merged when they use the same template (type, template, subject and bridgehead).
+    // Different templates mean different texts, so they are all sent. The first role in time order is kept.
+    private Collection<Email> removeIdenticalEmails(List<Email> emails) {
+        Map<List<Object>, Email> result = new LinkedHashMap<>();
+        ProjectRolesUtils.orderCollectionInDescendentTime(emails, email -> email.recipient().getRole())
+                .forEach(email -> result.putIfAbsent(Arrays.asList(
+                        EmailUtils.normalize(email.recipient().getEmail()),
+                        email.type(),
+                        email.recipient().getBridgehead().map(ProjectBridgehead::getBridgehead),
+                        emailTemplates.getTemplateAndSubject(email.type(), email.recipient().getRole(),
+                                email.recipient().getBridgehead().map(ProjectBridgehead::getBridgehead))), email));
+        return result.values();
+    }
+
+    private void addEmailsFromEmailSenders(ProceedingJoinPoint joinPoint, Optional<EmailSenders> emailSendersOptional,
+                                           List<Email> emails) {
         emailSendersOptional.ifPresent(emailSenders -> Arrays.stream(emailSenders.value()).forEach(emailSender ->
-                sendEmailFromEmailSender(joinPoint, Optional.of(emailSender))));
+                addEmailsFromEmailSender(joinPoint, Optional.of(emailSender), emails)));
     }
 
-    private void sendEmailFromEmailSender(ProceedingJoinPoint joinPoint, Optional<EmailSender> emailSenderOptional) {
+    private void addEmailsFromEmailSender(ProceedingJoinPoint joinPoint, Optional<EmailSender> emailSenderOptional,
+                                          List<Email> emails) {
         emailSenderOptional
                 .filter(emailSender -> isInProjectStates(joinPoint, emailSender.projectStates()))
                 .ifPresent(emailSender -> fetchEmailRecipients(emailSender::recipients, joinPoint)
-                        .forEach(emailRecipient -> sendEmail(emailRecipient, emailSender::templateType)));
+                        .forEach(emailRecipient -> emails.add(new Email(emailRecipient, emailSender.templateType()))));
     }
 
     private boolean isInProjectStates(ProceedingJoinPoint joinPoint, ProjectState[] projectStates) {
@@ -168,14 +195,16 @@ public class EmailSenderAspect {
                 .orElse(false);
     }
 
-    private void sendEmailFromEmailSendersIfError(ProceedingJoinPoint joinPoint, Optional<EmailSendersIfError> emailSendersIfErrorOptional) {
+    private void addEmailsFromEmailSendersIfError(ProceedingJoinPoint joinPoint, Optional<EmailSendersIfError> emailSendersIfErrorOptional,
+                                                  List<Email> emails) {
         emailSendersIfErrorOptional.ifPresent(emailSendersIfError -> Arrays.stream(emailSendersIfError.value()).forEach(emailSenderIfError ->
-                sendEmailFromEmailSenderIfError(joinPoint, Optional.of(emailSenderIfError))));
+                addEmailsFromEmailSenderIfError(joinPoint, Optional.of(emailSenderIfError), emails)));
     }
 
-    private void sendEmailFromEmailSenderIfError(ProceedingJoinPoint joinPoint, Optional<EmailSenderIfError> emailSenderIfErrorOptional) {
+    private void addEmailsFromEmailSenderIfError(ProceedingJoinPoint joinPoint, Optional<EmailSenderIfError> emailSenderIfErrorOptional,
+                                                 List<Email> emails) {
         emailSenderIfErrorOptional.ifPresent(emailSenderIfError -> fetchEmailRecipients(emailSenderIfError::recipients, joinPoint)
-                .forEach(emailRecipient -> sendEmail(emailRecipient, emailSenderIfError::templateType)));
+                .forEach(emailRecipient -> emails.add(new Email(emailRecipient, emailSenderIfError.templateType()))));
     }
 
     @Async(ProjectManagerConst.ASYNC_EMAIL_SENDER_EXECUTOR)
@@ -226,6 +255,8 @@ public class EmailSenderAspect {
                             fetchEmailRecipientsForBridgeheadAdminsWhoHaveNotAcceptedNorRejectedTheProject(project);
                     case PROJECT_MANAGER_ADMIN ->
                             fetchEmailRecipientsForProjectManagerAdmin(project, projectBridgehead);
+                    case CENTRAL_APPROVAL_COMMITTEE ->
+                            fetchEmailRecipientsForCentralApprovalCommittee(project, projectBridgehead);
                     case PROJECT_ALL -> fetchEmailRecipientsForAllProjectUsers(project, projectBridgehead);
                 }));
         if (message.isPresent()) {
@@ -304,7 +335,7 @@ public class EmailSenderAspect {
             if (projectRole == null) {
                 Set<ProjectRole> rolesNotDependentOnBridgeheads = userProjectRoles.getRolesNotDependentOnBridgeheads();
                 if (!rolesNotDependentOnBridgeheads.isEmpty()) {
-                    projectRole = rolesNotDependentOnBridgeheads.stream().toList().getFirst();
+                    projectRole = ProjectRolesUtils.orderCollectionInDescendentTime(rolesNotDependentOnBridgeheads).getFirst();
                 }
             }
             if (projectRole == null) {
@@ -412,6 +443,13 @@ public class EmailSenderAspect {
         Set<EmailRecipient> result = new HashSet<>();
         userService.fetchAllProjectManagerAdmins().forEach(projectManagerAdminUser ->
                 result.add(new EmailRecipient(projectManagerAdminUser.getEmail(), project, bridgehead, ProjectRole.PROJECT_MANAGER_ADMIN)));
+        return result;
+    }
+
+    private Set<EmailRecipient> fetchEmailRecipientsForCentralApprovalCommittee(Optional<Project> project, Optional<ProjectBridgehead> bridgehead) {
+        Set<EmailRecipient> result = new HashSet<>();
+        userService.fetchAllCentralApprovalCommitteeUsers().forEach(committeeUser ->
+                result.add(new EmailRecipient(committeeUser.getEmail(), project, bridgehead, ProjectRole.CENTRAL_APPROVAL_COMMITTEE)));
         return result;
     }
 
