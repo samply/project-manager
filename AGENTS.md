@@ -28,7 +28,7 @@ next to this repository, as `../project-manager-ops`): inventory of projects, se
 New plans go to its `plans/`.
 
 - Before creating a release or hotfix branch, changing the version, tagging, or merging into `main`/`develop`: read
-  `../project-manager-ops/CLAUDE.md`, `runbooks/release.md` and `decisions.md`, follow the runbook step by step and
+  `../project-manager-ops/AGENTS.md`, `runbooks/release.md` and `decisions.md`, follow the runbook step by step and
   say which step you are on.
 - If `../project-manager-ops` is missing or you cannot read it: stop and ask the developer. Do not improvise release
   or hotfix steps.
