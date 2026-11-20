@@ -25,7 +25,7 @@ external execution) is an optional module: `OptionalModule` in `de.samply.module
 What spans repositories lives in the private GitLab repository `project-manager-ops` (GitLab group `teiler`; clone it
 next to this repository, as `../project-manager-ops`): inventory of projects, servers and images
 (`inventory.yaml`), runbooks (`runbooks/`), shared plans (`plans/`), decisions (`decisions.md`) and the backlog.
-New plans go to its `plans/`.
+New plans go to its `plans/` and get a row in its `plans-overview.md` (the overview; rules at its top).
 
 - Before creating a release or hotfix branch, changing the version, tagging, or merging into `main`/`develop`: read
   `../project-manager-ops/AGENTS.md`, `runbooks/release.md` and `decisions.md`, follow the runbook step by step and
