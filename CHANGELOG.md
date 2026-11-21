@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-21
+Hotfix without code changes: the image is rebuilt on the patched JDK.
+
+### Security
+- Rebuilt on `eclipse-temurin:25-jre` with JDK 25.0.5.1+2 (Java4Shell, CVE-2026-114938: Base64 decoder bug in the
+  JDK on x86-64 CPUs with AVX-512 VBMI). Description: https://calif.io/java4shell/, OpenJDK advisory:
+  https://openjdk.org/groups/vulnerability/advisories/2026-11-17
+
 ## [1.0.0] - 2026-10-13
 First release. Until now the deployments ran `develop`; this version is what they run today.
 
