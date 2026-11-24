@@ -11,7 +11,6 @@ import de.samply.notification.OperationType;
 import de.samply.project.ProjectBridgeheadService;
 import de.samply.project.ProjectBridgeheadUserService;
 import de.samply.project.ProjectService;
-import de.samply.project.state.ProjectState;
 import de.samply.project.state.UserProjectState;
 import de.samply.security.SessionUser;
 import de.samply.user.roles.OrganisationRole;
@@ -147,11 +146,15 @@ public class UserService {
         return projectBridgeheadUserService.fetchFirstValidUser(sessionUser.getEmail(), bridgehead);
     }
 
+    /**
+     * Without a project: the creators of every project the user can see, so the dashboard's creator filter offers
+     * exactly what the list contains. Which drafts are visible (own drafts, drafts of the user's sites) is decided by
+     * the visibility rule alone (docs/project-visibility.md), not filtered out here.
+     */
     protected Set<String> fetchProjectCreators(Optional<Project> project) {
         return project
                 .map(value -> Optional.ofNullable(value.getCreatorEmail()).stream().collect(Collectors.toSet()))
                 .orElseGet(() -> projectService.fetchAllUserVisibleProjects().stream()
-                        .filter(value -> value.getState() != ProjectState.DRAFT)
                         .map(Project::getCreatorEmail)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toSet()));
