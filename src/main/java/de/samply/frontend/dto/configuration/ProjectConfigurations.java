@@ -7,6 +7,7 @@ import de.samply.project.ProjectType;
 import lombok.Data;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 @Data
 public class ProjectConfigurations {
@@ -39,13 +40,20 @@ public class ProjectConfigurations {
 
     @JsonIgnore
     public List<String> fetchCurrentProjectConfiguration(ProjectAndForms projectAndForms) {
+        return fetchCurrentProjectConfiguration(projectAndForms, _ -> false);
+    }
+
+    /** isFormIgnored: template forms a project need not have to match, see ProjectConfigurationMatcher. */
+    @JsonIgnore
+    public List<String> fetchCurrentProjectConfiguration(ProjectAndForms projectAndForms, Predicate<String> isFormIgnored) {
         return ProjectConfigurationMatcher.fetchMatchingProjectConfigurations(
-                projectAndForms, config, selectionType);
+                projectAndForms, config, selectionType, isFormIgnored);
     }
 
     @JsonIgnore
-    public List<ProjectAndForms> fetchCurrentProjectConfigurations(ProjectAndForms projectAndForms) {
-        return fetchCurrentProjectConfiguration(projectAndForms).stream()
+    public List<ProjectAndForms> fetchCurrentProjectConfigurations(ProjectAndForms projectAndForms,
+                                                                   Predicate<String> isFormIgnored) {
+        return fetchCurrentProjectConfiguration(projectAndForms, isFormIgnored).stream()
                 .map(config::get)
                 .filter(Objects::nonNull)
                 .toList();

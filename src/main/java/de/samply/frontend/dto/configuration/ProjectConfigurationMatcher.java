@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public class ProjectConfigurationMatcher {
 
@@ -28,6 +29,19 @@ public class ProjectConfigurationMatcher {
             ProjectAndForms runtime,
             Map<String, ProjectAndForms> configurations,
             SelectionType selectionType) {
+        return fetchMatchingProjectConfigurations(runtime, configurations, selectionType, _ -> false);
+    }
+
+    /**
+     * @param isFormIgnored template forms the runtime project need not have, e.g. inactive forms: selecting a
+     *                      configuration does not add them to a project that does not use them yet
+     *                      (FormService.syncSelectedForms), so requiring them would let no configuration match.
+     */
+    public static List<String> fetchMatchingProjectConfigurations(
+            ProjectAndForms runtime,
+            Map<String, ProjectAndForms> configurations,
+            SelectionType selectionType,
+            Predicate<String> isFormIgnored) {
 
         if (runtime == null || runtime.project() == null) {
             return List.of(NOT_SELECTED_KEY);
@@ -42,7 +56,7 @@ public class ProjectConfigurationMatcher {
                 .filter(entry -> !NOT_SELECTED_KEY.equals(entry.getKey()))
                 .map(entry -> new ConfigurationMatch(
                         entry.getKey(),
-                        calculateMatchScore(runtime, entry.getValue())))
+                        calculateMatchScore(runtime, entry.getValue(), isFormIgnored)))
                 .filter(match -> match.score() >= 0)
                 .toList();
 
@@ -60,13 +74,14 @@ public class ProjectConfigurationMatcher {
                 .orElseGet(() -> List.of(NOT_SELECTED_KEY));
     }
 
-    private static int calculateMatchScore(ProjectAndForms runtime, ProjectAndForms template) {
+    private static int calculateMatchScore(ProjectAndForms runtime, ProjectAndForms template,
+                                           Predicate<String> isFormIgnored) {
         if (runtime == null || template == null) {
             return -1;
         }
 
         int projectScore = matchProject(runtime.project(), template.project());
-        int formScore = matchForms(runtime.forms(), template.forms());
+        int formScore = matchForms(runtime.forms(), template.forms(), isFormIgnored);
         int formFieldScore = matchFormFields(runtime.formFields(), template.formFields());
 
         if (projectScore < 0 || formScore < 0 || formFieldScore < 0) {
@@ -116,8 +131,11 @@ public class ProjectConfigurationMatcher {
         return score;
     }
 
-    private static int matchForms(Form[] runtimeForms, Form[] templateForms) {
-        if (templateForms == null || templateForms.length == 0) {
+    private static int matchForms(Form[] runtimeForms, Form[] templateForms, Predicate<String> isFormIgnored) {
+        Form[] requiredForms = templateForms == null ? new Form[0] : Arrays.stream(templateForms)
+                .filter(form -> form == null || !isFormIgnored.test(form.title()))
+                .toArray(Form[]::new);
+        if (requiredForms.length == 0) {
             return 0;
         }
         if (runtimeForms == null || runtimeForms.length == 0) {
@@ -125,7 +143,7 @@ public class ProjectConfigurationMatcher {
         }
 
         int score = 0;
-        for (Form templateForm : templateForms) {
+        for (Form templateForm : requiredForms) {
             int formScore = Arrays.stream(runtimeForms)
                     .mapToInt(runtimeForm -> matchConfiguredFields(runtimeForm, templateForm))
                     .filter(candidateScore -> candidateScore >= 0)

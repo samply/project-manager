@@ -1,5 +1,6 @@
 package de.samply.project;
 
+import de.samply.form.core.FormConfig;
 import de.samply.frontend.dto.DtoFactory;
 import de.samply.frontend.dto.configuration.ProjectConfigurations;
 import de.samply.project.state.ProjectState;
@@ -28,7 +29,7 @@ class DtoProjectServiceTest {
         ProjectService projectService = mock(ProjectService.class);
         DtoFactory dtoFactory = mock(DtoFactory.class);
         DtoProjectService service = new DtoProjectService(
-                projectService, dtoFactory, mock(ProjectConfigurations.class));
+                projectService, dtoFactory, mock(ProjectConfigurations.class), mock(FormConfig.class));
         Optional<ProjectState> state = Optional.of(ProjectState.REVIEW);
         Optional<Boolean> archived = Optional.of(false);
         when(projectService.fetchUserVisibleProjects(eq(state), eq(archived), any(PageRequest.class),

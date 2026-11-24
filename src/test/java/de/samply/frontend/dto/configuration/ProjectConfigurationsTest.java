@@ -110,6 +110,22 @@ class ProjectConfigurationsTest {
     }
 
     @Test
+    void ignoredFormsAreNotRequiredToMatch() {
+        // DKTK: every service lists the funding form, which is inactive and so never added to a new project
+        ProjectConfigurations configurations = configurations(SelectionType.MULTIPLE);
+        Project exportProject = project(output(ProjectType.EXPORT, OutputFormat.CSV, "export"));
+        configurations.getConfig().put("export", new ProjectAndForms(exportProject,
+                new Form[]{new Form("project", null, null, null), new Form("funding", null, null, null)},
+                new FormField[0]));
+        ProjectAndForms runtime = new ProjectAndForms(
+                exportProject, new Form[]{new Form("project", null, null, null)}, new FormField[0]);
+
+        assertThat(configurations.fetchCurrentProjectConfiguration(runtime)).containsExactly("NOT_SELECTED");
+        assertThat(configurations.fetchCurrentProjectConfiguration(runtime, "funding"::equals))
+                .containsExactly("export");
+    }
+
+    @Test
     void mergeCombinesConfigurationsAndLetsLaterValuesWin() {
         ProjectConfigurations configurations = configurations(SelectionType.MULTIPLE);
         FormField first = FormField.builder().title("request").label("format").value("csv").build();
