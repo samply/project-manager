@@ -70,6 +70,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Bridgehead admin groups that do not also match the user pattern give the admin role (e.g. user suffix `/user`,
   admin suffix `/admin`); before, the admin role was only given to groups that matched both patterns
   (`DKTK_CCP_<Site>` / `DKTK_CCP_<Site>_Verwalter`)
+- A service listing an inactive form is recognized as selected again: inactive forms are not added to new requests,
+  so a service that listed one never matched, appeared unselected after going back and did not decide the forms of
+  the next steps (DKTK's `funding`). Inactive forms no longer count when matching the services
+- Dashboard: the creator filter also offers the creators of the visible drafts (own drafts, drafts of the user's
+  sites)
 
 ## [1.0.1] - 2026-11-21
 Hotfix without code changes: the image is rebuilt on the patched JDK.
